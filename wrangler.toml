@@ -1,0 +1,8 @@
+name = "ktdoc"
+compatibility_date = "2024-12-01"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "ktdoc-db"
+database_id = "83037149-5563-40e3-ada0-78a9fa608bb7"

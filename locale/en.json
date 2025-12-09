@@ -1,0 +1,66 @@
+{
+  "common.ok": "OK",
+  "common.cancel": "Cancel",
+  "common.save": "Save",
+  "common.edit": "Edit",
+  "common.delete": "Delete",
+  "common.close": "Close",
+  "common.loading": "Loading...",
+  "common.noImage": "No Image",
+  "common.featured": "Featured",
+  "common.all": "All",
+
+  "header.title": "KTDOC",
+  "header.home": "Home",
+  "header.about": "About",
+  "header.classes": "Classes & Programs",
+  "header.performances": "Performances",
+  "header.gallery": "Gallery",
+
+  "hero.title.grace": "Grace",
+  "hero.title.rhythm": "Rhythm",
+  "hero.title.tradition": "Tradition",
+  "hero.since": "Since 2008, We Are All About<br/>Korean Traditional Dance",
+  "hero.youtube.btn": "Visit YouTube Channel",
+
+  "categories.performance": "Performances",
+  "categories.education": "Dance Education",
+  "categories.community": "Community Activities",
+  "categories.media": "Media",
+
+  "traditional.vertical.text": "Korean Traditional Dance of Choomnoori",
+
+  "footer.copyright": "© 2024 KTDOC - Korean Traditional Dance of Choomnoori. All Rights Reserved.",
+
+  "auth.login": "Login",
+  "auth.logout": "Logout",
+  "auth.register": "Register",
+  "auth.email": "Email",
+  "auth.password": "Password",
+  "auth.name": "Name",
+
+  "intl.edit.title": "Edit Translation",
+  "intl.edit.keycode": "Keycode",
+  "intl.edit.korean": "Korean",
+  "intl.edit.english": "English",
+
+  "gallery.hero.label": "Choomnoori 춤누리",
+  "gallery.hero.title": "Performances<br/>Through the Years",
+  "gallery.hero.subtitle": "2008–Present",
+  "gallery.hero.description": "Celebrating years of Korean traditional arts and cultural performances",
+  "gallery.filter.year": "Year",
+  "gallery.filter.category": "Category",
+  "gallery.filter.search": "Search",
+  "gallery.filter.searchPlaceholder": "Search events...",
+  "gallery.filter.clear": "Clear Filters",
+  "gallery.empty": "No results found.",
+  "gallery.backToGallery": "Back to Gallery",
+  "gallery.detail.photoGallery": "Photo Gallery",
+  "gallery.detail.videos": "Videos",
+  "gallery.detail.previous": "Previous",
+  "gallery.detail.next": "Next",
+
+  "gallery.card.readMore": "Read More",
+  "gallery.card.viewDetails": "View event details",
+  "gallery.card.eventCount": "{count, plural, one {# event} other {# events}}"
+}
