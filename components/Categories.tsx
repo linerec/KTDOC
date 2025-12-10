@@ -9,25 +9,25 @@ const categories = [
         id: 'performance',
         keycode: 'category.performance',
         titleKeycode: 'categories.performance',
-        href: '#performances',
+        href: '/performances',
     },
     {
         id: 'education',
         keycode: 'category.education',
         titleKeycode: 'categories.education',
-        href: '#classes',
+        href: '/classes',
     },
     {
         id: 'community',
         keycode: 'category.community',
         titleKeycode: 'categories.community',
-        href: '#community',
+        href: '/community',
     },
     {
         id: 'media',
         keycode: 'category.media',
         titleKeycode: 'categories.media',
-        href: '#media',
+        href: '/media',
     },
 ];
 

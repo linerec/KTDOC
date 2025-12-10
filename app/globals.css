@@ -232,6 +232,8 @@ ul {
   max-width: 500px;
   height: auto;
   filter: invert(1);
+  margin-top: 100px;
+  margin-bottom: 100px;
 }
 
 /* Hero Content Grid - Bottom */
@@ -609,6 +611,8 @@ ul {
 
   .hero-logo-image {
     max-width: 480px;
+    margin-top: 100px;
+    margin-bottom: 100px;
   }
 }
 
@@ -631,6 +635,8 @@ ul {
 
   .hero-logo-image {
     max-width: 380px;
+    margin-top: 100px;
+    margin-bottom: 100px;
   }
 }
 
@@ -1304,15 +1310,16 @@ ul {
 }
 
 .keycode-label--intl {
-  position: relative;
-  top: auto;
-  left: auto;
+  position: absolute;
+  top: -24px;
+  left: 0;
   display: inline-block;
-  margin-right: 6px;
-  vertical-align: middle;
-  background: rgba(212, 160, 23, 0.85);
+  background: rgba(212, 160, 23, 0.9);
   border-color: rgba(255, 255, 255, 0.4);
   color: #000;
+  font-size: 9px;
+  padding: 2px 6px;
+  white-space: nowrap;
 }
 
 .image-object-content-overlay {
@@ -1631,20 +1638,26 @@ ul {
 
 .gallery-filter-label {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--accent-color);
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-weight: 600;
 }
 
 .gallery-filter-select,
 .gallery-filter-input {
   padding: 10px 14px;
   font-size: 0.9rem;
-  color: var(--text-color);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   min-width: 150px;
+}
+
+.gallery-filter-select option {
+  background: var(--bg-color);
+  color: var(--white);
 }
 
 .gallery-filter-select:focus,
@@ -3170,5 +3183,350 @@ ul {
 
   .admin-category-form {
     flex-direction: column;
+  }
+}
+
+/* ==========================================
+   ABOUT PAGE STYLES
+   ========================================== */
+
+/* About Hero Section */
+.about-hero {
+  position: relative;
+  min-height: 100vh;
+  background: var(--primary-color);
+  padding: calc(var(--header-height) + 120px) 0 0;
+  overflow: hidden;
+}
+
+/* Background image - positioned behind text */
+.about-hero-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70%;
+  z-index: 1;
+}
+
+.about-hero-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(to bottom, var(--primary-color) 0%, transparent 100%);
+  z-index: 2;
+}
+
+.about-hero-container {
+  position: relative;
+  z-index: 3;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 40px 300px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.about-hero-content-wrapper {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.about-hero-title {
+  margin-bottom: 20px;
+}
+
+.about-hero-title img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  filter: invert(1);
+}
+
+.about-hero-korean {
+  font-family: var(--font-heading);
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  font-weight: 400;
+  color: var(--accent-color);
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+
+.about-hero-founded {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  font-style: italic;
+}
+
+.about-hero-content {
+  max-width: 550px;
+  text-align: left;
+  margin-bottom: 50px;
+}
+
+.about-hero-content p {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.9;
+  color: var(--text-muted);
+  margin-bottom: 15px;
+}
+
+.about-hero-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* About Director Section */
+.about-director {
+  background: var(--primary-color);
+  padding: 0;
+}
+
+.about-director-container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+/* Left Column - uses middle 1/3 */
+.about-director-left {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 60px 0 80px;
+}
+
+.about-director-title {
+  margin-bottom: 30px;
+}
+
+.about-director-title-ko {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  color: var(--accent-color);
+  margin-bottom: 8px;
+}
+
+.about-director-title-en {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--text-color);
+  font-style: italic;
+  margin-bottom: 0;
+}
+
+.about-director-portrait {
+  max-width: 220px;
+  margin-bottom: 30px;
+}
+
+.about-director-portrait img {
+  border-radius: 4px;
+  transform: scaleX(-1);
+}
+
+.about-director-bio {
+  text-align: left;
+  max-width: 400px;
+}
+
+.about-director-bio p {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.about-director-bio .highlight {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* Right Column - Dance Photo, spans 2 columns */
+.about-director-right {
+  grid-column: 3;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.about-director-right img {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+}
+
+/* About Page Responsive */
+@media (max-width: 992px) {
+  .about-director-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .about-director-left {
+    grid-column: 1;
+    padding: 40px 0;
+  }
+
+  .about-director-right {
+    grid-column: 2;
+    justify-content: center;
+    padding-top: 40px;
+  }
+
+  .about-director-right img {
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero {
+    padding: calc(var(--header-height) + 80px) 0 0;
+  }
+
+  .about-hero-bg {
+    height: 50%;
+  }
+
+  .about-hero-container {
+    padding: 0 20px 200px;
+    grid-template-columns: 1fr;
+  }
+
+  .about-hero-content-wrapper {
+    grid-column: 1;
+  }
+
+  .about-hero-content {
+    margin-bottom: 40px;
+  }
+
+  .about-director-container {
+    padding: 0 20px;
+    grid-template-columns: 1fr;
+  }
+
+  .about-director-left {
+    grid-column: 1;
+    padding: 40px 0 40px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .about-director-portrait {
+    margin: 0 auto 30px;
+  }
+
+  .about-director-bio {
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .about-director-right {
+    grid-column: 1;
+    justify-content: center;
+  }
+
+  .about-director-right img {
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-hero-korean {
+    font-size: 1rem;
+  }
+
+  .about-director-title-ko {
+    font-size: 1.5rem;
+  }
+
+  .about-director-portrait img {
+    max-width: 200px;
+  }
+
+  .about-director-right img {
+    max-width: 220px;
+  }
+}
+
+/* =========================================
+   PLACEHOLDER PAGE STYLES
+   ========================================= */
+
+.page-hero {
+  padding-top: calc(var(--header-height) + 80px);
+  padding-bottom: 60px;
+  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-color) 100%);
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+}
+
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.page-description {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+
+.page-content {
+  padding: 80px 0;
+  min-height: 400px;
+}
+
+.coming-soon {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.coming-soon p {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+@media (max-width: 768px) {
+  .page-hero {
+    padding-top: calc(var(--header-height) + 40px);
+    padding-bottom: 40px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .page-description {
+    font-size: 1rem;
+  }
+
+  .coming-soon p {
+    font-size: 1.2rem;
   }
 }

@@ -12,7 +12,7 @@ export function HeroLogo() {
                 width={600}
                 height={180}
                 className="hero-logo-image"
-                fallbackSrc="/assets/logo/logo_long.png"
+                fallbackSrc="/assets/logo/logo_long_fixed.png"
                 priority
             />
         </div>

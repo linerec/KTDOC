@@ -9,10 +9,10 @@ import { useBuilder } from '@/contexts/BuilderContext';
 import IntlObject from '@/components/common/IntlObject';
 
 const menuItems = [
-    { keycode: 'header.home', href: '#', hasDropdown: true },
-    { keycode: 'header.about', href: '#about', hasDropdown: true },
-    { keycode: 'header.classes', href: '#classes', hasDropdown: true },
-    { keycode: 'header.performances', href: '#performances', hasDropdown: true },
+    { keycode: 'header.home', href: '/', hasDropdown: true },
+    { keycode: 'header.about', href: '/about', hasDropdown: true },
+    { keycode: 'header.classes', href: '/classes', hasDropdown: true },
+    { keycode: 'header.performances', href: '/performances', hasDropdown: true },
     { keycode: 'header.gallery', href: '/gallery', hasDropdown: false },
 ];
 

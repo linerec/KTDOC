@@ -99,6 +99,7 @@ export default function IntlObject({
         cursor: 'pointer',
         outline: '1px dashed rgba(212, 160, 23, 0.5)',
         outlineOffset: '2px',
+        position: 'relative',
         ...style,
       }
     : style;
