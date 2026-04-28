@@ -20,11 +20,15 @@ interface FeedbackBody {
   subject: string;
   body: string;
   isTest?: boolean;
+  to?: string;
+  replyTo?: string;
 }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
   try {
-    const { subject, body, isTest } = (await request.json()) as FeedbackBody;
+    const { subject, body, isTest, to, replyTo } = (await request.json()) as FeedbackBody;
 
     if (!subject || !body) {
       return NextResponse.json(
@@ -37,6 +41,20 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: '본문이 너무 깁니다 (50KB 초과).' },
         { status: 413 }
+      );
+    }
+
+    if (to && !EMAIL_RE.test(to)) {
+      return NextResponse.json(
+        { success: false, error: '올바른 수신자 이메일 형식이 아닙니다.' },
+        { status: 400 }
+      );
+    }
+
+    if (replyTo && !EMAIL_RE.test(replyTo)) {
+      return NextResponse.json(
+        { success: false, error: '올바른 Reply-To 이메일 형식이 아닙니다.' },
+        { status: 400 }
       );
     }
 
@@ -62,11 +80,13 @@ export async function POST(request: Request) {
     });
 
     const finalSubject = isTest ? `[테스트] ${subject}` : subject;
+    const targetTo = to || RECIPIENT;
+    const finalReplyTo = replyTo || RECIPIENT;
 
     const info = await transporter.sendMail({
       from: `"KTDOC 요구사항 폼" <${user}>`,
-      to: RECIPIENT,
-      replyTo: RECIPIENT,
+      to: targetTo,
+      replyTo: finalReplyTo,
       subject: finalSubject,
       text: body,
     });

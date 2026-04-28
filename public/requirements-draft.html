@@ -1101,6 +1101,7 @@
   </div>
   <div class="btn-group">
     <button class="test-btn" id="test-btn" type="button" title="샘플 답변을 owenkdev@gmail.com으로 보내서 메일 도착 여부와 형식을 확인합니다">[테스트] 샘플 발송</button>
+    <button class="test-btn" id="template-btn" type="button" title="빈 텍스트 양식을 지정한 이메일로 보냅니다. 받은 분이 답장에 답변을 채워서 보낼 수 있어요. 답장은 owenkdev@gmail.com으로 도착합니다.">[양식] 메일 발송</button>
     <button class="send-btn" id="send-btn" type="button">저장 및 보내기</button>
   </div>
 </footer>
@@ -1116,6 +1117,7 @@
   const saveStatus = document.getElementById('save-status');
   const sendBtn = document.getElementById('send-btn');
   const testBtn = document.getElementById('test-btn');
+  const templateBtn = document.getElementById('template-btn');
   const toast = document.getElementById('toast');
   const topBtn = document.getElementById('top-btn');
   const tocToggle = document.getElementById('toc-toggle');
@@ -1294,6 +1296,131 @@
   function setSending(sending) {
     sendBtn.disabled = sending;
     testBtn.disabled = sending;
+    templateBtn.disabled = sending;
+  }
+
+  // === 빈 양식 빌더 (이메일 답장용 텍스트 템플릿) ===
+  function buildTemplateBody() {
+    const lines = [];
+    lines.push('=========================================');
+    lines.push('KTDOC 웹사이트 요구사항 답변지');
+    lines.push('=========================================');
+    lines.push('');
+    lines.push('답변 작성 방법');
+    lines.push('  1. 이 메일에 [답장]을 누르세요.');
+    lines.push('  2. 보기 중 해당하는 답의 [ ]를 [V]로 바꿔 주세요.');
+    lines.push('     (괄호 안에 영문 V 한 글자만 넣으시면 됩니다)');
+    lines.push('  3. 자유 입력칸은 ":" 다음 줄에 직접 적어 주세요.');
+    lines.push('  4. 추가 의견이 있으시면 "메모:" 뒤에 자유롭게.');
+    lines.push('  5. 다 채우신 후 [보내기]를 눌러 주세요.');
+    lines.push('');
+    lines.push('* 답장은 자동으로 owenkdev@gmail.com (오선생)에게 갑니다.');
+    lines.push('* 인쇄해서 손으로 적은 후 사진 찍어 보내셔도 좋습니다.');
+    lines.push('');
+    lines.push('=========================================');
+    lines.push('');
+
+    fieldsets.forEach((fs, idx) => {
+      const legendEl = fs.querySelector('.q-legend');
+      const helpEl = fs.querySelector('.q-help');
+      const question = legendEl ? legendEl.textContent.trim() : (fs.dataset.qText || '');
+      const help = helpEl ? helpEl.textContent.trim() : '';
+      const type = fs.dataset.qType;
+
+      lines.push('[' + (idx + 1) + '] ' + question);
+      if (help) lines.push('     ※ ' + help);
+
+      if (type === 'radio' || type === 'checkbox') {
+        const optLabels = fs.querySelectorAll('.opts .opt span');
+        optLabels.forEach(span => {
+          const label = span.textContent.trim();
+          const mark = type === 'checkbox' ? '[ ]' : '( )';
+          lines.push('     ' + mark + ' ' + label);
+        });
+        const skipSpan = fs.querySelector('.opt-skip span');
+        if (skipSpan) {
+          lines.push('     [ ] ' + skipSpan.textContent.trim());
+        }
+        const noteEl = fs.querySelector('textarea[name$="-note"]');
+        if (noteEl) lines.push('     메모: ');
+      } else if (type === 'text') {
+        const fieldRows = fs.querySelectorAll('.field-row');
+        if (fieldRows.length > 0) {
+          fieldRows.forEach(row => {
+            const lblEl = row.querySelector('.lbl');
+            const lbl = lblEl ? lblEl.textContent.trim() : '답변';
+            lines.push('     ' + lbl + ': ');
+          });
+        } else {
+          lines.push('     답변: ');
+        }
+        const skipSpan = fs.querySelector('.opt-skip span');
+        if (skipSpan) {
+          lines.push('     [ ] ' + skipSpan.textContent.trim());
+        }
+      }
+      lines.push('');
+    });
+
+    lines.push('=========================================');
+    lines.push('자유 의견 (선택)');
+    lines.push('=========================================');
+    lines.push('');
+    lines.push('  ');
+    lines.push('');
+    lines.push('=========================================');
+    lines.push('답변 감사합니다!');
+    lines.push('=========================================');
+
+    return lines.join('\n');
+  }
+
+  async function sendTemplate() {
+    const lastUsed = localStorage.getItem('ktdoc-last-template-to') || '';
+    const target = (window.prompt(
+      '빈 양식을 어느 이메일 주소로 보낼까요?\n받으신 분이 답장으로 답변을 채워서 보낼 수 있습니다.\n(답장은 자동으로 owenkdev@gmail.com에 도착합니다)',
+      lastUsed
+    ) || '').trim();
+
+    if (!target) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+      showToast('올바른 이메일 주소가 아닙니다.', 4000);
+      return;
+    }
+    localStorage.setItem('ktdoc-last-template-to', target);
+
+    const body = buildTemplateBody();
+    const subject = '[KTDOC] 요구사항 답변지 — 답장으로 답변을 채워 보내주세요';
+
+    setSending(true);
+    showToast('양식 메일을 보내는 중...', 30000);
+
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject,
+          body,
+          to: target,
+          replyTo: RECIPIENT
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success) {
+        showToast('양식이 ' + target + ' 으로 발송되었습니다 ✓', 7000);
+      } else {
+        const reason = data.hint || data.error || ('상태 코드 ' + res.status);
+        console.warn('양식 발송 실패:', reason, data);
+        showToast('발송 실패: ' + reason, 6000);
+      }
+    } catch (err) {
+      console.error('네트워크 오류:', err);
+      showToast('네트워크 오류로 발송 실패. 잠시 후 다시 시도해 주세요.', 5000);
+    } finally {
+      setTimeout(() => setSending(false), 1500);
+    }
   }
 
   function buildSampleBody() {
@@ -1511,6 +1638,7 @@
   });
   sendBtn.addEventListener('click', () => send(false));
   testBtn.addEventListener('click', () => send(true));
+  templateBtn.addEventListener('click', sendTemplate);
 
   // 맨 위로
   window.addEventListener('scroll', () => {
