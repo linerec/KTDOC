@@ -567,7 +567,7 @@
       </table>
 
       <fieldset class="check" data-q-id="q-membership-tiers" data-q-type="radio" data-q-text="회원 등급 분리 여부">
-        <legend>"회원" 안에 등급을 나눠야 할까요?</legend>
+        <div class="q-legend">"회원" 안에 등급을 나눠야 할까요?</div>
         <p class="q-help">예: 정단원 / 연수생 / 강사처럼 구분하면 자료 공개 범위를 다르게 할 수 있습니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-membership-tiers" value="single"><span>한 종류로 시작 (나중에 분리 가능)</span></label>
@@ -591,7 +591,7 @@
       </ul>
 
       <fieldset class="check" data-q-id="q-default-lang" data-q-type="radio" data-q-text="기본 언어 우선순위">
-        <legend>자동 감지가 안 될 때, 기본 언어는 어느 쪽으로 할까요?</legend>
+        <div class="q-legend">자동 감지가 안 될 때, 기본 언어는 어느 쪽으로 할까요?</div>
         <p class="q-help">사이트가 처음 열릴 때 언어를 못 알아내면 한 가지 언어로 보여줘야 합니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-default-lang" value="korean"><span>한국어 우선 (한국어가 먼저 보이고, 사용자가 영어로 바꿀 수 있음)</span></label>
@@ -663,7 +663,7 @@
       </ol>
 
       <fieldset class="check" data-q-id="q-main-image" data-q-type="radio" data-q-text="메인 이미지/영상 보유 여부">
-        <legend>메인 화면에 쓸 대표 사진/영상이 있으신가요?</legend>
+        <div class="q-legend">메인 화면에 쓸 대표 사진/영상이 있으신가요?</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-main-image" value="have"><span>네, 가지고 있습니다</span></label>
           <label class="opt"><input type="radio" name="q-main-image" value="need"><span>없음 — 새로 촬영하거나 골라야 함</span></label>
@@ -673,7 +673,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-tagline" data-q-type="text" data-q-text="홈 한 줄 소개 문구">
-        <legend>홈 화면에 들어갈 한 줄 소개 문구</legend>
+        <div class="q-legend">홈 화면에 들어갈 한 줄 소개 문구</div>
         <p class="q-help">예: "미국 뉴저지에서 한국 전통 무용의 아름다움을 잇는 춤누리무용단"</p>
         <div class="field-row">
           <span class="lbl">한국어</span>
@@ -706,14 +706,14 @@
       </table>
 
       <fieldset class="check" data-q-id="q-history" data-q-type="text" data-q-text="연혁 자료">
-        <legend>연혁에 들어갈 주요 사건을 알려 주세요</legend>
+        <div class="q-legend">연혁에 들어갈 주요 사건을 알려 주세요</div>
         <p class="q-help">예: "2010 - 뉴욕 ○○ 페스티벌 초청 공연" / "2015 - 시카고 한국문화원 단독 공연" 등</p>
         <textarea name="q-history" rows="5" placeholder="연도와 행사 이름을 자유롭게 적어 주세요"></textarea>
         <label class="opt-skip"><input type="checkbox" name="q-history-skip" value="later"><span>나중에 정리해서 따로 보내겠습니다</span></label>
       </fieldset>
 
       <fieldset class="check" data-q-id="q-member-list" data-q-type="radio" data-q-text="단원 소개 공개 여부">
-        <legend>단원 소개를 사이트에 공개할까요?</legend>
+        <div class="q-legend">단원 소개를 사이트에 공개할까요?</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-member-list" value="group-only"><span>단체 사진만 공개</span></label>
           <label class="opt"><input type="radio" name="q-member-list" value="individual"><span>단원 한 명 한 명 개별 소개도 공개</span></label>
@@ -724,7 +724,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-contact-info" data-q-type="radio" data-q-text="연락처 공개 범위">
-        <legend>연습실 주소·전화번호를 어디까지 공개할까요?</legend>
+        <div class="q-legend">연습실 주소·전화번호를 어디까지 공개할까요?</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-contact-info" value="all"><span>주소 + 전화 + 이메일 모두 공개</span></label>
           <label class="opt"><input type="radio" name="q-contact-info" value="phone-email"><span>전화 + 이메일만 공개</span></label>
@@ -748,14 +748,14 @@
       </ul>
 
       <fieldset class="check" data-q-id="q-programs" data-q-type="text" data-q-text="현재 프로그램 목록">
-        <legend>현재 운영 중인 프로그램 목록</legend>
+        <div class="q-legend">현재 운영 중인 프로그램 목록</div>
         <p class="q-help">수업명, 대상(어린이/성인/입문/중급…), 요일·시간, 수업료를 알려 주세요</p>
         <textarea name="q-programs" rows="6" placeholder="예) 살풀이 - 성인 중급 - 화요일 7시 - 월 $80"></textarea>
         <label class="opt-skip"><input type="checkbox" name="q-programs-skip" value="later"><span>나중에 정리해서 따로 보내겠습니다</span></label>
       </fieldset>
 
       <fieldset class="check" data-q-id="q-registration" data-q-type="radio" data-q-text="수강 신청 방식">
-        <legend>수강 신청은 어떻게 받을까요?</legend>
+        <div class="q-legend">수강 신청은 어떻게 받을까요?</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-registration" value="onsite"><span>사이트에서 직접 신청서 받기</span></label>
           <label class="opt"><input type="radio" name="q-registration" value="info-only"><span>정보 안내만 — 실제 신청은 이메일·전화로</span></label>
@@ -765,7 +765,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-payment" data-q-type="radio" data-q-text="온라인 결제">
-        <legend>온라인 결제(신용카드)도 받을까요?</legend>
+        <div class="q-legend">온라인 결제(신용카드)도 받을까요?</div>
         <p class="q-help">처음엔 빼고 1년 정도 운영해 보고 나중에 추가하는 걸 추천드립니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-payment" value="phase1"><span>처음 오픈할 때부터 (Phase 1)</span></label>
@@ -789,7 +789,7 @@
       </ul>
 
       <fieldset class="check" data-q-id="q-member-photos" data-q-type="radio" data-q-text="회원 전용 사진 필요 여부">
-        <legend>회원만 볼 수 있는 사진이 따로 필요한가요?</legend>
+        <div class="q-legend">회원만 볼 수 있는 사진이 따로 필요한가요?</div>
         <p class="q-help">예: 단원 단체 사진, 연습 장면 등은 외부에 공개하지 않을 수도 있습니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-member-photos" value="yes"><span>필요함 — 일부 사진은 회원만</span></label>
@@ -800,7 +800,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-video-method" data-q-type="radio" data-q-text="영상 게재 방식">
-        <legend>공연 영상은 어떻게 보여줄까요?</legend>
+        <div class="q-legend">공연 영상은 어떻게 보여줄까요?</div>
         <p class="q-help">유튜브 임베드 방식이 사이트가 가벼워지고 관리도 쉽습니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-video-method" value="youtube"><span>유튜브에 먼저 올리고 사이트엔 링크만 (추천)</span></label>
@@ -827,7 +827,7 @@
       <p>단원이 로그인한 채로 들어가면, 일반 방문자에게는 안 보이는 <strong>단원 전용 정보</strong>가 추가로 표시됩니다 — 집결 시간/장소, 의상·소품, 무대 진행 순서, 음원 파일, 안무 영상, 출석 체크 등.</p>
 
       <fieldset class="check" data-q-id="q-attendance" data-q-type="radio" data-q-text="출석 체크 기능">
-        <legend>단원 출석 체크 기능이 필요한가요?</legend>
+        <div class="q-legend">단원 출석 체크 기능이 필요한가요?</div>
         <p class="q-help">단원이 각 공연마다 "참석 / 불참 / 미정"을 선택하면 관리자가 한눈에 봅니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-attendance" value="yes"><span>필요함</span></label>
@@ -838,7 +838,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-mail-target" data-q-type="radio" data-q-text="공연 알림 메일 대상">
-        <legend>새 공연이 등록되면 자동 메일을 누구에게 보낼까요?</legend>
+        <div class="q-legend">새 공연이 등록되면 자동 메일을 누구에게 보낼까요?</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-mail-target" value="all"><span>단원 전체에게 일괄 발송</span></label>
           <label class="opt"><input type="radio" name="q-mail-target" value="participants"><span>해당 공연에 참여하는 단원만</span></label>
@@ -871,7 +871,7 @@
       </ul>
 
       <fieldset class="check" data-q-id="q-google-login" data-q-type="radio" data-q-text="구글 로그인 추가 여부">
-        <legend>구글 계정으로도 로그인할 수 있게 할까요?</legend>
+        <div class="q-legend">구글 계정으로도 로그인할 수 있게 할까요?</div>
         <p class="q-help">구글 아이디만 있으면 비밀번호 따로 만들지 않고도 로그인 가능합니다. 사용자에겐 편하지만 셋업이 약간 더 필요합니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-google-login" value="phase1"><span>처음부터 추가 (Phase 1)</span></label>
@@ -883,7 +883,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-signup-fields" data-q-type="text" data-q-text="가입 시 추가로 받고 싶은 정보">
-        <legend>가입 신청서에 추가로 받고 싶은 정보가 있으신가요?</legend>
+        <div class="q-legend">가입 신청서에 추가로 받고 싶은 정보가 있으신가요?</div>
         <p class="q-help">예: 무용 경력, 거주 도시, 비상 연락처, 보호자 정보(미성년자) 등</p>
         <textarea name="q-signup-fields" rows="3" placeholder="추가로 받고 싶은 항목을 자유롭게 적어 주세요"></textarea>
         <label class="opt-skip"><input type="checkbox" name="q-signup-fields-skip" value="later"><span>기본 정보(이름·이메일·소속)만 받으면 됩니다</span></label>
@@ -896,7 +896,7 @@
       <p>로그인하면 메뉴 우측에 <strong>[내 페이지]</strong> 버튼이 생깁니다. 누르면 다가오는 일정·자료실·공지·연락망 등을 볼 수 있습니다.</p>
 
       <fieldset class="check" data-q-id="q-file-types" data-q-type="checkbox" data-q-text="자료실 파일 종류">
-        <legend>자료실에 어떤 종류의 파일을 올리실 예정인가요? (여러 개 선택 가능)</legend>
+        <div class="q-legend">자료실에 어떤 종류의 파일을 올리실 예정인가요? (여러 개 선택 가능)</div>
         <div class="opts grid-2">
           <label class="opt"><input type="checkbox" name="q-file-types" value="pdf"><span>PDF (악보, 안내문 등)</span></label>
           <label class="opt"><input type="checkbox" name="q-file-types" value="video"><span>영상 (안무 연습 영상 등)</span></label>
@@ -909,7 +909,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-contact-network" data-q-type="radio" data-q-text="단원 연락망 운영 방식">
-        <legend>단원 간 연락망을 어떻게 운영할까요?</legend>
+        <div class="q-legend">단원 간 연락망을 어떻게 운영할까요?</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-contact-network" value="onsite"><span>사이트에 두기 (개인정보 동의한 단원만 표시)</span></label>
           <label class="opt"><input type="radio" name="q-contact-network" value="kakao"><span>카카오톡 단톡방으로만 운영</span></label>
@@ -926,7 +926,7 @@
       <p><code>ktdoc.org/admin</code> 같은 주소로 접속해서 관리자 계정으로 로그인하면 보이는 화면. About / 프로그램 / 갤러리 / 행사 / 회원 / 자료실 / 공지사항 / 문의함 / 번역 / 통계 / 설정 메뉴가 좌측에 정리됩니다.</p>
 
       <fieldset class="check" data-q-id="q-admin-count" data-q-type="radio" data-q-text="관리자 인원">
-        <legend>관리자 권한을 가질 사람은 몇 명인가요?</legend>
+        <div class="q-legend">관리자 권한을 가질 사람은 몇 명인가요?</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-admin-count" value="two"><span>원장님 + 부원장 두 분</span></label>
           <label class="opt"><input type="radio" name="q-admin-count" value="more"><span>그 외에 더 있음 (아래에 적어주세요)</span></label>
@@ -935,7 +935,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-admin-perms" data-q-type="radio" data-q-text="관리자 권한 차등">
-        <legend>관리자들 권한을 다르게 줄까요?</legend>
+        <div class="q-legend">관리자들 권한을 다르게 줄까요?</div>
         <p class="q-help">예: 부원장은 갤러리만 수정 가능, 회원 관리는 원장님만 가능 등</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-admin-perms" value="same"><span>모두 동일한 권한</span></label>
@@ -953,7 +953,7 @@
       <p>자동으로 나가는 이메일: 가입 신청 알림 / 가입 결과 / 새 공연 알림 / 새 공지 / 새 문의 / 비밀번호 재설정.</p>
 
       <fieldset class="check" data-q-id="q-newsletter" data-q-type="radio" data-q-text="뉴스레터 기능">
-        <legend>일반 방문자용 뉴스레터(소식지) 기능이 필요한가요?</legend>
+        <div class="q-legend">일반 방문자용 뉴스레터(소식지) 기능이 필요한가요?</div>
         <p class="q-help">방문자가 푸터에서 이메일을 등록하면, 분기별 또는 주요 행사 전 일괄 발송하는 기능입니다.</p>
         <div class="opts">
           <label class="opt"><input type="radio" name="q-newsletter" value="phase1"><span>처음부터 (Phase 1)</span></label>
@@ -965,7 +965,7 @@
       </fieldset>
 
       <fieldset class="check" data-q-id="q-official-email" data-q-type="text" data-q-text="공식 이메일 주소">
-        <legend>이메일 발송용 공식 메일 주소를 정해 주세요</legend>
+        <div class="q-legend">이메일 발송용 공식 메일 주소를 정해 주세요</div>
         <p class="q-help">예: <code>info@ktdoc.org</code>, <code>contact@ktdoc.org</code> 등. 도메인 등록 후에 만들 수 있습니다.</p>
         <input type="text" name="q-official-email" placeholder="예: info@ktdoc.org">
         <label class="opt-skip"><input type="checkbox" name="q-official-email-skip" value="later"><span>도메인 등록 후 함께 결정하겠습니다</span></label>
