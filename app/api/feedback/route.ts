@@ -2,17 +2,19 @@
  * Feedback API - Requirements draft form submission
  * POST /api/feedback
  *
- * Sends form responses to owenkdev@gmail.com via Resend.
- * Requires RESEND_API_KEY environment variable.
+ * Sends form responses to owenkdev@gmail.com via Gmail SMTP.
+ * Requires GMAIL_USER and GMAIL_APP_PASSWORD environment variables.
  *
- * Get a free API key at https://resend.com (3000 emails/month free).
- * Default sender `onboarding@resend.dev` works without domain verification.
+ * App password setup: https://myaccount.google.com/apppasswords
+ * (Requires 2-step verification on the Google account.)
  */
 
 import { NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+
+export const runtime = 'nodejs';
 
 const RECIPIENT = 'owenkdev@gmail.com';
-const FROM = 'KTDOC Form <onboarding@resend.dev>';
 
 interface FeedbackBody {
   subject: string;
@@ -38,51 +40,38 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
+    const user = process.env.GMAIL_USER;
+    const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, '');
+
+    if (!user || !password) {
       return NextResponse.json(
         {
           success: false,
-          error: 'RESEND_API_KEY가 설정되어 있지 않습니다.',
-          hint: 'Vercel 환경변수에 RESEND_API_KEY를 추가하세요. https://resend.com 에서 무료 키 발급 가능.',
+          error: 'Gmail 인증정보가 설정되지 않았습니다.',
+          hint: 'Vercel 환경변수에 GMAIL_USER, GMAIL_APP_PASSWORD를 추가하세요.',
         },
         { status: 503 }
       );
     }
 
-    const finalSubject = isTest ? `[테스트] ${subject}` : subject;
-
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM,
-        to: [RECIPIENT],
-        subject: finalSubject,
-        text: body,
-        reply_to: RECIPIENT,
-      }),
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user, pass: password },
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Resend API error:', response.status, errText);
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Resend 발송 실패',
-          status: response.status,
-          details: errText,
-        },
-        { status: 502 }
-      );
-    }
+    const finalSubject = isTest ? `[테스트] ${subject}` : subject;
 
-    const data = (await response.json()) as { id?: string };
-    return NextResponse.json({ success: true, id: data.id });
+    const info = await transporter.sendMail({
+      from: `"KTDOC 요구사항 폼" <${user}>`,
+      to: RECIPIENT,
+      replyTo: RECIPIENT,
+      subject: finalSubject,
+      text: body,
+    });
+
+    return NextResponse.json({ success: true, id: info.messageId });
   } catch (error) {
     const message = error instanceof Error ? error.message : '서버 오류';
     console.error('feedback API error:', error);
