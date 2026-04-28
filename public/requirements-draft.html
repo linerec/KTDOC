@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>KTDOC 웹사이트 요구사항 초안 — 검토용</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-bg: #faf8f5;
+    --color-bg-soft: #f5f0e8;
+    --color-text: #2c2c2c;
+    --color-text-soft: #5a5a5a;
+    --color-heading: #0a0a0a;
+    --color-red: #c4302b;
+    --color-red-dark: #a82822;
+    --color-gold: #b88a17;
+    --color-border: #e5dfd3;
+    --color-callout-bg: #fff8e1;
+    --color-callout-border: #d4a017;
+    --color-note-bg: #f0ebe0;
+    --color-error: #d63031;
+    --color-success: #2ea043;
+    --font-serif: "Noto Serif KR", serif;
+    --font-sans: "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 18px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  }
+
+  .top-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250, 248, 245, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+    padding: 14px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .top-bar .brand {
+    font-family: var(--font-serif); font-weight: 700;
+    color: var(--color-red); font-size: 17px; letter-spacing: 0.02em;
+  }
+  .top-bar .meta { color: var(--color-text-soft); font-size: 14px; }
+
+  .container {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 260px; gap: 60px;
+    padding: 40px 24px 60px;
+  }
+  .content { min-width: 0; }
+  .toc {
+    position: sticky; top: 80px; align-self: start;
+    max-height: calc(100vh - 100px); overflow-y: auto;
+    padding: 20px; background: #fff;
+    border: 1px solid var(--color-border); border-radius: 8px;
+    font-size: 14px;
+  }
+  .toc h3 {
+    margin: 0 0 12px;
+    font-family: var(--font-serif); font-size: 14px;
+    color: var(--color-text-soft); letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 8px 0; line-height: 1.5; }
+  .toc a {
+    color: var(--color-text); text-decoration: none;
+    display: block; padding: 4px 8px; border-radius: 4px;
+    border-left: 2px solid transparent; transition: all 0.15s;
+  }
+  .toc a:hover {
+    color: var(--color-red); background: var(--color-bg-soft);
+    border-left-color: var(--color-red);
+  }
+  .toc .num {
+    display: inline-block; width: 24px;
+    color: var(--color-text-soft); font-weight: 600;
+  }
+
+  .doc-header {
+    text-align: center; padding: 40px 0 50px;
+    border-bottom: 2px solid var(--color-border);
+    margin-bottom: 40px;
+  }
+  .doc-header .eyebrow {
+    color: var(--color-red); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .doc-header h1 {
+    font-family: var(--font-serif); font-size: 44px; font-weight: 700;
+    color: var(--color-heading); margin: 0 0 24px; line-height: 1.3;
+  }
+  .doc-header .meta-grid {
+    display: inline-grid; grid-template-columns: auto auto;
+    gap: 6px 16px; text-align: left;
+    color: var(--color-text-soft); font-size: 15px; margin-top: 8px;
+  }
+  .doc-header .meta-grid dt { font-weight: 600; color: var(--color-text); }
+  .doc-header .meta-grid dd { margin: 0; }
+
+  .intro-banner {
+    background: #fff; border: 2px solid var(--color-callout-border);
+    border-radius: 12px; padding: 22px 26px; margin: 30px 0;
+  }
+  .intro-banner h3 {
+    margin: 0 0 10px; font-family: var(--font-serif);
+    color: var(--color-red); font-size: 19px;
+  }
+  .intro-banner p { margin: 6px 0; }
+
+  section {
+    padding: 36px 0; border-bottom: 1px solid var(--color-border);
+    scroll-margin-top: 80px;
+  }
+  section:last-of-type { border-bottom: none; }
+
+  h2 {
+    font-family: var(--font-serif); font-size: 30px; font-weight: 700;
+    color: var(--color-heading); margin: 0 0 24px; line-height: 1.35;
+    display: flex; align-items: baseline; gap: 14px;
+  }
+  h2 .sec-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 44px; height: 44px; padding: 0 12px;
+    background: var(--color-red); color: #fff; border-radius: 22px;
+    font-size: 18px; font-weight: 700; flex-shrink: 0;
+  }
+  h3 {
+    font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+    color: var(--color-heading); margin: 32px 0 16px; line-height: 1.4;
+  }
+  h4 {
+    font-size: 18px; font-weight: 700;
+    color: var(--color-heading); margin: 24px 0 12px;
+  }
+
+  p { margin: 0 0 16px; }
+  strong { color: var(--color-heading); font-weight: 700; }
+  em { color: var(--color-red); font-style: normal; font-weight: 600; }
+
+  ul, ol { padding-left: 24px; margin: 0 0 20px; }
+  li { margin: 8px 0; }
+  li > ul, li > ol { margin: 8px 0; }
+
+  a { color: var(--color-red); }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 20px 0;
+    background: #fff; border: 1px solid var(--color-border);
+    border-radius: 6px; overflow: hidden; font-size: 16px;
+  }
+  th, td {
+    padding: 12px 14px; text-align: left;
+    border-bottom: 1px solid var(--color-border); vertical-align: top;
+  }
+  th {
+    background: var(--color-bg-soft); font-weight: 700;
+    color: var(--color-heading); font-size: 15px;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: rgba(245, 240, 232, 0.4); }
+
+  /* === 인터랙티브 [확인 필요] 박스 === */
+  .check {
+    background: var(--color-callout-bg);
+    border: 0; border-left: 5px solid var(--color-callout-border);
+    border-radius: 0 10px 10px 0;
+    padding: 22px 26px; margin: 24px 0;
+    transition: box-shadow 0.2s, border-left-color 0.2s;
+  }
+  .check::before {
+    content: "확인 필요"; display: inline-block;
+    background: var(--color-callout-border); color: #fff;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+    padding: 3px 10px; border-radius: 3px; margin-bottom: 10px;
+  }
+  .check[data-answered="true"]::before {
+    content: "답변 완료 ✓"; background: var(--color-success);
+  }
+  .check.error {
+    border-left-color: var(--color-error);
+    background: #fff0f0;
+    box-shadow: 0 0 0 3px rgba(214, 48, 49, 0.15);
+  }
+  .check.error::before { background: var(--color-error); content: "답변 필요"; }
+  .check legend, .check .q-legend {
+    font-weight: 700; font-size: 17px;
+    color: var(--color-heading); display: block; margin: 6px 0 4px;
+    padding: 0;
+  }
+  .check .q-help {
+    font-size: 15px; color: var(--color-text-soft);
+    margin: 0 0 14px;
+  }
+  fieldset.check { border: 0; border-left: 5px solid var(--color-callout-border); margin-inline: 0; }
+  fieldset.check.error { border-left-color: var(--color-error); }
+
+  .opts { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+  .opts.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 600px) { .opts.grid-2 { grid-template-columns: 1fr; } }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px; background: #fff;
+    border: 2px solid var(--color-border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s; line-height: 1.5;
+  }
+  .opt:hover {
+    border-color: var(--color-callout-border); background: #fffdf5;
+  }
+  .opt input[type="radio"], .opt input[type="checkbox"] {
+    width: 20px; height: 20px; margin-top: 2px;
+    flex-shrink: 0; accent-color: var(--color-red); cursor: pointer;
+  }
+  .opt input:checked ~ span { font-weight: 700; color: var(--color-heading); }
+  .opt:has(input:checked) {
+    border-color: var(--color-red); background: #fff5f4;
+  }
+  .opt span { user-select: none; }
+
+  .check textarea, .check input[type="text"], .check input[type="email"], .check input[type="date"] {
+    width: 100%; padding: 12px 14px;
+    border: 2px solid var(--color-border); border-radius: 8px;
+    font: inherit; font-size: 16px; line-height: 1.6;
+    background: #fff; resize: vertical; min-height: 60px;
+    margin-top: 6px;
+  }
+  .check input[type="text"], .check input[type="email"], .check input[type="date"] { min-height: 0; }
+  .check textarea:focus, .check input:focus {
+    outline: none; border-color: var(--color-callout-border);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.15);
+  }
+  .field-row {
+    display: grid; grid-template-columns: 90px 1fr;
+    gap: 10px; align-items: start; margin: 8px 0;
+  }
+  .field-row .lbl {
+    padding-top: 14px; font-weight: 600; color: var(--color-text-soft); font-size: 15px;
+  }
+  @media (max-width: 600px) {
+    .field-row { grid-template-columns: 1fr; gap: 4px; }
+    .field-row .lbl { padding-top: 0; }
+  }
+  .opt-skip {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 12px; padding: 10px 14px;
+    background: #fff; border: 1px dashed var(--color-border); border-radius: 6px;
+    font-size: 15px; color: var(--color-text-soft); cursor: pointer;
+  }
+  .opt-skip input { accent-color: var(--color-red); width: 18px; height: 18px; }
+
+  .priority-list { display: flex; flex-direction: column; gap: 12px; }
+  .priority-item {
+    background: #fff; border: 1px solid var(--color-border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .priority-item .p-title {
+    font-weight: 700; margin-bottom: 4px; color: var(--color-heading);
+  }
+  .priority-item .p-desc {
+    font-size: 14px; color: var(--color-text-soft); margin-bottom: 10px;
+  }
+  .priority-options {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  }
+  .priority-options .opt {
+    padding: 8px 6px; justify-content: center; text-align: center;
+    flex-direction: row;
+  }
+  .priority-options .opt input { margin: 0; }
+  @media (max-width: 600px) {
+    .priority-options { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .note {
+    background: var(--color-note-bg); border-radius: 6px;
+    padding: 16px 20px; margin: 20px 0;
+    color: var(--color-text-soft); font-size: 16px;
+  }
+  .note p:last-child { margin-bottom: 0; }
+
+  pre {
+    background: #2c2c2c; color: #f5f0e8;
+    padding: 20px 24px; border-radius: 8px;
+    font-family: ui-monospace, "Courier New", monospace;
+    font-size: 15px; line-height: 1.7;
+    overflow-x: auto; margin: 20px 0;
+  }
+
+  .phase {
+    background: #fff; border: 1px solid var(--color-border);
+    border-radius: 8px; padding: 24px 28px; margin: 16px 0;
+  }
+  .phase h4 {
+    margin-top: 0; color: var(--color-red);
+    font-family: var(--font-serif); font-size: 20px;
+  }
+  .phase .arrow {
+    color: var(--color-text-soft); font-style: italic;
+    margin-top: 12px; font-size: 16px;
+  }
+
+  .highlight-card {
+    background: linear-gradient(135deg, #fff8e1 0%, #fff 100%);
+    border: 1px solid var(--color-callout-border);
+    border-radius: 12px; padding: 28px 32px; margin: 24px 0; text-align: center;
+  }
+  .highlight-card .big-line {
+    font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+    color: var(--color-heading); line-height: 1.6; margin: 0;
+  }
+  .mobile-card {
+    background: linear-gradient(135deg, #fff5f4 0%, #fff8e1 100%);
+    border: 2px solid var(--color-red);
+  }
+  .mobile-card .big-line { color: var(--color-red-dark); }
+  .mobile-card .big-line strong { color: var(--color-red); }
+
+  .goals {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 16px; margin: 24px 0;
+  }
+  .goals .goal {
+    background: #fff; border: 1px solid var(--color-border);
+    border-radius: 8px; padding: 20px 22px;
+  }
+  .goals .goal-num {
+    color: var(--color-red); font-family: var(--font-serif);
+    font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 8px;
+  }
+  .goals .goal-title {
+    font-weight: 700; font-size: 18px; margin-bottom: 6px; color: var(--color-heading);
+  }
+  .goals .goal-desc {
+    color: var(--color-text-soft); font-size: 15px; line-height: 1.6;
+  }
+
+  /* 자유 의견 */
+  .free-comment {
+    background: #fff; border: 1px solid var(--color-border);
+    border-radius: 8px; padding: 22px 26px; margin: 30px 0;
+  }
+  .free-comment label { display: block; font-weight: 700; margin-bottom: 10px; }
+  .free-comment textarea {
+    width: 100%; min-height: 100px; padding: 12px 14px;
+    border: 2px solid var(--color-border); border-radius: 8px;
+    font: inherit; font-size: 16px; line-height: 1.6;
+    background: var(--color-bg); resize: vertical;
+  }
+  .free-comment textarea:focus {
+    outline: none; border-color: var(--color-callout-border);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.15);
+  }
+
+  /* === 하단 fixed 액션 바 === */
+  .action-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: #fff; border-top: 3px solid var(--color-red);
+    padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.1); gap: 12px;
+  }
+  .action-bar .progress-info { flex: 1; min-width: 0; }
+  .action-bar .progress-text { font-weight: 600; color: var(--color-heading); font-size: 16px; }
+  .action-bar .progress-text .count {
+    color: var(--color-red); font-size: 20px; font-weight: 700;
+    font-family: var(--font-serif);
+  }
+  .action-bar .progress-bar-wrap {
+    height: 6px; background: var(--color-bg-soft);
+    border-radius: 3px; margin-top: 6px; overflow: hidden;
+  }
+  .action-bar .progress-bar {
+    height: 100%; background: linear-gradient(90deg, var(--color-callout-border), var(--color-success));
+    width: 0%; transition: width 0.3s;
+  }
+  .action-bar .save-status {
+    font-size: 12px; color: var(--color-text-soft); margin-top: 2px;
+  }
+  .action-bar .send-btn {
+    background: var(--color-red); color: #fff; border: 0;
+    padding: 14px 28px; border-radius: 10px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    font-family: inherit; white-space: nowrap;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .action-bar .send-btn:hover { background: var(--color-red-dark); }
+  .action-bar .send-btn:active { transform: scale(0.97); }
+  .action-bar .send-btn.ready {
+    background: var(--color-success);
+    animation: pulse 2s infinite;
+  }
+  .action-bar .send-btn.ready:hover { background: #248a37; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(46, 160, 67, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(46, 160, 67, 0); }
+  }
+
+  @media (max-width: 600px) {
+    .action-bar { padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
+    .action-bar .progress-text { font-size: 13px; }
+    .action-bar .progress-text .count { font-size: 17px; }
+    .action-bar .save-status { font-size: 11px; }
+    .action-bar .send-btn { padding: 12px 16px; font-size: 14px; }
+  }
+
+  /* 에러 토스트 */
+  .toast {
+    position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--color-error); color: #fff;
+    padding: 14px 22px; border-radius: 10px;
+    font-weight: 600; font-size: 15px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    opacity: 0; pointer-events: none; transition: all 0.25s;
+    z-index: 200; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* 맨 위로 버튼 */
+  .top-btn {
+    position: fixed; bottom: calc(110px + env(safe-area-inset-bottom)); right: 20px;
+    width: 50px; height: 50px; border-radius: 50%;
+    background: rgba(255,255,255,0.95); color: var(--color-red);
+    border: 2px solid var(--color-red);
+    font-size: 18px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    z-index: 90; font-weight: 700;
+  }
+  .top-btn.visible { opacity: 1; pointer-events: auto; }
+
+  /* 모바일 */
+  @media (max-width: 1000px) {
+    .container { grid-template-columns: 1fr; gap: 0; padding: 24px 18px 40px; }
+    .toc { position: static; max-height: none; margin-bottom: 30px; order: -1; }
+    .toc-toggle {
+      display: block; width: 100%; padding: 12px;
+      background: var(--color-bg-soft); border: 1px solid var(--color-border);
+      border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600;
+      text-align: left; font-family: var(--font-sans); color: var(--color-heading);
+    }
+    .toc-list.collapsed { display: none; }
+    .doc-header h1 { font-size: 28px; }
+    h2 { font-size: 22px; gap: 10px; }
+    h2 .sec-num { min-width: 36px; height: 36px; font-size: 16px; }
+    h3 { font-size: 18px; }
+    body { font-size: 17px; line-height: 1.8; }
+    pre { font-size: 13px; padding: 14px 16px; }
+    table { font-size: 14px; }
+    th, td { padding: 10px; }
+    .goals { grid-template-columns: 1fr; }
+    .top-bar { padding: 12px 16px; }
+    .top-bar .brand { font-size: 14px; }
+    .top-bar .meta { font-size: 11px; }
+    .check { padding: 18px 20px; }
+    .check legend, .check .q-legend { font-size: 16px; }
+    .opt { padding: 12px; }
+  }
+
+  /* 인쇄 */
+  @media print {
+    .top-bar, .toc, .top-btn, .action-bar, .toast { display: none; }
+    body { background: #fff; font-size: 11pt; padding: 0; }
+    .container { display: block; max-width: 100%; padding: 0; }
+    section { page-break-inside: avoid; border-bottom: 1px solid #ccc; }
+    h2 { page-break-after: avoid; }
+    .check, .note, .phase, .highlight-card { break-inside: avoid; }
+    a { color: var(--color-text); text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="brand">춤누리무용단 · KTDOC</div>
+  <div class="meta">요구사항 초안 · 2026-04-28</div>
+</header>
+
+<div class="container">
+  <main class="content">
+
+    <div class="doc-header">
+      <div class="eyebrow">For Review · 검토용</div>
+      <h1>KTDOC 웹사이트<br>요구사항 초안</h1>
+      <dl class="meta-grid">
+        <dt>대상</dt><dd>춤누리무용단(KTDOC) 신규 웹사이트</dd>
+        <dt>도메인</dt><dd>ktdoc.org (예정)</dd>
+        <dt>문서 목적</dt><dd>"어떤 사이트를 만들지" 합의를 위한 1차 정리본</dd>
+        <dt>작성일</dt><dd>2026년 4월 28일</dd>
+      </dl>
+    </div>
+
+    <div class="intro-banner">
+      <h3>이 페이지는 답변을 직접 입력해서 보낼 수 있어요</h3>
+      <p>읽으시면서 <strong>노란색 박스(확인 필요)</strong>에 보기 중 하나를 골라 주세요. 글로 적어야 하는 칸도 있어요. 답을 모르시거나 나중에 알려 주실 항목은 "잘 모르겠음 / 나중에 결정"을 골라 주시면 됩니다.</p>
+      <p>다 끝나시면 화면 아래쪽 <strong>빨간 [저장 및 보내기] 버튼</strong>을 눌러 주세요. 자동으로 메일이 만들어져서 오선생(부원장)에게 보내집니다. 중간에 창을 닫으셔도 답변은 자동 저장되니 안심하셔도 됩니다.</p>
+    </div>
+
+    <!-- 0 -->
+    <section id="sec-0">
+      <h2><span class="sec-num">0</span>이 문서를 읽는 방법</h2>
+      <ul>
+        <li>이 문서는 <strong>결정문이 아니라 토론용 초안</strong>입니다. 자유롭게 수정·삭제·추가해 주세요.</li>
+        <li>노란 박스(<em>확인 필요</em>)는 <strong>원장님 답변이 필요한 항목</strong>입니다. 보기 중 하나를 누르거나 글로 적어 주세요.</li>
+        <li>"기능 한 줄 = 화면에서 사용자가 할 수 있는 한 가지 행동"으로 적었습니다. (예: "사진을 누르면 크게 볼 수 있다")</li>
+        <li>기술 용어는 가급적 쓰지 않았습니다. 모르는 단어가 보이면 알려 주세요. 더 쉬운 말로 고치겠습니다.</li>
+      </ul>
+    </section>
+
+    <!-- 1 -->
+    <section id="sec-1">
+      <h2><span class="sec-num">1</span>사이트 한 줄 소개</h2>
+      <div class="highlight-card">
+        <p class="big-line">미국 뉴저지에 있는 한국 전통 무용단 춤누리(KTDOC)를<br>알리고, 단원들이 함께 활동을 운영해 나가는 공식 홈페이지</p>
+      </div>
+      <p>이 사이트가 해야 할 큰 일 4가지:</p>
+      <div class="goals">
+        <div class="goal"><div class="goal-num">01</div><div class="goal-title">알리기</div><div class="goal-desc">우리 단체와 활동을 외부에 보여주기 — 공연 의뢰자, 학생 학부모, 언론 등</div></div>
+        <div class="goal"><div class="goal-num">02</div><div class="goal-title">운영하기</div><div class="goal-desc">단원들에게 공연 일정·자료·공지를 전달</div></div>
+        <div class="goal"><div class="goal-num">03</div><div class="goal-title">남기기</div><div class="goal-desc">2008년부터의 공연 기록을 차곡차곡 모아두는 아카이브</div></div>
+        <div class="goal"><div class="goal-num">04</div><div class="goal-title">연결하기</div><div class="goal-desc">한국어 / 영어 / 일본어 / 중국어 사용자 누구나 접근 가능</div></div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="sec-2">
+      <h2><span class="sec-num">2</span>사이트를 사용하는 사람들 (3그룹)</h2>
+      <table>
+        <thead><tr><th style="width:20%">그룹</th><th style="width:35%">누구인가</th><th>사이트에서 주로 하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>방문자</strong></td><td>학부모, 공연 의뢰자, 일반 관람객, 언론</td><td>About / Program / Gallery 둘러보기, 문의하기</td></tr>
+          <tr><td><strong>회원 (단원)</strong></td><td>가입 승인을 받은 단원·학생</td><td>일정 확인, 공연 자료 다운로드, 내부 공지 보기</td></tr>
+          <tr><td><strong>관리자</strong></td><td>원장님, 부원장</td><td>모든 글·사진·일정·회원 관리</td></tr>
+        </tbody>
+      </table>
+
+      <fieldset class="check" data-q-id="q-membership-tiers" data-q-type="radio" data-q-text="회원 등급 분리 여부">
+        <legend>"회원" 안에 등급을 나눠야 할까요?</legend>
+        <p class="q-help">예: 정단원 / 연수생 / 강사처럼 구분하면 자료 공개 범위를 다르게 할 수 있습니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-membership-tiers" value="single"><span>한 종류로 시작 (나중에 분리 가능)</span></label>
+          <label class="opt"><input type="radio" name="q-membership-tiers" value="three"><span>정단원 / 연수생 / 강사로 구분</span></label>
+          <label class="opt"><input type="radio" name="q-membership-tiers" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-membership-tiers-note" placeholder="추가 의견이 있으시면 적어주세요 (선택)"></textarea>
+      </fieldset>
+    </section>
+
+    <!-- 3 -->
+    <section id="sec-3">
+      <h2><span class="sec-num">3</span>모든 페이지에 공통으로 들어가는 기능</h2>
+
+      <h3>3.1 다국어 (4개 언어)</h3>
+      <ul>
+        <li>한국어 / English / 日本語 / 中文 — 사이트 어디서든 우측 상단에서 언어 전환 가능</li>
+        <li>처음 방문 시 <strong>브라우저 언어를 자동 감지</strong>해서 표시 (한국 IP는 한국어, 미국 IP는 영어 등)</li>
+        <li>한 번 직접 선택하면 그 선택을 기억함</li>
+        <li>모든 메뉴, 버튼, 페이지 본문이 4개 언어 모두 번역됨</li>
+      </ul>
+
+      <fieldset class="check" data-q-id="q-default-lang" data-q-type="radio" data-q-text="기본 언어 우선순위">
+        <legend>자동 감지가 안 될 때, 기본 언어는 어느 쪽으로 할까요?</legend>
+        <p class="q-help">사이트가 처음 열릴 때 언어를 못 알아내면 한 가지 언어로 보여줘야 합니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-default-lang" value="korean"><span>한국어 우선 (한국어가 먼저 보이고, 사용자가 영어로 바꿀 수 있음)</span></label>
+          <label class="opt"><input type="radio" name="q-default-lang" value="english"><span>영어 우선 (영어가 먼저 보이고, 사용자가 한국어로 바꿀 수 있음)</span></label>
+          <label class="opt"><input type="radio" name="q-default-lang" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-default-lang-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-lang-rollout" data-q-type="radio" data-q-text="다국어 단계적 오픈">
+        <legend>4개 언어를 한꺼번에 오픈할까요, 단계적으로 열까요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-lang-rollout" value="all-at-once"><span>4개 언어 모두 처음부터 오픈</span></label>
+          <label class="opt"><input type="radio" name="q-lang-rollout" value="staged"><span>한국어·영어 먼저 → 일본어·중국어는 Phase 2</span></label>
+          <label class="opt"><input type="radio" name="q-lang-rollout" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-lang-rollout-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <h3>3.2 관리자가 화면에서 바로 글 수정</h3>
+      <ul>
+        <li>관리자가 로그인한 상태에서 사이트를 보면, <strong>수정하고 싶은 문장을 클릭 → 바로 그 자리에서 수정 → 저장</strong> 가능</li>
+        <li>일반 방문자에게는 보통 사이트로만 보임</li>
+        <li>사진도 같은 방식으로 교체 가능 (사진 클릭 → 새 사진 업로드)</li>
+      </ul>
+      <div class="note">
+        이 방식의 장점: 별도의 관리자 페이지를 들락날락할 필요 없이, <strong>눈에 보이는 그대로 고칩니다.</strong> (워드 문서 고치듯이)
+      </div>
+
+      <h3>3.3 모바일 / 태블릿 / PC 자동 대응</h3>
+
+      <div class="highlight-card mobile-card">
+        <p class="big-line">이 사이트의 가장 중요한 목표는<br><strong>원장님과 단원·학생들이 스마트폰 첫 화면에 등록</strong>해 두고<br>매일매일 들여다보며 활용하는 것입니다.</p>
+      </div>
+
+      <p>그래서 모바일에서 특히 다음을 신경 씁니다:</p>
+      <ul>
+        <li><strong>스마트폰 홈 화면에 추가</strong>하면 <strong>춤누리 전용 앱처럼 동그란 아이콘과 이름</strong>이 예쁘게 표시 (PWA 방식)</li>
+        <li>아이콘을 누르면 일반 앱처럼 <strong>주소창 없이 바로 사이트가 열림</strong></li>
+        <li>모바일에서 <strong>1~2초 안에 빠르게 로딩</strong> (느린 인터넷에서도 부담 없이)</li>
+        <li><strong>한 손으로도 조작</strong>하기 쉽게 메뉴와 버튼이 화면 아래쪽에 위치</li>
+        <li>다가오는 공연 / 새 공지 / 새 자료가 <strong>홈 화면 첫 줄에 바로 보이게</strong></li>
+        <li>나이가 있으신 단원도 편하게 보실 수 있도록 <strong>글씨 크기를 충분히 크게</strong></li>
+      </ul>
+      <p>또한 휴대폰·아이패드·노트북·데스크탑 어디서 봐도 화면 크기에 맞게 자동 정렬됩니다.</p>
+
+      <h3>3.4 검색엔진 노출 (SEO)</h3>
+      <ul>
+        <li>구글, 네이버, 다음 등에서 "한국 전통 무용 뉴저지", "Korean traditional dance NJ" 등으로 검색하면 우리 사이트가 잘 나오도록 설정</li>
+        <li>페이지마다 미리보기 이미지·설명문이 잘 나오도록 (카카오톡·페이스북에 링크 붙여 넣었을 때 예쁘게 미리보기됨)</li>
+      </ul>
+
+      <h3>3.5 헤더 / 푸터 (모든 페이지 위·아래)</h3>
+      <ul>
+        <li><strong>상단</strong>: 로고, 메뉴(About / Program / Gallery / Upcoming Event), 언어 전환, 로그인 버튼</li>
+        <li><strong>하단</strong>: 로고, 인스타그램·유튜브 링크, 주소·연락처, 저작권 표기</li>
+      </ul>
+    </section>
+
+    <!-- 4 -->
+    <section id="sec-4">
+      <h2><span class="sec-num">4</span>메뉴 구성 — 원장님이 정해 주신 4개 메뉴</h2>
+      <pre>홈(메인)  |  About  |  Program  |  Gallery  |  Upcoming Event  |  [로그인]</pre>
+      <p>각 메뉴별 상세 내용은 아래 5~9번 섹션 참고.</p>
+    </section>
+
+    <!-- 5 -->
+    <section id="sec-5">
+      <h2><span class="sec-num">5</span>홈(메인) 화면</h2>
+      <p>방문자가 처음 들어왔을 때 <strong>"이 단체가 뭐 하는 곳이구나"를 5초 안에 이해</strong>할 수 있어야 합니다.</p>
+      <p>홈 화면에 들어갈 것들 (위에서 아래 순서대로):</p>
+      <ol>
+        <li><strong>큰 메인 이미지 또는 영상</strong> — 대표 공연 사진 또는 짧은 공연 영상 (소리 없이 자동 재생)</li>
+        <li><strong>단체 한 줄 소개</strong> — 예: "미국 뉴저지에서 한국 전통 무용의 아름다움을 잇는 춤누리무용단"</li>
+        <li><strong>다가오는 공연 미리보기</strong> — 가장 가까운 공연 1~2개를 카드 형태로</li>
+        <li><strong>About 짧은 소개 + "더 보기" 버튼</strong> — About 페이지로 연결</li>
+        <li><strong>최근 갤러리</strong> — 최근 공연 사진 4~6장</li>
+        <li><strong>인스타그램 피드</strong> (선택) — 인스타그램 최신 게시물 자동 표시</li>
+      </ol>
+
+      <fieldset class="check" data-q-id="q-main-image" data-q-type="radio" data-q-text="메인 이미지/영상 보유 여부">
+        <legend>메인 화면에 쓸 대표 사진/영상이 있으신가요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-main-image" value="have"><span>네, 가지고 있습니다</span></label>
+          <label class="opt"><input type="radio" name="q-main-image" value="need"><span>없음 — 새로 촬영하거나 골라야 함</span></label>
+          <label class="opt"><input type="radio" name="q-main-image" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-main-image-note" placeholder="원하시는 분위기나 추가 설명이 있으시면 적어주세요 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-tagline" data-q-type="text" data-q-text="홈 한 줄 소개 문구">
+        <legend>홈 화면에 들어갈 한 줄 소개 문구</legend>
+        <p class="q-help">예: "미국 뉴저지에서 한국 전통 무용의 아름다움을 잇는 춤누리무용단"</p>
+        <div class="field-row">
+          <span class="lbl">한국어</span>
+          <textarea name="q-tagline-ko" rows="2" placeholder="한국어 한 줄 소개"></textarea>
+        </div>
+        <div class="field-row">
+          <span class="lbl">영어</span>
+          <textarea name="q-tagline-en" rows="2" placeholder="English tagline"></textarea>
+        </div>
+        <label class="opt-skip"><input type="checkbox" name="q-tagline-skip" value="later"><span>나중에 정리해서 보내겠습니다</span></label>
+      </fieldset>
+    </section>
+
+    <!-- 6 -->
+    <section id="sec-6">
+      <h2><span class="sec-num">6</span>About — 우리 단체 소개</h2>
+
+      <h3>6.1 들어갈 내용</h3>
+      <table>
+        <thead><tr><th style="width:30%">섹션</th><th style="width:50%">내용</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td><strong>단체 소개 (KTDOC)</strong></td><td>언제 설립, 어떤 활동, 어떤 가치를 추구</td><td>본문 + 사진</td></tr>
+          <tr><td><strong>원장 소개</strong></td><td>안은희 원장님 약력, 사진, 인사말</td><td></td></tr>
+          <tr><td><strong>부원장 소개</strong></td><td>오선생 부원장 약력, 사진</td><td></td></tr>
+          <tr><td><strong>연혁</strong></td><td>2008년부터 주요 활동을 연도별로</td><td>타임라인 형태</td></tr>
+          <tr><td><strong>단원 소개</strong> (선택)</td><td>정단원 단체 사진 또는 개별 소개</td><td>공개 여부 결정 필요</td></tr>
+          <tr><td><strong>위치 / 연락처</strong></td><td>뉴저지 연습실 주소, 지도, 이메일, 전화</td><td>구글 지도 임베드</td></tr>
+          <tr><td><strong>문의하기</strong></td><td>이름·이메일·문의 내용 입력 폼</td><td>관리자 이메일로 자동 발송</td></tr>
+        </tbody>
+      </table>
+
+      <fieldset class="check" data-q-id="q-history" data-q-type="text" data-q-text="연혁 자료">
+        <legend>연혁에 들어갈 주요 사건을 알려 주세요</legend>
+        <p class="q-help">예: "2010 - 뉴욕 ○○ 페스티벌 초청 공연" / "2015 - 시카고 한국문화원 단독 공연" 등</p>
+        <textarea name="q-history" rows="5" placeholder="연도와 행사 이름을 자유롭게 적어 주세요"></textarea>
+        <label class="opt-skip"><input type="checkbox" name="q-history-skip" value="later"><span>나중에 정리해서 따로 보내겠습니다</span></label>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-member-list" data-q-type="radio" data-q-text="단원 소개 공개 여부">
+        <legend>단원 소개를 사이트에 공개할까요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-member-list" value="group-only"><span>단체 사진만 공개</span></label>
+          <label class="opt"><input type="radio" name="q-member-list" value="individual"><span>단원 한 명 한 명 개별 소개도 공개</span></label>
+          <label class="opt"><input type="radio" name="q-member-list" value="private"><span>비공개 (사이트엔 단원 정보 안 올림)</span></label>
+          <label class="opt"><input type="radio" name="q-member-list" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-member-list-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-contact-info" data-q-type="radio" data-q-text="연락처 공개 범위">
+        <legend>연습실 주소·전화번호를 어디까지 공개할까요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-contact-info" value="all"><span>주소 + 전화 + 이메일 모두 공개</span></label>
+          <label class="opt"><input type="radio" name="q-contact-info" value="phone-email"><span>전화 + 이메일만 공개</span></label>
+          <label class="opt"><input type="radio" name="q-contact-info" value="email-only"><span>이메일만 공개</span></label>
+          <label class="opt"><input type="radio" name="q-contact-info" value="form-only"><span>문의하기 폼만 두고 직접 연락처는 비공개</span></label>
+          <label class="opt"><input type="radio" name="q-contact-info" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-contact-info-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+    </section>
+
+    <!-- 7 -->
+    <section id="sec-7">
+      <h2><span class="sec-num">7</span>Program — 프로그램(수업 / 교육) 소개</h2>
+
+      <h3>7.1 들어갈 내용</h3>
+      <ul>
+        <li><strong>어떤 수업이 있는지 목록</strong> (예: 살풀이, 태평무, 부채춤, 어린이반 등)</li>
+        <li>각 수업별: 대상 / 시간 / 장소 / 수업료 / 강사 / 대표 사진·영상 / 수업 내용 설명</li>
+        <li><strong>수강 신청 / 문의 버튼</strong> — 누르면 신청 폼 열림</li>
+      </ul>
+
+      <fieldset class="check" data-q-id="q-programs" data-q-type="text" data-q-text="현재 프로그램 목록">
+        <legend>현재 운영 중인 프로그램 목록</legend>
+        <p class="q-help">수업명, 대상(어린이/성인/입문/중급…), 요일·시간, 수업료를 알려 주세요</p>
+        <textarea name="q-programs" rows="6" placeholder="예) 살풀이 - 성인 중급 - 화요일 7시 - 월 $80"></textarea>
+        <label class="opt-skip"><input type="checkbox" name="q-programs-skip" value="later"><span>나중에 정리해서 따로 보내겠습니다</span></label>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-registration" data-q-type="radio" data-q-text="수강 신청 방식">
+        <legend>수강 신청은 어떻게 받을까요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-registration" value="onsite"><span>사이트에서 직접 신청서 받기</span></label>
+          <label class="opt"><input type="radio" name="q-registration" value="info-only"><span>정보 안내만 — 실제 신청은 이메일·전화로</span></label>
+          <label class="opt"><input type="radio" name="q-registration" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-registration-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-payment" data-q-type="radio" data-q-text="온라인 결제">
+        <legend>온라인 결제(신용카드)도 받을까요?</legend>
+        <p class="q-help">처음엔 빼고 1년 정도 운영해 보고 나중에 추가하는 걸 추천드립니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-payment" value="phase1"><span>처음 오픈할 때부터 (Phase 1)</span></label>
+          <label class="opt"><input type="radio" name="q-payment" value="phase2"><span>나중에 추가 (Phase 2)</span></label>
+          <label class="opt"><input type="radio" name="q-payment" value="never"><span>필요 없음</span></label>
+          <label class="opt"><input type="radio" name="q-payment" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-payment-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+    </section>
+
+    <!-- 8 -->
+    <section id="sec-8">
+      <h2><span class="sec-num">8</span>Gallery — 공연 갤러리</h2>
+
+      <h3>8.1 방문자가 보는 화면</h3>
+      <ul>
+        <li>연도별로 묶인 공연 목록 (2026, 2025, ..., 2008)</li>
+        <li>연도/카테고리 필터, 검색창</li>
+        <li>공연 카드 → 상세 페이지 (포스터, 사진 갤러리, 유튜브 영상)</li>
+      </ul>
+
+      <fieldset class="check" data-q-id="q-member-photos" data-q-type="radio" data-q-text="회원 전용 사진 필요 여부">
+        <legend>회원만 볼 수 있는 사진이 따로 필요한가요?</legend>
+        <p class="q-help">예: 단원 단체 사진, 연습 장면 등은 외부에 공개하지 않을 수도 있습니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-member-photos" value="yes"><span>필요함 — 일부 사진은 회원만</span></label>
+          <label class="opt"><input type="radio" name="q-member-photos" value="all-public"><span>모든 사진 공개</span></label>
+          <label class="opt"><input type="radio" name="q-member-photos" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-member-photos-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-video-method" data-q-type="radio" data-q-text="영상 게재 방식">
+        <legend>공연 영상은 어떻게 보여줄까요?</legend>
+        <p class="q-help">유튜브 임베드 방식이 사이트가 가벼워지고 관리도 쉽습니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-video-method" value="youtube"><span>유튜브에 먼저 올리고 사이트엔 링크만 (추천)</span></label>
+          <label class="opt"><input type="radio" name="q-video-method" value="upload"><span>사이트에 직접 업로드</span></label>
+          <label class="opt"><input type="radio" name="q-video-method" value="both"><span>둘 다 — 영상에 따라 다르게</span></label>
+          <label class="opt"><input type="radio" name="q-video-method" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-video-method-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+    </section>
+
+    <!-- 9 -->
+    <section id="sec-9">
+      <h2><span class="sec-num">9</span>Upcoming Event — 다가오는 공연·행사</h2>
+
+      <h3>9.1 방문자가 보는 화면</h3>
+      <ul>
+        <li>달력 보기 / 목록 보기 전환 가능</li>
+        <li>각 행사 카드: 날짜, 제목, 장소, 짧은 설명</li>
+        <li>외부 행사인 경우 티켓 구매 사이트 연결</li>
+      </ul>
+
+      <h3>9.2 회원(단원)이 추가로 보는 화면</h3>
+      <p>단원이 로그인한 채로 들어가면, 일반 방문자에게는 안 보이는 <strong>단원 전용 정보</strong>가 추가로 표시됩니다 — 집결 시간/장소, 의상·소품, 무대 진행 순서, 음원 파일, 안무 영상, 출석 체크 등.</p>
+
+      <fieldset class="check" data-q-id="q-attendance" data-q-type="radio" data-q-text="출석 체크 기능">
+        <legend>단원 출석 체크 기능이 필요한가요?</legend>
+        <p class="q-help">단원이 각 공연마다 "참석 / 불참 / 미정"을 선택하면 관리자가 한눈에 봅니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-attendance" value="yes"><span>필요함</span></label>
+          <label class="opt"><input type="radio" name="q-attendance" value="no"><span>필요 없음 (카톡으로 받음)</span></label>
+          <label class="opt"><input type="radio" name="q-attendance" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-attendance-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-mail-target" data-q-type="radio" data-q-text="공연 알림 메일 대상">
+        <legend>새 공연이 등록되면 자동 메일을 누구에게 보낼까요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-mail-target" value="all"><span>단원 전체에게 일괄 발송</span></label>
+          <label class="opt"><input type="radio" name="q-mail-target" value="participants"><span>해당 공연에 참여하는 단원만</span></label>
+          <label class="opt"><input type="radio" name="q-mail-target" value="choose"><span>발송할 때마다 골라서 (전체/일부)</span></label>
+          <label class="opt"><input type="radio" name="q-mail-target" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-mail-target-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+    </section>
+
+    <!-- 10 -->
+    <section id="sec-10">
+      <h2><span class="sec-num">10</span>회원가입 & 로그인</h2>
+
+      <h3>10.1 회원가입 흐름</h3>
+      <pre>[가입하기] 클릭  →  이름·이메일·비밀번호·소속 입력
+                  →  "관리자 승인 후 로그인 가능합니다" 안내
+                  →  관리자에게 알림 이메일
+                  →  관리자가 [승인] 또는 [거절]
+                  →  신청자에게 결과 메일 자동 발송
+                  →  승인되면 로그인 가능</pre>
+      <div class="note">
+        <strong>실제 단원만 단원 자료에 접근</strong>할 수 있도록 한 단계 승인을 둡니다.
+      </div>
+
+      <h3>10.2 로그인 / 내 정보</h3>
+      <ul>
+        <li>이메일 + 비밀번호 로그인, 비밀번호 찾기 기능</li>
+        <li>회원이 직접: 프로필·연락처·비밀번호 수정, 알림 받기 설정</li>
+      </ul>
+
+      <fieldset class="check" data-q-id="q-google-login" data-q-type="radio" data-q-text="구글 로그인 추가 여부">
+        <legend>구글 계정으로도 로그인할 수 있게 할까요?</legend>
+        <p class="q-help">구글 아이디만 있으면 비밀번호 따로 만들지 않고도 로그인 가능합니다. 사용자에겐 편하지만 셋업이 약간 더 필요합니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-google-login" value="phase1"><span>처음부터 추가 (Phase 1)</span></label>
+          <label class="opt"><input type="radio" name="q-google-login" value="phase2"><span>나중에 추가 (Phase 2)</span></label>
+          <label class="opt"><input type="radio" name="q-google-login" value="never"><span>필요 없음 — 이메일/비번만</span></label>
+          <label class="opt"><input type="radio" name="q-google-login" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-google-login-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-signup-fields" data-q-type="text" data-q-text="가입 시 추가로 받고 싶은 정보">
+        <legend>가입 신청서에 추가로 받고 싶은 정보가 있으신가요?</legend>
+        <p class="q-help">예: 무용 경력, 거주 도시, 비상 연락처, 보호자 정보(미성년자) 등</p>
+        <textarea name="q-signup-fields" rows="3" placeholder="추가로 받고 싶은 항목을 자유롭게 적어 주세요"></textarea>
+        <label class="opt-skip"><input type="checkbox" name="q-signup-fields-skip" value="later"><span>기본 정보(이름·이메일·소속)만 받으면 됩니다</span></label>
+      </fieldset>
+    </section>
+
+    <!-- 11 -->
+    <section id="sec-11">
+      <h2><span class="sec-num">11</span>회원 전용 화면 (로그인 후)</h2>
+      <p>로그인하면 메뉴 우측에 <strong>[내 페이지]</strong> 버튼이 생깁니다. 누르면 다가오는 일정·자료실·공지·연락망 등을 볼 수 있습니다.</p>
+
+      <fieldset class="check" data-q-id="q-file-types" data-q-type="checkbox" data-q-text="자료실 파일 종류">
+        <legend>자료실에 어떤 종류의 파일을 올리실 예정인가요? (여러 개 선택 가능)</legend>
+        <div class="opts grid-2">
+          <label class="opt"><input type="checkbox" name="q-file-types" value="pdf"><span>PDF (악보, 안내문 등)</span></label>
+          <label class="opt"><input type="checkbox" name="q-file-types" value="video"><span>영상 (안무 연습 영상 등)</span></label>
+          <label class="opt"><input type="checkbox" name="q-file-types" value="audio"><span>음원 / 반주 파일</span></label>
+          <label class="opt"><input type="checkbox" name="q-file-types" value="image"><span>사진 (의상 가이드 등)</span></label>
+          <label class="opt"><input type="checkbox" name="q-file-types" value="doc"><span>워드/한글 문서</span></label>
+          <label class="opt"><input type="checkbox" name="q-file-types" value="other"><span>기타</span></label>
+        </div>
+        <textarea name="q-file-types-note" placeholder="기타 또는 추가 설명 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-contact-network" data-q-type="radio" data-q-text="단원 연락망 운영 방식">
+        <legend>단원 간 연락망을 어떻게 운영할까요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-contact-network" value="onsite"><span>사이트에 두기 (개인정보 동의한 단원만 표시)</span></label>
+          <label class="opt"><input type="radio" name="q-contact-network" value="kakao"><span>카카오톡 단톡방으로만 운영</span></label>
+          <label class="opt"><input type="radio" name="q-contact-network" value="both"><span>둘 다 운영</span></label>
+          <label class="opt"><input type="radio" name="q-contact-network" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-contact-network-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+    </section>
+
+    <!-- 12 -->
+    <section id="sec-12">
+      <h2><span class="sec-num">12</span>관리자 대시보드 (원장님·부원장 전용)</h2>
+      <p><code>ktdoc.org/admin</code> 같은 주소로 접속해서 관리자 계정으로 로그인하면 보이는 화면. About / 프로그램 / 갤러리 / 행사 / 회원 / 자료실 / 공지사항 / 문의함 / 번역 / 통계 / 설정 메뉴가 좌측에 정리됩니다.</p>
+
+      <fieldset class="check" data-q-id="q-admin-count" data-q-type="radio" data-q-text="관리자 인원">
+        <legend>관리자 권한을 가질 사람은 몇 명인가요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-admin-count" value="two"><span>원장님 + 부원장 두 분</span></label>
+          <label class="opt"><input type="radio" name="q-admin-count" value="more"><span>그 외에 더 있음 (아래에 적어주세요)</span></label>
+        </div>
+        <textarea name="q-admin-count-note" placeholder="추가 관리자가 있다면 누구인지 적어주세요"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-admin-perms" data-q-type="radio" data-q-text="관리자 권한 차등">
+        <legend>관리자들 권한을 다르게 줄까요?</legend>
+        <p class="q-help">예: 부원장은 갤러리만 수정 가능, 회원 관리는 원장님만 가능 등</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-admin-perms" value="same"><span>모두 동일한 권한</span></label>
+          <label class="opt"><input type="radio" name="q-admin-perms" value="different"><span>역할별로 다르게 (아래에 설명)</span></label>
+          <label class="opt"><input type="radio" name="q-admin-perms" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-admin-perms-note" placeholder="권한을 다르게 주신다면 어떻게 나눌지 적어주세요 (선택)"></textarea>
+      </fieldset>
+    </section>
+
+    <!-- 13 -->
+    <section id="sec-13">
+      <h2><span class="sec-num">13</span>알림 & 이메일</h2>
+
+      <p>자동으로 나가는 이메일: 가입 신청 알림 / 가입 결과 / 새 공연 알림 / 새 공지 / 새 문의 / 비밀번호 재설정.</p>
+
+      <fieldset class="check" data-q-id="q-newsletter" data-q-type="radio" data-q-text="뉴스레터 기능">
+        <legend>일반 방문자용 뉴스레터(소식지) 기능이 필요한가요?</legend>
+        <p class="q-help">방문자가 푸터에서 이메일을 등록하면, 분기별 또는 주요 행사 전 일괄 발송하는 기능입니다.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-newsletter" value="phase1"><span>처음부터 (Phase 1)</span></label>
+          <label class="opt"><input type="radio" name="q-newsletter" value="phase2"><span>나중에 추가 (Phase 2)</span></label>
+          <label class="opt"><input type="radio" name="q-newsletter" value="never"><span>필요 없음</span></label>
+          <label class="opt"><input type="radio" name="q-newsletter" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-newsletter-note" placeholder="기타 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-official-email" data-q-type="text" data-q-text="공식 이메일 주소">
+        <legend>이메일 발송용 공식 메일 주소를 정해 주세요</legend>
+        <p class="q-help">예: <code>info@ktdoc.org</code>, <code>contact@ktdoc.org</code> 등. 도메인 등록 후에 만들 수 있습니다.</p>
+        <input type="text" name="q-official-email" placeholder="예: info@ktdoc.org">
+        <label class="opt-skip"><input type="checkbox" name="q-official-email-skip" value="later"><span>도메인 등록 후 함께 결정하겠습니다</span></label>
+      </fieldset>
+    </section>
+
+    <!-- 14 -->
+    <section id="sec-14">
+      <h2><span class="sec-num">14</span>추가로 검토하면 좋은 항목들</h2>
+      <p>처음 오픈에 꼭 필요하지 않은 <strong>"있으면 좋은 기능들"</strong>입니다. 각 항목별로 우선순위를 골라 주세요.</p>
+
+      <div class="priority-list">
+
+        <fieldset class="check priority-item" data-q-id="q-pri-booking" data-q-type="radio" data-q-text="공연 의뢰 폼 우선순위" style="border-left: 0; padding: 14px 16px; background: #fff; border-radius: 8px;">
+          <div class="p-title">공연 의뢰 폼</div>
+          <div class="p-desc">"행사에 춤누리를 초청하고 싶습니다" 폼. 행사 종류·날짜·예산 입력</div>
+          <div class="opts priority-options">
+            <label class="opt"><input type="radio" name="q-pri-booking" value="high"><span>상</span></label>
+            <label class="opt"><input type="radio" name="q-pri-booking" value="mid"><span>중</span></label>
+            <label class="opt"><input type="radio" name="q-pri-booking" value="low"><span>하</span></label>
+            <label class="opt"><input type="radio" name="q-pri-booking" value="none"><span>필요없음</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="check priority-item" data-q-id="q-pri-donation" data-q-type="radio" data-q-text="후원/도네이션 우선순위" style="border-left: 0; padding: 14px 16px; background: #fff; border-radius: 8px;">
+          <div class="p-title">후원 / 도네이션</div>
+          <div class="p-desc">비영리 활동 후원 받기 (페이팔, 신용카드 등)</div>
+          <div class="opts priority-options">
+            <label class="opt"><input type="radio" name="q-pri-donation" value="high"><span>상</span></label>
+            <label class="opt"><input type="radio" name="q-pri-donation" value="mid"><span>중</span></label>
+            <label class="opt"><input type="radio" name="q-pri-donation" value="low"><span>하</span></label>
+            <label class="opt"><input type="radio" name="q-pri-donation" value="none"><span>필요없음</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="check priority-item" data-q-id="q-pri-press" data-q-type="radio" data-q-text="언론 보도 모음 우선순위" style="border-left: 0; padding: 14px 16px; background: #fff; border-radius: 8px;">
+          <div class="p-title">언론 보도 모음</div>
+          <div class="p-desc">신문·방송에 소개된 기사 링크 / 스크랩</div>
+          <div class="opts priority-options">
+            <label class="opt"><input type="radio" name="q-pri-press" value="high"><span>상</span></label>
+            <label class="opt"><input type="radio" name="q-pri-press" value="mid"><span>중</span></label>
+            <label class="opt"><input type="radio" name="q-pri-press" value="low"><span>하</span></label>
+            <label class="opt"><input type="radio" name="q-pri-press" value="none"><span>필요없음</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="check priority-item" data-q-id="q-pri-merch" data-q-type="radio" data-q-text="굿즈 판매 우선순위" style="border-left: 0; padding: 14px 16px; background: #fff; border-radius: 8px;">
+          <div class="p-title">굿즈 판매</div>
+          <div class="p-desc">단체 티셔츠·부채 등 온라인 판매</div>
+          <div class="opts priority-options">
+            <label class="opt"><input type="radio" name="q-pri-merch" value="high"><span>상</span></label>
+            <label class="opt"><input type="radio" name="q-pri-merch" value="mid"><span>중</span></label>
+            <label class="opt"><input type="radio" name="q-pri-merch" value="low"><span>하</span></label>
+            <label class="opt"><input type="radio" name="q-pri-merch" value="none"><span>필요없음</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="check priority-item" data-q-id="q-pri-blog" data-q-type="radio" data-q-text="블로그/소식 우선순위" style="border-left: 0; padding: 14px 16px; background: #fff; border-radius: 8px;">
+          <div class="p-title">블로그 / 소식</div>
+          <div class="p-desc">짧은 글 형태로 단체 소식 자주 올리기</div>
+          <div class="opts priority-options">
+            <label class="opt"><input type="radio" name="q-pri-blog" value="high"><span>상</span></label>
+            <label class="opt"><input type="radio" name="q-pri-blog" value="mid"><span>중</span></label>
+            <label class="opt"><input type="radio" name="q-pri-blog" value="low"><span>하</span></label>
+            <label class="opt"><input type="radio" name="q-pri-blog" value="none"><span>필요없음</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="check priority-item" data-q-id="q-pri-instagram" data-q-type="radio" data-q-text="인스타그램 자동 연동 우선순위" style="border-left: 0; padding: 14px 16px; background: #fff; border-radius: 8px;">
+          <div class="p-title">인스타그램 자동 연동</div>
+          <div class="p-desc">인스타에 올리면 사이트에도 자동 표시</div>
+          <div class="opts priority-options">
+            <label class="opt"><input type="radio" name="q-pri-instagram" value="high"><span>상</span></label>
+            <label class="opt"><input type="radio" name="q-pri-instagram" value="mid"><span>중</span></label>
+            <label class="opt"><input type="radio" name="q-pri-instagram" value="low"><span>하</span></label>
+            <label class="opt"><input type="radio" name="q-pri-instagram" value="none"><span>필요없음</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="check priority-item" data-q-id="q-pri-guestbook" data-q-type="radio" data-q-text="방명록 우선순위" style="border-left: 0; padding: 14px 16px; background: #fff; border-radius: 8px;">
+          <div class="p-title">방명록</div>
+          <div class="p-desc">방문자가 남기는 응원 메시지</div>
+          <div class="opts priority-options">
+            <label class="opt"><input type="radio" name="q-pri-guestbook" value="high"><span>상</span></label>
+            <label class="opt"><input type="radio" name="q-pri-guestbook" value="mid"><span>중</span></label>
+            <label class="opt"><input type="radio" name="q-pri-guestbook" value="low"><span>하</span></label>
+            <label class="opt"><input type="radio" name="q-pri-guestbook" value="none"><span>필요없음</span></label>
+          </div>
+        </fieldset>
+
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section id="sec-15">
+      <h2><span class="sec-num">15</span>단계별 오픈 제안</h2>
+      <p>한 번에 모든 걸 만들면 시간이 오래 걸리고 변경도 어려워집니다. <strong>3단계로 나눠서 오픈</strong>하는 것을 제안드립니다.</p>
+
+      <div class="phase">
+        <h4>Phase 1 — 기본 홈페이지 (외부 공개용)</h4>
+        <ul>
+          <li>홈 / About / Program 안내 / Gallery / Upcoming Event</li>
+          <li>한국어 + 영어 (일본어/중국어는 Phase 2)</li>
+          <li>관리자가 모든 텍스트·사진 수정 가능</li>
+          <li>문의하기 폼</li>
+          <li>스마트폰 홈 화면 등록 가능 (PWA)</li>
+        </ul>
+        <p class="arrow">→ 이 정도만 있어도 명함이나 SNS에 사이트 주소를 공유할 수 있습니다.</p>
+      </div>
+
+      <div class="phase">
+        <h4>Phase 2 — 단원 시스템</h4>
+        <ul>
+          <li>회원가입 + 관리자 승인</li>
+          <li>회원 전용 자료실, 공지사항</li>
+          <li>행사 등록 시 단원에게 자동 메일</li>
+          <li>일본어 / 중국어 추가</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <h4>Phase 3 — 운영 고도화</h4>
+        <ul>
+          <li>공연 의뢰 폼 / 후원 받기 / 굿즈 등 (선택)</li>
+          <li>통계 분석</li>
+          <li>자동 백업 / 보안 강화</li>
+        </ul>
+      </div>
+
+      <fieldset class="check" data-q-id="q-phasing" data-q-type="radio" data-q-text="3단계 분할 동의 여부">
+        <legend>3단계 분할이 괜찮으신가요?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="q-phasing" value="ok"><span>네, 좋습니다</span></label>
+          <label class="opt"><input type="radio" name="q-phasing" value="modify"><span>수정 필요 (아래에 의견 적어주세요)</span></label>
+          <label class="opt"><input type="radio" name="q-phasing" value="unsure"><span>잘 모르겠음 (나중에 결정)</span></label>
+        </div>
+        <textarea name="q-phasing-note" placeholder="수정/추가 의견 (선택)"></textarea>
+      </fieldset>
+
+      <fieldset class="check" data-q-id="q-launch-date" data-q-type="text" data-q-text="Phase 1 오픈 희망 시점">
+        <legend>Phase 1을 언제까지 오픈하고 싶으신가요?</legend>
+        <p class="q-help">대략적인 목표 일정만 알려 주셔도 좋습니다 (예: "2026년 7월", "여름 공연 전까지" 등)</p>
+        <textarea name="q-launch-date" rows="2" placeholder="희망 시점"></textarea>
+        <label class="opt-skip"><input type="checkbox" name="q-launch-date-skip" value="later"><span>아직 정하지 않았습니다 — 상의해서 정하겠습니다</span></label>
+      </fieldset>
+    </section>
+
+    <!-- 16 -->
+    <section id="sec-16">
+      <h2><span class="sec-num">16</span>다음 단계 — 이 답변을 받은 후</h2>
+      <ol>
+        <li>아래 [저장 및 보내기] 버튼을 누르시면 답변이 메일로 정리되어 오선생에게 전달됩니다.</li>
+        <li>받은 답변을 토대로 <strong>확정 요구사항 문서</strong>를 만들고, 화면 디자인 시안을 그립니다.</li>
+        <li>디자인 시안을 다시 검토하시면, 그때부터 본격적인 개발을 시작합니다.</li>
+      </ol>
+
+      <div class="free-comment">
+        <label for="q-free">자유 의견 (선택)</label>
+        <textarea id="q-free" name="q-free" placeholder="위에 없는 내용 중에 더 말씀하고 싶은 게 있으시면 자유롭게 적어주세요. 사이트 관련 어떤 의견이든 좋습니다."></textarea>
+      </div>
+
+      <div class="note">
+        <strong>참고</strong> — 현재 깃 폴더에 있는 사이트는 이번 작업 이전에 시범적으로 만들어 둔 버전입니다. 같은 단체(KTDOC)를 대상으로 했지만, 이번 신규 구축에서는 요구사항을 새로 정리한 후 처음부터 다시 만들 예정입니다. 기존 디자인 자산과 자료(연혁·이미지 등)는 재사용합니다.
+      </div>
+    </section>
+
+  </main>
+
+  <aside class="toc">
+    <h3>목차</h3>
+    <button class="toc-toggle" id="toc-toggle" style="display:none;">목차 펼치기 / 접기</button>
+    <ol class="toc-list" id="toc-list">
+      <li><a href="#sec-0"><span class="num">0</span>읽는 방법</a></li>
+      <li><a href="#sec-1"><span class="num">1</span>사이트 한 줄 소개</a></li>
+      <li><a href="#sec-2"><span class="num">2</span>사용자 3그룹</a></li>
+      <li><a href="#sec-3"><span class="num">3</span>공통 기능</a></li>
+      <li><a href="#sec-4"><span class="num">4</span>메뉴 구성</a></li>
+      <li><a href="#sec-5"><span class="num">5</span>홈 화면</a></li>
+      <li><a href="#sec-6"><span class="num">6</span>About</a></li>
+      <li><a href="#sec-7"><span class="num">7</span>Program</a></li>
+      <li><a href="#sec-8"><span class="num">8</span>Gallery</a></li>
+      <li><a href="#sec-9"><span class="num">9</span>Upcoming Event</a></li>
+      <li><a href="#sec-10"><span class="num">10</span>가입 / 로그인</a></li>
+      <li><a href="#sec-11"><span class="num">11</span>회원 전용</a></li>
+      <li><a href="#sec-12"><span class="num">12</span>관리자 대시보드</a></li>
+      <li><a href="#sec-13"><span class="num">13</span>알림 / 이메일</a></li>
+      <li><a href="#sec-14"><span class="num">14</span>추가 검토 항목</a></li>
+      <li><a href="#sec-15"><span class="num">15</span>단계별 오픈</a></li>
+      <li><a href="#sec-16"><span class="num">16</span>다음 단계</a></li>
+    </ol>
+  </aside>
+</div>
+
+<button class="top-btn" id="top-btn" aria-label="맨 위로">↑</button>
+
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+<footer class="action-bar">
+  <div class="progress-info">
+    <div class="progress-text"><span class="count" id="progress-count">0 / 0</span> 답변 완료</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="save-status" id="save-status">자동 저장됨 · 창을 닫아도 답변은 유지됩니다</div>
+  </div>
+  <button class="send-btn" id="send-btn" type="button">저장 및 보내기</button>
+</footer>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'ktdoc-requirements-v1';
+  const RECIPIENT = 'owenkdev@gmail.com';
+
+  const fieldsets = Array.from(document.querySelectorAll('fieldset.check'));
+  const progressCount = document.getElementById('progress-count');
+  const progressBar = document.getElementById('progress-bar');
+  const saveStatus = document.getElementById('save-status');
+  const sendBtn = document.getElementById('send-btn');
+  const toast = document.getElementById('toast');
+  const topBtn = document.getElementById('top-btn');
+  const tocToggle = document.getElementById('toc-toggle');
+  const tocList = document.getElementById('toc-list');
+
+  // === 자동 저장 / 복원 ===
+  function saveAll() {
+    const data = {};
+    document.querySelectorAll('input, textarea').forEach(el => {
+      if (!el.name) return;
+      if (el.type === 'radio' || el.type === 'checkbox') {
+        if (el.checked) {
+          if (!data[el.name]) data[el.name] = [];
+          data[el.name].push(el.value);
+        }
+      } else {
+        data[el.name] = el.value;
+      }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    flashSaved();
+  }
+
+  let saveFlashTimer = null;
+  function flashSaved() {
+    saveStatus.textContent = '저장됨 · ' + new Date().toLocaleTimeString('ko-KR');
+    saveStatus.style.color = 'var(--color-success)';
+    clearTimeout(saveFlashTimer);
+    saveFlashTimer = setTimeout(() => {
+      saveStatus.textContent = '자동 저장됨 · 창을 닫아도 답변은 유지됩니다';
+      saveStatus.style.color = '';
+    }, 2000);
+  }
+
+  function loadAll() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      Object.entries(data).forEach(([name, value]) => {
+        const els = document.querySelectorAll('[name="' + name + '"]');
+        els.forEach(el => {
+          if (el.type === 'radio' || el.type === 'checkbox') {
+            if (Array.isArray(value) && value.includes(el.value)) el.checked = true;
+          } else {
+            el.value = value;
+          }
+        });
+      });
+    } catch (e) { console.error(e); }
+  }
+
+  // === 답변 여부 판단 ===
+  function isAnswered(fs) {
+    const type = fs.dataset.qType;
+    // 스킵 체크박스
+    const skip = fs.querySelector('input[type="checkbox"][value="later"]');
+    if (skip && skip.checked) return true;
+
+    if (type === 'radio') {
+      return Array.from(fs.querySelectorAll('input[type="radio"]')).some(r => r.checked);
+    }
+    if (type === 'checkbox') {
+      return Array.from(fs.querySelectorAll('input[type="checkbox"]:not([value="later"])')).some(c => c.checked);
+    }
+    if (type === 'text') {
+      const fields = fs.querySelectorAll('textarea, input[type="text"], input[type="email"], input[type="date"]');
+      return Array.from(fields).some(f => f.value.trim().length > 0);
+    }
+    return false;
+  }
+
+  // === 진행도 업데이트 ===
+  function updateProgress() {
+    let answered = 0;
+    fieldsets.forEach(fs => {
+      const ok = isAnswered(fs);
+      fs.dataset.answered = ok ? 'true' : 'false';
+      if (ok) {
+        answered++;
+        fs.classList.remove('error');
+      }
+    });
+    const total = fieldsets.length;
+    progressCount.textContent = answered + ' / ' + total;
+    progressBar.style.width = (total ? (answered / total * 100) : 0) + '%';
+    if (answered === total && total > 0) {
+      sendBtn.classList.add('ready');
+      sendBtn.textContent = '준비 완료 — 보내기';
+    } else {
+      sendBtn.classList.remove('ready');
+      sendBtn.textContent = '저장 및 보내기';
+    }
+  }
+
+  // === 토스트 ===
+  let toastTimer = null;
+  function showToast(msg, ms = 4000) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), ms);
+  }
+
+  // === 발송 ===
+  function buildEmailBody() {
+    const lines = [];
+    lines.push('=== KTDOC 웹사이트 요구사항 답변 ===');
+    lines.push('작성일: ' + new Date().toLocaleString('ko-KR'));
+    lines.push('');
+
+    fieldsets.forEach((fs, idx) => {
+      const qText = fs.dataset.qText || fs.dataset.qId;
+      lines.push('[' + (idx + 1) + '] ' + qText);
+
+      // 스킵 여부
+      const skip = fs.querySelector('input[type="checkbox"][value="later"]');
+      if (skip && skip.checked) {
+        lines.push('  → 나중에 결정 / 따로 보내겠음');
+        const noteEls = fs.querySelectorAll('textarea:not([name$="-skip"]), input[type="text"]');
+        noteEls.forEach(t => {
+          if (t.value.trim()) lines.push('  메모: ' + t.value.trim().replace(/\n/g, ' / '));
+        });
+        lines.push('');
+        return;
+      }
+
+      // 라디오
+      const radios = fs.querySelectorAll('input[type="radio"]:checked');
+      radios.forEach(r => {
+        const label = r.closest('label').querySelector('span').textContent.trim();
+        lines.push('  → ' + label);
+      });
+
+      // 체크박스 (스킵 제외)
+      const checks = fs.querySelectorAll('input[type="checkbox"]:checked:not([value="later"])');
+      if (checks.length > 0) {
+        const labels = Array.from(checks).map(c => c.closest('label').querySelector('span').textContent.trim());
+        lines.push('  → ' + labels.join(', '));
+      }
+
+      // 텍스트
+      const textFields = fs.querySelectorAll('textarea:not([name$="-skip"]), input[type="text"], input[type="email"]');
+      textFields.forEach(t => {
+        const val = t.value.trim();
+        if (val) {
+          const labelEl = fs.querySelector('label .lbl[data-for="' + t.name + '"]') ||
+                          fs.querySelector('.field-row:has([name="' + t.name + '"]) .lbl');
+          if (t.placeholder && t.placeholder.includes('메모') || t.name.endsWith('-note')) {
+            lines.push('  메모: ' + val.replace(/\n/g, ' / '));
+          } else if (labelEl) {
+            lines.push('  ' + labelEl.textContent.trim() + ': ' + val.replace(/\n/g, ' / '));
+          } else {
+            lines.push('  ' + val.replace(/\n/g, ' / '));
+          }
+        }
+      });
+      lines.push('');
+    });
+
+    // 자유 의견
+    const freeComment = document.getElementById('q-free');
+    if (freeComment && freeComment.value.trim()) {
+      lines.push('=== 자유 의견 ===');
+      lines.push(freeComment.value.trim());
+      lines.push('');
+    }
+
+    return lines.join('\n');
+  }
+
+  function findFirstUnanswered() {
+    return fieldsets.find(fs => !isAnswered(fs));
+  }
+
+  function send() {
+    // 검증
+    let unanswered = [];
+    fieldsets.forEach(fs => {
+      if (!isAnswered(fs)) {
+        unanswered.push(fs);
+        fs.classList.add('error');
+      } else {
+        fs.classList.remove('error');
+      }
+    });
+
+    if (unanswered.length > 0) {
+      const first = unanswered[0];
+      const qText = first.dataset.qText || '항목';
+      showToast('아직 ' + unanswered.length + '개 답변이 비어있어요. "' + qText + '" 부터 확인해주세요.', 5000);
+      first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // 메일 생성
+    const body = buildEmailBody();
+    const subject = '[KTDOC] 요구사항 답변 — ' + new Date().toLocaleDateString('ko-KR');
+    const mailtoUrl = 'mailto:' + RECIPIENT +
+                      '?subject=' + encodeURIComponent(subject) +
+                      '&body=' + encodeURIComponent(body);
+
+    // 너무 길면 (브라우저 한계) 클립보드 복사 fallback
+    if (mailtoUrl.length > 7500) {
+      copyToClipboard(body);
+      showToast('답변이 클립보드에 복사됐어요. 메일 앱에서 ' + RECIPIENT + '로 붙여넣어 보내주세요.', 8000);
+      return;
+    }
+
+    showToast('메일 앱이 열립니다. 내용 확인하시고 [보내기] 버튼을 눌러주세요.', 5000);
+    setTimeout(() => { window.location.href = mailtoUrl; }, 600);
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // === 이벤트 바인딩 ===
+  document.addEventListener('input', (e) => {
+    if (e.target.matches('input, textarea')) {
+      saveAll();
+      updateProgress();
+    }
+  });
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('input, textarea')) {
+      saveAll();
+      updateProgress();
+    }
+  });
+  sendBtn.addEventListener('click', send);
+
+  // 맨 위로
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) topBtn.classList.add('visible');
+    else topBtn.classList.remove('visible');
+  });
+  topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // 모바일 목차 토글
+  function setupMobileToc() {
+    if (window.innerWidth <= 1000) {
+      tocToggle.style.display = 'block';
+      tocList.classList.add('collapsed');
+    } else {
+      tocToggle.style.display = 'none';
+      tocList.classList.remove('collapsed');
+    }
+  }
+  tocToggle.addEventListener('click', () => tocList.classList.toggle('collapsed'));
+  window.addEventListener('resize', setupMobileToc);
+  document.querySelectorAll('.toc-list a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth <= 1000) tocList.classList.add('collapsed');
+    });
+  });
+
+  // === 초기화 ===
+  loadAll();
+  updateProgress();
+  setupMobileToc();
+})();
+</script>
+
+</body>
+</html>
