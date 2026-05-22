@@ -5,7 +5,7 @@
  * 이미지 정렬 및 삭제 관리
  */
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import type { EventImage } from '@/types/gallery';
 

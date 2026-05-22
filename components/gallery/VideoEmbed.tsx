@@ -4,6 +4,7 @@
  */
 
 import type { EventVideo } from '@/types/gallery';
+import Image from 'next/image';
 
 interface VideoEmbedProps {
   video: EventVideo;
@@ -61,7 +62,7 @@ interface VideoThumbnailProps {
 }
 
 export function VideoThumbnail({ video, onClick }: VideoThumbnailProps) {
-  const thumbnailUrl = `https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`;
+  const thumbnailUrl = `https://i.ytimg.com/vi/${video.youtube_id}/mqdefault.jpg`;
 
   return (
     <button
@@ -69,9 +70,11 @@ export function VideoThumbnail({ video, onClick }: VideoThumbnailProps) {
       className="gallery-video-thumbnail"
       onClick={onClick}
     >
-      <img
+      <Image
         src={thumbnailUrl}
         alt={video.title || 'YouTube Video'}
+        width={320}
+        height={180}
         className="gallery-video-thumb-img"
       />
       <div className="gallery-video-play-icon">

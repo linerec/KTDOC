@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function AdminGalleryEditPage({ params }: PageProps) {
   const session = await auth();
   if (!session) {
-    redirect('/admin');
+    redirect('/login');
   }
 
   const { id } = await params;
@@ -49,13 +49,15 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin/gallery">Gallery 관리</Link>
+            <Link href="/admin">관리 홈</Link>
+            <span>/</span>
+            <Link href="/admin/gallery">이벤트 아카이브</Link>
             <span>/</span>
             <span>{event.title_ko}</span>
           </div>
-          <h1 className="admin-title">이벤트 편집</h1>
+          <h1 className="admin-title">아카이브 이벤트 편집</h1>
           <p className="admin-subtitle">
-            {event.year}년 · {event.is_published ? '공개' : '비공개'}
+            {event.year}년 · {event.is_published ? '공개 Gallery에 표시 중' : '비공개 저장 중'}
           </p>
         </div>
         <div className="admin-header-actions">
@@ -65,7 +67,7 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
               target="_blank"
               className="admin-btn admin-btn-outline"
             >
-              페이지 보기
+              공개 페이지 보기
             </Link>
           ) : null}
         </div>

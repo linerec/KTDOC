@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import IntlObject from '@/components/common/IntlObject';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginForm() {
   const router = useRouter();
+  const { messages } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,13 +28,13 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+        setError(messages['auth.error.invalidCredentials']);
       } else {
         router.push('/');
         router.refresh();
       }
     } catch {
-      setError('로그인 중 오류가 발생했습니다.');
+      setError(messages['auth.error.loginFailed']);
     } finally {
       setIsLoading(false);
     }
@@ -39,42 +42,42 @@ export default function LoginForm() {
 
   return (
     <form className="auth-form" onSubmit={handleSubmit}>
-      <h1 className="auth-title">로그인</h1>
+      <IntlObject keycode="auth.login" returnType="h1" className="auth-title" />
 
       {error && <div className="auth-error">{error}</div>}
 
       <div className="auth-field">
-        <label htmlFor="email">이메일</label>
+        <label htmlFor="email"><IntlObject keycode="auth.email" /></label>
         <input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="example@email.com"
+          placeholder={messages['auth.email.placeholder']}
           required
           disabled={isLoading}
         />
       </div>
 
       <div className="auth-field">
-        <label htmlFor="password">비밀번호</label>
+        <label htmlFor="password"><IntlObject keycode="auth.password" /></label>
         <input
           id="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="비밀번호를 입력하세요"
+          placeholder={messages['auth.password.placeholder']}
           required
           disabled={isLoading}
         />
       </div>
 
       <button type="submit" className="auth-button" disabled={isLoading}>
-        {isLoading ? '로그인 중...' : '로그인'}
+        {isLoading ? messages['auth.login.loading'] : messages['auth.login']}
       </button>
 
       <p className="auth-link">
-        계정이 없으신가요? <Link href="/register">회원가입</Link>
+        <IntlObject keycode="auth.noAccount" /> <Link href="/register"><IntlObject keycode="auth.register" /></Link>
       </p>
     </form>
   );

@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import Image from 'next/image';
 import type { EventVideo } from '@/types/gallery';
 
 interface VideoManagerProps {
@@ -151,9 +152,11 @@ export default function VideoManager({
           {videos.map((video) => (
             <div key={video.id} className="admin-video-item">
               <div className="admin-video-thumb">
-                <img
+                <Image
                   src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
                   alt={video.title || 'YouTube Video'}
+                  width={160}
+                  height={90}
                 />
                 <a
                   href={video.youtube_url}

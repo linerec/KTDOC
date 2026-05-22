@@ -5,6 +5,26 @@ export interface YouTubeVideo {
   publishedAt: string;
 }
 
+interface YouTubePlaylistItem {
+  snippet: {
+    title: string;
+    publishedAt: string;
+    resourceId: {
+      videoId: string;
+    };
+    thumbnails?: {
+      default?: { url: string };
+      medium?: { url: string };
+      high?: { url: string };
+      maxres?: { url: string };
+    };
+  };
+}
+
+interface YouTubePlaylistResponse {
+  items?: YouTubePlaylistItem[];
+}
+
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 const CHANNEL_HANDLE = '@ktdoc1737';
 
@@ -82,17 +102,22 @@ export async function getLatestVideos(maxResults: number = 3): Promise<YouTubeVi
       return [];
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as YouTubePlaylistResponse;
 
-    return data.items?.map((item: any) => ({
-      videoId: item.snippet.resourceId.videoId,
-      title: item.snippet.title,
-      thumbnail: item.snippet.thumbnails?.maxres?.url
+    return data.items?.map((item) => {
+      const thumbnail = item.snippet.thumbnails?.maxres?.url
         || item.snippet.thumbnails?.high?.url
         || item.snippet.thumbnails?.medium?.url
-        || item.snippet.thumbnails?.default?.url,
-      publishedAt: item.snippet.publishedAt,
-    })) || [];
+        || item.snippet.thumbnails?.default?.url
+        || '';
+
+      return {
+        videoId: item.snippet.resourceId.videoId,
+        title: item.snippet.title,
+        thumbnail,
+        publishedAt: item.snippet.publishedAt,
+      };
+    }) || [];
   } catch (error) {
     console.error('Error fetching latest videos:', error);
     return [];

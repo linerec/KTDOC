@@ -62,6 +62,29 @@ export interface EventVideo {
   created_at: string;
 }
 
+export interface GalleryPhoto {
+  id: number;
+  image_url: string;
+  r2_key: string;
+  caption_ko: string | null;
+  caption_en: string | null;
+  taken_date: string | null;
+  event_id: number | null;
+  event_image_id: number | null;
+  is_published: number;
+  is_featured: number;
+  sort_order: number;
+  width: number | null;
+  height: number | null;
+  size: number | null;
+  created_at: string;
+  updated_at: string;
+  event_title_ko?: string | null;
+  event_title_en?: string | null;
+  event_year?: number | null;
+  event_slug?: string | null;
+}
+
 export interface EventDetail extends EventWithCategory {
   images: EventImage[];
   videos: EventVideo[];
@@ -76,7 +99,15 @@ export interface EventFilters {
   page?: number;
   limit?: number;
   featured?: boolean;
+  published?: boolean | 'all';
+}
+
+export interface GalleryPhotoFilters {
+  search?: string;
+  page?: number;
+  limit?: number;
   published?: boolean;
+  organized?: 'all' | 'assigned' | 'unassigned';
 }
 
 export interface PaginationInfo {
@@ -124,6 +155,30 @@ export interface CreateImageInput {
 export interface CreateVideoInput {
   youtube_url: string;
   title?: string;
+}
+
+export interface CreateGalleryPhotoInput {
+  image_url: string;
+  r2_key: string;
+  caption_ko?: string;
+  caption_en?: string;
+  taken_date?: string;
+  event_id?: number;
+  is_published?: boolean;
+  is_featured?: boolean;
+  width?: number;
+  height?: number;
+  size?: number;
+}
+
+export interface UpdateGalleryPhotoInput {
+  caption_ko?: string | null;
+  caption_en?: string | null;
+  taken_date?: string | null;
+  event_id?: number | null;
+  is_published?: boolean;
+  is_featured?: boolean;
+  sort_order?: number;
 }
 
 export interface CreateCategoryInput {

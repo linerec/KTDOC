@@ -5,11 +5,12 @@
 
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { getEvents, getCategories } from '@/lib/d1';
+import { getEvents, getCategories, getGalleryPhotos } from '@/lib/d1';
 import GalleryHero from '@/components/gallery/GalleryHero';
 import GalleryFilter from '@/components/gallery/GalleryFilter';
 import YearSection from '@/components/gallery/YearSection';
 import GalleryEmptyState from '@/components/gallery/GalleryEmptyState';
+import PhotoStreamSection from '@/components/gallery/PhotoStreamSection';
 import type { EventWithCategory } from '@/types/gallery';
 
 export const metadata: Metadata = {
@@ -50,7 +51,8 @@ async function GalleryContent({
   search?: string;
   page?: string;
 }) {
-  const [eventsResult, categories] = await Promise.all([
+  const shouldShowPhotoStream = !year && !category && !search;
+  const [eventsResult, categories, photoStream] = await Promise.all([
     getEvents({
       year: year ? parseInt(year) : undefined,
       category: category || undefined,
@@ -60,6 +62,9 @@ async function GalleryContent({
       published: true,
     }),
     getCategories(),
+    shouldShowPhotoStream
+      ? getGalleryPhotos({ published: true, limit: 24 })
+      : Promise.resolve({ photos: [], total: 0 }),
   ]);
 
   const { events, years } = eventsResult;
@@ -69,8 +74,9 @@ async function GalleryContent({
   return (
     <>
       <GalleryFilter years={years} categories={categories} />
+      <PhotoStreamSection photos={photoStream.photos} />
 
-      {events.length === 0 ? (
+      {events.length === 0 && photoStream.photos.length === 0 ? (
         <GalleryEmptyState />
       ) : (
         <div className="gallery-content">

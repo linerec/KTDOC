@@ -95,8 +95,8 @@ export default function Header() {
                     ) : session ? (
                         <>
                             {/* Dashboard Link - Only for logged-in users */}
-                            <Link href="/admin/gallery" className="auth-btn auth-btn-dashboard">
-                                Dashboard
+                            <Link href="/admin" className="auth-btn auth-btn-dashboard">
+                                Admin
                             </Link>
                             {/* Edit Mode Toggle - Only for logged-in users */}
                             <button

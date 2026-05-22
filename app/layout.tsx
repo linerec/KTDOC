@@ -1,6 +1,21 @@
 import type { Metadata } from 'next';
+import { Noto_Serif_KR, Outfit } from 'next/font/google';
 import Providers from '@/components/Providers';
 import './globals.css';
+
+const notoSerifKr = Noto_Serif_KR({
+  subsets: ['latin'],
+  weight: ['300', '400', '700'],
+  display: 'swap',
+  variable: '--font-noto-serif-kr',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  weight: ['300', '400', '600'],
+  display: 'swap',
+  variable: '--font-outfit',
+});
 
 export const metadata: Metadata = {
   title: 'KTDOC - Korean Traditional Performance',
@@ -13,12 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="ko" className={`${notoSerifKr.variable} ${outfit.variable}`}>
       <body>
         <Providers>
           <div className="bg-layer" aria-hidden="true" />

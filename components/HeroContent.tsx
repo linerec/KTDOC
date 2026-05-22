@@ -2,32 +2,27 @@
 
 import Link from 'next/link';
 import IntlObject from '@/components/common/IntlObject';
-import ImageObject from '@/components/common/ImageObject';
-
-export function HeroLogo() {
-    return (
-        <div className="hero-logo-section">
-            <ImageObject
-                keycode="image.hero.logo"
-                width={600}
-                height={180}
-                className="hero-logo-image"
-                fallbackSrc="/assets/logo/logo_long_fixed.png"
-                priority
-            />
-        </div>
-    );
-}
 
 export function HeroText() {
     return (
         <div className="hero-left">
             <div className="hero-title-wrapper">
+                <p className="hero-kicker">
+                    <IntlObject keycode="hero.kicker" />
+                </p>
                 <h1 className="hero-title">
-                    <IntlObject keycode="hero.title.grace" returnType="span" />
-                    <IntlObject keycode="hero.title.rhythm" returnType="span" />
-                    <IntlObject keycode="hero.title.tradition" returnType="span" />
+                    <span className="hero-title-line">
+                        <IntlObject keycode="hero.headline.line1" returnType="span" />
+                    </span>
+                    <span className="hero-title-line hero-title-line2">
+                        <IntlObject keycode="hero.headline.line2a" returnType="span" />
+                        <span className="hero-title-gap"> </span>
+                        <IntlObject keycode="hero.headline.line2b" returnType="span" />
+                    </span>
                 </h1>
+                <p className="hero-lede">
+                    <IntlObject keycode="hero.headline.secondary" />
+                </p>
             </div>
 
             <p className="hero-since">

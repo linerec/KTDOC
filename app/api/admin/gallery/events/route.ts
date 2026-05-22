@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       search: searchParams.get('search') || undefined,
       page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1,
       limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50,
-      published: undefined, // Show all (published and unpublished)
+      published: 'all', // Show all (published and unpublished)
     });
 
     return NextResponse.json({

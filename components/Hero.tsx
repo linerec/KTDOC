@@ -1,16 +1,40 @@
 import { getLatestVideos } from '@/lib/youtube';
 import VideoCard from './VideoCard';
-import { HeroLogo, HeroText } from './HeroContent';
+import { HeroText } from './HeroContent';
+
+const heroBackgroundImages = [
+  {
+    src: 'https://pub-06654d5ca3e54fa58acbac46039ae9a7.r2.dev/gallery/photos/docs-pictures/1770919299666.jpg',
+    position: 'center 56%',
+  },
+  {
+    src: 'https://pub-06654d5ca3e54fa58acbac46039ae9a7.r2.dev/gallery/photos/docs-pictures/1000005223.jpg',
+    position: 'center 44%',
+  },
+  {
+    src: 'https://pub-06654d5ca3e54fa58acbac46039ae9a7.r2.dev/gallery/photos/docs-pictures/1728167228227.jpg',
+    position: 'center 44%',
+  },
+];
 
 export default async function Hero() {
   const videos = await getLatestVideos(3);
 
   return (
     <section id="hero">
+      <div className="hero-art-bg" aria-hidden="true">
+        {heroBackgroundImages.map((image) => (
+          <div
+            className="hero-art-frame"
+            key={image.src}
+            style={{
+              backgroundImage: `url(${image.src})`,
+              backgroundPosition: image.position,
+            }}
+          />
+        ))}
+      </div>
       <div className="hero-container">
-        {/* Top - Centered Logo (Client Component for editing) */}
-        <HeroLogo />
-
         {/* Bottom - Content Grid */}
         <div className="hero-content-grid">
           {/* Left Side - Text and Button (Client Component for editing) */}

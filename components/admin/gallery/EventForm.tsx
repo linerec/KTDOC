@@ -5,7 +5,7 @@
  * 이벤트 생성/편집 폼
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { EventDetail, EventCategory, CreateEventInput, UpdateEventInput } from '@/types/gallery';
 import ImageUploader from './ImageUploader';
@@ -111,7 +111,10 @@ export default function EventForm({
       <div className="admin-form-grid">
         {/* Basic Info Section */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">기본 정보</h3>
+          <h3 className="admin-form-section-title">이벤트 기본 정보</h3>
+          <p className="admin-form-help">
+            이 정보가 공개 Gallery의 카드와 이벤트 상세 페이지에 표시됩니다.
+          </p>
 
           <div className="admin-form-group">
             <label htmlFor="title_ko" className="admin-form-label">
@@ -216,7 +219,7 @@ export default function EventForm({
                 checked={formData.is_published}
                 onChange={handleChange}
               />
-              <label htmlFor="is_published">공개</label>
+              <label htmlFor="is_published">공개 Gallery에 표시</label>
             </div>
 
             <div className="admin-form-checkbox">
@@ -236,7 +239,10 @@ export default function EventForm({
         {!isNew && event && (
           <>
             <div className="admin-form-section">
-              <h3 className="admin-form-section-title">이미지</h3>
+              <h3 className="admin-form-section-title">이 이벤트의 사진</h3>
+              <p className="admin-form-help">
+                업로드한 사진은 이 이벤트 상세 페이지의 사진 영역에 표시됩니다.
+              </p>
               <ImageUploader
                 eventId={event.id}
                 onUploadComplete={(newImages) => {
@@ -256,7 +262,10 @@ export default function EventForm({
             </div>
 
             <div className="admin-form-section">
-              <h3 className="admin-form-section-title">영상</h3>
+              <h3 className="admin-form-section-title">이 이벤트의 영상</h3>
+              <p className="admin-form-help">
+                YouTube 영상 링크를 추가하면 이 이벤트 상세 페이지의 영상 영역에 표시됩니다.
+              </p>
               <VideoManager
                 eventId={event.id}
                 videos={videos}

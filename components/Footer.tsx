@@ -41,6 +41,10 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="footer-bottom">
+                    <div className="footer-copy">
+                        <IntlObject keycode="footer.tagline" returnType="p" />
+                        <IntlObject keycode="footer.contact" returnType="p" className="footer-contact" />
+                    </div>
                     <p><IntlObject keycode="footer.copyright" /></p>
                 </div>
             </div>

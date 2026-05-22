@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import IntlObject from '@/components/common/IntlObject';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function RegisterForm() {
   const router = useRouter();
+  const { messages } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,12 +23,12 @@ export default function RegisterForm() {
 
     // Validation
     if (password !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+      setError(messages['auth.error.passwordMismatch']);
       return;
     }
 
     if (password.length < 8) {
-      setError('비밀번호는 최소 8자 이상이어야 합니다.');
+      setError(messages['auth.error.passwordLength']);
       return;
     }
 
@@ -41,7 +44,7 @@ export default function RegisterForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || '회원가입에 실패했습니다.');
+        setError(data.error || messages['auth.error.registerFailed']);
         return;
       }
 
@@ -59,7 +62,7 @@ export default function RegisterForm() {
         router.refresh();
       }
     } catch {
-      setError('회원가입 중 오류가 발생했습니다.');
+      setError(messages['auth.error.registerFailed']);
     } finally {
       setIsLoading(false);
     }
@@ -67,67 +70,67 @@ export default function RegisterForm() {
 
   return (
     <form className="auth-form" onSubmit={handleSubmit}>
-      <h1 className="auth-title">회원가입</h1>
+      <IntlObject keycode="auth.register" returnType="h1" className="auth-title" />
 
       {error && <div className="auth-error">{error}</div>}
 
       <div className="auth-field">
-        <label htmlFor="name">이름</label>
+        <label htmlFor="name"><IntlObject keycode="auth.name" /></label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="이름을 입력하세요"
+          placeholder={messages['auth.name.placeholder']}
           disabled={isLoading}
         />
       </div>
 
       <div className="auth-field">
-        <label htmlFor="email">이메일</label>
+        <label htmlFor="email"><IntlObject keycode="auth.email" /></label>
         <input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="example@email.com"
+          placeholder={messages['auth.email.placeholder']}
           required
           disabled={isLoading}
         />
       </div>
 
       <div className="auth-field">
-        <label htmlFor="password">비밀번호</label>
+        <label htmlFor="password"><IntlObject keycode="auth.password" /></label>
         <input
           id="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="8자 이상 입력하세요"
+          placeholder={messages['auth.password.minPlaceholder']}
           required
           disabled={isLoading}
         />
       </div>
 
       <div className="auth-field">
-        <label htmlFor="confirmPassword">비밀번호 확인</label>
+        <label htmlFor="confirmPassword"><IntlObject keycode="auth.confirmPassword" /></label>
         <input
           id="confirmPassword"
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="비밀번호를 다시 입력하세요"
+          placeholder={messages['auth.confirmPassword.placeholder']}
           required
           disabled={isLoading}
         />
       </div>
 
       <button type="submit" className="auth-button" disabled={isLoading}>
-        {isLoading ? '가입 중...' : '회원가입'}
+        {isLoading ? messages['auth.register.loading'] : messages['auth.register']}
       </button>
 
       <p className="auth-link">
-        이미 계정이 있으신가요? <Link href="/login">로그인</Link>
+        <IntlObject keycode="auth.hasAccount" /> <Link href="/login"><IntlObject keycode="auth.login" /></Link>
       </p>
     </form>
   );

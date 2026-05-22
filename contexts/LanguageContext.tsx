@@ -8,6 +8,7 @@ import enMessages from '@/locale/en.json';
 type Locale = 'ko' | 'en';
 type Messages = Record<string, string>;
 type AllMessages = Record<Locale, Messages>;
+const AVAILABLE_LANGS: Locale[] = ['ko', 'en'];
 
 interface LanguageContextType {
   locale: Locale;
@@ -44,7 +45,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   const [locale, setLocale] = useState<Locale>('ko');
   const [allMessages, setAllMessages] = useState<AllMessages>(defaultMessages);
   const [isLoading, setIsLoading] = useState(true);
-  const availableLangs: Locale[] = ['ko', 'en'];
+  const availableLangs = AVAILABLE_LANGS;
 
   const fetchLocaleData = useCallback(async () => {
     try {

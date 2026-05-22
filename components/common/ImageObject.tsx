@@ -281,7 +281,13 @@ export default function ImageObject({
             <div className="image-object-modal-body">
               <div className="image-object-preview">
                 {hasValidImage ? (
-                  <img src={imageData!.url} alt="Preview" />
+                  <Image
+                    src={imageData!.url}
+                    alt="Preview"
+                    width={imageData!.width || 640}
+                    height={imageData!.height || 360}
+                    className="image-object-preview-img"
+                  />
                 ) : (
                   <div className="image-object-no-image">이미지 없음</div>
                 )}

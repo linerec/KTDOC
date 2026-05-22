@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type { EventWithCategory } from '@/types/gallery';
 import { formatEventDate } from '@/types/gallery';
 
@@ -22,27 +23,57 @@ export default function EventTable({
   onDelete,
   onTogglePublish,
 }: EventTableProps) {
+  const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (event: EventWithCategory) => {
-    if (!onDelete) return;
     if (!confirm(`"${event.title_ko}" 이벤트를 삭제하시겠습니까?`)) return;
 
     setDeletingId(event.id);
+    setError(null);
     try {
-      await onDelete(event.id);
+      if (onDelete) {
+        await onDelete(event.id);
+      } else {
+        const res = await fetch(`/api/admin/gallery/events/${event.id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || '삭제에 실패했습니다.');
+        }
+        router.refresh();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '삭제에 실패했습니다.');
     } finally {
       setDeletingId(null);
     }
   };
 
   const handleTogglePublish = async (event: EventWithCategory) => {
-    if (!onTogglePublish) return;
-
     setTogglingId(event.id);
+    setError(null);
     try {
-      await onTogglePublish(event.id, !event.is_published);
+      const nextPublished = !event.is_published;
+      if (onTogglePublish) {
+        await onTogglePublish(event.id, nextPublished);
+      } else {
+        const res = await fetch(`/api/admin/gallery/events/${event.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_published: nextPublished }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || '상태 변경에 실패했습니다.');
+        }
+        router.refresh();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '상태 변경에 실패했습니다.');
     } finally {
       setTogglingId(null);
     }
@@ -51,25 +82,31 @@ export default function EventTable({
   if (events.length === 0) {
     return (
       <div className="admin-empty-state">
-        <p>등록된 이벤트가 없습니다.</p>
+        <p>아직 등록된 아카이브 이벤트가 없습니다.</p>
         <Link href="/admin/gallery/new" className="admin-btn admin-btn-primary">
-          새 이벤트 추가
+          첫 이벤트 만들기
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="admin-table-wrapper">
-      <table className="admin-table">
+    <>
+      {error && (
+        <div className="admin-alert admin-alert-error">
+          {error}
+        </div>
+      )}
+      <div className="admin-table-wrapper">
+        <table className="admin-table">
         <thead>
           <tr>
             <th style={{ width: '80px' }}>썸네일</th>
-            <th>제목</th>
+            <th>이벤트 제목</th>
             <th style={{ width: '80px' }}>연도</th>
             <th style={{ width: '120px' }}>날짜</th>
             <th style={{ width: '100px' }}>카테고리</th>
-            <th style={{ width: '80px' }}>상태</th>
+            <th style={{ width: '92px' }}>공개 상태</th>
             <th style={{ width: '60px' }}>조회</th>
             <th style={{ width: '150px' }}>작업</th>
           </tr>
@@ -141,7 +178,7 @@ export default function EventTable({
                       target="_blank"
                       className="admin-btn admin-btn-sm admin-btn-outline"
                     >
-                      보기
+                      공개 페이지
                     </Link>
                   ) : null}
                   <button
@@ -157,7 +194,8 @@ export default function EventTable({
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+        </table>
+      </div>
+    </>
   );
 }

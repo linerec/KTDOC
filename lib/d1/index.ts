@@ -49,6 +49,14 @@ export {
   createEventVideo,
   updateVideoOrder,
   deleteEventVideo,
+  // Loose Gallery Photos
+  getGalleryPhotos,
+  getGalleryPhotoById,
+  createGalleryPhoto,
+  updateGalleryPhoto,
+  markGalleryPhotoEventImage,
+  clearGalleryPhotoEventImage,
+  deleteGalleryPhoto,
   // Utilities
   getYears,
   getAdjacentEvents,

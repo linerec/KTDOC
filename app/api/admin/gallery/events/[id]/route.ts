@@ -7,7 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getEventById, updateEvent, deleteEvent, deleteAllEventImages } from '@/lib/d1';
+import { getEventById, updateEvent, deleteEvent } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
 import type { UpdateEventInput } from '@/types/gallery';
 

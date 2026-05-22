@@ -10,7 +10,7 @@ import { getEvents, getCategories, getYears } from '@/lib/d1';
 import EventTable from '@/components/admin/gallery/EventTable';
 
 export const metadata = {
-  title: 'Gallery 관리 | KTDOC Admin',
+  title: '이벤트 아카이브 관리 | KTDOC Admin',
 };
 
 interface PageProps {
@@ -25,7 +25,7 @@ interface PageProps {
 export default async function AdminGalleryPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session) {
-    redirect('/admin');
+    redirect('/login');
   }
 
   const params = await searchParams;
@@ -36,7 +36,7 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
       search: params.search || undefined,
       page: params.page ? parseInt(params.page) : 1,
       limit: 50,
-      published: undefined, // Show all
+      published: 'all', // Show all
     }),
     getCategories(),
     getYears(),
@@ -48,21 +48,34 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
-          <h1 className="admin-title">Gallery 관리</h1>
-          <p className="admin-subtitle">공연 아카이브 이벤트 관리</p>
+          <div className="admin-breadcrumb">
+            <Link href="/admin">관리 홈</Link>
+            <span>/</span>
+            <span>이벤트 아카이브</span>
+          </div>
+          <h1 className="admin-title">이벤트 아카이브 관리</h1>
+          <p className="admin-subtitle">
+            공개 Gallery에 표시될 이벤트를 관리합니다. 사진과 영상은 각 이벤트 편집 화면에서 추가합니다.
+          </p>
         </div>
         <div className="admin-header-actions">
           <Link
             href="/admin/gallery/categories"
             className="admin-btn admin-btn-outline"
           >
-            카테고리 관리
+            이벤트 카테고리
+          </Link>
+          <Link
+            href="/admin/gallery/photos"
+            className="admin-btn admin-btn-outline"
+          >
+            사진 보관함
           </Link>
           <Link
             href="/admin/gallery/new"
             className="admin-btn admin-btn-primary"
           >
-            + 새 이벤트
+            + 새 이벤트 만들기
           </Link>
         </div>
       </div>
@@ -112,7 +125,7 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
         </form>
 
         <div className="admin-filter-info">
-          총 {total}개의 이벤트
+          총 {total}개의 아카이브 이벤트
         </div>
       </div>
 

@@ -48,10 +48,6 @@ export default function ImageUploader({
           throw new Error('이미지 파일만 업로드할 수 있습니다.');
         }
 
-        // Upload with progress simulation
-        const totalFiles = validFiles.length;
-        const progressStep = 100 / totalFiles;
-
         const res = await fetch(
           `/api/admin/gallery/events/${eventId}/images`,
           {

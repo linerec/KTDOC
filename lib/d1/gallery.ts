@@ -6,16 +6,19 @@
 import { queryD1, executeD1 } from './client';
 import type {
   EventCategory,
-  Event,
   EventWithCategory,
   EventImage,
   EventVideo,
+  GalleryPhoto,
   EventDetail,
   EventFilters,
+  GalleryPhotoFilters,
   CreateEventInput,
   UpdateEventInput,
   CreateImageInput,
   CreateVideoInput,
+  CreateGalleryPhotoInput,
+  UpdateGalleryPhotoInput,
   CreateCategoryInput,
 } from '@/types/gallery';
 import { generateSlug, extractYouTubeId } from '@/types/gallery';
@@ -115,8 +118,10 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
   const conditions: string[] = [];
   const params: unknown[] = [];
 
-  if (published) {
+  if (published === true) {
     conditions.push('e.is_published = 1');
+  } else if (published === false) {
+    conditions.push('e.is_published = 0');
   }
 
   if (year) {
@@ -474,6 +479,194 @@ export async function updateVideoOrder(
 
 export async function deleteEventVideo(id: number): Promise<void> {
   await executeD1('DELETE FROM event_videos WHERE id = ?', [id]);
+}
+
+// ============================================
+// Loose Gallery Photos
+// ============================================
+
+export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promise<{
+  photos: GalleryPhoto[];
+  total: number;
+}> {
+  const {
+    search,
+    page = 1,
+    limit = 60,
+    published,
+    organized = 'all',
+  } = filters;
+
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (published !== undefined) {
+    conditions.push('gp.is_published = ?');
+    params.push(published ? 1 : 0);
+  }
+
+  if (organized === 'assigned') {
+    conditions.push('gp.event_id IS NOT NULL');
+  } else if (organized === 'unassigned') {
+    conditions.push('gp.event_id IS NULL');
+  }
+
+  if (search) {
+    conditions.push(`(
+      gp.caption_ko LIKE ? OR gp.caption_en LIKE ? OR
+      e.title_ko LIKE ? OR e.title_en LIKE ?
+    )`);
+    const searchTerm = `%${search}%`;
+    params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const countResult = await queryD1<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM gallery_photos gp
+     LEFT JOIN events e ON gp.event_id = e.id
+     ${whereClause}`,
+    params
+  );
+
+  const offset = (page - 1) * limit;
+  const photos = await queryD1<GalleryPhoto>(
+    `SELECT gp.*,
+            e.title_ko as event_title_ko,
+            e.title_en as event_title_en,
+            e.year as event_year,
+            e.slug as event_slug
+     FROM gallery_photos gp
+     LEFT JOIN events e ON gp.event_id = e.id
+     ${whereClause}
+     ORDER BY gp.sort_order ASC, gp.created_at DESC, gp.id DESC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
+
+  return {
+    photos,
+    total: countResult[0]?.count || 0,
+  };
+}
+
+export async function getGalleryPhotoById(id: number): Promise<GalleryPhoto | null> {
+  const photos = await queryD1<GalleryPhoto>(
+    `SELECT gp.*,
+            e.title_ko as event_title_ko,
+            e.title_en as event_title_en,
+            e.year as event_year,
+            e.slug as event_slug
+     FROM gallery_photos gp
+     LEFT JOIN events e ON gp.event_id = e.id
+     WHERE gp.id = ?`,
+    [id]
+  );
+
+  return photos[0] || null;
+}
+
+export async function createGalleryPhoto(input: CreateGalleryPhotoInput): Promise<number> {
+  const maxOrder = await queryD1<{ max_order: number }>(
+    'SELECT COALESCE(MAX(sort_order), -1) as max_order FROM gallery_photos'
+  );
+  const sortOrder = (maxOrder[0]?.max_order ?? -1) + 1;
+
+  const { lastRowId } = await executeD1(
+    `INSERT INTO gallery_photos (
+      image_url, r2_key, caption_ko, caption_en, taken_date,
+      event_id, is_published, is_featured, sort_order,
+      width, height, size
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      input.image_url,
+      input.r2_key,
+      input.caption_ko || null,
+      input.caption_en || null,
+      input.taken_date || null,
+      input.event_id || null,
+      input.is_published ? 1 : 0,
+      input.is_featured ? 1 : 0,
+      sortOrder,
+      input.width || null,
+      input.height || null,
+      input.size || null,
+    ]
+  );
+
+  return lastRowId;
+}
+
+export async function updateGalleryPhoto(
+  id: number,
+  input: UpdateGalleryPhotoInput
+): Promise<void> {
+  const updates: string[] = [];
+  const params: unknown[] = [];
+
+  if (input.caption_ko !== undefined) {
+    updates.push('caption_ko = ?');
+    params.push(input.caption_ko || null);
+  }
+  if (input.caption_en !== undefined) {
+    updates.push('caption_en = ?');
+    params.push(input.caption_en || null);
+  }
+  if (input.taken_date !== undefined) {
+    updates.push('taken_date = ?');
+    params.push(input.taken_date || null);
+  }
+  if (input.event_id !== undefined) {
+    updates.push('event_id = ?');
+    params.push(input.event_id || null);
+  }
+  if (input.is_published !== undefined) {
+    updates.push('is_published = ?');
+    params.push(input.is_published ? 1 : 0);
+  }
+  if (input.is_featured !== undefined) {
+    updates.push('is_featured = ?');
+    params.push(input.is_featured ? 1 : 0);
+  }
+  if (input.sort_order !== undefined) {
+    updates.push('sort_order = ?');
+    params.push(input.sort_order);
+  }
+
+  if (updates.length === 0) return;
+
+  updates.push("updated_at = datetime('now')");
+  params.push(id);
+
+  await executeD1(
+    `UPDATE gallery_photos SET ${updates.join(', ')} WHERE id = ?`,
+    params
+  );
+}
+
+export async function markGalleryPhotoEventImage(
+  id: number,
+  eventImageId: number
+): Promise<void> {
+  await executeD1(
+    "UPDATE gallery_photos SET event_image_id = ?, updated_at = datetime('now') WHERE id = ?",
+    [eventImageId, id]
+  );
+}
+
+export async function clearGalleryPhotoEventImage(id: number): Promise<void> {
+  await executeD1(
+    "UPDATE gallery_photos SET event_image_id = NULL, updated_at = datetime('now') WHERE id = ?",
+    [id]
+  );
+}
+
+export async function deleteGalleryPhoto(id: number): Promise<GalleryPhoto | null> {
+  const photo = await getGalleryPhotoById(id);
+  if (!photo) return null;
+
+  await executeD1('DELETE FROM gallery_photos WHERE id = ?', [id]);
+  return photo;
 }
 
 // ============================================
