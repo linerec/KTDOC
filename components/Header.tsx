@@ -40,8 +40,64 @@ export default function Header() {
         setIsMenuOpen(false);
     };
 
+    const handleEditModeToggle = () => {
+        toggleEditMode();
+        closeMenu();
+    };
+
     const handleSignOut = () => {
+        closeMenu();
         signOut({ callbackUrl: '/' });
+    };
+
+    const renderLanguageSwitcher = (className = 'language-switcher') => (
+        <div className={className} aria-label="Language">
+            {availableLangs.map((lang) => (
+                <button
+                    key={lang}
+                    type="button"
+                    className={`lang-btn ${locale === lang ? 'active' : ''}`}
+                    onClick={() => changeLanguage(lang)}
+                >
+                    {lang}
+                </button>
+            ))}
+        </div>
+    );
+
+    const renderAuthActions = () => {
+        if (status === 'loading') {
+            return <span className="auth-loading">...</span>;
+        }
+
+        if (session) {
+            return (
+                <div className="header-auth-actions">
+                    <Link href="/admin" className="auth-btn auth-btn-dashboard" onClick={closeMenu}>
+                        Admin
+                    </Link>
+                    <button
+                        type="button"
+                        className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
+                        onClick={handleEditModeToggle}
+                        title={isEditMode ? '편집 모드 끄기' : '편집 모드 켜기'}
+                    >
+                        {isEditMode ? 'Edit ON' : 'Edit'}
+                    </button>
+                    <span className="auth-user">{session.user?.name || session.user?.email}</span>
+                    <button type="button" className="auth-btn auth-btn-logout" onClick={handleSignOut}>
+                        <IntlObject keycode="auth.logout" />
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <div className="header-auth-actions">
+                <Link href="/login" className="auth-btn" onClick={closeMenu}><IntlObject keycode="auth.login" /></Link>
+                <Link href="/register" className="auth-btn auth-btn-primary" onClick={closeMenu}><IntlObject keycode="auth.register" /></Link>
+            </div>
+        );
     };
 
     return (
@@ -73,50 +129,19 @@ export default function Header() {
                             </li>
                         ))}
                     </ul>
+                    <div className="mobile-nav-auth">
+                        {renderAuthActions()}
+                    </div>
                 </nav>
 
                 {/* Auth Section */}
-                <div className="header-auth">
-                    {/* Language Switcher */}
-                    <div className="language-switcher">
-                        {availableLangs.map((lang) => (
-                            <button
-                                key={lang}
-                                className={`lang-btn ${locale === lang ? 'active' : ''}`}
-                                onClick={() => changeLanguage(lang)}
-                            >
-                                {lang}
-                            </button>
-                        ))}
-                    </div>
+                <div className={`header-auth ${session ? 'is-signed-in' : 'is-signed-out'}`}>
+                    {renderLanguageSwitcher()}
+                    {renderAuthActions()}
+                </div>
 
-                    {status === 'loading' ? (
-                        <span className="auth-loading">...</span>
-                    ) : session ? (
-                        <>
-                            {/* Dashboard Link - Only for logged-in users */}
-                            <Link href="/admin" className="auth-btn auth-btn-dashboard">
-                                Admin
-                            </Link>
-                            {/* Edit Mode Toggle - Only for logged-in users */}
-                            <button
-                                className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
-                                onClick={toggleEditMode}
-                                title={isEditMode ? '편집 모드 끄기' : '편집 모드 켜기'}
-                            >
-                                {isEditMode ? 'Edit ON' : 'Edit'}
-                            </button>
-                            <span className="auth-user">{session.user?.name || session.user?.email}</span>
-                            <button className="auth-btn auth-btn-logout" onClick={handleSignOut}>
-                                <IntlObject keycode="auth.logout" />
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link href="/login" className="auth-btn"><IntlObject keycode="auth.login" /></Link>
-                            <Link href="/register" className="auth-btn auth-btn-primary"><IntlObject keycode="auth.register" /></Link>
-                        </>
-                    )}
+                <div className="mobile-language-float">
+                    {renderLanguageSwitcher('language-switcher mobile-language-switcher')}
                 </div>
 
                 {/* Mobile Menu Button */}

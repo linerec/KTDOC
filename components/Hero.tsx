@@ -1,4 +1,5 @@
 import { getLatestVideos } from '@/lib/youtube';
+import Image from 'next/image';
 import VideoCard from './VideoCard';
 import { HeroText } from './HeroContent';
 
@@ -23,6 +24,15 @@ export default async function Hero() {
   return (
     <section id="hero">
       <div className="hero-art-bg" aria-hidden="true">
+        <Image
+          className="hero-art-preload"
+          src={heroBackgroundImages[0].src}
+          alt=""
+          width={1}
+          height={1}
+          priority
+          unoptimized
+        />
         {heroBackgroundImages.map((image) => (
           <div
             className="hero-art-frame"
