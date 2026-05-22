@@ -34,10 +34,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${event.title_ko} | KTDOC Gallery`,
     description: event.description_ko || `${event.title_ko} - ${year}년 공연 아카이브`,
+    alternates: {
+      canonical: `/gallery/${year}/${slug}`,
+    },
     openGraph: {
       title: event.title_ko,
       description: event.description_ko || undefined,
-      images: event.poster_url ? [event.poster_url] : undefined,
+      url: `/gallery/${year}/${slug}`,
+      type: 'article',
+      siteName: 'KTDOC',
+      locale: 'ko_KR',
+      images: [
+        {
+          url: event.poster_url || event.thumbnail_url || event.images[0]?.image_url || '/og-image.jpg',
+          width: 1200,
+          height: 630,
+          alt: event.title_ko,
+        },
+      ],
     },
   };
 }

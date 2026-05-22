@@ -16,6 +16,22 @@ import type { EventWithCategory } from '@/types/gallery';
 export const metadata: Metadata = {
   title: 'Gallery | KTDOC',
   description: 'Performances Through the Years - Korean Traditional Dance of Choomnoori archive',
+  alternates: {
+    canonical: '/gallery',
+  },
+  openGraph: {
+    title: 'Gallery | KTDOC',
+    description: 'Performances Through the Years - Korean Traditional Dance of Choomnoori archive',
+    url: '/gallery',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 600,
+        height: 400,
+        alt: 'KTDOC - Korean Traditional Dance of Choomnoori',
+      },
+    ],
+  },
 };
 
 interface PageProps {
