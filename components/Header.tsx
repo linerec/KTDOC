@@ -101,60 +101,61 @@ export default function Header() {
     };
 
     return (
-        <header id="main-header" className={isScrolled ? 'scrolled' : ''}>
-            <div className="header-inner">
-                {/* Logo - Center Top */}
-                <div className="header-logo">
-                    <Link href="/">
-                        <Image
-                            src="/assets/logo/logo_white.png"
-                            alt="KTDOC Logo"
-                            width={100}
-                            height={35}
-                            style={{ height: '60px', width: 'auto' }}
-                            priority
-                        />
-                    </Link>
-                </div>
+        <>
+            <header id="main-header" className={isScrolled ? 'scrolled' : ''}>
+                <div className="header-inner">
+                    {/* Logo - Center Top */}
+                    <div className="header-logo">
+                        <Link href="/">
+                            <Image
+                                src="/assets/logo/logo_white.png"
+                                alt="KTDOC Logo"
+                                width={100}
+                                height={35}
+                                style={{ height: '60px', width: 'auto' }}
+                                priority
+                            />
+                        </Link>
+                    </div>
 
-                {/* Navigation - Below Logo */}
-                <nav id="main-nav" className={isMenuOpen ? 'active' : ''}>
-                    <ul>
-                        {menuItems.map((item) => (
-                            <li key={item.keycode}>
-                                <Link href={item.href} onClick={closeMenu}>
-                                    <IntlObject keycode={item.keycode} />
-                                    {item.hasDropdown && <span className="dropdown-arrow">▾</span>}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="mobile-nav-auth">
+                    {/* Navigation - Below Logo */}
+                    <nav id="main-nav" className={isMenuOpen ? 'active' : ''}>
+                        <ul>
+                            {menuItems.map((item) => (
+                                <li key={item.keycode}>
+                                    <Link href={item.href} onClick={closeMenu}>
+                                        <IntlObject keycode={item.keycode} />
+                                        {item.hasDropdown && <span className="dropdown-arrow">▾</span>}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="mobile-nav-auth">
+                            {renderAuthActions()}
+                        </div>
+                    </nav>
+
+                    {/* Auth Section */}
+                    <div className={`header-auth ${session ? 'is-signed-in' : 'is-signed-out'}`}>
+                        {renderLanguageSwitcher()}
                         {renderAuthActions()}
                     </div>
-                </nav>
 
-                {/* Auth Section */}
-                <div className={`header-auth ${session ? 'is-signed-in' : 'is-signed-out'}`}>
-                    {renderLanguageSwitcher()}
-                    {renderAuthActions()}
+                    {/* Mobile Menu Button */}
+                    <button
+                        className={`mobile-menu-btn ${isMenuOpen ? 'active' : ''}`}
+                        aria-label="Toggle Menu"
+                        onClick={toggleMenu}
+                    >
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
                 </div>
-
-                <div className="mobile-language-float">
-                    {renderLanguageSwitcher('language-switcher mobile-language-switcher')}
-                </div>
-
-                {/* Mobile Menu Button */}
-                <button
-                    className={`mobile-menu-btn ${isMenuOpen ? 'active' : ''}`}
-                    aria-label="Toggle Menu"
-                    onClick={toggleMenu}
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+            </header>
+            <div className="mobile-language-float">
+                {renderLanguageSwitcher('language-switcher mobile-language-switcher')}
             </div>
-        </header>
+        </>
     );
 }

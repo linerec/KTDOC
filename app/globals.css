@@ -1736,6 +1736,31 @@ ul {
   color: var(--bg-color);
 }
 
+.mobile-language-switcher {
+  gap: 0;
+}
+
+.mobile-language-switcher .lang-btn {
+  min-width: 38px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(246, 239, 226, 0.62);
+}
+
+.mobile-language-switcher .lang-btn:hover {
+  border: 0;
+  color: var(--warm-ivory);
+}
+
+.mobile-language-switcher .lang-btn.active {
+  border: 0;
+  background: var(--warm-ivory);
+  color: #090705;
+}
+
 /* ========================================
    IMAGE OBJECT COMPONENT
 ======================================== */
