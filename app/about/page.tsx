@@ -15,10 +15,10 @@ export default function About() {
           {/* Background Image - 텍스트 뒤에 배치 */}
           <div className="about-hero-bg">
             <Image
-              src="/assets/images/about01.jpg"
-              alt="부채춤 - Korean Fan Dance Performance"
+              src="/assets/images/site/times-square-drums.jpg"
+              alt="춤누리 타임스퀘어 공연 - Choomnoori Times Square Performance"
               fill
-              style={{ objectFit: 'cover', objectPosition: 'center top' }}
+              style={{ objectFit: 'cover', objectPosition: 'center 56%' }}
               priority
             />
           </div>
@@ -29,10 +29,10 @@ export default function About() {
               {/* Title - Logo Image */}
               <h1 className="about-hero-title">
                 <Image
-                  src="/assets/logo/logo_long_fixed.png"
+                  src="/assets/logo/logo_white.png"
                   alt="Korean Traditional Dance of Choomnoori"
-                  width={800}
-                  height={200}
+                  width={400}
+                  height={242}
                   priority
                 />
               </h1>
@@ -84,10 +84,10 @@ export default function About() {
               {/* Portrait */}
               <div className="about-director-portrait">
                 <Image
-                  src="/assets/images/about03.png"
+                  src="/assets/images/director_portrait.jpg"
                   alt="안은희 단장 - Director Eunhee Ahn"
-                  width={280}
-                  height={350}
+                  width={752}
+                  height={922}
                   style={{ width: '100%', height: 'auto' }}
                 />
               </div>

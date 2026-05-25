@@ -18,7 +18,7 @@
   "header.performances": "공연",
   "header.gallery": "갤러리",
 
-  "hero.kicker": "Choomnoori Mission",
+  "hero.kicker": "KTDOC Mission",
   "hero.headline.primary": "춤으로 잇다,<br/>전통으로 <wbr/>피어나다",
   "hero.headline.line1": "춤으로 잇다,",
   "hero.headline.line2a": "전통으로",
@@ -43,11 +43,11 @@
   "categories.community": "커뮤니티 활동",
   "categories.media": "미디어",
 
-  "traditional.vertical.text": "Korean Traditional Dance of Choomnoori",
+  "traditional.vertical.text": "KTDOC",
 
   "footer.tagline": "뉴저지를 기반으로 한국 전통예술의 교육, 공연, 문화전승을 이어가는 춤누리 한국전통무용단입니다.",
   "footer.contact": "Performance · Education · Community",
-  "footer.copyright": "© 2026 KTDOC · Korean Traditional Dance of Choomnoori. All rights reserved.",
+  "footer.copyright": "© 2026 KTDOC. All rights reserved.",
 
   "auth.login": "로그인",
   "auth.logout": "로그아웃",
@@ -117,7 +117,7 @@
   "about.director.title.en": "Founder & Artistic Director",
   "about.director.bio1": "안은희 디렉터는 한국 전통무용과 전통 타악을 기반으로 활동하는 공연예술가이자 교육자입니다. 단국대학교 무용학과 졸업 후 삼성무용단에서 전문 무용수로 활동했으며, 현재 춤누리 한국전통무용단의 설립자이자 예술감독으로 한국 전통예술의 교육, 공연, 문화 확산 활동을 이어가고 있습니다.",
 
-  "gallery.hero.label": "Choomnoori 춤누리",
+  "gallery.hero.label": "KTDOC 춤누리",
   "gallery.hero.title": "Performances<br/>Through the Years",
   "gallery.hero.subtitle": "2008–현재",
   "gallery.hero.description": "한국 전통 예술과 문화 공연의 아름다운 순간들",

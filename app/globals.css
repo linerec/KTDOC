@@ -10,6 +10,10 @@
   --warm-ivory: #f6efe2;
   --soft-gold: #e0b84f;
   --deep-red: #8f211d;
+  --ink-black: #090705;
+  --ink-umber: #15100d;
+  --deep-umber: #21130f;
+  --soft-umber: #2a1a14;
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -562,7 +566,8 @@ ul {
   position: relative;
   overflow: hidden;
   background:
-    linear-gradient(180deg, #090705 0%, #120d09 48%, #090705 100%);
+    radial-gradient(circle at 82% 12%, rgba(143, 33, 29, 0.16), transparent 36%),
+    linear-gradient(180deg, var(--ink-umber) 0%, var(--deep-umber) 52%, #1a0f0c 100%);
   padding: clamp(84px, 10vw, 150px) 40px;
 }
 
@@ -571,9 +576,9 @@ ul {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(224, 184, 79, 0.13), transparent 28%, transparent 72%, rgba(196, 48, 43, 0.12)),
+    linear-gradient(90deg, rgba(224, 184, 79, 0.12), transparent 28%, transparent 72%, rgba(196, 48, 43, 0.1)),
     url('/assets/images/black_stroke.png') center / cover no-repeat;
-  opacity: 0.28;
+  opacity: 0.18;
   pointer-events: none;
 }
 
@@ -590,11 +595,11 @@ ul {
 
 .mission-media {
   position: relative;
-  min-height: clamp(460px, 58vw, 720px);
+  min-height: clamp(420px, 46vw, 620px);
   overflow: hidden;
   border-radius: 8px;
   background: #160f0b;
-  box-shadow: 0 34px 88px rgba(0, 0, 0, 0.44);
+  box-shadow: 0 34px 88px rgba(0, 0, 0, 0.34);
   opacity: 0;
   transform: translateY(28px);
   animation: missionReveal 900ms var(--ease-out-expo) 160ms forwards;
@@ -610,10 +615,9 @@ ul {
 }
 
 .mission-image {
-  object-fit: cover;
-  object-position: center top;
-  filter: saturate(0.84) contrast(1.08) brightness(0.86);
-  transform: scale(1.04);
+  object-fit: contain;
+  object-position: center;
+  filter: saturate(0.94) contrast(1.03) brightness(0.95);
 }
 
 .mission-copy {
@@ -691,14 +695,17 @@ ul {
    CATEGORIES SECTION
 ======================================== */
 #categories {
-  background-color: var(--bg-color);
-  padding: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(224, 184, 79, 0.07), transparent 34%),
+    linear-gradient(180deg, #1a0f0c 0%, var(--ink-umber) 100%);
+  padding: clamp(28px, 4vw, 54px) 0;
+  color: var(--warm-ivory);
 }
 
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0;
+  gap: 14px;
 }
 
 .category-card {
@@ -707,6 +714,8 @@ ul {
   overflow: hidden;
   cursor: pointer;
   display: block;
+  border-radius: 8px;
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.34);
 }
 
 .category-card .category-image-container {
@@ -731,13 +740,13 @@ ul {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+  background: linear-gradient(to bottom, rgba(12, 8, 5, 0.18) 0%, rgba(12, 8, 5, 0.72) 100%);
   z-index: 2;
   transition: background 0.3s ease;
 }
 
 .category-card:hover .image-object-content-overlay {
-  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
+  background: linear-gradient(to bottom, rgba(12, 8, 5, 0.08) 0%, rgba(12, 8, 5, 0.56) 100%);
 }
 
 .category-content {
@@ -759,7 +768,9 @@ ul {
    TRADITIONAL SECTION
 ======================================== */
 #traditional {
-  background-color: var(--bg-color);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(224, 184, 79, 0.08), transparent 34%),
+    linear-gradient(180deg, var(--ink-umber) 0%, #1d110d 42%, var(--ink-black) 100%);
   position: relative;
   padding: 0;
   overflow: hidden;
@@ -779,13 +790,14 @@ ul {
 .traditional-vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 0.7rem;
-  letter-spacing: 4px;
+  font-size: 0.76rem;
+  letter-spacing: 3.4px;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: rgba(224, 184, 79, 0.82);
   text-align: center;
   height: 320px;
   margin-bottom: 60px;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.56);
 }
 
 .traditional-dancheong {
@@ -2164,7 +2176,8 @@ ul {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-color);
+  background:
+    linear-gradient(180deg, #120c09 0%, var(--deep-umber) 34%, var(--soft-umber) 100%);
   padding-top: var(--header-height);
 }
 
@@ -2172,7 +2185,9 @@ ul {
 .gallery-hero {
   padding: 80px 0 60px;
   text-align: center;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+  background:
+    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
+    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
 }
 
 .gallery-hero-label {
@@ -2337,6 +2352,8 @@ ul {
 /* Gallery Main Content */
 .gallery-main {
   padding: 40px 0 80px;
+  background:
+    linear-gradient(180deg, rgba(239, 229, 211, 0.06), rgba(239, 229, 211, 0));
 }
 
 .gallery-content {
@@ -2402,8 +2419,8 @@ ul {
 /* Event Card */
 .gallery-event-card {
   display: block;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(246, 239, 226, 0.055);
+  border: 1px solid rgba(246, 239, 226, 0.13);
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s, border-color 0.3s;
@@ -2417,12 +2434,13 @@ ul {
 .gallery-event-card-image {
   position: relative;
   width: 100%;
-  height: 200px;
+  aspect-ratio: 4 / 3;
   background: #1a1a1a;
 }
 
 .gallery-event-card-img {
   object-fit: cover;
+  object-position: center 42%;
 }
 
 .gallery-event-card-placeholder {
@@ -2524,6 +2542,7 @@ ul {
 .gallery-photo-stream-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-auto-flow: dense;
   gap: 12px;
 }
 
@@ -2531,7 +2550,7 @@ ul {
   display: block;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(246, 239, 226, 0.12);
   border-radius: 8px;
   background: rgba(5, 5, 5, 0.34);
   cursor: zoom-in;
@@ -2551,8 +2570,21 @@ ul {
   background: #111;
 }
 
+.gallery-photo-stream-card--landscape {
+  grid-column: span 2;
+}
+
+.gallery-photo-stream-card--landscape .gallery-photo-stream-image {
+  aspect-ratio: 16 / 10;
+}
+
+.gallery-photo-stream-card--portrait .gallery-photo-stream-image {
+  aspect-ratio: 3 / 4;
+}
+
 .gallery-photo-stream-img {
   object-fit: cover;
+  object-position: center;
   transition: transform 0.4s var(--ease-out-quart);
 }
 
@@ -2595,7 +2627,8 @@ ul {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-color);
+  background:
+    linear-gradient(180deg, #120c09 0%, var(--deep-umber) 45%, #120c09 100%);
   padding-top: var(--header-height);
 }
 
@@ -4164,7 +4197,9 @@ ul {
 .about-hero {
   position: relative;
   min-height: 100vh;
-  background: var(--primary-color);
+  background:
+    radial-gradient(circle at 52% 18%, rgba(224, 184, 79, 0.12), transparent 32%),
+    linear-gradient(180deg, #17100d 0%, #271815 100%);
   padding: calc(var(--header-height) + 120px) 0 0;
   overflow: hidden;
 }
@@ -4175,7 +4210,7 @@ ul {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 70%;
+  height: 76%;
   z-index: 1;
 }
 
@@ -4186,7 +4221,17 @@ ul {
   left: 0;
   width: 100%;
   height: 50%;
-  background: linear-gradient(to bottom, var(--primary-color) 0%, transparent 100%);
+  background: linear-gradient(to bottom, #17100d 0%, transparent 100%);
+  z-index: 2;
+}
+
+.about-hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(12, 8, 5, 0.74), rgba(12, 8, 5, 0.24) 52%, rgba(12, 8, 5, 0.62)),
+    linear-gradient(180deg, transparent 44%, #271815 100%);
   z-index: 2;
 }
 
@@ -4208,6 +4253,7 @@ ul {
 }
 
 .about-hero-title {
+  width: min(100%, 280px);
   margin-bottom: 20px;
 }
 
@@ -4215,7 +4261,6 @@ ul {
   width: 100%;
   max-width: 100%;
   height: auto;
-  filter: invert(1);
 }
 
 .about-hero-korean {
@@ -4255,8 +4300,11 @@ ul {
 
 /* About Director Section */
 .about-director {
-  background: var(--primary-color);
-  padding: 0;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(224, 184, 79, 0.08), transparent 32%),
+    linear-gradient(180deg, var(--ink-umber) 0%, #1e130f 100%);
+  color: var(--warm-ivory);
+  padding: clamp(40px, 6vw, 80px) 0;
 }
 
 .about-director-container {
@@ -4264,14 +4312,15 @@ ul {
   margin: 0 auto;
   padding: 0 40px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 30px;
-  align-items: start;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
 }
 
-/* Left Column - uses middle 1/3 */
+/* Left Column (text + portrait) - moved to right side */
 .about-director-left {
   grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   padding: 60px 0 80px;
@@ -4285,26 +4334,31 @@ ul {
   font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 400;
-  color: var(--accent-color);
+  color: var(--soft-gold);
   margin-bottom: 8px;
 }
 
 .about-director-title-en {
   font-family: var(--font-body);
   font-size: 1.1rem;
-  color: var(--text-color);
+  color: rgba(246, 239, 226, 0.62);
   font-style: italic;
   margin-bottom: 0;
 }
 
 .about-director-portrait {
-  max-width: 220px;
+  width: min(100%, 280px);
+  max-width: 280px;
   margin-bottom: 30px;
+  padding: 10px;
+  background: rgba(246, 239, 226, 0.06);
+  border: 1px solid rgba(246, 239, 226, 0.14);
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
 }
 
 .about-director-portrait img {
-  border-radius: 4px;
-  transform: scaleX(-1);
+  border-radius: 6px;
 }
 
 .about-director-bio {
@@ -4316,7 +4370,7 @@ ul {
   font-family: var(--font-body);
   font-size: 0.85rem;
   line-height: 1.9;
-  color: var(--text-muted);
+  color: rgba(246, 239, 226, 0.66);
   margin-bottom: 20px;
 }
 
@@ -4325,19 +4379,21 @@ ul {
   font-weight: 500;
 }
 
-/* Right Column - Dance Photo, spans 2 columns */
+/* Right Column (dance photo) - moved to left side */
 .about-director-right {
-  grid-column: 3;
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  padding-top: 20px;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 40px 0;
 }
 
 .about-director-right img {
-  max-width: 400px;
+  max-width: 440px;
   width: 100%;
   height: auto;
+  filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.3));
 }
 
 /* About Page Responsive */
@@ -4348,12 +4404,12 @@ ul {
   }
 
   .about-director-left {
-    grid-column: 1;
+    grid-column: 2;
     padding: 40px 0;
   }
 
   .about-director-right {
-    grid-column: 2;
+    grid-column: 1;
     justify-content: center;
     padding-top: 40px;
   }
@@ -4392,6 +4448,7 @@ ul {
 
   .about-director-left {
     grid-column: 1;
+    grid-row: auto;
     padding: 40px 0 40px;
     align-items: center;
     text-align: center;
@@ -4408,7 +4465,9 @@ ul {
 
   .about-director-right {
     grid-column: 1;
+    grid-row: auto;
     justify-content: center;
+    order: -1;
   }
 
   .about-director-right img {
