@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
 import IntlObject from '@/components/common/IntlObject';
+import { isAdmin } from '@/lib/isAdmin';
 
 const menuItems = [
     { keycode: 'header.home', href: '/', hasDropdown: true },
@@ -71,19 +72,24 @@ export default function Header() {
         }
 
         if (session) {
+            const admin = isAdmin(session);
             return (
                 <div className="header-auth-actions">
-                    <Link href="/admin" className="auth-btn auth-btn-dashboard" onClick={closeMenu}>
-                        Admin
-                    </Link>
-                    <button
-                        type="button"
-                        className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
-                        onClick={handleEditModeToggle}
-                        title={isEditMode ? '편집 모드 끄기' : '편집 모드 켜기'}
-                    >
-                        {isEditMode ? 'Edit ON' : 'Edit'}
-                    </button>
+                    {admin && (
+                        <>
+                            <Link href="/admin" className="auth-btn auth-btn-dashboard" onClick={closeMenu}>
+                                Admin
+                            </Link>
+                            <button
+                                type="button"
+                                className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
+                                onClick={handleEditModeToggle}
+                                title={isEditMode ? '편집 모드 끄기' : '편집 모드 켜기'}
+                            >
+                                {isEditMode ? 'Edit ON' : 'Edit'}
+                            </button>
+                        </>
+                    )}
                     <span className="auth-user">{session.user?.name || session.user?.email}</span>
                     <button type="button" className="auth-btn auth-btn-logout" onClick={handleSignOut}>
                         <IntlObject keycode="auth.logout" />

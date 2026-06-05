@@ -1,49 +1,14 @@
 import { getLatestVideos } from '@/lib/youtube';
-import Image from 'next/image';
 import VideoCard from './VideoCard';
 import { HeroText } from './HeroContent';
-
-const heroBackgroundImages = [
-  {
-    src: 'https://pub-06654d5ca3e54fa58acbac46039ae9a7.r2.dev/gallery/photos/docs-pictures/1770919299666.jpg',
-    position: 'center 56%',
-  },
-  {
-    src: 'https://pub-06654d5ca3e54fa58acbac46039ae9a7.r2.dev/gallery/photos/docs-pictures/1000005223.jpg',
-    position: 'center 44%',
-  },
-  {
-    src: 'https://pub-06654d5ca3e54fa58acbac46039ae9a7.r2.dev/gallery/photos/docs-pictures/1728167228227.jpg',
-    position: 'center 44%',
-  },
-];
+import HeroBackground from './HeroBackground';
 
 export default async function Hero() {
   const videos = await getLatestVideos(3);
 
   return (
     <section id="hero">
-      <div className="hero-art-bg" aria-hidden="true">
-        <Image
-          className="hero-art-preload"
-          src={heroBackgroundImages[0].src}
-          alt=""
-          width={1}
-          height={1}
-          priority
-          unoptimized
-        />
-        {heroBackgroundImages.map((image) => (
-          <div
-            className="hero-art-frame"
-            key={image.src}
-            style={{
-              backgroundImage: `url(${image.src})`,
-              backgroundPosition: image.position,
-            }}
-          />
-        ))}
-      </div>
+      <HeroBackground />
       <div className="hero-container">
         {/* Bottom - Content Grid */}
         <div className="hero-content-grid">

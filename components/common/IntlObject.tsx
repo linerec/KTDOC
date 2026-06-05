@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
+import { isAdmin } from '@/lib/isAdmin';
 
 type ReturnType = 'div' | 'span' | 'p' | 'label' | 'h1' | 'h2' | 'h3';
 
@@ -42,13 +43,17 @@ export default function IntlObject({
     setMounted(true);
   }, []);
 
-  const canEdit = isLogin !== undefined ? isLogin : !!session;
+  const canEdit = isLogin !== undefined ? isLogin : isAdmin(session);
   const isEditable = canEdit && isEditMode;
 
   const message = messages[keycode] || keycode;
 
-  const handleClick = useCallback(async () => {
+  const handleClick = useCallback((e: React.MouseEvent) => {
     if (!isEditable) return;
+
+    // 편집 클릭이 부모 <Link>/네비게이션 버튼으로 전파/이동되지 않도록 차단
+    e.preventDefault();
+    e.stopPropagation();
 
     // Load current values from allMessages
     setLocaleData({

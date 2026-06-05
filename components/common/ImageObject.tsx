@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
+import { isAdmin } from '@/lib/isAdmin';
 
 interface ImageData {
   url: string;
@@ -31,6 +32,7 @@ interface ImageObjectProps {
   quality?: number;
   children?: React.ReactNode;
   overlay?: boolean;
+  imageStyle?: React.CSSProperties;
 }
 
 export default function ImageObject({
@@ -48,6 +50,7 @@ export default function ImageObject({
   quality = 75,
   children,
   overlay = false,
+  imageStyle,
 }: ImageObjectProps) {
   const { data: session } = useSession();
   const { locale } = useLanguage();
@@ -67,7 +70,7 @@ export default function ImageObject({
     setMounted(true);
   }, []);
 
-  const canEdit = isLogin !== undefined ? isLogin : !!session;
+  const canEdit = isLogin !== undefined ? isLogin : isAdmin(session);
   const isEditable = canEdit && isEditMode;
 
   // 이미지 데이터 로드
@@ -98,6 +101,7 @@ export default function ImageObject({
 
   // 편집 클릭 핸들러
   const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (isEditable) {
       setShowModal(true);
@@ -218,7 +222,7 @@ export default function ImageObject({
     <>
       <div
         className={`image-object-container ${containerClassName} ${isEditable ? 'editable' : ''}`}
-        style={{ position: 'relative', width: fill ? '100%' : undefined, height: fill ? '100%' : undefined }}
+        style={fill ? { width: '100%', height: '100%' } : undefined}
       >
         {fill ? (
           <Image
@@ -229,7 +233,7 @@ export default function ImageObject({
             priority={priority}
             quality={quality}
             className={className}
-            style={{ objectFit: 'cover' }}
+            style={{ objectFit: 'cover', ...imageStyle }}
           />
         ) : (
           <Image
@@ -240,6 +244,7 @@ export default function ImageObject({
             priority={priority}
             quality={quality}
             className={className}
+            style={imageStyle}
           />
         )}
 

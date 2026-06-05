@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { isAdmin } from '@/lib/isAdmin';
 import { getEventById, createEventImage, deleteEventImage } from '@/lib/d1';
 import { uploadToR2, deleteFromR2 } from '@/lib/r2';
 
@@ -17,10 +18,10 @@ interface RouteParams {
 export async function POST(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 
@@ -96,10 +97,10 @@ export async function POST(request: Request, { params }: RouteParams) {
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 

@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { isAdmin } from '@/lib/isAdmin';
 import { getEventById, updateImageOrder } from '@/lib/d1';
 
 interface RouteParams {
@@ -15,10 +16,10 @@ interface RouteParams {
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 

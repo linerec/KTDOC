@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { isAdmin } from '@/lib/isAdmin';
 import { getAllLocaleMessages, upsertLocale, deleteLocale } from '@/lib/d1';
 
 // GET - Fetch all locale data from D1
@@ -26,10 +27,10 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
 
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 
@@ -64,10 +65,10 @@ export async function DELETE(request: Request) {
   try {
     const session = await auth();
 
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import IntlObject from '@/components/common/IntlObject';
+import ImageObject from '@/components/common/ImageObject';
 
 export default function About() {
   return (
@@ -14,12 +15,16 @@ export default function About() {
         <section id="about-hero" className="about-hero">
           {/* Background Image - 텍스트 뒤에 배치 */}
           <div className="about-hero-bg">
-            <Image
-              src="/assets/images/site/times-square-drums.jpg"
-              alt="춤누리 타임스퀘어 공연 - Choomnoori Times Square Performance"
+            <ImageObject
+              keycode="image.about.hero"
               fill
-              style={{ objectFit: 'cover', objectPosition: 'center 56%' }}
+              sizes="100vw"
               priority
+              className="about-hero-bg-img"
+              containerClassName="about-hero-bg-fill"
+              fallbackSrc="/assets/images/site/times-square-drums.jpg"
+              alt="춤누리 타임스퀘어 공연 - Choomnoori Times Square Performance"
+              imageStyle={{ objectFit: 'cover', objectPosition: 'center 56%' }}
             />
           </div>
 
@@ -83,12 +88,15 @@ export default function About() {
 
               {/* Portrait */}
               <div className="about-director-portrait">
-                <Image
-                  src="/assets/images/director_portrait.jpg"
-                  alt="안은희 단장 - Director Eunhee Ahn"
+                <ImageObject
+                  keycode="image.about.director.portrait"
                   width={752}
                   height={922}
-                  style={{ width: '100%', height: 'auto' }}
+                  className="about-director-portrait-img"
+                  containerClassName="about-director-portrait-fill"
+                  fallbackSrc="/assets/images/director_portrait.jpg"
+                  alt="안은희 단장 - Director Eunhee Ahn"
+                  imageStyle={{ width: '100%', height: 'auto' }}
                 />
               </div>
 
@@ -103,12 +111,15 @@ export default function About() {
 
             {/* Right Column - Full Body Dance Photo */}
             <div className="about-director-right">
-              <Image
-                src="/assets/images/about04.png"
-                alt="안은희 단장 한복 춤 - Director Eunhee Ahn in Hanbok"
+              <ImageObject
+                keycode="image.about.director.full"
                 width={500}
                 height={750}
-                style={{ width: '100%', height: 'auto' }}
+                className="about-director-right-img"
+                containerClassName="about-director-right-fill"
+                fallbackSrc="/assets/images/about04.png"
+                alt="안은희 단장 한복 춤 - Director Eunhee Ahn in Hanbok"
+                imageStyle={{ width: '100%', height: 'auto' }}
               />
             </div>
           </div>

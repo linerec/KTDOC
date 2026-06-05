@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { isAdmin } from '@/lib/isAdmin';
 import { getCategories, getCategoryById, createCategory, updateCategory, deleteCategory } from '@/lib/d1';
 import type { CreateCategoryInput } from '@/types/gallery';
 
@@ -15,10 +16,10 @@ import type { CreateCategoryInput } from '@/types/gallery';
 export async function GET() {
   try {
     const session = await auth();
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 
@@ -41,10 +42,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 
@@ -84,10 +85,10 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 
@@ -131,10 +132,10 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!isAdmin(session)) {
       return NextResponse.json(
-        { success: false, error: '로그인이 필요합니다.' },
-        { status: 401 }
+        { success: false, error: '관리자 권한이 필요합니다.' },
+        { status: 403 }
       );
     }
 

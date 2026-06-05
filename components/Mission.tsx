@@ -1,19 +1,21 @@
 'use client';
 
-import Image from 'next/image';
 import IntlObject from '@/components/common/IntlObject';
+import ImageObject from '@/components/common/ImageObject';
 
 export default function Mission() {
     return (
         <section id="mission" className="mission-section" aria-labelledby="mission-title">
             <div className="mission-shell">
                 <div className="mission-media" aria-hidden="true">
-                    <Image
-                        src="/assets/images/about01.jpg"
-                        alt=""
+                    <ImageObject
+                        keycode="image.mission.photo"
                         fill
                         sizes="(max-width: 900px) 100vw, 42vw"
                         className="mission-image"
+                        containerClassName="mission-media-fill"
+                        fallbackSrc="/assets/images/site/sogo-stage.jpg"
+                        imageStyle={{ objectFit: 'contain', objectPosition: 'center' }}
                     />
                 </div>
 

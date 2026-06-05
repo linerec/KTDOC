@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import IntlObject from '@/components/common/IntlObject';
+import ImageObject from '@/components/common/ImageObject';
 
 export default function Traditional() {
     return (
@@ -14,12 +14,14 @@ export default function Traditional() {
 
                 {/* Dancheong Roof Image */}
                 <div className="traditional-dancheong">
-                    <Image
-                        src="/assets/images/dancheong.png"
-                        alt="Traditional Korean Roof - Dancheong"
+                    <ImageObject
+                        keycode="image.traditional.dancheong"
                         width={1200}
                         height={600}
                         className="dancheong-image"
+                        containerClassName="traditional-dancheong-fill"
+                        fallbackSrc="/assets/images/dancheong.png"
+                        alt="Traditional Korean Roof - Dancheong"
                         priority
                     />
                 </div>
