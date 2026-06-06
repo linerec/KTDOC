@@ -44,3 +44,11 @@ next-env.d.ts
 /.playwright-mcp/
 /.agents/
 /.mcp.json
+/playwright-mcp.config.json
+
+# stray screenshots saved to repo root by browser tooling
+/*.png
+
+# local-only docs assets (source photos already served from R2; screenshots are scratch)
+/docs/pictures/
+/docs/screenshots/
