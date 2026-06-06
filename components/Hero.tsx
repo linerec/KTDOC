@@ -15,6 +15,12 @@ export default async function Hero() {
   return (
     <section id="hero">
       <HeroBackground />
+      {/* 한지에 스며드는 먹: 앰비언트 잉크 워시. 슬라이드쇼 위·비네트 아래에 깔려
+          텍스트 대비를 해치지 않고 호흡하듯 은은하게 번진다. (POC) */}
+      <div className="hero-ink-wash" aria-hidden="true">
+        <span className="ink-blob ink-blob--gold" />
+        <span className="ink-blob ink-blob--ivory" />
+      </div>
       <div className="hero-container">
         {/* Bottom - Content Grid */}
         <div className="hero-content-grid">

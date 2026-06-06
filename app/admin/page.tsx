@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
 import { getCategories, getEvents, getGalleryPhotos, getPrograms, getApplicationCounts } from '@/lib/d1';
+import { getMemberCounts } from '@/lib/members';
 
 export const metadata = {
   title: '관리 홈 | KTDOC Admin',
@@ -41,6 +42,15 @@ function IconGallery() {
     </svg>
   );
 }
+function IconUsers() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
 
 type StepState = 'done' | 'todo' | 'attention';
 interface GuideStep {
@@ -73,6 +83,7 @@ export default async function AdminDashboardPage() {
     eventsShow,
     loosePhotos,
     categories,
+    memberCounts,
   ] = await Promise.all([
     getPrograms({ published: 'all', limit: 1 }),
     getPrograms({ published: true, limit: 1 }),
@@ -82,6 +93,8 @@ export default async function AdminDashboardPage() {
     getEvents({ published: true, showcase: true, limit: 1 }),
     getGalleryPhotos({ published: undefined, organized: 'unassigned', limit: 1 }),
     getCategories(),
+    // 회원 수는 MySQL에서 조회 — 장애 시에도 대시보드가 깨지지 않도록 폴백.
+    getMemberCounts().catch(() => ({ total: 0, admins: 0, users: 0, verified: 0 })),
   ]);
 
   const programsTotal = programsAll.total;
@@ -93,6 +106,7 @@ export default async function AdminDashboardPage() {
   const eventsShowcase = eventsShow.total;
   const loose = loosePhotos.total;
   const categoryCount = categories.length;
+  const membersTotal = memberCounts.total;
 
   const adminName = session.user?.name || session.user?.email?.split('@')[0] || '관리자';
   const isFreshSite = programsTotal === 0 && eventsPublished === 0 && appsTotal === 0;
@@ -102,76 +116,76 @@ export default async function AdminDashboardPage() {
     {
       n: 1,
       label: '수업 등록',
-      title: '수업과 캠프를 등록해요',
-      desc: '방문자가 가장 먼저 보는 건 우리가 어떤 수업을 하는지예요. 꾸준히 이어지는 정규 수업과 기간이 정해진 단기 캠프를 등록해 보세요. 정보를 적고 사진을 올리면 준비가 됩니다.',
+      title: '수업과 캠프를 등록합니다',
+      desc: '방문자가 가장 먼저 확인하는 것은 어떤 수업을 운영하는지입니다. 정규 수업과 기간이 정해진 단기 캠프를 등록해 주세요. 내용을 입력하고 사진을 올리면 됩니다.',
       state: programsTotal > 0 ? 'done' : 'todo',
       status:
         programsTotal > 0
           ? `수업·프로그램 ${programsTotal}개 등록됨`
-          : '아직 등록된 수업이 없어요',
+          : '아직 등록된 수업이 없습니다.',
       tip:
         programsFeatured === 0
-          ? "캠프 하나를 '대표로 강조'하면 수업 페이지 맨 위에 크게 소개돼요."
+          ? "캠프 하나를 '대표로 강조'하면 수업 페이지 상단에 크게 소개됩니다."
           : undefined,
       ctaHref: '/admin/programs/new',
-      ctaLabel: '+ 첫 수업 만들기',
+      ctaLabel: '+ 첫 수업 등록',
     },
     {
       n: 2,
       label: '공개',
-      title: '수업을 공개해 손님에게 보여요',
-      desc: "만드신 수업은 아직 나만 볼 수 있어요. '공개'로 바꿔야 비로소 수업 페이지에 나타나고 신청을 받을 수 있어요. 거의 다 됐어요 — 공개만 누르면 손님이 볼 수 있어요.",
+      title: '수업을 공개합니다',
+      desc: "등록한 수업은 아직 관리자에게만 보입니다. '공개'로 바꾸면 비로소 수업 페이지에 표시되고 신청을 받을 수 있습니다.",
       state: programsPublished > 0 ? 'done' : 'todo',
       status:
         programsPublished > 0
-          ? `공개된 수업 ${programsPublished}개 — 잘하셨어요!`
+          ? `공개된 수업 ${programsPublished}개`
           : programsTotal > 0
-          ? `작성 중 ${programsTotal}개 · 공개 0개 (공개로 바꿔야 보여요)`
-          : '먼저 수업을 등록해 주세요',
+          ? `작성 중 ${programsTotal}개 · 공개 0개 (공개로 바꿔야 표시됩니다)`
+          : '먼저 수업을 등록해 주세요.',
       ctaHref: '/admin/programs',
       ctaLabel: '프로그램 관리 →',
     },
     {
       n: 3,
       label: '신청',
-      title: '신청을 받고 답해요',
-      desc: '수업이 공개되면 손님이 신청서를 보내요. 새 신청은 이 화면에 자동으로 모이니, 이메일이나 전화로 따뜻하게 연락하고 상태를 신규 → 연락함 → 확정 순으로 바꿔 주세요.',
+      title: '신청을 받고 응대합니다',
+      desc: '수업이 공개되면 방문자가 신청서를 보냅니다. 새 신청은 이 화면에 자동으로 모입니다. 이메일이나 전화로 연락한 뒤, 상태를 신규 → 연락함 → 확정 순으로 바꿔 주세요.',
       state: appsNew > 0 ? 'attention' : appsTotal > 0 ? 'done' : 'todo',
       status:
         appsNew > 0
-          ? `새 신청 ${appsNew}건이 답변을 기다려요`
+          ? `새 신청 ${appsNew}건이 답변을 기다리고 있습니다`
           : appsTotal > 0
-          ? `전체 신청 ${appsTotal}건 · 새 신청 없음 — 깔끔해요!`
-          : '수업을 공개하면 이곳으로 신청이 들어와요',
+          ? `전체 신청 ${appsTotal}건 · 새 신청 없음`
+          : '수업을 공개하면 이곳으로 신청이 들어옵니다.',
       ctaHref: '/admin/applications',
       ctaLabel: '신청자 보기',
     },
     {
       n: 4,
       label: '공연 기록',
-      title: '공연과 사진을 기록해요',
-      desc: "지난 공연을 사진·유튜브 영상과 함께 올려 보세요. '공개'한 공연은 갤러리에 연도별로 차곡차곡 쌓여요. 우리의 얼굴이 되는 무대 기록이에요.",
+      title: '공연을 기록합니다',
+      desc: "지난 공연을 사진·유튜브 영상과 함께 등록합니다. '공개'한 공연은 갤러리에 연도별로 정리되어 쌓입니다. 무용단을 대표하는 무대 기록입니다.",
       state: eventsPublished > 0 ? 'done' : 'todo',
       status:
         eventsPublished > 0
           ? `공개 공연 ${eventsPublished}개${eventsShowcase > 0 ? ` · 대표 공연 ${eventsShowcase}개` : ''}`
-          : '아직 공개된 공연이 없어요',
-      tip: loose > 0 ? `정리되지 않은 사진 ${loose}장이 사진 보관함에 있어요.` : undefined,
+          : '아직 공개된 공연이 없습니다.',
+      tip: loose > 0 ? `정리되지 않은 사진 ${loose}장이 사진 보관함에 있습니다.` : undefined,
       ctaHref: '/admin/gallery/new',
-      ctaLabel: '+ 첫 공연 만들기',
+      ctaLabel: '+ 첫 공연 등록',
     },
     {
       n: 5,
       label: '대표 공연',
-      title: '대표 공연으로 페이지를 빛내요',
-      desc: "가장 자랑스러운 공연 하나를 '대표 공연'으로 골라 두면, 영화처럼 꾸며진 공연 페이지에 크게 걸려요. 마지막 마무리예요.",
+      title: '대표 공연을 지정합니다',
+      desc: "가장 내세우고 싶은 공연 하나를 '대표 공연'으로 지정하면, 공연 페이지 상단에 크게 소개됩니다. 마지막 단계입니다.",
       state: eventsShowcase > 0 ? 'done' : 'todo',
       status:
         eventsShowcase > 0
-          ? `대표 공연 ${eventsShowcase}개 — 공연 페이지에 소개돼요`
+          ? `대표 공연 ${eventsShowcase}개 · 공연 페이지에 소개됩니다`
           : eventsPublished > 0
-          ? '대표 공연을 아직 고르지 않았어요'
-          : '먼저 공연을 올려 주세요',
+          ? '대표 공연을 아직 지정하지 않았습니다.'
+          : '먼저 공연을 등록해 주세요.',
       ctaHref: '/admin/gallery',
       ctaLabel: '이벤트 관리 →',
     },
@@ -183,10 +197,10 @@ export default async function AdminDashboardPage() {
 
   const progressMicro =
     doneCount === 0
-      ? '천천히 시작해 볼까요? 한 번에 다 안 해도 괜찮아요.'
+      ? '한 단계씩 진행하시면 됩니다. 한 번에 모두 마치지 않으셔도 됩니다.'
       : doneCount >= steps.length
-      ? '사이트가 살아 있어요 ✓ 이제 관리실에서 일상 관리를 이어가세요.'
-      : '잘하고 계세요 — 한 단계만 더 채우면 사이트가 한층 살아나요.';
+      ? '준비가 모두 끝났습니다. 이제 관리실에서 일상적인 운영을 이어가시면 됩니다.'
+      : '남은 단계를 마치시면 홈페이지가 한층 충실해집니다.';
 
   const stateText: Record<StepState, string> = { done: '완료', todo: '예정', attention: '확인 필요' };
 
@@ -198,11 +212,11 @@ export default async function AdminDashboardPage() {
           <div>
             <p className="admin-kicker">KTDOC ADMIN</p>
             <h1 className="admin-onboard-greet">
-              <b>{adminName}</b>님, {isFreshSite ? '환영합니다.' : '다시 오셨네요.'}
+              <b>{adminName}</b>님, {isFreshSite ? '환영합니다.' : '안녕하세요.'}
             </h1>
             <p className="admin-onboard-lede">
               {isFreshSite
-                ? '춤누리 사이트의 관리자 화면이에요. 어렵지 않아요 — 아래 순서대로 천천히 따라오시면 됩니다.'
+                ? '춤누리 홈페이지를 관리하는 공간입니다.'
                 : `오늘의 현황 — 공개 수업 ${programsPublished} · 새 신청 ${appsNew} · 공개 공연 ${eventsPublished}`}
             </p>
           </div>
@@ -231,7 +245,7 @@ export default async function AdminDashboardPage() {
       {/* 긴급: 새 신청 (페이지 내 유일한 빨강 강조) */}
       {hasNewApps && (
         <section className="admin-urgent-callout">
-          <p>지금 가장 급한 일 — 새 신청 {appsNew}건이 답을 기다리고 있어요</p>
+          <p>가장 먼저 처리할 일 — 새 신청 {appsNew}건이 답변을 기다리고 있습니다</p>
           <Link href="/admin/applications" className="admin-btn admin-btn-danger">
             신청자 보기
           </Link>
@@ -260,9 +274,9 @@ export default async function AdminDashboardPage() {
                   <span className="admin-sr-only"> ({stateText[step.state]})</span>
                   {isCurrent &&
                     (isAttention ? (
-                      <span className="admin-step-pill is-attention">지금 답해 주세요</span>
+                      <span className="admin-step-pill is-attention">답변 필요</span>
                     ) : (
-                      <span className="admin-step-pill">지금 할 차례</span>
+                      <span className="admin-step-pill">진행할 차례</span>
                     ))}
                 </p>
                 <h2 className="admin-step-title">{step.title}</h2>
@@ -294,7 +308,7 @@ export default async function AdminDashboardPage() {
         </div>
         {isFreshSite && (
           <p className="admin-workshop-quiet-line">
-            익숙해지면 여기서 바로 관리하세요 — 프로그램 · 신청 · 공연·갤러리
+            익숙해지신 뒤에는 이곳에서 바로 관리하실 수 있습니다 — 프로그램 · 신청 · 회원 · 공연·갤러리
           </p>
         )}
 
@@ -351,6 +365,27 @@ export default async function AdminDashboardPage() {
             </div>
           </section>
 
+          <section className="admin-domain">
+            <div className="admin-domain-top">
+              <span className="admin-domain-icon">
+                <IconUsers />
+              </span>
+              <span className="admin-domain-stat-inline">
+                <strong>{membersTotal}</strong>
+                <span>명 회원</span>
+              </span>
+            </div>
+            <h2 className="admin-domain-title">회원 관리</h2>
+            <p className="admin-domain-desc">
+              사이트에 가입한 회원을 확인합니다. 이메일·가입일·권한을 한눈에 볼 수 있습니다.
+            </p>
+            <div className="admin-domain-actions">
+              <Link href="/admin/members" className="admin-btn admin-btn-primary">
+                회원 목록 보기
+              </Link>
+            </div>
+          </section>
+
           <section className="admin-domain admin-domain--wide">
             <div className="admin-domain-top">
               <span className="admin-domain-icon">
@@ -394,10 +429,10 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      {/* 안심 풋노트 */}
+      {/* 안내 풋노트 */}
       <div className="admin-guide-footnote">
-        <span>✏️ 로그인한 채로 홈페이지를 열고 위쪽 &lsquo;편집&rsquo;을 켜면, 페이지의 글과 사진을 그 자리에서 바로 고칠 수 있어요. 코드를 만질 필요가 없어요.</span>
-        <span>🌿 오늘 한 단계, 내일 한 단계. 저장만 해 두면 언제든 이어서 할 수 있어요.</span>
+        <span>로그인한 상태에서 홈페이지를 열고 상단의 &lsquo;편집&rsquo;을 켜면, 페이지의 글과 사진을 그 자리에서 직접 수정할 수 있습니다. 코드를 다룰 필요가 없습니다.</span>
+        <span>한 번에 모두 끝내지 않으셔도 됩니다. 저장해 두면 언제든 이어서 진행하실 수 있습니다.</span>
       </div>
     </div>
   );

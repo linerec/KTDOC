@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,8 +22,16 @@ export default function Header() {
     const { data: session, status } = useSession();
     const { locale, changeLanguage, availableLangs } = useLanguage();
     const { isEditMode, toggleEditMode } = useBuilder();
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+
+    // 메인 페이지 최상단에서만 로고를 크게 노출하고, 스크롤하거나 다른 페이지로 이동하면 축소
+    const isHome = pathname === '/';
+    const isLogoExpanded = isHome && !isScrolled;
+    const headerClassName = [isScrolled && 'scrolled', isLogoExpanded && 'logo-expanded']
+        .filter(Boolean)
+        .join(' ');
 
     useEffect(() => {
         const handleScroll = () => {
@@ -108,7 +117,7 @@ export default function Header() {
 
     return (
         <>
-            <header id="main-header" className={isScrolled ? 'scrolled' : ''}>
+            <header id="main-header" className={headerClassName}>
                 <div className="header-inner">
                     {/* Logo - Center Top */}
                     <div className="header-logo">
@@ -116,9 +125,9 @@ export default function Header() {
                             <Image
                                 src="/assets/logo/logo_white.png"
                                 alt="KTDOC Logo"
-                                width={100}
-                                height={35}
-                                style={{ height: '60px', width: 'auto' }}
+                                width={400}
+                                height={242}
+                                style={{ width: 'auto' }}
                                 priority
                             />
                         </Link>

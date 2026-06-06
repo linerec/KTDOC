@@ -1,15 +1,21 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import IntlObject from '@/components/common/IntlObject';
 import ImageObject from '@/components/common/ImageObject';
+import ScrollReveal from '@/components/common/ScrollReveal';
+
+// 스태거 딜레이를 CSS 변수로 전달하는 헬퍼
+const revealDelay = (ms: number): CSSProperties => ({ '--reveal-delay': `${ms}ms` } as CSSProperties);
 
 export default function About() {
   return (
     <>
       <Header />
+      <ScrollReveal />
       <main>
         {/* About Hero Section */}
         <section id="about-hero" className="about-hero">
@@ -32,7 +38,7 @@ export default function About() {
             {/* Content Wrapper - 가운데 1/3 영역 */}
             <div className="about-hero-content-wrapper">
               {/* Title - Logo Image */}
-              <h1 className="about-hero-title">
+              <h1 className="about-hero-title reveal reveal--up">
                 <Image
                   src="/assets/logo/logo_white.png"
                   alt="Korean Traditional Dance of Choomnoori"
@@ -46,18 +52,20 @@ export default function About() {
               <IntlObject
                 keycode="about.hero.korean"
                 returnType="h2"
-                className="about-hero-korean"
+                className="about-hero-korean reveal reveal--up"
+                style={revealDelay(140)}
               />
 
               {/* Founded */}
               <IntlObject
                 keycode="about.hero.founded"
                 returnType="p"
-                className="about-hero-founded"
+                className="about-hero-founded reveal reveal--up"
+                style={revealDelay(220)}
               />
 
               {/* Description */}
-              <div className="about-hero-content">
+              <div className="about-hero-content reveal reveal--up" style={revealDelay(300)}>
                 <IntlObject
                   keycode="about.hero.description1"
                   returnType="p"
@@ -73,7 +81,7 @@ export default function About() {
             {/* Left Column - Title, Portrait, Bio */}
             <div className="about-director-left">
               {/* Title */}
-              <div className="about-director-title">
+              <div className="about-director-title reveal reveal--up">
                 <IntlObject
                   keycode="about.director.title.ko"
                   returnType="h2"
@@ -87,7 +95,7 @@ export default function About() {
               </div>
 
               {/* Portrait */}
-              <div className="about-director-portrait">
+              <div className="about-director-portrait reveal reveal--up" style={revealDelay(140)}>
                 <ImageObject
                   keycode="image.about.director.portrait"
                   width={752}
@@ -101,7 +109,7 @@ export default function About() {
               </div>
 
               {/* Bio */}
-              <div className="about-director-bio">
+              <div className="about-director-bio reveal reveal--up" style={revealDelay(240)}>
                 <IntlObject
                   keycode="about.director.bio1"
                   returnType="p"
@@ -110,7 +118,7 @@ export default function About() {
             </div>
 
             {/* Right Column - Full Body Dance Photo */}
-            <div className="about-director-right">
+            <div className="about-director-right reveal reveal--blur" style={revealDelay(60)}>
               <ImageObject
                 keycode="image.about.director.full"
                 width={500}

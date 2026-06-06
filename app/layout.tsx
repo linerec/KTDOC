@@ -86,11 +86,28 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // 한지에 스며드는 먹: 글로벌 앰비언트 잉크 레이어. NEXT_PUBLIC_INK_AMBIENT=off 로 끌 수 있다.
+  const inkAmbient = process.env.NEXT_PUBLIC_INK_AMBIENT !== 'off';
+
   return (
     <html lang="ko" className={`${notoSerifKr.variable} ${outfit.variable}`}>
+      <head>
+        {/* JS 비활성 시 스크롤 리빌 요소가 숨겨진 채 남지 않도록 폴백 */}
+        <noscript>
+          <style>{`.reveal{opacity:1 !important;transform:none !important;filter:none !important;}`}</style>
+        </noscript>
+      </head>
       <body>
         <Providers>
           <div className="bg-layer" aria-hidden="true" />
+          {inkAmbient && (
+            <div className="ink-ambient" aria-hidden="true">
+              <span className="ink-ambient__wash ink-ambient__wash--gold" />
+              <span className="ink-ambient__wash ink-ambient__wash--ivory" />
+              <span className="ink-ambient__wash ink-ambient__wash--ember" />
+              <span className="ink-ambient__grain" />
+            </div>
+          )}
           <div className="site-wrapper">
             {children}
           </div>
