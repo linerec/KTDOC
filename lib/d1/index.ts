@@ -40,6 +40,7 @@ export {
   incrementViewCount,
   // Event Images
   getEventImages,
+  getEventImagesPaged,
   createEventImage,
   updateImageOrder,
   deleteEventImage,

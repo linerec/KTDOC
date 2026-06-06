@@ -21,9 +21,13 @@ interface PageProps {
   }>;
 }
 
+// 이벤트 상세 사진 갤러리 한 페이지 분량 (수천 장이어도 첫 묶음만 로드 후 '더 보기')
+const GALLERY_IMAGE_PAGE_SIZE = 24;
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { year, slug } = await params;
-  const event = await getEventBySlug(parseInt(year), slug);
+  // 메타데이터는 OG 이미지 한 장만 필요 → 이미지 1장만 로드
+  const event = await getEventBySlug(parseInt(year), slug, { imagesLimit: 1 });
 
   if (!event) {
     return {
@@ -69,12 +73,12 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   // Try both encoded and decoded slug
   const decodedSlug = decodeURIComponent(slug);
-  let event = await getEventBySlug(yearNum, slug);
+  let event = await getEventBySlug(yearNum, slug, { imagesLimit: GALLERY_IMAGE_PAGE_SIZE });
 
   // If not found, try with decoded slug
   if (!event && slug !== decodedSlug) {
     console.log('[Gallery Detail] Trying decoded slug:', decodedSlug);
-    event = await getEventBySlug(yearNum, decodedSlug);
+    event = await getEventBySlug(yearNum, decodedSlug, { imagesLimit: GALLERY_IMAGE_PAGE_SIZE });
   }
 
   console.log('[Gallery Detail] Event found:', !!event, event?.is_published);
@@ -156,7 +160,13 @@ export default async function EventDetailPage({ params }: PageProps) {
         <section className="gallery-detail-images">
           <div className="container">
             <GallerySectionTitle keycode="gallery.detail.photoGallery" />
-            <ImageGallery images={event.images} locale="ko" />
+            <ImageGallery
+              images={event.images}
+              total={event.image_total ?? event.images.length}
+              loadMoreUrl={`/api/gallery/events/${event.id}/images`}
+              pageSize={GALLERY_IMAGE_PAGE_SIZE}
+              locale="ko"
+            />
           </div>
         </section>
       )}

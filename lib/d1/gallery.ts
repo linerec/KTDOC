@@ -214,6 +214,7 @@ export async function getEventById(id: number): Promise<EventDetail | null> {
   return {
     ...event,
     images,
+    image_total: images.length,
     videos,
     category,
   };
@@ -221,7 +222,8 @@ export async function getEventById(id: number): Promise<EventDetail | null> {
 
 export async function getEventBySlug(
   year: number,
-  slug: string
+  slug: string,
+  options: { imagesLimit?: number } = {}
 ): Promise<EventDetail | null> {
   const events = await queryD1<EventWithCategory>(
     `SELECT e.*,
@@ -237,15 +239,22 @@ export async function getEventBySlug(
   if (events.length === 0) return null;
 
   const event = events[0];
-  const [images, videos, category] = await Promise.all([
-    getEventImages(event.id),
+  // imagesLimit가 주어지면 첫 페이지만 로드(수천 장 대비). 없으면 기존처럼 전체 로드.
+  const imagesPromise =
+    options.imagesLimit && options.imagesLimit > 0
+      ? getEventImagesPaged(event.id, 1, options.imagesLimit)
+      : getEventImages(event.id).then((images) => ({ images, total: images.length }));
+
+  const [imagesResult, videos, category] = await Promise.all([
+    imagesPromise,
     getEventVideos(event.id),
     event.category_id ? getCategoryById(event.category_id) : Promise.resolve(null),
   ]);
 
   return {
     ...event,
-    images,
+    images: imagesResult.images,
+    image_total: imagesResult.total,
     videos,
     category,
   };
@@ -382,6 +391,55 @@ export async function getEventImages(eventId: number): Promise<EventImage[]> {
     'SELECT * FROM event_images WHERE event_id = ? ORDER BY sort_order ASC',
     [eventId]
   );
+}
+
+/**
+ * 이벤트 이미지 페이지네이션 조회
+ * 한 이벤트에 사진이 수백~수천 장이어도 페이지 단위로만 로드한다.
+ * publishedOnly=true 이면 비공개 이벤트의 이미지는 노출하지 않는다(공개 API용).
+ */
+export async function getEventImagesPaged(
+  eventId: number,
+  page = 1,
+  limit = 24,
+  publishedOnly = false
+): Promise<{ images: EventImage[]; total: number }> {
+  const safeLimit = Math.max(1, Math.min(limit, 200));
+  const safePage = Math.max(1, page);
+  const offset = (safePage - 1) * safeLimit;
+
+  if (publishedOnly) {
+    const countResult = await queryD1<{ count: number }>(
+      `SELECT COUNT(*) as count
+       FROM event_images i
+       JOIN events e ON i.event_id = e.id
+       WHERE i.event_id = ? AND e.is_published = 1`,
+      [eventId]
+    );
+    const images = await queryD1<EventImage>(
+      `SELECT i.*
+       FROM event_images i
+       JOIN events e ON i.event_id = e.id
+       WHERE i.event_id = ? AND e.is_published = 1
+       ORDER BY i.sort_order ASC, i.id ASC
+       LIMIT ? OFFSET ?`,
+      [eventId, safeLimit, offset]
+    );
+    return { images, total: countResult[0]?.count || 0 };
+  }
+
+  const countResult = await queryD1<{ count: number }>(
+    'SELECT COUNT(*) as count FROM event_images WHERE event_id = ?',
+    [eventId]
+  );
+  const images = await queryD1<EventImage>(
+    `SELECT * FROM event_images
+     WHERE event_id = ?
+     ORDER BY sort_order ASC, id ASC
+     LIMIT ? OFFSET ?`,
+    [eventId, safeLimit, offset]
+  );
+  return { images, total: countResult[0]?.count || 0 };
 }
 
 export async function createEventImage(

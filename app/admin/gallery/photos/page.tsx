@@ -13,6 +13,9 @@ export const metadata = {
   title: '사진 보관함 | KTDOC Admin',
 };
 
+// 보관함 한 페이지 분량 (수천 장이어도 페이지 단위로만 로드)
+const PHOTO_INBOX_PAGE_SIZE = 60;
+
 export default async function AdminGalleryPhotosPage() {
   const session = await auth();
   if (!session) {
@@ -20,7 +23,7 @@ export default async function AdminGalleryPhotosPage() {
   }
 
   const [photosResult, eventsResult] = await Promise.all([
-    getGalleryPhotos({ published: undefined, organized: 'all', limit: 120 }),
+    getGalleryPhotos({ published: undefined, organized: 'all', page: 1, limit: PHOTO_INBOX_PAGE_SIZE }),
     getEvents({ published: 'all', limit: 500 }),
   ]);
 
@@ -53,6 +56,8 @@ export default async function AdminGalleryPhotosPage() {
 
       <PhotoInboxManager
         initialPhotos={photosResult.photos}
+        initialTotal={photosResult.total}
+        pageSize={PHOTO_INBOX_PAGE_SIZE}
         events={eventsResult.events}
       />
     </div>

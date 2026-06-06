@@ -1,12 +1,15 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { EventWithCategory, GalleryPhoto } from '@/types/gallery';
+import Pagination from '@/components/common/Pagination';
 
 interface PhotoInboxManagerProps {
   initialPhotos: GalleryPhoto[];
+  initialTotal: number;
+  pageSize: number;
   events: EventWithCategory[];
 }
 
@@ -19,6 +22,21 @@ interface DraftState {
   is_featured: boolean;
 }
 
+type OrganizedFilter = 'all' | 'assigned' | 'unassigned';
+type PublishedFilter = 'all' | 'public' | 'private';
+
+interface FilterState {
+  search: string;
+  organized: OrganizedFilter;
+  published: PublishedFilter;
+}
+
+const DEFAULT_FILTERS: FilterState = {
+  search: '',
+  organized: 'all',
+  published: 'all',
+};
+
 function toDraft(photo: GalleryPhoto): DraftState {
   return {
     caption_ko: photo.caption_ko || '',
@@ -30,14 +48,28 @@ function toDraft(photo: GalleryPhoto): DraftState {
   };
 }
 
+function draftsFromPhotos(photos: GalleryPhoto[]): Record<number, DraftState> {
+  return Object.fromEntries(photos.map((photo) => [photo.id, toDraft(photo)]));
+}
+
 export default function PhotoInboxManager({
   initialPhotos,
+  initialTotal,
+  pageSize,
   events,
 }: PhotoInboxManagerProps) {
   const [photos, setPhotos] = useState(initialPhotos);
   const [drafts, setDrafts] = useState<Record<number, DraftState>>(
-    Object.fromEntries(initialPhotos.map((photo) => [photo.id, toDraft(photo)]))
+    draftsFromPhotos(initialPhotos)
   );
+
+  // 페이지네이션 / 필터
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(initialTotal);
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [searchInput, setSearchInput] = useState('');
+  const [loadingPage, setLoadingPage] = useState(false);
+
   const [uploading, setUploading] = useState(false);
   const [publishNow, setPublishNow] = useState(true);
   const [dragActive, setDragActive] = useState(false);
@@ -45,6 +77,8 @@ export default function PhotoInboxManager({
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const updateDraft = (photoId: number, next: Partial<DraftState>) => {
     setDrafts((current) => ({
@@ -56,13 +90,72 @@ export default function PhotoInboxManager({
     }));
   };
 
-  const mergePhotos = (nextPhotos: GalleryPhoto[]) => {
-    setPhotos((current) => [...nextPhotos, ...current]);
-    setDrafts((current) => ({
-      ...Object.fromEntries(nextPhotos.map((photo) => [photo.id, toDraft(photo)])),
-      ...current,
-    }));
+  // 서버에서 특정 페이지 로드 (필터 적용)
+  const loadPage = useCallback(
+    async (targetPage: number, overrideFilters?: FilterState) => {
+      const activeFilters = overrideFilters ?? filters;
+      setLoadingPage(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams();
+        params.set('page', String(targetPage));
+        params.set('limit', String(pageSize));
+        if (activeFilters.organized !== 'all') {
+          params.set('organized', activeFilters.organized);
+        }
+        if (activeFilters.published !== 'all') {
+          params.set('published', activeFilters.published === 'public' ? 'true' : 'false');
+        }
+        if (activeFilters.search.trim()) {
+          params.set('search', activeFilters.search.trim());
+        }
+
+        const res = await fetch(`/api/admin/gallery/photos?${params.toString()}`);
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || '사진을 불러오지 못했습니다.');
+        }
+
+        const nextPhotos: GalleryPhoto[] = data.data.photos;
+        setPhotos(nextPhotos);
+        setDrafts(draftsFromPhotos(nextPhotos));
+        setTotal(data.data.total);
+        setPage(targetPage);
+        if (overrideFilters) setFilters(overrideFilters);
+        // 그리드 상단으로 스크롤
+        if (typeof window !== 'undefined') {
+          document.getElementById('photo-inbox-grid-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '사진을 불러오지 못했습니다.');
+      } finally {
+        setLoadingPage(false);
+      }
+    },
+    [filters, pageSize]
+  );
+
+  const applyFilters = useCallback(
+    (next: Partial<FilterState>) => {
+      const merged = { ...filters, ...next };
+      loadPage(1, merged);
+    },
+    [filters, loadPage]
+  );
+
+  const handleSearchSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    applyFilters({ search: searchInput });
   };
+
+  const resetFilters = () => {
+    setSearchInput('');
+    loadPage(1, DEFAULT_FILTERS);
+  };
+
+  const hasActiveFilters =
+    filters.search.trim() !== '' || filters.organized !== 'all' || filters.published !== 'all';
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
@@ -90,7 +183,9 @@ export default function PhotoInboxManager({
           throw new Error(data.error || '사진 업로드에 실패했습니다.');
         }
 
-        mergePhotos(data.data.photos);
+        // 새 사진이 항상 보이도록 필터를 초기화하고 첫 페이지부터 다시 로드
+        setSearchInput('');
+        await loadPage(1, DEFAULT_FILTERS);
       } catch (err) {
         setError(err instanceof Error ? err.message : '사진 업로드에 실패했습니다.');
       } finally {
@@ -98,7 +193,7 @@ export default function PhotoInboxManager({
         if (inputRef.current) inputRef.current.value = '';
       }
     },
-    [publishNow]
+    [publishNow, loadPage]
   );
 
   const handleDrag = useCallback((event: React.DragEvent) => {
@@ -173,18 +268,39 @@ export default function PhotoInboxManager({
         throw new Error(data.error || '사진 삭제에 실패했습니다.');
       }
 
-      setPhotos((current) => current.filter((item) => item.id !== photo.id));
-      setDrafts((current) => {
-        const next = { ...current };
-        delete next[photo.id];
-        return next;
-      });
+      const remaining = photos.filter((item) => item.id !== photo.id);
+      setTotal((current) => Math.max(0, current - 1));
+
+      // 페이지가 비고 이전 페이지가 있으면 이전 페이지로, 아니면 현재 페이지 갱신
+      if (remaining.length === 0 && page > 1) {
+        await loadPage(page - 1);
+      } else {
+        setPhotos(remaining);
+        setDrafts((current) => {
+          const next = { ...current };
+          delete next[photo.id];
+          return next;
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '사진 삭제에 실패했습니다.');
     } finally {
       setDeletingId(null);
     }
   };
+
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, total);
+
+  const eventOptions = useMemo(
+    () =>
+      events.map((event) => (
+        <option key={event.id} value={event.id}>
+          {event.year} · {event.title_ko}
+        </option>
+      )),
+    [events]
+  );
 
   return (
     <div className="photo-inbox">
@@ -243,10 +359,71 @@ export default function PhotoInboxManager({
         </div>
       )}
 
-      <section className="photo-inbox-grid">
+      {/* 검색 / 필터 툴바 */}
+      <div className="photo-inbox-toolbar" id="photo-inbox-grid-top">
+        <form className="photo-inbox-search" onSubmit={handleSearchSubmit}>
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="캡션·이벤트로 검색"
+            className="admin-filter-input"
+          />
+          <button type="submit" className="admin-btn admin-btn-sm" disabled={loadingPage}>
+            검색
+          </button>
+        </form>
+
+        <div className="photo-inbox-filters">
+          <select
+            className="admin-filter-select"
+            value={filters.organized}
+            onChange={(event) => applyFilters({ organized: event.target.value as OrganizedFilter })}
+            disabled={loadingPage}
+            aria-label="정리 상태"
+          >
+            <option value="all">전체 정리상태</option>
+            <option value="assigned">이벤트 연결됨</option>
+            <option value="unassigned">미정리</option>
+          </select>
+
+          <select
+            className="admin-filter-select"
+            value={filters.published}
+            onChange={(event) => applyFilters({ published: event.target.value as PublishedFilter })}
+            disabled={loadingPage}
+            aria-label="공개 상태"
+          >
+            <option value="all">전체 공개상태</option>
+            <option value="public">공개</option>
+            <option value="private">비공개</option>
+          </select>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="admin-btn admin-btn-sm admin-btn-outline"
+              onClick={resetFilters}
+              disabled={loadingPage}
+            >
+              초기화
+            </button>
+          )}
+        </div>
+
+        <div className="photo-inbox-count">
+          {total > 0 ? `${rangeStart}–${rangeEnd} / 총 ${total}장` : '0장'}
+        </div>
+      </div>
+
+      <section className={`photo-inbox-grid ${loadingPage ? 'is-loading' : ''}`}>
         {photos.length === 0 ? (
           <div className="admin-empty-state photo-inbox-empty">
-            <p>아직 보관함에 올라온 사진이 없습니다.</p>
+            <p>
+              {hasActiveFilters
+                ? '조건에 맞는 사진이 없습니다.'
+                : '아직 보관함에 올라온 사진이 없습니다.'}
+            </p>
           </div>
         ) : photos.map((photo) => {
           const draft = drafts[photo.id] || toDraft(photo);
@@ -263,6 +440,7 @@ export default function PhotoInboxManager({
                   fill
                   sizes="(max-width: 768px) 100vw, 320px"
                   className="photo-inbox-img"
+                  loading="lazy"
                 />
                 <span className={`photo-inbox-status ${draft.is_published ? 'is-public' : ''}`}>
                   {draft.is_published ? '공개 중' : '비공개'}
@@ -296,11 +474,7 @@ export default function PhotoInboxManager({
                     onChange={(event) => updateDraft(photo.id, { event_id: event.target.value })}
                   >
                     <option value="">아직 모름</option>
-                    {events.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.year} · {event.title_ko}
-                      </option>
-                    ))}
+                    {eventOptions}
                   </select>
                 </label>
 
@@ -358,6 +532,13 @@ export default function PhotoInboxManager({
           );
         })}
       </section>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(next) => loadPage(next)}
+        disabled={loadingPage}
+      />
     </div>
   );
 }

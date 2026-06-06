@@ -5,7 +5,7 @@
  * 라이트박스 이미지 갤러리 - 전체화면 보기 지원
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 
 // 구조적 최소 타입 — EventImage / ProgramImage 모두 호환 (라이트박스 재사용용)
@@ -19,13 +19,57 @@ interface GalleryLightboxImage {
 interface ImageGalleryProps {
   images: GalleryLightboxImage[];
   locale?: 'ko' | 'en';
+  /** 전체 이미지 수 (페이지네이션 시 images는 첫 묶음). 미지정 시 images.length */
+  total?: number;
+  /** 추가 이미지를 가져올 API base URL. 지정 시 '더 보기' 활성화 (예: /api/gallery/events/12/images) */
+  loadMoreUrl?: string;
+  /** 한 번에 더 불러올 개수 (loadMoreUrl과 함께 사용). 기본 images.length 또는 24 */
+  pageSize?: number;
 }
 
-export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProps) {
+export default function ImageGallery({
+  images,
+  locale = 'ko',
+  total: totalProp,
+  loadMoreUrl,
+  pageSize: pageSizeProp,
+}: ImageGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [extraImages, setExtraImages] = useState<GalleryLightboxImage[]>([]);
+  const [total, setTotal] = useState(totalProp ?? images.length);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
+
+  // 서버 렌더된 첫 묶음 + 클라이언트에서 추가로 불러온 묶음
+  const allImages = useMemo(
+    () => [...images, ...extraImages],
+    [images, extraImages]
+  );
+
+  const pageSize = pageSizeProp || images.length || 24;
+  const hasMore = Boolean(loadMoreUrl) && allImages.length < total;
+
+  const loadMore = useCallback(async () => {
+    if (!loadMoreUrl || loadingMore) return;
+    setLoadingMore(true);
+    setLoadError(false);
+    try {
+      const nextPage = Math.floor(allImages.length / pageSize) + 1;
+      const separator = loadMoreUrl.includes('?') ? '&' : '?';
+      const res = await fetch(`${loadMoreUrl}${separator}page=${nextPage}&limit=${pageSize}`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'failed');
+      setExtraImages((cur) => [...cur, ...(data.data.images as GalleryLightboxImage[])]);
+      if (typeof data.data.total === 'number') setTotal(data.data.total);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadMoreUrl, loadingMore, allImages.length, pageSize]);
 
   const openLightbox = useCallback((index: number) => {
     lastFocusedRef.current = (document.activeElement as HTMLElement) || null;
@@ -41,12 +85,12 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
   }, []);
 
   const goToPrevious = useCallback(() => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
+  }, [allImages.length]);
 
   const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
+  }, [allImages.length]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -72,7 +116,7 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxOpen, closeLightbox, goToPrevious, goToNext]);
 
-  if (images.length === 0) {
+  if (allImages.length === 0) {
     return (
       <div className="gallery-images-empty">
         <p>{locale === 'ko' ? '등록된 이미지가 없습니다.' : 'No images available.'}</p>
@@ -80,7 +124,7 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
     );
   }
 
-  const currentImage = images[currentIndex];
+  const currentImage = allImages[currentIndex];
   const caption = locale === 'ko'
     ? currentImage?.caption_ko
     : (currentImage?.caption_en || currentImage?.caption_ko);
@@ -89,7 +133,7 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
     <>
       {/* Image Grid */}
       <div className="gallery-images-grid">
-        {images.map((image, index) => (
+        {allImages.map((image, index) => (
           <button
             key={image.id}
             type="button"
@@ -109,6 +153,34 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
           </button>
         ))}
       </div>
+
+      {/* Load More (페이지네이션) */}
+      {(hasMore || loadError) && (
+        <div className="gallery-load-more">
+          {loadError && (
+            <p className="gallery-load-more-error">
+              {locale === 'ko'
+                ? '이미지를 불러오지 못했습니다.'
+                : 'Failed to load images.'}
+            </p>
+          )}
+          <button
+            type="button"
+            className="gallery-load-more-btn"
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore
+              ? locale === 'ko' ? '불러오는 중...' : 'Loading...'
+              : loadError
+                ? locale === 'ko' ? '다시 시도' : 'Retry'
+                : locale === 'ko' ? '사진 더 보기' : 'Load more'}
+          </button>
+          <span className="gallery-load-more-count">
+            {allImages.length} / {total}
+          </span>
+        </div>
+      )}
 
       {/* Lightbox */}
       {lightboxOpen && currentImage && (
@@ -134,7 +206,7 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
             </button>
 
             {/* Navigation */}
-            {images.length > 1 && (
+            {allImages.length > 1 && (
               <>
                 <button
                   type="button"
@@ -177,7 +249,7 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
                 <p className="gallery-lightbox-caption">{caption}</p>
               )}
               <span className="gallery-lightbox-counter">
-                {currentIndex + 1} / {images.length}
+                {currentIndex + 1} / {total}
               </span>
             </div>
           </div>

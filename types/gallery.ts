@@ -89,8 +89,15 @@ export interface GalleryPhoto {
 
 export interface EventDetail extends EventWithCategory {
   images: EventImage[];
+  /** 이벤트의 전체 이미지 수 (images는 페이지네이션된 첫 묶음일 수 있음) */
+  image_total?: number;
   videos: EventVideo[];
   category: EventCategory | null;
+}
+
+export interface EventImagesResponse {
+  images: EventImage[];
+  total: number;
 }
 
 // API Request/Response 타입
