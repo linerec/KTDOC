@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
@@ -6,7 +7,7 @@ import { isAdmin } from '@/lib/isAdmin';
 import { getCategories, getEvents, getGalleryPhotos, getPrograms, getApplicationCounts } from '@/lib/d1';
 import { getMemberCounts } from '@/lib/members';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: '관리 홈 | KTDOC Admin',
 };
 

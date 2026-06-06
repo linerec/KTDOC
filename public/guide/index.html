@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>춤누리 무용단 — 홈페이지 관리 가이드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   KTDOC 관리자 가이드 — 완전 스타일시트
+═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --ink: #0a0a0a;
+  --ink-soft: #1a1a1a;
+  --red: #c4302b;
+  --gold: #d4a017;
+  --gold-mid: #e8bc40;
+  --gold-light: #f8f0d0;
+  --warm: #f8f5ee;
+  --warm-mid: #ede8dd;
+  --white: #ffffff;
+  --text: #2c2c2a;
+  --text-mid: #555550;
+  --text-light: #888880;
+  --border: #ddd8ce;
+  --border-light: #eeeae4;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow: 0 2px 16px rgba(10,10,10,0.08);
+  --shadow-md: 0 6px 30px rgba(10,10,10,0.12);
+  --shadow-lg: 0 16px 60px rgba(10,10,10,0.18);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  background: var(--white);
+  color: var(--text);
+  line-height: 1.75;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+
+/* ── 스티키 헤더 ────────────────────────────────── */
+.guide-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.topbar-brand {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.topbar-brand em { color: var(--gold); font-style: normal; }
+.topbar-section {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.topbar-toc {
+  font-size: 0.78rem;
+  color: var(--gold);
+  text-decoration: none;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.topbar-toc:hover { color: var(--gold-mid); }
+
+/* ── 커버 페이지 ────────────────────────────────── */
+.cover {
+  min-height: 100vh;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 6rem 2rem 5rem;
+  position: relative;
+  overflow: hidden;
+}
+.cover-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.cover-orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(212,160,23,0.12) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.cover-orb-2 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(196,48,43,0.08) 0%, transparent 70%);
+  bottom: 10%; right: 10%;
+}
+.cover-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+}
+.cover-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(212,160,23,0.4);
+  color: var(--gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  padding: 0.45em 1.4em;
+  border-radius: 2em;
+  margin-bottom: 3rem;
+  font-weight: 300;
+}
+.cover-label::before, .cover-label::after {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.5;
+}
+.cover-ko-org {
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 300;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.3em;
+  margin-bottom: 1.5rem;
+}
+.cover-title {
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 300;
+  font-size: clamp(2.4rem, 7vw, 4.2rem);
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 2rem;
+}
+.cover-title strong {
+  display: block;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-mid) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.cover-desc {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.45);
+  font-weight: 300;
+  line-height: 2;
+  margin-bottom: 3.5rem;
+}
+.cover-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+.cover-stat { text-align: center; }
+.cover-stat .num {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold);
+  display: block;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.cover-stat .lbl {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.cover-scroll {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255,255,255,0.2);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: scrollPulse 2.5s ease-in-out infinite;
+}
+.cover-scroll::after {
+  content: '';
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.25), transparent);
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 0.8; transform: translateX(-50%) translateY(6px); }
+}
+
+/* ── 목차 섹션 ─────────────────────────────────── */
+.toc-section {
+  background: var(--warm);
+  padding: 5rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.toc-inner { max-width: 840px; margin: 0 auto; }
+.toc-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+.toc-heading {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+.toc-sub {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  margin-bottom: 3rem;
+  line-height: 1.8;
+}
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 0.75rem;
+}
+.toc-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.2rem 1.5rem;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.toc-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--gold);
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+.toc-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.toc-card:hover::before { transform: scaleY(1); }
+.toc-card-num {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 2.5rem;
+  line-height: 1;
+}
+.toc-card-body { flex: 1; }
+.toc-card-body strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  color: var(--ink);
+}
+.toc-card-body span {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+.toc-card-arrow {
+  color: var(--border);
+  font-size: 1.1rem;
+  transition: all 0.2s;
+}
+.toc-card:hover .toc-card-arrow { color: var(--gold); transform: translateX(4px); }
+
+/* ── 메인 본문 레이아웃 ─────────────────────────── */
+.guide-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.guide-sidenav {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 4rem;
+  align-self: flex-start;
+  padding: 3rem 0 3rem 2rem;
+  display: none;
+}
+.sidenav-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+.sidenav-link {
+  display: block;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  text-decoration: none;
+  border-left: 2px solid var(--border);
+  margin-bottom: 0.15rem;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+.sidenav-link:hover { color: var(--gold); border-left-color: rgba(212,160,23,0.4); }
+.sidenav-link.active { color: var(--gold); border-left-color: var(--gold); font-weight: 500; }
+.guide-main { flex: 1; min-width: 0; }
+
+@media (min-width: 1100px) {
+  .guide-sidenav { display: block; }
+}
+
+/* ── 섹션 공통 ─────────────────────────────────── */
+.guide-section {
+  padding: 5rem 3rem 5rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  max-width: 800px;
+}
+.guide-section:last-of-type { border-bottom: none; }
+
+.section-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-light);
+}
+.section-num-big {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--gold), var(--gold-mid));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding-top: 0.1rem;
+  min-width: 3.5rem;
+}
+.section-head-text {}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+  margin-bottom: 0.35rem;
+}
+.section-tagline {
+  font-size: 0.88rem;
+  color: var(--text-light);
+  font-weight: 300;
+}
+
+.section-intro {
+  font-size: 1rem;
+  color: var(--text-mid);
+  line-height: 1.95;
+  margin-bottom: 3rem;
+  padding: 1.4rem 1.6rem;
+  background: var(--warm);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--gold);
+}
+
+/* ── 스텝 목록 ─────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 2.5rem; }
+
+.step {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+.step-dot {
+  width: 36px;
+  height: 36px;
+  background: var(--ink);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 3px;
+  transition: background 0.2s;
+}
+.step:hover .step-dot { background: var(--gold); }
+.step-body { flex: 1; }
+.step-body h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+  line-height: 1.5;
+}
+.step-body p {
+  font-size: 0.97rem;
+  color: var(--text-mid);
+  line-height: 1.9;
+  margin-bottom: 0.8rem;
+}
+.step-body p:last-child { margin-bottom: 0; }
+.step-body strong { color: var(--text); font-weight: 600; }
+.step-body em { color: var(--gold); font-style: normal; font-weight: 500; }
+
+/* ── 스크린샷 ───────────────────────────────────── */
+.screenshot-wrap {
+  margin: 1.4rem 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  background: var(--warm);
+}
+.screenshot-wrap img {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.screenshot-cap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  background: var(--warm);
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+.screenshot-cap::before {
+  content: '▲';
+  font-size: 0.65rem;
+  color: var(--gold);
+}
+
+/* ── 콜아웃 박스 ────────────────────────────────── */
+.tip-box, .warn-box, .info-box {
+  display: flex;
+  gap: 0.9rem;
+  border-radius: var(--radius);
+  padding: 1rem 1.3rem;
+  margin: 1rem 0;
+  font-size: 0.93rem;
+  line-height: 1.75;
+  align-items: flex-start;
+}
+.tip-box {
+  background: #fffbef;
+  border: 1px solid #f0d878;
+  color: #5a4500;
+}
+.warn-box {
+  background: #fff5f4;
+  border: 1px solid #f0a090;
+  color: #7a1a14;
+}
+.info-box {
+  background: #f0f6ff;
+  border: 1px solid #a0c0f0;
+  color: #0a2060;
+}
+.box-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+
+/* ── URL 코드 ──────────────────────────────────── */
+code.url {
+  display: inline-block;
+  background: #f0ece4;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.1em 0.6em;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: var(--red);
+  word-break: break-all;
+  font-style: normal;
+}
+
+/* ── 경로 화살표 ────────────────────────────────── */
+.path-chain {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.6rem 0;
+  padding: 0.6rem 1rem;
+  background: var(--warm);
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  font-size: 0.88rem;
+  color: var(--text-mid);
+}
+.path-chain .pa {
+  background: var(--ink);
+  color: white;
+  padding: 0.15em 0.6em;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+.path-chain .pa.gold { background: var(--gold); }
+.path-chain .arr { color: var(--text-light); font-size: 0.85rem; }
+
+/* ── 상태 흐름 ─────────────────────────────────── */
+.status-flow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1.2rem 0;
+  padding: 1.2rem 1.5rem;
+  background: var(--warm);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+}
+.status-chip {
+  padding: 0.35em 1.1em;
+  border-radius: 2em;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.s-new { background: #fee2e2; color: #991b1b; }
+.s-contacted { background: #fef3c7; color: #92400e; }
+.s-confirmed { background: #d1fae5; color: #065f46; }
+.s-rejected { background: #f3f4f6; color: #4b5563; }
+.s-arrow { color: var(--text-light); font-size: 1.1rem; }
+
+/* ── 기능 그리드 ────────────────────────────────── */
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.feat-card {
+  padding: 1.1rem 1.2rem;
+  background: var(--warm);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+}
+.feat-card .fc-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.feat-card .fc-title { font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
+.feat-card .fc-desc { font-size: 0.78rem; color: var(--text-light); line-height: 1.5; }
+
+/* ── 구분선 섹션 ────────────────────────────────── */
+.subsection {
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px dashed var(--border);
+}
+.subsection-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.subsection-title::before {
+  content: '';
+  width: 3px;
+  height: 1.1em;
+  background: var(--gold);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── 관리자 메뉴 미리보기 ───────────────────────── */
+.admin-preview {
+  background: var(--ink);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+  box-shadow: var(--shadow-lg);
+}
+.admin-menu-item {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  color: rgba(255,255,255,0.75);
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin-menu-item.highlight {
+  background: rgba(212,160,23,0.15);
+  border-color: rgba(212,160,23,0.35);
+  color: var(--gold-mid);
+}
+.admin-menu-icon { font-size: 1rem; }
+
+/* ── 푸터 ──────────────────────────────────────── */
+.guide-footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.4);
+  padding: 4rem 2rem;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 2;
+}
+.guide-footer .ft-logo {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 1rem;
+}
+.guide-footer .ft-contact {
+  color: rgba(255,255,255,0.6);
+}
+.guide-footer .ft-meta {
+  margin-top: 2rem;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.1em;
+}
+
+/* ── 반응형 ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .guide-section { padding: 3.5rem 1.25rem; }
+  .step { flex-direction: column; gap: 0.75rem; }
+  .step-dot { width: 30px; height: 30px; font-size: 0.8rem; }
+  .section-badge { flex-direction: column; gap: 0.75rem; }
+  .section-num-big { font-size: 1.8rem; }
+  .toc-grid { grid-template-columns: 1fr; }
+  .cover-stats { gap: 2rem; }
+  .cover-title { font-size: 2.2rem; }
+  .admin-preview { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── 인쇄 ────────────────────────────────────────── */
+@media print {
+  .guide-topbar, .guide-sidenav { display: none; }
+  .cover { min-height: auto; padding: 3rem 2rem; page-break-after: always; }
+  .guide-section { padding: 2rem 0; }
+  .toc-section { padding: 2rem 0; }
+  .screenshot-wrap { box-shadow: none; }
+  .step-dot { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     스티키 상단 바
+══════════════════════════════════════════════ -->
+<div class="guide-topbar">
+  <div class="topbar-brand">춤누리 <em>GUIDE</em></div>
+  <div class="topbar-section" id="js-current-section">홈페이지 관리 가이드</div>
+  <a href="#toc" class="topbar-toc">목차로 ↑</a>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     커버 페이지
+══════════════════════════════════════════════ -->
+<section class="cover" aria-label="가이드 표지">
+  <div class="cover-orb cover-orb-1" aria-hidden="true"></div>
+  <div class="cover-orb cover-orb-2" aria-hidden="true"></div>
+  <div class="cover-inner">
+    <div class="cover-label">Administrator Guide 2025</div>
+    <p class="cover-ko-org">춤누리 무용단</p>
+    <h1 class="cover-title">
+      홈페이지<br>
+      <strong>관리 가이드</strong>
+    </h1>
+    <p class="cover-desc">
+      수업 등록부터 신청 응대, 공연 기록,<br>
+      사진 관리까지 — 단계별로 쉽게 안내해 드립니다
+    </p>
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <span class="num">7</span>
+        <span class="lbl">주제</span>
+      </div>
+      <div class="cover-stat">
+        <span class="num">9</span>
+        <span class="lbl">스크린샷</span>
+      </div>
+      <div class="cover-stat">
+        <span class="num">한글</span>
+        <span class="lbl">언어</span>
+      </div>
+    </div>
+  </div>
+  <div class="cover-scroll" aria-hidden="true">스크롤</div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     목차
+══════════════════════════════════════════════ -->
+<section class="toc-section" id="toc" aria-label="목차">
+  <div class="toc-inner">
+    <p class="toc-eyebrow">Table of Contents</p>
+    <h2 class="toc-heading">목차</h2>
+    <p class="toc-sub">아래 항목을 클릭하면 해당 섹션으로 바로 이동합니다.</p>
+    <nav class="toc-grid" aria-label="가이드 목차">
+      <a class="toc-card" href="#login">
+        <div class="toc-card-num">01</div>
+        <div class="toc-card-body">
+          <strong>로그인 방법</strong>
+          <span>관리자 계정으로 접속하기</span>
+        </div>
+        <span class="toc-card-arrow">→</span>
+      </a>
+      <a class="toc-card" href="#programs">
+        <div class="toc-card-num">02</div>
+        <div class="toc-card-body">
+          <strong>수업·캠프 등록 및 공개</strong>
+          <span>새 수업을 만들고 방문자에게 공개하기</span>
+        </div>
+        <span class="toc-card-arrow">→</span>
+      </a>
+      <a class="toc-card" href="#applications">
+        <div class="toc-card-num">03</div>
+        <div class="toc-card-body">
+          <strong>수강 신청 응대</strong>
+          <span>신청자 확인 및 상태 관리</span>
+        </div>
+        <span class="toc-card-arrow">→</span>
+      </a>
+      <a class="toc-card" href="#performances">
+        <div class="toc-card-num">04</div>
+        <div class="toc-card-body">
+          <strong>공연 기록 관리</strong>
+          <span>사진·영상으로 아카이브 남기기</span>
+        </div>
+        <span class="toc-card-arrow">→</span>
+      </a>
+      <a class="toc-card" href="#editmode">
+        <div class="toc-card-num">05</div>
+        <div class="toc-card-body">
+          <strong>편집 모드 — 직접 수정</strong>
+          <span>글·사진을 그 자리에서 바로 고치기</span>
+        </div>
+        <span class="toc-card-arrow">→</span>
+      </a>
+      <a class="toc-card" href="#gallery">
+        <div class="toc-card-num">06</div>
+        <div class="toc-card-body">
+          <strong>이벤트·사진 관리</strong>
+          <span>보관함과 연도별 갤러리 타임라인</span>
+        </div>
+        <span class="toc-card-arrow">→</span>
+      </a>
+      <a class="toc-card" href="#members">
+        <div class="toc-card-num">07</div>
+        <div class="toc-card-body">
+          <strong>회원 관리</strong>
+          <span>회원 목록 확인 및 프로필 설정</span>
+        </div>
+        <span class="toc-card-arrow">→</span>
+      </a>
+    </nav>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     본문
+══════════════════════════════════════════════ -->
+<div class="guide-body">
+
+  <!-- 사이드 네비게이션 -->
+  <nav class="guide-sidenav" aria-label="섹션 이동">
+    <div class="sidenav-label">목차</div>
+    <a class="sidenav-link" href="#login">01 &nbsp;로그인</a>
+    <a class="sidenav-link" href="#programs">02 &nbsp;수업 등록</a>
+    <a class="sidenav-link" href="#applications">03 &nbsp;신청 응대</a>
+    <a class="sidenav-link" href="#performances">04 &nbsp;공연 기록</a>
+    <a class="sidenav-link" href="#editmode">05 &nbsp;편집 모드</a>
+    <a class="sidenav-link" href="#gallery">06 &nbsp;갤러리</a>
+    <a class="sidenav-link" href="#members">07 &nbsp;회원 관리</a>
+  </nav>
+
+  <main class="guide-main">
+
+    <!-- ══════════════════════════════
+         01 로그인 방법
+    ══════════════════════════════ -->
+    <section class="guide-section" id="login">
+      <div class="section-badge">
+        <div class="section-num-big">01</div>
+        <div class="section-head-text">
+          <h2 class="section-title">로그인 방법</h2>
+          <p class="section-tagline">관리자 계정으로 접속하는 방법</p>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        홈페이지를 관리하려면 먼저 <strong>관리자 계정으로 로그인</strong>해야 합니다.
+        로그인하면 수업 등록, 신청 확인, 공연 기록, 사진 관리 등 모든 관리 기능을 사용할 수 있습니다.
+        로그인하지 않은 일반 방문자에게는 관리 메뉴가 보이지 않으므로 안전합니다.
+      </p>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <h3>브라우저에서 로그인 페이지로 이동합니다</h3>
+            <p>인터넷 브라우저(크롬, 엣지, 사파리 등)를 열고 주소창에 홈페이지 주소 뒤에 <code class="url">/login</code>을 붙여 입력합니다.</p>
+            <p>예시: <code class="url">https://ktdoc.kr/login</code></p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/login.png" alt="로그인 화면" loading="lazy">
+              <p class="screenshot-cap">로그인 화면 — 이메일과 비밀번호를 입력합니다</p>
+            </div>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>자주 사용하신다면 브라우저에 이 주소를 즐겨찾기(북마크)로 등록해 두세요.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <h3>이메일과 비밀번호를 입력합니다</h3>
+            <p>로그인 화면에서 <strong>이메일 주소</strong>와 <strong>비밀번호</strong>를 입력한 뒤, <em>로그인</em> 버튼을 클릭합니다.</p>
+            <p>관리자 계정 정보는 초기 설정 때 개발사에서 안내해 드린 것을 사용합니다.</p>
+            <div class="warn-box">
+              <span class="box-icon">⚠️</span>
+              <span>로그인이 되지 않으면 이메일 주소와 비밀번호가 정확한지 확인하세요. 비밀번호는 대소문자를 구분합니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <h3>로그인 후 화면을 확인합니다</h3>
+            <p>로그인에 성공하면 홈페이지 메인 화면으로 이동합니다. 상단 헤더를 확인하면 다음 항목들이 새로 나타납니다.</p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/home.png" alt="로그인 후 홈 화면" loading="lazy">
+              <p class="screenshot-cap">로그인 후 홈페이지 — 상단에 Admin, Edit 버튼이 나타납니다</p>
+            </div>
+            <div class="feat-grid">
+              <div class="feat-card">
+                <div class="fc-icon">🛡️</div>
+                <div class="fc-title">Admin 버튼</div>
+                <div class="fc-desc">관리자 대시보드로 이동합니다</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">✏️</div>
+                <div class="fc-title">Edit 버튼</div>
+                <div class="fc-desc">편집 모드를 켜고 끕니다</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">👤</div>
+                <div class="fc-title">내 이름/이메일</div>
+                <div class="fc-desc">현재 로그인된 계정 표시</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🚪</div>
+                <div class="fc-title">로그아웃 버튼</div>
+                <div class="fc-desc">사용 후 반드시 로그아웃</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <h3>관리자 대시보드로 이동합니다</h3>
+            <p>상단의 <em>Admin</em> 버튼을 클릭하면 관리자 전용 대시보드가 열립니다. 이곳에서 수업, 신청, 갤러리, 회원을 모두 관리합니다.</p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/admin-dashboard.png" alt="관리자 대시보드" loading="lazy">
+              <p class="screenshot-cap">관리자 대시보드 — 전체 현황과 빠른 시작 가이드가 표시됩니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">5</div>
+          <div class="step-body">
+            <h3>사용을 마친 후 로그아웃합니다</h3>
+            <p>작업이 끝나면 상단의 <em>로그아웃</em> 버튼을 클릭하여 로그아웃합니다. 특히 공공장소나 공유 컴퓨터에서 사용한 경우에는 반드시 로그아웃하세요.</p>
+            <div class="warn-box">
+              <span class="box-icon">⚠️</span>
+              <span>비밀번호를 분실하신 경우 개발사에 연락하면 초기화해 드립니다. 비밀번호는 <strong>마이 프로필</strong>에서 직접 변경하실 수도 있습니다 (7번 회원 관리 참고).</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         02 수업·캠프 등록 및 공개
+    ══════════════════════════════ -->
+    <section class="guide-section" id="programs">
+      <div class="section-badge">
+        <div class="section-num-big">02</div>
+        <div class="section-head-text">
+          <h2 class="section-title">수업·캠프 등록 및 공개</h2>
+          <p class="section-tagline">새 수업을 만들고 방문자에게 공개하는 방법</p>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        수업과 캠프를 홈페이지에 등록하면 방문자가 신청서를 보낼 수 있습니다.
+        등록한 수업은 <strong>기본적으로 비공개</strong>이므로, 내용을 다 작성한 뒤에 직접 공개로 바꿔주셔야 합니다.
+        한 번에 완성하지 않아도 되며, 저장해 두고 나중에 이어서 작업할 수 있습니다.
+      </p>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <h3>관리자 대시보드에서 시작합니다</h3>
+            <p>상단 <em>Admin</em> 버튼을 눌러 대시보드로 이동합니다. 화면 하단 <strong>관리실</strong>에서 <em>수업 및 프로그램</em> 카드를 찾으세요.</p>
+            <div class="path-chain">
+              <span class="pa">Admin 버튼</span>
+              <span class="arr">→</span>
+              <span class="pa gold">관리자 대시보드</span>
+              <span class="arr">→</span>
+              <span class="pa">프로그램 관리 또는 + 새로 만들기</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <h3>새 프로그램 만들기를 클릭합니다</h3>
+            <p><em>+ 새로 만들기</em> 버튼을 클릭하면 새 수업 작성 화면이 열립니다.</p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/admin-programs.png" alt="프로그램 관리 화면" loading="lazy">
+              <p class="screenshot-cap">프로그램 관리 화면 — 등록된 수업 목록과 새로 만들기 버튼</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <h3>수업 정보를 입력합니다</h3>
+            <p>새 프로그램 작성 화면에서 아래 항목들을 입력합니다.</p>
+            <div class="feat-grid">
+              <div class="feat-card">
+                <div class="fc-icon">📝</div>
+                <div class="fc-title">제목</div>
+                <div class="fc-desc">예: "2025 여름 캠프", "토요 정규반"</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">📄</div>
+                <div class="fc-title">설명</div>
+                <div class="fc-desc">수업 내용, 대상, 수강료 등 자세한 안내</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">📅</div>
+                <div class="fc-title">기간/날짜</div>
+                <div class="fc-desc">수업 운영 기간 또는 시작일</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">👥</div>
+                <div class="fc-title">대상</div>
+                <div class="fc-desc">연령대, 초급/중급 등 대상 정보</div>
+              </div>
+            </div>
+            <p>모두 입력했으면 <em>저장</em> 버튼을 클릭합니다. 저장 후 사진을 추가할 수 있습니다.</p>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>제목과 간단한 설명만 입력하고 먼저 저장한 뒤, 나중에 사진과 세부 내용을 추가해도 됩니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <h3>사진을 추가합니다</h3>
+            <p>저장 후 편집 화면에서 <em>사진 추가</em> 버튼을 클릭합니다. 파일 선택 창이 열리면 컴퓨터에서 사진 파일을 선택하세요. 여러 장을 한 번에 올릴 수 있습니다.</p>
+            <div class="info-box">
+              <span class="box-icon">ℹ️</span>
+              <span>사진은 JPG, PNG 형식을 권장합니다. 가로 1200픽셀 이상의 선명한 사진이 홈페이지에서 잘 보입니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">5</div>
+          <div class="step-body">
+            <h3>수업을 공개로 바꿉니다</h3>
+            <p>등록된 수업은 기본적으로 <strong>비공개</strong> 상태입니다. 수업 편집 화면에서 <em>공개 여부</em> 항목을 <strong>공개</strong>로 변경해야 홈페이지 수업 페이지에 표시됩니다.</p>
+            <div class="warn-box">
+              <span class="box-icon">⚠️</span>
+              <span>저장했다고 바로 홈페이지에 보이는 것이 아닙니다. 반드시 <strong>공개</strong> 상태로 바꿔야 방문자에게 표시됩니다.</span>
+            </div>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/classes.png" alt="수업 페이지" loading="lazy">
+              <p class="screenshot-cap">수업 페이지 — 공개로 설정된 수업들이 이렇게 표시됩니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">6</div>
+          <div class="step-body">
+            <h3>대표 수업(강조)을 지정합니다 (선택)</h3>
+            <p>수업 편집 화면에서 <em>대표로 강조</em> 항목을 켜면, 해당 수업이 수업 페이지 <strong>맨 위에 크게</strong> 소개됩니다. 가장 중요한 수업이나 현재 모집 중인 캠프에 사용하세요.</p>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>대표 강조는 한 번에 하나만 사용하는 것이 효과적입니다. 여러 개를 동시에 강조하면 집중도가 떨어질 수 있습니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">7</div>
+          <div class="step-body">
+            <h3>수업을 수정하거나 삭제합니다</h3>
+            <p>프로그램 관리 목록에서 수업 이름을 클릭하면 편집 화면이 열립니다. 내용을 수정 후 <em>저장</em>하거나, 필요없는 수업은 <em>삭제</em> 버튼으로 지울 수 있습니다.</p>
+            <div class="warn-box">
+              <span class="box-icon">⚠️</span>
+              <span>수업을 삭제하면 해당 수업으로 들어온 신청 기록도 함께 사라질 수 있습니다. 삭제 전에 신청자 정보를 먼저 확인하세요.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         03 수강 신청 응대
+    ══════════════════════════════ -->
+    <section class="guide-section" id="applications">
+      <div class="section-badge">
+        <div class="section-num-big">03</div>
+        <div class="section-head-text">
+          <h2 class="section-title">수강 신청 응대</h2>
+          <p class="section-tagline">신청자를 확인하고 연락하는 방법</p>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        수업이 공개되면 방문자가 수강 신청서를 보낼 수 있습니다.
+        새 신청이 들어오면 관리자 대시보드에 <strong>빨간색 알림</strong>으로 표시됩니다.
+        신청자 정보를 확인하고, 직접 연락한 뒤, 상태를 업데이트하여 체계적으로 관리하세요.
+      </p>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <h3>새 신청 알림을 확인합니다</h3>
+            <p>관리자 대시보드에서 <strong>새 신청 N건</strong>이 빨간색으로 표시됩니다. 이것이 보이면 아직 확인하지 않은 신청이 있다는 신호입니다.</p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/admin-dashboard.png" alt="대시보드 신청 알림" loading="lazy">
+              <p class="screenshot-cap">대시보드 — 새 신청이 있으면 빨간 알림이 표시됩니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <h3>신청자 목록을 엽니다</h3>
+            <p>대시보드의 <em>신청자 보기</em> 버튼 또는 좌측 메뉴의 <em>신청 현황</em>을 클릭합니다.</p>
+            <div class="path-chain">
+              <span class="pa gold">관리자 대시보드</span>
+              <span class="arr">→</span>
+              <span class="pa">신청자 보기</span>
+            </div>
+            <p>신청자 목록에서 이름, 연락처, 신청한 수업, 신청 날짜, 현재 상태를 한눈에 볼 수 있습니다.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <h3>신청 상세 정보를 확인합니다</h3>
+            <p>목록에서 신청자 이름을 클릭하면 상세 화면이 열립니다. 희망 시작일, 메모, 연락처 등 신청자가 입력한 모든 정보를 확인할 수 있습니다.</p>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>상세 화면에서 이메일 주소나 전화번호를 클릭하면 바로 연락할 수 있습니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <h3>신청자에게 직접 연락합니다</h3>
+            <p>신청서에 있는 이메일 또는 전화번호로 신청자에게 직접 연락합니다. 수업 일정, 장소, 비용 등 필요한 정보를 안내해 드리세요.</p>
+            <div class="info-box">
+              <span class="box-icon">ℹ️</span>
+              <span>새 신청이 들어왔을 때 <strong>24시간 이내</strong>에 연락하면 등록 확정률이 높아집니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">5</div>
+          <div class="step-body">
+            <h3>신청 상태를 업데이트합니다</h3>
+            <p>연락 후 신청 상세 화면에서 상태를 변경합니다. 상태는 아래 순서로 진행됩니다.</p>
+            <div class="status-flow">
+              <span class="status-chip s-new">🔴 신규</span>
+              <span class="s-arrow">→</span>
+              <span class="status-chip s-contacted">🟡 연락함</span>
+              <span class="s-arrow">→</span>
+              <span class="status-chip s-confirmed">🟢 확정</span>
+              <span class="s-arrow">또는</span>
+              <span class="status-chip s-rejected">⬜ 거절</span>
+            </div>
+            <div class="feat-grid">
+              <div class="feat-card">
+                <div class="fc-icon">🔴</div>
+                <div class="fc-title">신규</div>
+                <div class="fc-desc">방금 들어온 신청. 아직 확인 전</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🟡</div>
+                <div class="fc-title">연락함</div>
+                <div class="fc-desc">전화나 이메일로 연락을 취함</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🟢</div>
+                <div class="fc-title">확정</div>
+                <div class="fc-desc">수강 등록이 완료된 상태</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">⬜</div>
+                <div class="fc-title">거절</div>
+                <div class="fc-desc">정원 초과 등 등록 불가 상태</div>
+              </div>
+            </div>
+            <p>상태를 선택 후 <em>저장</em>을 클릭합니다.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         04 공연 기록 관리
+    ══════════════════════════════ -->
+    <section class="guide-section" id="performances">
+      <div class="section-badge">
+        <div class="section-num-big">04</div>
+        <div class="section-head-text">
+          <h2 class="section-title">공연 기록 관리</h2>
+          <p class="section-tagline">지난 공연을 사진·영상과 함께 아카이브로 남기는 방법</p>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        무용단의 공연 기록을 사진과 유튜브 영상과 함께 홈페이지에 남깁니다.
+        공개된 공연은 갤러리 페이지에 <strong>연도별 타임라인</strong>으로 쌓여 무용단의 역사를 보여줍니다.
+        가장 내세우고 싶은 공연은 <strong>대표 공연</strong>으로 지정하면 공연 페이지 상단에 크게 소개됩니다.
+      </p>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <h3>이벤트 관리로 이동합니다</h3>
+            <p>관리자 대시보드 하단 <strong>관리실</strong>에서 <em>이벤트 관리</em> 또는 <em>+ 새 이벤트</em> 버튼을 클릭합니다.</p>
+            <div class="path-chain">
+              <span class="pa gold">관리자 대시보드</span>
+              <span class="arr">→</span>
+              <span class="pa">공연·갤러리 카드</span>
+              <span class="arr">→</span>
+              <span class="pa">+ 새 이벤트</span>
+            </div>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/admin-new-event.png" alt="새 이벤트 등록 화면" loading="lazy">
+              <p class="screenshot-cap">새 아카이브 이벤트 만들기 화면</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <h3>공연 기본 정보를 입력합니다</h3>
+            <p>새 이벤트 화면에서 아래 항목을 입력합니다.</p>
+            <div class="feat-grid">
+              <div class="feat-card">
+                <div class="fc-icon">🎭</div>
+                <div class="fc-title">제목</div>
+                <div class="fc-desc">예: "제23회 정기공연", "2024 가을 특별무대"</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">📅</div>
+                <div class="fc-title">날짜</div>
+                <div class="fc-desc">공연이 열린 날짜 (갤러리 연도 분류 기준)</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🏷️</div>
+                <div class="fc-title">카테고리</div>
+                <div class="fc-desc">정기공연, 특별공연, 지역행사 등</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">📝</div>
+                <div class="fc-title">설명</div>
+                <div class="fc-desc">공연 소개, 레퍼토리, 특이사항 등</div>
+              </div>
+            </div>
+            <p>입력 후 <em>저장</em> 버튼을 클릭합니다. 저장 후 편집 화면에서 사진과 영상을 추가합니다.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <h3>공연 사진을 업로드합니다</h3>
+            <p>저장 후 나타나는 이벤트 편집 화면에서 <em>사진 추가</em> 버튼을 클릭합니다. 여러 장을 한 번에 선택하여 업로드할 수 있습니다.</p>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>첫 번째 사진이 목록과 갤러리에서 대표 이미지로 사용됩니다. 가장 인상적인 사진을 첫 번째로 업로드하세요.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <h3>유튜브 영상을 연결합니다 (선택)</h3>
+            <p>공연 영상이 유튜브에 업로드되어 있다면, 유튜브 영상 주소(URL)를 복사하여 편집 화면의 영상 URL 입력란에 붙여넣습니다.</p>
+            <div class="info-box">
+              <span class="box-icon">ℹ️</span>
+              <span>유튜브 영상 주소는 영상 페이지에서 주소창의 URL을 그대로 복사하면 됩니다.<br>예: <code class="url">https://www.youtube.com/watch?v=xxxxx</code></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">5</div>
+          <div class="step-body">
+            <h3>사진 순서를 정렬합니다</h3>
+            <p>업로드된 사진들을 원하는 순서로 드래그하여 재배치할 수 있습니다. 사진을 길게 눌러 잡은 뒤 원하는 위치로 끌어다 놓으세요.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">6</div>
+          <div class="step-body">
+            <h3>공연을 공개합니다</h3>
+            <p>편집 화면에서 <em>공개 여부</em>를 <strong>공개</strong>로 변경합니다. 공개된 공연은 갤러리 페이지에 날짜 기준으로 연도별로 자동 정렬되어 표시됩니다.</p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/performances.png" alt="공연 페이지" loading="lazy">
+              <p class="screenshot-cap">공연 페이지 — 등록된 공연들이 이렇게 표시됩니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">7</div>
+          <div class="step-body">
+            <h3>대표 공연을 지정합니다 (선택)</h3>
+            <p>가장 내세우고 싶은 공연을 <em>대표 공연(쇼케이스)</em>으로 지정하면, 공연 페이지 상단에 크게 소개됩니다. 이벤트 편집 화면에서 <em>쇼케이스</em> 항목을 켜고 저장하세요.</p>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>대표 공연은 최신 공연이나 가장 규모 있는 공연으로 지정하면 방문자에게 좋은 첫인상을 줄 수 있습니다.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         05 편집 모드
+    ══════════════════════════════ -->
+    <section class="guide-section" id="editmode">
+      <div class="section-badge">
+        <div class="section-num-big">05</div>
+        <div class="section-head-text">
+          <h2 class="section-title">편집 모드 — 글·사진 직접 수정</h2>
+          <p class="section-tagline">홈페이지 내용을 코딩 없이 바로 수정하는 방법</p>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        <strong>편집 모드</strong>는 홈페이지에 로그인한 상태에서 페이지의 글자나 사진을 <strong>그 자리에서 바로 클릭하여 수정</strong>하는 기능입니다.
+        코드를 다룰 필요가 전혀 없습니다. 소개 문구, 인사말, 대표 이미지 등을 직접 고칠 때 사용합니다.
+      </p>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <h3>관리자 계정으로 로그인한 상태에서 홈페이지를 엽니다</h3>
+            <p>로그인 후 홈페이지 메인(<code class="url">사이트주소</code>)이나 소개 페이지(<code class="url">사이트주소/about</code>)로 이동합니다. 수정하고 싶은 페이지를 엽니다.</p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/home.png" alt="홈페이지 — Edit 버튼 위치" loading="lazy">
+              <p class="screenshot-cap">로그인 후 상단 헤더에 "Edit" 버튼이 나타납니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <h3>상단 헤더의 "Edit" 버튼을 클릭합니다</h3>
+            <p>상단 우측에 <strong>Edit</strong> 버튼이 있습니다. 클릭하면 버튼이 <em>Edit ON</em>으로 바뀌면서 편집 모드가 활성화됩니다.</p>
+            <div class="admin-preview" aria-label="헤더 예시">
+              <div class="admin-menu-item">춤누리 로고</div>
+              <div class="admin-menu-item">홈</div>
+              <div class="admin-menu-item">소개</div>
+              <div class="admin-menu-item">수업</div>
+              <div class="admin-menu-item">공연</div>
+              <div class="admin-menu-item">갤러리</div>
+              <div class="admin-menu-item">Admin</div>
+              <div class="admin-menu-item highlight">✏️ Edit ON</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <h3>수정할 텍스트를 클릭합니다</h3>
+            <p>편집 모드가 켜진 상태에서 수정하고 싶은 글자 부분을 클릭하면 커서가 나타납니다. 기존 내용을 지우고 새 내용을 직접 입력하세요.</p>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/about.png" alt="소개 페이지 — 편집 가능" loading="lazy">
+              <p class="screenshot-cap">소개 페이지 — 편집 모드에서 텍스트를 클릭하면 바로 수정할 수 있습니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <h3>사진을 교체합니다</h3>
+            <p>편집 모드에서 교체하고 싶은 이미지를 클릭하면 파일 선택 창이 나타납니다. 새 사진을 선택하면 기존 사진이 교체됩니다.</p>
+            <div class="info-box">
+              <span class="box-icon">ℹ️</span>
+              <span>홈 화면의 대표 이미지, 소개 페이지의 사진 등을 이 방법으로 교체할 수 있습니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">5</div>
+          <div class="step-body">
+            <h3>저장 버튼을 클릭합니다</h3>
+            <p>수정이 끝나면 화면에 나타나는 <em>저장</em> 버튼을 클릭합니다. 저장을 눌러야 변경 내용이 홈페이지에 실제로 반영됩니다.</p>
+            <div class="warn-box">
+              <span class="box-icon">⚠️</span>
+              <span><strong>반드시 저장을 눌러야 합니다.</strong> 저장하지 않고 다른 페이지로 이동하거나 브라우저를 닫으면 수정한 내용이 사라집니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">6</div>
+          <div class="step-body">
+            <h3>편집 모드를 끕니다</h3>
+            <p>수정이 모두 끝났으면 <em>Edit ON</em> 버튼을 다시 클릭하여 편집 모드를 종료합니다. 버튼이 다시 <strong>Edit</strong>으로 돌아오면 일반 보기 모드입니다.</p>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>편집 모드는 관리자 계정으로 로그인했을 때만 보입니다. 일반 방문자에게는 이 버튼이 표시되지 않습니다.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">편집 모드로 수정할 수 있는 것들</h3>
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="fc-icon">🏠</div>
+            <div class="fc-title">홈 페이지</div>
+            <div class="fc-desc">메인 슬로건, 대표 이미지 등</div>
+          </div>
+          <div class="feat-card">
+            <div class="fc-icon">ℹ️</div>
+            <div class="fc-title">소개 페이지</div>
+            <div class="fc-desc">단체 소개 글, 인사말, 역사 등</div>
+          </div>
+          <div class="feat-card">
+            <div class="fc-icon">📸</div>
+            <div class="fc-title">대표 사진</div>
+            <div class="fc-desc">각 섹션의 배경·대표 이미지</div>
+          </div>
+          <div class="feat-card">
+            <div class="fc-icon">📞</div>
+            <div class="fc-title">연락처 정보</div>
+            <div class="fc-desc">전화번호, 주소, SNS 링크 등</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         06 이벤트·사진 관리
+    ══════════════════════════════ -->
+    <section class="guide-section" id="gallery">
+      <div class="section-badge">
+        <div class="section-num-big">06</div>
+        <div class="section-head-text">
+          <h2 class="section-title">이벤트·사진 관리</h2>
+          <p class="section-tagline">사진 보관함과 연도별 갤러리 타임라인 관리</p>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        갤러리는 공연(이벤트) 단위로 사진이 묶이고, 연도별로 정렬되어 표시됩니다.
+        <strong>사진 보관함</strong>에 사진을 모아두고, 각 이벤트에 연결하는 방식으로 운영합니다.
+        카테고리를 사용하면 공연 종류를 분류하여 관리할 수 있습니다.
+      </p>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <h3>갤러리 구조를 이해합니다</h3>
+            <p>홈페이지 갤러리는 다음과 같이 구성됩니다.</p>
+            <div class="feat-grid">
+              <div class="feat-card">
+                <div class="fc-icon">📁</div>
+                <div class="fc-title">사진 보관함</div>
+                <div class="fc-desc">아직 이벤트에 배정되지 않은 사진들이 모이는 임시 저장소</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🎭</div>
+                <div class="fc-title">이벤트(공연)</div>
+                <div class="fc-desc">날짜와 제목이 있는 공연 단위. 사진들이 묶임</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🗓️</div>
+                <div class="fc-title">연도별 타임라인</div>
+                <div class="fc-desc">공개 이벤트가 연도별로 정렬되어 갤러리에 표시됨</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🏷️</div>
+                <div class="fc-title">카테고리</div>
+                <div class="fc-desc">정기공연, 특별무대 등 공연 종류를 분류하는 태그</div>
+              </div>
+            </div>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/gallery.png" alt="갤러리 페이지" loading="lazy">
+              <p class="screenshot-cap">갤러리 페이지 — 연도별로 공연이 정렬되어 표시됩니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <h3>사진 보관함에 사진을 업로드합니다</h3>
+            <p>관리자 메뉴에서 <em>사진 보관함</em>으로 이동합니다. <em>사진 추가</em> 버튼을 클릭하여 여러 장을 한 번에 업로드할 수 있습니다.</p>
+            <div class="path-chain">
+              <span class="pa gold">관리자 대시보드</span>
+              <span class="arr">→</span>
+              <span class="pa">공연·갤러리 카드</span>
+              <span class="arr">→</span>
+              <span class="pa">사진 보관함</span>
+            </div>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>공연 사진을 촬영 후 보관함에 미리 업로드해 두면, 나중에 이벤트를 만들 때 바로 가져다 쓸 수 있습니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <h3>이벤트에 사진을 연결합니다</h3>
+            <p>이벤트 편집 화면에서 사진 탭을 엽니다. <em>보관함에서 추가</em> 버튼을 클릭하면 보관함의 사진을 선택하여 이벤트에 연결할 수 있습니다. 새 사진을 직접 업로드하는 것도 가능합니다.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <h3>사진 순서를 변경합니다</h3>
+            <p>이벤트 편집 화면에서 사진을 마우스로 길게 클릭한 채 원하는 위치로 끌어다 놓으면 순서가 바뀝니다. 가장 인상적인 사진을 첫 번째에 두세요.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">5</div>
+          <div class="step-body">
+            <h3>카테고리를 추가하거나 수정합니다</h3>
+            <p>공연 종류를 분류하는 카테고리는 별도로 관리합니다.</p>
+            <div class="path-chain">
+              <span class="pa gold">관리자 대시보드</span>
+              <span class="arr">→</span>
+              <span class="pa">이벤트 카테고리</span>
+            </div>
+            <p>이 화면에서 카테고리를 추가, 수정, 삭제할 수 있습니다. 예: 정기공연, 특별공연, 지역행사, 초청공연 등.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">6</div>
+          <div class="step-body">
+            <h3>갤러리 타임라인 확인</h3>
+            <p>공개된 이벤트는 갤러리 페이지(<code class="url">사이트주소/gallery</code>)에서 확인할 수 있습니다. 날짜 기준으로 연도별로 자동 정렬됩니다.</p>
+            <div class="info-box">
+              <span class="box-icon">ℹ️</span>
+              <span>이벤트 날짜를 정확하게 입력해야 갤러리 타임라인이 올바르게 정렬됩니다.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         07 회원 관리
+    ══════════════════════════════ -->
+    <section class="guide-section" id="members">
+      <div class="section-badge">
+        <div class="section-num-big">07</div>
+        <div class="section-head-text">
+          <h2 class="section-title">회원 관리</h2>
+          <p class="section-tagline">사이트 회원 목록 확인 및 프로필·비밀번호 변경</p>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        홈페이지에 가입한 사용자를 <strong>회원</strong>이라고 합니다.
+        회원은 <strong>일반 회원</strong>과 <strong>관리자</strong>로 구분됩니다.
+        회원 관리 메뉴에서 가입자 목록을 확인하고, 내 프로필과 비밀번호를 변경할 수 있습니다.
+      </p>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <h3>회원 목록을 확인합니다</h3>
+            <p>관리자 대시보드에서 <em>회원 목록 보기</em> 버튼을 클릭합니다.</p>
+            <div class="path-chain">
+              <span class="pa gold">관리자 대시보드</span>
+              <span class="arr">→</span>
+              <span class="pa">회원 관리 카드</span>
+              <span class="arr">→</span>
+              <span class="pa">회원 목록 보기</span>
+            </div>
+            <div class="screenshot-wrap">
+              <img src="./screenshots/admin-dashboard.png" alt="관리자 대시보드 — 회원 관리 카드" loading="lazy">
+              <p class="screenshot-cap">관리자 대시보드 — 회원 관리 카드에서 회원 수를 확인합니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <h3>회원 정보를 확인합니다</h3>
+            <p>회원 목록에서 각 회원의 다음 정보를 확인할 수 있습니다.</p>
+            <div class="feat-grid">
+              <div class="feat-card">
+                <div class="fc-icon">👤</div>
+                <div class="fc-title">이름</div>
+                <div class="fc-desc">회원이 가입 시 입력한 이름</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">📧</div>
+                <div class="fc-title">이메일</div>
+                <div class="fc-desc">로그인에 사용하는 이메일 주소</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">📅</div>
+                <div class="fc-title">가입일</div>
+                <div class="fc-desc">최초 가입한 날짜</div>
+              </div>
+              <div class="feat-card">
+                <div class="fc-icon">🛡️</div>
+                <div class="fc-title">권한</div>
+                <div class="fc-desc">일반 회원 또는 관리자</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <h3>내 프로필을 수정합니다</h3>
+            <p>관리자 대시보드 좌측 메뉴 또는 상단 이름 표시 부분에서 <em>내 프로필</em>을 클릭합니다.</p>
+            <div class="path-chain">
+              <span class="pa gold">관리자 메뉴</span>
+              <span class="arr">→</span>
+              <span class="pa">내 프로필</span>
+            </div>
+            <p>이름을 수정하고 <em>저장</em>을 클릭합니다. 이름은 관리자 대시보드 환영 메시지에 표시됩니다.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <h3>비밀번호를 변경합니다</h3>
+            <p>내 프로필 화면에서 비밀번호 변경 섹션을 찾습니다. <strong>현재 비밀번호</strong>를 입력하고, <strong>새 비밀번호</strong>와 <strong>새 비밀번호 확인</strong>을 입력한 뒤 <em>변경</em>을 클릭합니다.</p>
+            <div class="tip-box">
+              <span class="box-icon">💡</span>
+              <span>비밀번호는 영문 대문자, 소문자, 숫자, 특수문자를 섞어 <strong>8자 이상</strong>으로 만들면 안전합니다.<br>예: <code class="url" style="color:var(--ink)">Chodance2025!</code></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-dot">5</div>
+          <div class="step-body">
+            <h3>관리자 권한 추가가 필요한 경우</h3>
+            <p>새로운 관리자 계정이 필요하거나 기존 회원에게 관리자 권한을 부여해야 하는 경우, <strong>개발사에 요청</strong>하시면 처리해 드립니다.</p>
+            <div class="info-box">
+              <span class="box-icon">ℹ️</span>
+              <span>관리자 권한은 홈페이지의 모든 내용을 수정하고 삭제할 수 있는 높은 권한입니다. 신뢰할 수 있는 담당자에게만 부여하세요.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">자주 묻는 질문</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-dot" style="background:var(--gold);font-size:0.8rem;">Q</div>
+            <div class="step-body">
+              <h3>일반 회원과 관리자의 차이는?</h3>
+              <p><strong>일반 회원</strong>은 사이트에 가입만 된 상태로, 수강 신청 시 정보가 자동으로 입력되는 정도의 혜택이 있습니다. <strong>관리자</strong>는 Admin 메뉴에 접근하여 수업·공연·갤러리·회원을 모두 관리할 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-dot" style="background:var(--gold);font-size:0.8rem;">Q</div>
+            <div class="step-body">
+              <h3>로그인이 안 될 때 어떻게 하나요?</h3>
+              <p>이메일 주소와 비밀번호를 다시 확인하세요. 여러 번 틀렸다면 개발사에 연락하여 비밀번호 초기화를 요청하세요.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div><!-- /.guide-body -->
+
+<!-- ══════════════════════════════════════════════
+     푸터
+══════════════════════════════════════════════ -->
+<footer class="guide-footer">
+  <span class="ft-logo">춤누리 무용단</span>
+  <p>홈페이지 관리 가이드 · 2025년</p>
+  <p class="ft-contact">문의 사항이 있으시면 담당 개발자에게 연락해 주세요.</p>
+  <p class="ft-meta">내부 배포용 · © 2025 KTDOC · 춤누리 무용단 홈페이지</p>
+</footer>
+
+<script>
+// ── 현재 섹션 감지 + 사이드 네비 활성화
+(function () {
+  const sections = document.querySelectorAll('.guide-section[id]');
+  const sideLinks = document.querySelectorAll('.sidenav-link');
+  const currentEl = document.getElementById('js-current-section');
+
+  const names = {
+    login: '01 로그인 방법',
+    programs: '02 수업·캠프 등록',
+    applications: '03 수강 신청 응대',
+    performances: '04 공연 기록 관리',
+    editmode: '05 편집 모드',
+    gallery: '06 이벤트·사진 관리',
+    members: '07 회원 관리',
+  };
+
+  const obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      const id = entry.target.id;
+      sideLinks.forEach(function (link) {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+      });
+      if (currentEl && names[id]) currentEl.textContent = names[id];
+    });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+
+  sections.forEach(function (s) { obs.observe(s); });
+})();
+</script>
+</body>
+</html>
