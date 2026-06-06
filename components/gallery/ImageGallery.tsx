@@ -5,20 +5,30 @@
  * 라이트박스 이미지 갤러리 - 전체화면 보기 지원
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import type { EventImage } from '@/types/gallery';
+
+// 구조적 최소 타입 — EventImage / ProgramImage 모두 호환 (라이트박스 재사용용)
+interface GalleryLightboxImage {
+  id: number;
+  image_url: string;
+  caption_ko: string | null;
+  caption_en: string | null;
+}
 
 interface ImageGalleryProps {
-  images: EventImage[];
+  images: GalleryLightboxImage[];
   locale?: 'ko' | 'en';
 }
 
 export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
 
   const openLightbox = useCallback((index: number) => {
+    lastFocusedRef.current = (document.activeElement as HTMLElement) || null;
     setCurrentIndex(index);
     setLightboxOpen(true);
     document.body.style.overflow = 'hidden';
@@ -27,6 +37,7 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false);
     document.body.style.overflow = '';
+    lastFocusedRef.current?.focus();
   }, []);
 
   const goToPrevious = useCallback(() => {
@@ -40,6 +51,8 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
   // Keyboard navigation
   useEffect(() => {
     if (!lightboxOpen) return;
+
+    closeButtonRef.current?.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -103,13 +116,17 @@ export default function ImageGallery({ images, locale = 'ko' }: ImageGalleryProp
           <div
             className="gallery-lightbox-content"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={locale === 'ko' ? '이미지 갤러리' : 'Image gallery'}
           >
             {/* Close Button */}
             <button
               type="button"
+              ref={closeButtonRef}
               className="gallery-lightbox-close"
               onClick={closeLightbox}
-              aria-label="Close"
+              aria-label={locale === 'ko' ? '닫기' : 'Close'}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18M6 6l12 12" />

@@ -1,10 +1,16 @@
 import { getLatestVideos } from '@/lib/youtube';
-import VideoCard from './VideoCard';
+import { getSetting, SETTING_HERO_FEATURED_VIDEO } from '@/lib/d1';
+import HeroVideos from './HeroVideos';
 import { HeroText } from './HeroContent';
 import HeroBackground from './HeroBackground';
 
 export default async function Hero() {
-  const videos = await getLatestVideos(3);
+  // 후보 영상을 넉넉히 가져와서 대표 영상 선택지로 쓰고, 나머지는 최신순으로 채운다.
+  // 설정 테이블이 아직 없거나 조회 실패해도 홈 화면이 깨지지 않도록 null로 폴백.
+  const [videos, featuredVideoId] = await Promise.all([
+    getLatestVideos(15),
+    getSetting(SETTING_HERO_FEATURED_VIDEO).catch(() => null),
+  ]);
 
   return (
     <section id="hero">
@@ -17,27 +23,7 @@ export default async function Hero() {
 
           {/* Right Side - Video Gallery (2/3) */}
           <div className="hero-right">
-            <div className="hero-videos">
-              {videos.length > 0 ? (
-                <>
-                  <VideoCard video={videos[0]} isMain />
-                  {videos[1] && <VideoCard video={videos[1]} />}
-                  {videos[2] && <VideoCard video={videos[2]} />}
-                </>
-              ) : (
-                <>
-                  <div className="video-card video-card-main video-placeholder">
-                    <span>영상 준비중</span>
-                  </div>
-                  <div className="video-card video-placeholder">
-                    <span>Coming Soon</span>
-                  </div>
-                  <div className="video-card video-placeholder">
-                    <span>Coming Soon</span>
-                  </div>
-                </>
-              )}
-            </div>
+            <HeroVideos videos={videos} featuredVideoId={featuredVideoId} />
           </div>
         </div>
       </div>

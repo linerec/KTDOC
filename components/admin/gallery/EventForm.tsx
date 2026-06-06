@@ -37,6 +37,8 @@ export default function EventForm({
     description_en: event?.description_en || '',
     is_published: event?.is_published === 1,
     is_featured: event?.is_featured === 1,
+    is_signature: event?.is_signature === 1,
+    signature_order: event?.signature_order ?? 0,
   });
 
   // Images and videos (managed separately)
@@ -73,6 +75,8 @@ export default function EventForm({
         description_en: formData.description_en || undefined,
         is_published: formData.is_published,
         is_featured: formData.is_featured,
+        is_signature: formData.is_signature,
+        signature_order: Number(formData.signature_order) || 0,
       };
 
       const res = await fetch(url, {
@@ -231,6 +235,34 @@ export default function EventForm({
                 onChange={handleChange}
               />
               <label htmlFor="is_featured">추천</label>
+            </div>
+          </div>
+
+          <div className="admin-form-row">
+            <div className="admin-form-checkbox">
+              <input
+                type="checkbox"
+                id="is_signature"
+                name="is_signature"
+                checked={formData.is_signature}
+                onChange={handleChange}
+              />
+              <label htmlFor="is_signature">공연(/performances) 쇼케이스에 표시</label>
+            </div>
+
+            <div className="admin-form-group">
+              <label htmlFor="signature_order" className="admin-form-label">
+                쇼케이스 순서 (작을수록 먼저)
+              </label>
+              <input
+                type="number"
+                id="signature_order"
+                name="signature_order"
+                value={formData.signature_order}
+                onChange={handleChange}
+                className="admin-form-input"
+                min={0}
+              />
             </div>
           </div>
         </div>

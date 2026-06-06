@@ -112,6 +112,7 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
     limit = 20,
     featured,
     published = true,
+    showcase,
   } = filters;
 
   // Build WHERE clause
@@ -145,7 +146,14 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
     params.push(featured ? 1 : 0);
   }
 
+  if (showcase) {
+    conditions.push('e.is_signature = 1');
+  }
+
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const orderBy = showcase
+    ? 'ORDER BY e.signature_order ASC, e.event_date DESC, e.id DESC'
+    : 'ORDER BY e.year DESC, e.event_date DESC, e.id DESC';
 
   // Get total count
   const countResult = await queryD1<{ count: number }>(
@@ -168,7 +176,7 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
      FROM events e
      LEFT JOIN event_categories c ON e.category_id = c.id
      ${whereClause}
-     ORDER BY e.year DESC, e.event_date DESC, e.id DESC
+     ${orderBy}
      LIMIT ? OFFSET ?`,
     [...params, limit, offset]
   );
@@ -251,8 +259,8 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
     `INSERT INTO events (
       slug, year, event_date, title_ko, title_en,
       description_ko, description_en, category_id,
-      is_published, is_featured
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      is_published, is_featured, is_signature, signature_order
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       year,
@@ -264,6 +272,8 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       input.category_id || null,
       input.is_published ? 1 : 0,
       input.is_featured ? 1 : 0,
+      input.is_signature ? 1 : 0,
+      input.signature_order ?? 0,
     ]
   );
 
@@ -330,6 +340,14 @@ export async function updateEvent(
   if (input.is_featured !== undefined) {
     updates.push('is_featured = ?');
     params.push(input.is_featured ? 1 : 0);
+  }
+  if (input.is_signature !== undefined) {
+    updates.push('is_signature = ?');
+    params.push(input.is_signature ? 1 : 0);
+  }
+  if (input.signature_order !== undefined) {
+    updates.push('signature_order = ?');
+    params.push(input.signature_order);
   }
 
   if (updates.length === 0) return;

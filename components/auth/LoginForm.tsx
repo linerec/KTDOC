@@ -15,6 +15,8 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const isDev = process.env.NODE_ENV === 'development';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -24,6 +26,28 @@ export default function LoginForm() {
       const result = await signIn('credentials', {
         email,
         password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(messages['auth.error.invalidCredentials']);
+      } else {
+        router.push('/');
+        router.refresh();
+      }
+    } catch {
+      setError(messages['auth.error.loginFailed']);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDevAdminLogin = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const result = await signIn('dev-admin', {
+        email: 'owenkdev@gmail.com',
         redirect: false,
       });
 
@@ -75,6 +99,22 @@ export default function LoginForm() {
       <button type="submit" className="auth-button" disabled={isLoading}>
         {isLoading ? messages['auth.login.loading'] : messages['auth.login']}
       </button>
+
+      {isDev && (
+        <button
+          type="button"
+          className="auth-button auth-button-dev"
+          onClick={handleDevAdminLogin}
+          disabled={isLoading}
+          style={{
+            marginTop: '0.75rem',
+            background: '#d4a017',
+            color: '#0a0a0a',
+          }}
+        >
+          [DEV] 관리자로 로그인
+        </button>
+      )}
 
       <p className="auth-link">
         <IntlObject keycode="auth.noAccount" /> <Link href="/register"><IntlObject keycode="auth.register" /></Link>

@@ -108,7 +108,7 @@ export default function EventTable({
             <th style={{ width: '100px' }}>카테고리</th>
             <th style={{ width: '92px' }}>공개 상태</th>
             <th style={{ width: '60px' }}>조회</th>
-            <th style={{ width: '150px' }}>작업</th>
+            <th style={{ width: '280px' }}>작업</th>
           </tr>
         </thead>
         <tbody>

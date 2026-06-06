@@ -560,6 +560,132 @@ ul {
 }
 
 /* ========================================
+   HERO 대표 영상 선택 (관리자 편집 모드)
+======================================== */
+.hero-video-pick-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(224, 184, 79, 0.5);
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.78);
+  color: var(--soft-gold);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.hero-video-pick-btn:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #1a1a1a;
+  transform: translateY(-1px);
+}
+
+/* 선택 모달 (image-object-modal 셸 재사용 + 넓게) */
+.hero-video-picker {
+  max-width: 760px;
+}
+
+.hero-video-picker-hint {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.hero-video-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.hero-video-pick-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #0a0a0a;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.hero-video-pick-item:hover {
+  border-color: rgba(224, 184, 79, 0.4);
+}
+
+.hero-video-pick-item.selected {
+  border-color: var(--accent-color);
+  background: rgba(212, 160, 23, 0.08);
+}
+
+.hero-video-pick-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #151515;
+}
+
+.hero-video-pick-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: #1a1a1a;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.hero-video-pick-auto-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  background: #151515;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.hero-video-pick-item--auto.selected .hero-video-pick-auto-box {
+  border-color: var(--accent-color);
+  color: var(--soft-gold);
+}
+
+.hero-video-pick-title {
+  font-size: 0.78rem;
+  color: var(--text-color);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ========================================
    MISSION SECTION
 ======================================== */
 .mission-section {
@@ -3297,8 +3423,15 @@ ul {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   text-decoration: none;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--text-color);
+}
+.admin-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .admin-btn-sm {
@@ -3346,6 +3479,552 @@ ul {
   cursor: not-allowed;
 }
 
+/* ========================================
+   ADMIN CONSOLE (관리 홈 대시보드)
+======================================== */
+.admin-console-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+.admin-console-intro .admin-kicker {
+  color: var(--soft-gold);
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.admin-domains {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+.admin-domain {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 30px;
+  background: linear-gradient(180deg, var(--ink-umber), var(--deep-umber));
+  border: 1px solid rgba(224, 184, 79, 0.16);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.admin-domain::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-image: var(--hairline-gold);
+}
+.admin-domain--wide {
+  grid-column: 1 / -1;
+}
+.admin-domain--accent {
+  border-color: rgba(212, 160, 23, 0.32);
+}
+.admin-domain--alert {
+  border-color: rgba(196, 48, 43, 0.4);
+}
+
+.admin-domain-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+}
+.admin-domain-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: rgba(212, 160, 23, 0.12);
+  border: 1px solid rgba(212, 160, 23, 0.25);
+  color: var(--soft-gold);
+}
+.admin-domain-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-domain-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.55rem;
+  color: var(--warm-ivory);
+  line-height: 1.2;
+}
+.admin-domain-desc {
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-size: 0.94rem;
+  max-width: 60ch;
+}
+.admin-domain-meta {
+  font-size: 0.85rem;
+  color: var(--soft-gold);
+  letter-spacing: 0.02em;
+}
+.admin-domain-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+/* stats */
+.admin-domain-stats {
+  display: flex;
+  gap: 30px;
+}
+.admin-domain-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.admin-domain-stat-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.admin-domain-stat strong,
+.admin-domain-stat-inline strong {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.9rem;
+  color: var(--warm-ivory);
+  line-height: 1;
+}
+.admin-domain-stat span,
+.admin-domain-stat-inline span {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+.admin-domain-stat-inline span {
+  margin-top: 0;
+}
+
+.admin-domain-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(196, 48, 43, 0.16);
+  border: 1px solid rgba(196, 48, 43, 0.5);
+  color: var(--warm-ivory);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .admin-domains {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   ADMIN ONBOARDING WALKTHROUGH (관리 홈 튜토리얼)
+======================================== */
+:root {
+  --medallion-gold: radial-gradient(circle at 35% 30%, var(--soft-gold), var(--accent-color));
+  --glow-gold: 0 0 0 4px rgba(212, 160, 23, 0.1), 0 0 24px rgba(212, 160, 23, 0.22);
+  --spine-gold: linear-gradient(180deg, var(--soft-gold), rgba(224, 184, 79, 0.25));
+  --done-green: #9ed99e;
+}
+
+.admin-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 골드 채움 버튼 — 현재 단계 CTA (빨강 primary는 긴급 전용) */
+.admin-btn-gold {
+  background: linear-gradient(135deg, var(--soft-gold), var(--accent-color));
+  border-color: var(--accent-color);
+  color: var(--ink-black);
+  font-weight: 600;
+}
+.admin-btn-gold:hover {
+  background: linear-gradient(135deg, #f1cd66, var(--soft-gold));
+  border-color: var(--soft-gold);
+  color: var(--ink-black);
+}
+
+/* 환영 헤더 */
+.admin-onboard-head {
+  position: relative;
+  padding: 30px 32px;
+  margin-bottom: 28px;
+  background: linear-gradient(180deg, var(--ink-umber), var(--deep-umber));
+  border: 1px solid rgba(224, 184, 79, 0.16);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.admin-onboard-head::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-image: var(--hairline-gold);
+}
+.admin-onboard-headtop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.admin-onboard-greet {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: var(--warm-ivory);
+  margin: 8px 0 0;
+  line-height: 1.2;
+}
+.admin-onboard-greet b {
+  color: var(--soft-gold);
+  font-weight: 400;
+}
+.admin-onboard-lede {
+  margin-top: 12px;
+  color: rgba(246, 239, 226, 0.66);
+  line-height: 1.7;
+  max-width: 64ch;
+  word-break: keep-all;
+}
+.admin-onboard-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+.admin-rail {
+  position: relative;
+  flex: 1;
+  min-width: 160px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(224, 184, 79, 0.14);
+  overflow: hidden;
+}
+.admin-rail::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: calc(var(--p, 0) * 100%);
+  background-image: var(--spine-gold);
+  box-shadow: 0 0 10px rgba(212, 160, 23, 0.4);
+  transition: width 0.9s var(--ease-out-expo);
+}
+.admin-rail-count {
+  font-family: var(--font-heading);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+.admin-rail-count b {
+  color: var(--warm-ivory);
+  font-size: 1.3rem;
+}
+.admin-rail-micro {
+  color: var(--soft-gold);
+  font-size: 0.85rem;
+}
+
+/* 긴급 콜아웃 (신규 신청) */
+.admin-urgent-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 18px 24px;
+  margin-bottom: 28px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(143, 33, 29, 0.3), rgba(196, 48, 43, 0.16));
+  border: 1px solid rgba(196, 48, 43, 0.5);
+}
+.admin-urgent-callout p {
+  color: var(--warm-ivory);
+  font-weight: 500;
+}
+
+/* 가이드 저니 (두루마리) */
+.admin-scroll {
+  list-style: none;
+  margin: 0 0 44px;
+  padding: 0;
+}
+.admin-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 20px;
+  padding-bottom: 24px;
+}
+.admin-step::before {
+  content: '';
+  position: absolute;
+  left: 26px;
+  top: 54px;
+  bottom: -2px;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(224, 184, 79, 0.16);
+}
+.admin-step:last-child::before {
+  display: none;
+}
+.admin-step.is-done::before {
+  background-image: var(--spine-gold);
+  opacity: 0.7;
+}
+
+/* 메달리온 */
+.admin-step-medallion {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  border: 1px solid rgba(212, 160, 23, 0.4);
+  background: rgba(212, 160, 23, 0.08);
+  color: var(--soft-gold);
+  flex-shrink: 0;
+}
+.admin-step-medallion svg {
+  width: 22px;
+  height: 22px;
+}
+.admin-step.is-current .admin-step-medallion {
+  background-image: var(--medallion-gold);
+  border-color: var(--soft-gold);
+  color: var(--ink-black);
+  box-shadow: var(--glow-gold);
+  animation: medallionPulse 3.4s var(--ease-out-expo) infinite;
+}
+.admin-step.is-current.is-attention .admin-step-medallion {
+  background: radial-gradient(circle at 35% 30%, #e8857f, var(--secondary-color));
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 4px rgba(196, 48, 43, 0.12), 0 0 24px rgba(196, 48, 43, 0.25);
+  color: var(--warm-ivory);
+  animation: none;
+}
+.admin-step.is-done .admin-step-medallion {
+  background: transparent;
+  border-color: rgba(224, 184, 79, 0.5);
+  color: var(--done-green);
+}
+@keyframes medallionPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0.25), 0 0 18px rgba(212, 160, 23, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(212, 160, 23, 0), 0 0 26px rgba(212, 160, 23, 0.32); }
+}
+
+/* 단계 본문 */
+.admin-step-body {
+  padding-top: 6px;
+  min-width: 0;
+}
+.admin-step.is-current .admin-step-body {
+  position: relative;
+  background: linear-gradient(180deg, var(--ink-umber), var(--deep-umber));
+  border: 1px solid rgba(212, 160, 23, 0.3);
+  border-radius: 12px;
+  padding: 22px 24px;
+  box-shadow: 0 0 32px rgba(212, 160, 23, 0.06);
+}
+.admin-step.is-current.is-attention .admin-step-body {
+  border-color: rgba(196, 48, 43, 0.4);
+}
+.admin-step.is-current .admin-step-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-image: var(--hairline-gold);
+  border-radius: 12px 12px 0 0;
+}
+.admin-step.is-done .admin-step-body {
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+.admin-step.is-done:hover .admin-step-body {
+  opacity: 0.85;
+}
+.admin-step-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--soft-gold);
+  margin-bottom: 8px;
+}
+.admin-step-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: var(--warm-ivory);
+  line-height: 1.25;
+}
+.admin-step.is-done .admin-step-title {
+  font-size: 1.15rem;
+  color: rgba(246, 239, 226, 0.7);
+}
+.admin-step-desc {
+  margin-top: 10px;
+  color: rgba(246, 239, 226, 0.74);
+  line-height: 1.7;
+  max-width: 60ch;
+  word-break: keep-all;
+}
+.admin-step-status {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.admin-step.is-current .admin-step-status {
+  color: var(--soft-gold);
+}
+.admin-step-tip {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgba(224, 184, 79, 0.8);
+}
+.admin-step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.admin-step-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  background: rgba(212, 160, 23, 0.16);
+  border: 1px solid rgba(212, 160, 23, 0.5);
+  color: var(--soft-gold);
+}
+.admin-step-pill.is-attention {
+  background: rgba(196, 48, 43, 0.18);
+  border-color: rgba(196, 48, 43, 0.55);
+  color: #f0b6b2;
+}
+
+/* 관리실 */
+.admin-workshop {
+  margin-top: 8px;
+}
+.admin-workshop-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.admin-workshop-head h2 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.4rem;
+  color: var(--warm-ivory);
+  white-space: nowrap;
+}
+.admin-workshop-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-image: var(--hairline-gold);
+}
+.admin-workshop-quiet-line {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: -8px 0 20px;
+}
+.admin-workshop--quiet .admin-domains {
+  opacity: 0.82;
+}
+
+/* 안심 풋노트 */
+.admin-guide-footnote {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(224, 184, 79, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-step.is-current .admin-step-medallion {
+    animation: none;
+  }
+  .admin-rail::after {
+    transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-onboard-head {
+    padding: 24px 20px;
+  }
+  .admin-step {
+    grid-template-columns: 44px 1fr;
+    gap: 14px;
+  }
+  .admin-step-medallion {
+    width: 44px;
+    height: 44px;
+  }
+  .admin-step::before {
+    left: 22px;
+    top: 50px;
+  }
+  .admin-step.is-current .admin-step-body {
+    padding: 18px 18px;
+  }
+}
+
 /* Admin Filters */
 .admin-filters {
   display: flex;
@@ -3389,6 +4068,7 @@ ul {
 .admin-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 960px;
 }
 
 .admin-table th,
@@ -3460,6 +4140,8 @@ ul {
 .admin-table-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 /* Admin Badge */
@@ -4194,17 +4876,24 @@ ul {
    ========================================== */
 
 /* About Hero Section */
+/* ==========================================================================
+   ABOUT HERO — "Warm-Rail Duotone" redesign
+   텍스트를 좌측 따뜻한 잉크 레일에 배치하고, 우측의 타임스퀘어 공연 사진은
+   그대로 노출한다. .about-hero-bg는 position:absolute로 유지(관리자 ImageObject
+   fill 규칙 .about-hero-bg .about-hero-bg-fill 이 의존). relative로 바꾸지 말 것.
+   ========================================================================== */
 .about-hero {
   position: relative;
   min-height: 100vh;
+  /* 따뜻한 umber 베이스 — 사진 로드 전에도 검정이 아닌 온기 */
   background:
-    radial-gradient(circle at 52% 18%, rgba(224, 184, 79, 0.12), transparent 32%),
+    radial-gradient(circle at 16% 22%, rgba(224, 184, 79, 0.10), transparent 38%),
     linear-gradient(180deg, #17100d 0%, #271815 100%);
-  padding: calc(var(--header-height) + 120px) 0 0;
+  padding: calc(var(--header-height) + 100px) 0 0;
   overflow: hidden;
 }
 
-/* Background image - positioned behind text */
+/* Background image - 구조 유지, 우측을 열어 사진을 보여줌 */
 .about-hero-bg {
   position: absolute;
   bottom: 0;
@@ -4214,47 +4903,85 @@ ul {
   z-index: 1;
 }
 
+/* 상단 umber 페이드 (사진을 더 보이도록 약간 축소) */
 .about-hero-bg::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 50%;
+  height: 42%;
   background: linear-gradient(to bottom, #17100d 0%, transparent 100%);
   z-index: 2;
 }
 
+/* 핵심 수정: 비대칭 좌측 레일 스크림.
+   텍스트가 놓이는 좌측은 거의 불투명한 따뜻한 umber(#000 아님)이고
+   ~78%에서 완전 투명으로 전환되어 우측 절반(밝은 전광판 + 한복의 에너지)은
+   그대로 보인다. 하단은 따뜻한 페이드로 director 섹션과 자연스럽게 연결. */
 .about-hero-bg::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(12, 8, 5, 0.74), rgba(12, 8, 5, 0.24) 52%, rgba(12, 8, 5, 0.62)),
-    linear-gradient(180deg, transparent 44%, #271815 100%);
+    linear-gradient(
+      100deg,
+      rgba(23, 14, 10, 0.96) 0%,
+      rgba(23, 14, 10, 0.94) 30%,
+      rgba(23, 14, 10, 0.80) 52%,
+      rgba(23, 14, 10, 0.45) 60%,
+      rgba(23, 14, 10, 0.18) 70%,
+      rgba(23, 14, 10, 0.0) 80%
+    ),
+    linear-gradient(180deg, transparent 42%, rgba(21, 16, 13, 0.92) 100%);
   z-index: 2;
 }
 
+/* 레이아웃 — 비대칭 좌측 레일 그리드 (기존 1fr 1fr 1fr) */
 .about-hero-container {
   position: relative;
   z-index: 3;
   max-width: var(--container-width);
   margin: 0 auto;
-  padding: 0 40px 300px;
+  padding: 0 48px 280px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: minmax(400px, 44%) 1fr;
+  align-items: start;
 }
 
+/* 콘텐츠는 어두운 좌측 레일로 이동 (기존 grid-column: 2) */
 .about-hero-content-wrapper {
-  grid-column: 2;
+  grid-column: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  position: relative;       /* 단청 액센트 라인 기준점 */
+  padding-right: 40px;
+}
+
+/* 단청 모티브 세로 금색 액센트 라인 (레일 우측 가장자리) */
+.about-hero-content-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 4px;
+  width: 2px;
+  height: 84px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(212, 160, 23, 0.85) 22%,
+    rgba(224, 184, 79, 0.95) 50%,
+    rgba(212, 160, 23, 0.85) 78%,
+    transparent 100%
+  );
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .about-hero-title {
-  width: min(100%, 280px);
-  margin-bottom: 20px;
+  width: min(100%, 260px);
+  margin-bottom: 18px;
 }
 
 .about-hero-title img {
@@ -4263,34 +4990,42 @@ ul {
   height: auto;
 }
 
+/* 한글 단체명을 커버라인(헤드라인)으로. weight 500으로 명조 획 보존 */
 .about-hero-korean {
   font-family: var(--font-heading);
-  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-  font-weight: 400;
-  color: var(--accent-color);
-  margin-bottom: 10px;
-  letter-spacing: 0.05em;
+  font-size: clamp(1.55rem, 2.8vw, 2.35rem);
+  font-weight: 500;
+  color: var(--accent-color);     /* #d4a017 — umber 레일 위 약 5.4:1 (AA) */
+  margin-bottom: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
 }
 
+/* founded 라인 — 금색 계열 보조 정보 (기존 #888 회색 실패). 약 6.5:1 (AA) */
 .about-hero-founded {
   font-family: var(--font-body);
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-bottom: 30px;
+  font-size: 0.82rem;
+  color: rgba(224, 184, 79, 0.82);
+  margin-bottom: 26px;
   font-style: italic;
+  letter-spacing: 0.04em;
 }
 
+/* 본문 위 옅은 금색 헤어라인 (단청 리듬) */
 .about-hero-content {
-  max-width: 550px;
+  max-width: 380px;               /* 강한 스크림 구역 안으로 텍스트 제한 */
   text-align: left;
   margin-bottom: 50px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(212, 160, 23, 0.20);
 }
 
+/* 가독성 핵심 수정: #888 회색 → 따뜻한 아이보리. 레일 위 약 15:1 (AAA) */
 .about-hero-content p {
   font-family: var(--font-body);
   font-size: 0.9rem;
-  line-height: 1.9;
-  color: var(--text-muted);
+  line-height: 1.95;
+  color: rgba(246, 239, 226, 0.88);
   margin-bottom: 15px;
 }
 
@@ -4299,7 +5034,9 @@ ul {
 }
 
 /* About Director Section */
+/* 금색 상단 라인으로 hero 레일과 하나의 따뜻한 재질 시스템으로 연결 */
 .about-director {
+  border-top: 2px solid rgba(212, 160, 23, 0.35);
   background:
     radial-gradient(circle at 18% 0%, rgba(224, 184, 79, 0.08), transparent 32%),
     linear-gradient(180deg, var(--ink-umber) 0%, #1e130f 100%);
@@ -4341,7 +5078,7 @@ ul {
 .about-director-title-en {
   font-family: var(--font-body);
   font-size: 1.1rem;
-  color: rgba(246, 239, 226, 0.62);
+  color: rgba(246, 239, 226, 0.78);
   font-style: italic;
   margin-bottom: 0;
 }
@@ -4370,7 +5107,7 @@ ul {
   font-family: var(--font-body);
   font-size: 0.85rem;
   line-height: 1.9;
-  color: rgba(246, 239, 226, 0.66);
+  color: rgba(246, 239, 226, 0.82);
   margin-bottom: 20px;
 }
 
@@ -4398,6 +5135,12 @@ ul {
 
 /* About Page Responsive */
 @media (max-width: 992px) {
+  /* 레일을 넓혀 한글 카피가 사진 경계에 붙지 않게 */
+  .about-hero-container {
+    grid-template-columns: minmax(340px, 52%) 1fr;
+    padding: 0 28px 240px;
+  }
+
   .about-director-container {
     grid-template-columns: 1fr 1fr;
     gap: 20px;
@@ -4425,19 +5168,49 @@ ul {
   }
 
   .about-hero-bg {
-    height: 50%;
+    height: 56%;
+  }
+
+  /* 대각 레일 대신 상단 가중 세로 스크림: 스택된 텍스트는 읽히고
+     사진은 하단으로 자연스럽게 비쳐 보인다. */
+  .about-hero-bg::after {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(23, 14, 10, 0.0) 0%,
+        rgba(23, 14, 10, 0.84) 38%,
+        rgba(23, 14, 10, 0.93) 62%,
+        rgba(23, 14, 10, 0.96) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(23, 14, 10, 0.72) 0%,
+        transparent 26%
+      );
   }
 
   .about-hero-container {
-    padding: 0 20px 200px;
     grid-template-columns: 1fr;
+    padding: 0 24px 160px;
   }
 
   .about-hero-content-wrapper {
     grid-column: 1;
+    padding-right: 0;
+    align-items: flex-start;
+  }
+
+  /* 세로 액센트 라인 숨김 — 이 폭에서는 너무 좁음 */
+  .about-hero-content-wrapper::after {
+    display: none;
+  }
+
+  .about-hero-title {
+    width: min(100%, 220px);
   }
 
   .about-hero-content {
+    max-width: 100%;
     margin-bottom: 40px;
   }
 
@@ -4476,8 +5249,38 @@ ul {
 }
 
 @media (max-width: 480px) {
+  .about-hero-bg::after {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(23, 14, 10, 0.0) 0%,
+        rgba(23, 14, 10, 0.90) 42%,
+        rgba(23, 14, 10, 0.96) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(23, 14, 10, 0.78) 0%,
+        transparent 24%
+      );
+  }
+
+  .about-hero-title {
+    width: min(100%, 190px);
+  }
+
   .about-hero-korean {
-    font-size: 1rem;
+    font-size: clamp(1.3rem, 6vw, 1.6rem);
+    letter-spacing: 0.03em;
+  }
+
+  .about-hero-founded {
+    font-size: 0.78rem;
+    margin-bottom: 22px;
+  }
+
+  .about-hero-content p {
+    font-size: 0.88rem;
+    line-height: 1.85;
   }
 
   .about-director-title-ko {
@@ -4943,6 +5746,19 @@ ul {
   color: var(--text-muted);
   font-size: 1.05rem;
   line-height: 1.8;
+}
+
+/* IntlObject가 h1/h2/p로 렌더해도 전역 .intl-object{display:inline} 때문에 인라인이 되어
+   제목/설명이 겹친다. 블록 요소로 쓰는 곳은 display를 복구한다. */
+.classes-hero-title.intl-object,
+.classes-hero-description.intl-object,
+.program-section-title.intl-object,
+.performance-hero-title.intl-object,
+.performance-hero-meta.intl-object {
+  display: block;
+}
+.classes-empty .intl-object {
+  display: block;
 }
 
 .classes-main {
@@ -5680,9 +6496,211 @@ ul {
   .program-card-cta,
   .enroll-chip-closingSoon,
   .classes-loading-hero,
-  .classes-loading-card {
+  .classes-loading-card,
+  .performance-card,
+  .performance-card-img {
     transition: none !important;
     animation: none !important;
     transform: none !important;
+  }
+}
+
+/* ========================================
+   PERFORMANCES  (공연 시네마틱 쇼케이스)
+======================================== */
+
+.performances-page {
+  background: var(--ink-black);
+  min-height: 100vh;
+}
+
+/* --- Cinematic hero --- */
+.performance-hero {
+  position: relative;
+  min-height: 86svh;
+  display: flex;
+  align-items: flex-end;
+  padding: calc(var(--header-height) + 40px) 0 70px;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
+}
+.performance-hero--empty {
+  min-height: 70svh;
+}
+.performance-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.performance-hero-img {
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.05) brightness(0.86);
+}
+.performance-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(130% 120% at 80% 15%, rgba(212, 160, 23, 0.12), transparent 55%),
+    linear-gradient(180deg, rgba(9, 7, 5, 0.5) 0%, rgba(9, 7, 5, 0.15) 38%, rgba(9, 7, 5, 0.88) 100%);
+}
+.performance-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+.performance-hero-eyebrow {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.8rem;
+  color: var(--soft-gold);
+  margin-bottom: 20px;
+}
+.performance-hero-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2.8rem, 6vw, 5.6rem);
+  line-height: 1.06;
+  color: var(--warm-ivory);
+  max-width: 16ch;
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.performance-hero-meta {
+  margin-top: 18px;
+  color: rgba(246, 239, 226, 0.78);
+  letter-spacing: 0.06em;
+  font-size: 1.05rem;
+}
+.performance-hero-cta {
+  margin-top: 30px;
+}
+
+/* --- Repertoire sections --- */
+.performances-main {
+  padding: 80px 0 30px;
+  display: block;
+}
+.repertoire-section {
+  margin-bottom: 72px;
+}
+.repertoire-head {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+.repertoire-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  color: var(--warm-ivory);
+  white-space: nowrap;
+}
+.repertoire-head .dancheong-divider {
+  flex: 1;
+  max-width: none;
+}
+.performance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+/* --- Performance card (overlay style) --- */
+.performance-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 184, 79, 0.14);
+}
+.performance-card-media {
+  position: absolute;
+  inset: 0;
+}
+.performance-card-img {
+  object-fit: cover;
+  transition: transform 0.6s var(--ease-out-quart);
+}
+.performance-card:hover .performance-card-img {
+  transform: scale(1.06);
+}
+.performance-card-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  letter-spacing: 0.2em;
+  color: rgba(224, 184, 79, 0.35);
+  background: linear-gradient(160deg, var(--soft-umber), var(--ink-black));
+}
+.performance-card-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(9, 7, 5, 0) 35%, rgba(9, 7, 5, 0.82) 100%);
+  transition: background 0.4s var(--ease-out-quart);
+}
+.performance-card:hover .performance-card-scrim {
+  background: linear-gradient(180deg, rgba(9, 7, 5, 0.1) 25%, rgba(9, 7, 5, 0.9) 100%);
+}
+.performance-card-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 22px;
+  z-index: 1;
+}
+.performance-card-meta {
+  display: block;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--soft-gold);
+  margin-bottom: 8px;
+}
+.performance-card-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.4rem;
+  line-height: 1.25;
+  color: var(--warm-ivory);
+  word-break: keep-all;
+}
+
+/* --- Archive bridge --- */
+.performance-bridge {
+  text-align: center;
+  padding: 60px 0 100px;
+}
+.performance-bridge .dancheong-divider {
+  margin: 0 auto 26px;
+}
+.performance-bridge-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+  color: var(--warm-ivory);
+  margin-bottom: 14px;
+}
+.performance-bridge-body {
+  color: var(--text-muted);
+  max-width: 560px;
+  margin: 0 auto 28px;
+  line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+  .performance-hero {
+    min-height: auto;
+    padding: calc(var(--header-height) + 30px) 0 52px;
+  }
+  .repertoire-title {
+    white-space: normal;
   }
 }

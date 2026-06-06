@@ -105,6 +105,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.thumbnail_r2_key !== undefined) input.thumbnail_r2_key = body.thumbnail_r2_key;
     if (body.is_published !== undefined) input.is_published = body.is_published;
     if (body.is_featured !== undefined) input.is_featured = body.is_featured;
+    if (body.is_signature !== undefined) input.is_signature = body.is_signature;
+    if (body.signature_order !== undefined) input.signature_order = body.signature_order;
 
     // Handle poster replacement - delete old R2 file
     if (input.poster_r2_key && event.poster_r2_key && event.poster_r2_key !== input.poster_r2_key) {

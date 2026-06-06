@@ -24,7 +24,7 @@ export default function About() {
               containerClassName="about-hero-bg-fill"
               fallbackSrc="/assets/images/site/times-square-drums.jpg"
               alt="춤누리 타임스퀘어 공연 - Choomnoori Times Square Performance"
-              imageStyle={{ objectFit: 'cover', objectPosition: 'center 56%' }}
+              imageStyle={{ objectFit: 'cover', objectPosition: '20% 56%' }}
             />
           </div>
 

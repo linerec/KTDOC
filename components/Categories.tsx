@@ -10,24 +10,28 @@ const categories = [
         keycode: 'category.performance',
         titleKeycode: 'categories.performance',
         href: '/performances',
+        fallbackSrc: '/assets/images/site/fan-dance-parade.jpg',
     },
     {
         id: 'education',
         keycode: 'category.education',
         titleKeycode: 'categories.education',
         href: '/classes',
+        fallbackSrc: '/assets/images/site/sogo-stage.jpg',
     },
     {
         id: 'community',
         keycode: 'category.community',
         titleKeycode: 'categories.community',
         href: '/community',
+        fallbackSrc: '/assets/images/site/group-portrait.jpg',
     },
     {
         id: 'media',
         keycode: 'category.media',
         titleKeycode: 'categories.media',
         href: '/media',
+        fallbackSrc: '/assets/images/site/times-square-drums.jpg',
     },
 ];
 
@@ -44,7 +48,7 @@ export default function Categories() {
                             sizes="(max-width: 768px) 100vw, 25vw"
                             className="category-bg-image"
                             containerClassName="category-image-container"
-                            fallbackSrc="/assets/images/black_stroke.png"
+                            fallbackSrc={category.fallbackSrc}
                             overlay
                         >
                             <div className="category-content">

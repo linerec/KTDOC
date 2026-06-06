@@ -5,9 +5,11 @@ import type { YouTubeVideo } from '@/lib/youtube';
 interface VideoCardProps {
   video: YouTubeVideo;
   isMain?: boolean;
+  /** 카드 위에 겹쳐 그릴 추가 요소 (예: 관리자 편집 버튼) */
+  children?: React.ReactNode;
 }
 
-export default function VideoCard({ video, isMain = false }: VideoCardProps) {
+export default function VideoCard({ video, isMain = false, children }: VideoCardProps) {
   return (
     <Link
       href={`https://www.youtube.com/watch?v=${video.videoId}`}
@@ -37,6 +39,7 @@ export default function VideoCard({ video, isMain = false }: VideoCardProps) {
       <div className="video-card-info">
         <p className="video-card-title">{video.title}</p>
       </div>
+      {children}
     </Link>
   );
 }

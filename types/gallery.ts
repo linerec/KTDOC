@@ -26,6 +26,8 @@ export interface Event {
   thumbnail_r2_key: string | null;
   is_featured: number;
   is_published: number;
+  is_signature: number;
+  signature_order: number;
   view_count: number;
   created_at: string;
   updated_at: string;
@@ -100,6 +102,7 @@ export interface EventFilters {
   limit?: number;
   featured?: boolean;
   published?: boolean | 'all';
+  showcase?: boolean;
 }
 
 export interface GalleryPhotoFilters {
@@ -132,6 +135,8 @@ export interface CreateEventInput {
   description_en?: string;
   is_published?: boolean;
   is_featured?: boolean;
+  is_signature?: boolean;
+  signature_order?: number;
   slug?: string;
 }
 

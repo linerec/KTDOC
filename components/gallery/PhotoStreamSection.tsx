@@ -82,11 +82,18 @@ export default function PhotoStreamSection({ photos }: PhotoStreamSectionProps) 
             ? photo.event_title_ko
             : (photo.event_title_en || photo.event_title_ko);
           const hasMeta = Boolean(date || caption || eventTitle);
+          const orientation = photo.width && photo.height
+            ? photo.width > photo.height * 1.12
+              ? 'landscape'
+              : photo.height > photo.width * 1.12
+                ? 'portrait'
+                : 'square'
+            : 'square';
 
           return (
             <button
               type="button"
-              className="gallery-photo-stream-card"
+              className={`gallery-photo-stream-card gallery-photo-stream-card--${orientation}`}
               key={photo.id}
               onClick={() => openLightbox(index)}
               aria-label={caption || `${locale === 'ko' ? '사진 크게 보기' : 'Open photo'} ${index + 1}`}
