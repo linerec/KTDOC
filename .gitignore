@@ -43,3 +43,4 @@ next-env.d.ts
 # local tooling / agent scratch
 /.playwright-mcp/
 /.agents/
+/.mcp.json
