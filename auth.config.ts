@@ -30,10 +30,14 @@ export const authConfig: NextAuthConfig = {
 
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id as string;
         token.role = user.role;
+      }
+      // 프로필에서 이름을 바꾸면 update({ name })로 토큰에 즉시 반영
+      if (trigger === 'update' && typeof session?.name === 'string') {
+        token.name = session.name;
       }
       return token;
     },

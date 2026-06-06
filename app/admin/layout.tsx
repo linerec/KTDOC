@@ -1,14 +1,13 @@
 /**
  * Admin Layout
- * 관리자 페이지 공통 레이아웃
+ * 관리자 페이지 공통 레이아웃 — 전용 셸(사이드바/드로어 메뉴)로 감싼다.
  */
 
 import { redirect } from 'next/navigation';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
+import AdminShell from '@/components/admin/AdminShell';
 
 export const metadata: Metadata = {
   robots: {
@@ -32,13 +31,8 @@ export default async function AdminLayout({
     redirect('/');
   }
 
-  return (
-    <>
-      <Header />
-      <div className="admin-layout">
-        {children}
-      </div>
-      <Footer />
-    </>
-  );
+  const userName =
+    session.user?.name || session.user?.email?.split('@')[0] || '관리자';
+
+  return <AdminShell userName={userName}>{children}</AdminShell>;
 }
