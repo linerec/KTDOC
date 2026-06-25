@@ -4914,6 +4914,15 @@ ul {
   transition: border-color 0.3s;
 }
 
+/* 네이티브 드롭다운 옵션은 상속이 안 돼 별도 지정. 미지정 시 흰 배경+흰 글자로 안 보임 */
+.admin-form-select option,
+.admin-filter-select option,
+.admin-status-select option,
+.photo-inbox-fields select option {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
 .admin-form-input:focus,
 .admin-form-select:focus,
 .admin-form-textarea:focus {
