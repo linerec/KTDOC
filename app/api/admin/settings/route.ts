@@ -2,10 +2,18 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getSetting, setSetting, SETTING_HERO_FEATURED_VIDEO } from '@/lib/d1';
+import {
+  getSetting,
+  setSetting,
+  SETTING_HERO_FEATURED_VIDEO,
+  SETTING_HEADER_BACKGROUND,
+} from '@/lib/d1';
 
 // 임의 키 쓰기를 막기 위해 허용된 설정 키만 받는다.
-const ALLOWED_KEYS = new Set<string>([SETTING_HERO_FEATURED_VIDEO]);
+const ALLOWED_KEYS = new Set<string>([
+  SETTING_HERO_FEATURED_VIDEO,
+  SETTING_HEADER_BACKGROUND,
+]);
 
 // GET - 설정값 조회 (관리자 전용)
 export async function GET(request: Request) {
@@ -67,6 +75,11 @@ export async function POST(request: Request) {
     // 홈(정적 ISR 페이지)을 즉시 무효화하여 변경이 방문자에게 바로 반영되게 한다.
     if (key === SETTING_HERO_FEATURED_VIDEO) {
       revalidatePath('/');
+    }
+
+    // 헤더 배경은 모든 페이지 공통(layout) → 레이아웃 전체를 무효화한다.
+    if (key === SETTING_HEADER_BACKGROUND) {
+      revalidatePath('/', 'layout');
     }
 
     return NextResponse.json({ success: true });

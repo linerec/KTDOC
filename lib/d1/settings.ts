@@ -10,6 +10,9 @@ import { queryD1, executeD1 } from './client';
 /** Hero 섹션의 대표(메인) 영상으로 고정할 유튜브 videoId */
 export const SETTING_HERO_FEATURED_VIDEO = 'hero.featured_video_id';
 
+/** 헤더(Top Bar) 배경 색상/투명도. JSON: {top:{color,opacity}, scrolled:{color,opacity}} */
+export const SETTING_HEADER_BACKGROUND = 'header.background';
+
 interface SettingRow {
   setting_key: string;
   setting_value: string | null;

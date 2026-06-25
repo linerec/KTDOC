@@ -93,6 +93,7 @@ export {
 export {
   // Site Settings (key-value)
   SETTING_HERO_FEATURED_VIDEO,
+  SETTING_HEADER_BACKGROUND,
   getSetting,
   getSettings,
   setSetting,

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Noto_Serif_KR, Outfit } from 'next/font/google';
 import Providers from '@/components/Providers';
+import { getSetting, SETTING_HEADER_BACKGROUND } from '@/lib/d1';
+import { parseHeaderBackground, toHeaderCssVars } from '@/lib/headerBackground';
 import './globals.css';
 
 const notoSerifKr = Noto_Serif_KR({
@@ -81,13 +83,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   // 한지에 스며드는 먹: 글로벌 앰비언트 잉크 레이어. NEXT_PUBLIC_INK_AMBIENT=off 로 끌 수 있다.
   const inkAmbient = process.env.NEXT_PUBLIC_INK_AMBIENT !== 'off';
+
+  // 관리자가 지정한 헤더(Top Bar) 배경. 설정이 없으면 globals.css의 기본 동작이 그대로 유지된다.
+  // 실패하더라도 레이아웃 렌더는 막지 않는다.
+  let headerBgRaw: string | null = null;
+  try {
+    headerBgRaw = await getSetting(SETTING_HEADER_BACKGROUND);
+  } catch {
+    headerBgRaw = null;
+  }
+  const headerCssVars = toHeaderCssVars(parseHeaderBackground(headerBgRaw));
 
   return (
     <html lang="ko" className={`${notoSerifKr.variable} ${outfit.variable}`}>
@@ -97,7 +109,7 @@ export default function RootLayout({
           <style>{`.reveal{opacity:1 !important;transform:none !important;filter:none !important;}`}</style>
         </noscript>
       </head>
-      <body>
+      <body style={headerCssVars as React.CSSProperties} data-header-bg={headerBgRaw ?? undefined}>
         <Providers>
           <div className="bg-layer" aria-hidden="true" />
           {inkAmbient && (

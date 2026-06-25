@@ -183,7 +183,8 @@ ul {
    HEADER
 ======================================== */
 #main-header {
-  background-color: transparent;
+  /* 관리자 편집 모드에서 지정 가능. 미지정 시 기본값(투명) 유지. */
+  background-color: var(--header-bg-top, transparent);
   position: fixed;
   top: 0;
   left: 0;
@@ -194,7 +195,8 @@ ul {
 }
 
 #main-header.scrolled {
-  background-color: rgba(10, 10, 10, 0.95);
+  /* 관리자 편집 모드에서 지정 가능. 미지정 시 기본값(어두운 반투명) 유지. */
+  background-color: var(--header-bg-scrolled, rgba(10, 10, 10, 0.95));
   backdrop-filter: blur(10px);
 }
 
@@ -2455,6 +2457,136 @@ ul {
 }
 
 .image-object-modal-footer button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   헤더(Top Bar) 배경 편집기
+======================================== */
+.header-bg-modal {
+  max-width: 460px;
+}
+
+.header-bg-modal-hint {
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.header-bg-field {
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-bg-field:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.header-bg-field-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.header-bg-field-label {
+  font-size: 0.95rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.header-bg-field-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.header-bg-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-bg-color {
+  width: 44px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: #0a0a0a;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.header-bg-color::-webkit-color-swatch-wrapper {
+  padding: 3px;
+}
+
+.header-bg-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+
+.header-bg-range {
+  flex: 1;
+  accent-color: var(--secondary-color);
+  cursor: pointer;
+}
+
+.header-bg-percent {
+  width: 42px;
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* 투명도 확인용 체커보드 위에 실제 색을 덮어 미리보기 */
+.header-bg-swatch {
+  position: relative;
+  width: 36px;
+  height: 34px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #bbb 25%, transparent 25%),
+    linear-gradient(-45deg, #bbb 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #bbb 75%),
+    linear-gradient(-45deg, transparent 75%, #bbb 75%);
+  background-size: 10px 10px;
+  background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+}
+
+.header-bg-swatch > span {
+  position: absolute;
+  inset: 0;
+}
+
+.header-bg-reset {
+  margin-top: 18px;
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.header-bg-reset:hover:not(:disabled) {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.header-bg-reset:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -6344,44 +6476,166 @@ ul {
   inset: 0;
 }
 
-/* .hero-art-bg는 pointer-events:none이므로 편집 어포던스만 다시 활성화 */
-.hero-art-bg .image-object-container.editable,
-.hero-art-bg .image-object-edit-btn {
-  pointer-events: auto;
+/* ── Hero 배경 관리 진입 버튼 ──────────────────────────────────────────
+   편집 모드일 때 히어로 좌상단(헤더 아래)에 떠 있는 진입점. 상단 툴바와
+   겹치지 않도록 헤더 높이만큼 내려 배치한다. */
+.hero-bg-manage-btn {
+  position: absolute;
+  top: calc(var(--header-height) + 24px);
+  left: 24px;
+  z-index: var(--z-edit-controls);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #f6efe2;
+  background: rgba(9, 7, 5, 0.72);
+  border: 1px solid rgba(224, 184, 79, 0.55);
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
-/* 관리자 편집 모드: 애니메이션으로 사라지는 배경 슬라이드를 멈추고
-   3장을 상단에 나란히 펼쳐 각각 편집할 수 있게 한다. */
-.hero-art-bg--editing {
-  inset: auto;
-  top: calc(var(--header-height) + 12px);
-  left: 16px;
-  right: 16px;
-  height: clamp(150px, 19vw, 240px);
-  z-index: 6;
+.hero-bg-manage-btn:hover {
+  background: rgba(196, 48, 43, 0.92);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.hero-bg-manage-btn svg {
+  color: var(--accent-color, #d4a017);
+  flex-shrink: 0;
+}
+
+.hero-bg-manage-btn:hover svg {
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .hero-bg-manage-btn {
+    top: calc(var(--header-height) + 14px);
+    left: 14px;
+    padding: 8px 13px;
+    font-size: 0.76rem;
+  }
+}
+
+/* ── Hero 배경 관리 모달 ──────────────────────────────────────────────
+   배경 3장을 한곳에 모아 관리. ImageObject의 개별 편집 모달(z-modal)이
+   이 모달 위에 겹쳐 뜨도록 더 낮은 z-index를 사용한다. */
+.hero-bg-manager-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: var(--z-dropdown);
+  isolation: isolate;
+}
+
+.hero-bg-manager-modal {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 880px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.hero-bg-manager-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-bg-manager-title h3 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+  color: var(--text-color);
+  font-family: var(--font-heading);
+}
+
+.hero-bg-manager-title p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.hero-bg-manager-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.hero-bg-manager-close:hover {
+  color: var(--text-color);
+}
+
+.hero-bg-manager-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 24px;
+}
+
+.hero-bg-manager-slide {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  pointer-events: auto;
-  background: rgba(9, 7, 5, 0.45);
 }
 
-.hero-art-bg--editing::before,
-.hero-art-bg--editing::after {
-  display: none;
-}
-
-.hero-art-bg--editing .hero-art-frame {
+.hero-bg-manager-thumb {
   position: relative;
-  inset: auto;
-  height: 100%;
-  opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
-  filter: none;
-  border: 1px solid rgba(224, 184, 79, 0.45);
-  border-radius: 6px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
   overflow: hidden;
+  border: 1px solid rgba(224, 184, 79, 0.35);
+  background: #0a0a0a;
+}
+
+.hero-bg-manager-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-bg-manager-caption {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.hero-bg-manager-hint {
+  margin: 0;
+  padding: 0 24px 24px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .hero-bg-manager-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* About 히어로 배경 - 절대 채움 */

@@ -4,14 +4,15 @@ import { useSession } from 'next-auth/react';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { isAdmin } from '@/lib/isAdmin';
 import ImageObject from '@/components/common/ImageObject';
+import HeroBackgroundManager, { type HeroSlide } from '@/components/HeroBackgroundManager';
 
 /**
  * Hero 배경 슬라이드쇼.
  * 3개의 프레임이 CSS 애니메이션으로 크로스페이드되며, 각 프레임의 이미지는
- * 관리자 편집 모드에서 ImageObject를 통해 개별 교체할 수 있다.
- * (편집 전에는 fallbackSrc의 기존 R2 이미지가 그대로 노출됨)
+ * 관리자 편집 모드에서 별도의 "배경 이미지 관리" 모달(HeroBackgroundManager)을 통해
+ * 교체·관리한다. 배경 슬라이드 자체에는 편집 UI를 노출하지 않아 상단 툴바와 겹치지 않는다.
  */
-const heroSlides = [
+export const heroSlides: HeroSlide[] = [
   {
     keycode: 'image.hero.slide1',
     fallbackSrc:
@@ -35,29 +36,31 @@ const heroSlides = [
 export default function HeroBackground() {
   const { data: session } = useSession();
   const { isEditMode } = useBuilder();
-  // 관리자 편집 모드에서는 슬라이드쇼 애니메이션을 멈추고 3장을 나란히 펼쳐 편집 가능하게 한다.
-  const editing = isAdmin(session) && isEditMode;
+  // 관리자 편집 모드에서만 배경 관리 진입점을 노출한다.
+  const canManage = isAdmin(session) && isEditMode;
 
   return (
-    <div
-      className={`hero-art-bg${editing ? ' hero-art-bg--editing' : ''}`}
-      aria-hidden={editing ? undefined : 'true'}
-    >
-      {heroSlides.map((slide, index) => (
-        <div className="hero-art-frame" key={slide.keycode}>
-          <ImageObject
-            keycode={slide.keycode}
-            fill
-            priority={index === 0}
-            sizes="100vw"
-            quality={80}
-            className="hero-art-frame-img"
-            containerClassName="hero-art-frame-fill"
-            fallbackSrc={slide.fallbackSrc}
-            imageStyle={{ objectFit: 'cover', objectPosition: slide.position }}
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="hero-art-bg" aria-hidden="true">
+        {heroSlides.map((slide, index) => (
+          <div className="hero-art-frame" key={slide.keycode}>
+            <ImageObject
+              keycode={slide.keycode}
+              fill
+              priority={index === 0}
+              sizes="100vw"
+              quality={80}
+              className="hero-art-frame-img"
+              containerClassName="hero-art-frame-fill"
+              fallbackSrc={slide.fallbackSrc}
+              imageStyle={{ objectFit: 'cover', objectPosition: slide.position }}
+              disableInlineEdit
+            />
+          </div>
+        ))}
+      </div>
+
+      {canManage && <HeroBackgroundManager slides={heroSlides} />}
+    </>
   );
 }

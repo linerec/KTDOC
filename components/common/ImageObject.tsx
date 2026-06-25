@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { isAdmin } from '@/lib/isAdmin';
+
+/**
+ * 같은 keycode를 쓰는 ImageObject 인스턴스들끼리 갱신을 동기화하기 위한 이벤트.
+ * 예) Hero 배경 관리 모달에서 사진을 교체하면, 실제 배경 슬라이드도 즉시 새 이미지로 갱신된다.
+ */
+const IMAGE_OBJECT_REFRESH_EVENT = 'imageobject:refresh';
 
 interface ImageData {
   url: string;
@@ -33,6 +39,9 @@ interface ImageObjectProps {
   children?: React.ReactNode;
   overlay?: boolean;
   imageStyle?: React.CSSProperties;
+  /** true면 편집 모드여도 인라인 편집 어포던스(연필 버튼·키코드 라벨·편집 모달)를 숨긴다.
+   *  순수하게 이미지를 표시하는 용도(예: Hero 배경 슬라이드)로 쓸 때 사용. */
+  disableInlineEdit?: boolean;
 }
 
 export default function ImageObject({
@@ -51,6 +60,7 @@ export default function ImageObject({
   children,
   overlay = false,
   imageStyle,
+  disableInlineEdit = false,
 }: ImageObjectProps) {
   const { data: session } = useSession();
   const { locale } = useLanguage();
@@ -71,27 +81,45 @@ export default function ImageObject({
   }, []);
 
   const canEdit = isLogin !== undefined ? isLogin : isAdmin(session);
-  const isEditable = canEdit && isEditMode;
+  const isEditable = canEdit && isEditMode && !disableInlineEdit;
 
   // 이미지 데이터 로드
-  useEffect(() => {
-    async function fetchImage() {
-      try {
-        const res = await fetch(`/api/images?keycode=${encodeURIComponent(keycode)}`);
-        const data = await res.json();
-        if (data.success && data.data) {
-          setImageData(data.data);
-          setEditAltKo(data.data.alt_ko || '');
-          setEditAltEn(data.data.alt_en || '');
-        }
-      } catch (error) {
-        console.error('Failed to fetch image:', error);
-      } finally {
-        setIsLoading(false);
+  const loadImage = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/images?keycode=${encodeURIComponent(keycode)}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setImageData(data.data);
+        setEditAltKo(data.data.alt_ko || '');
+        setEditAltEn(data.data.alt_en || '');
       }
+    } catch (error) {
+      console.error('Failed to fetch image:', error);
+    } finally {
+      setIsLoading(false);
     }
+  }, [keycode]);
 
-    fetchImage();
+  useEffect(() => {
+    loadImage();
+  }, [loadImage]);
+
+  // 같은 keycode를 쓰는 다른 인스턴스가 이미지를 갱신하면 함께 다시 불러온다.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ keycode: string }>).detail;
+      if (detail?.keycode === keycode) {
+        loadImage();
+      }
+    };
+    window.addEventListener(IMAGE_OBJECT_REFRESH_EVENT, handler);
+    return () => window.removeEventListener(IMAGE_OBJECT_REFRESH_EVENT, handler);
+  }, [keycode, loadImage]);
+
+  const notifyUpdated = useCallback(() => {
+    window.dispatchEvent(
+      new CustomEvent(IMAGE_OBJECT_REFRESH_EVENT, { detail: { keycode } })
+    );
   }, [keycode]);
 
   // 이미지 소스 결정
@@ -165,6 +193,7 @@ export default function ImageObject({
           height: img.naturalHeight,
         });
         setShowModal(false);
+        notifyUpdated();
       }
     } catch (error) {
       console.error('Upload failed:', error);
@@ -203,6 +232,7 @@ export default function ImageObject({
           alt_en: editAltEn,
         });
         setShowModal(false);
+        notifyUpdated();
       }
     } catch (error) {
       console.error('Save failed:', error);
@@ -285,12 +315,12 @@ export default function ImageObject({
 
             <div className="image-object-modal-body">
               <div className="image-object-preview">
-                {hasValidImage ? (
+                {imageSrc && imageSrc !== '/assets/images/placeholder.png' ? (
                   <Image
-                    src={imageData!.url}
+                    src={imageSrc}
                     alt="Preview"
-                    width={imageData!.width || 640}
-                    height={imageData!.height || 360}
+                    width={imageData?.width || 640}
+                    height={imageData?.height || 360}
                     className="image-object-preview-img"
                   />
                 ) : (

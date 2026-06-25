@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
 import IntlObject from '@/components/common/IntlObject';
+import HeaderBackgroundEditor from '@/components/HeaderBackgroundEditor';
 import { isAdmin } from '@/lib/isAdmin';
 
 const menuItems = [
@@ -97,6 +98,7 @@ export default function Header() {
                             >
                                 {isEditMode ? 'Edit ON' : 'Edit'}
                             </button>
+                            {isEditMode && <HeaderBackgroundEditor />}
                         </>
                     )}
                     <span className="auth-user">{session.user?.name || session.user?.email}</span>
