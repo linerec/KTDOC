@@ -571,6 +571,10 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
     limit = 60,
     published,
     organized = 'all',
+    eventId,
+    sort = 'recent',
+    uploadedBy,
+    submitted = 'all',
   } = filters;
 
   const conditions: string[] = [];
@@ -587,6 +591,22 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
     conditions.push('gp.event_id IS NULL');
   }
 
+  if (eventId) {
+    conditions.push('gp.event_id = ?');
+    params.push(eventId);
+  }
+
+  if (uploadedBy) {
+    conditions.push('gp.uploaded_by = ?');
+    params.push(uploadedBy);
+  }
+
+  if (submitted === 'student') {
+    conditions.push('gp.uploaded_by IS NOT NULL');
+  } else if (submitted === 'staff') {
+    conditions.push('gp.uploaded_by IS NULL');
+  }
+
   if (search) {
     conditions.push(`(
       gp.caption_ko LIKE ? OR gp.caption_en LIKE ? OR
@@ -595,6 +615,14 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
     const searchTerm = `%${search}%`;
     params.push(searchTerm, searchTerm, searchTerm, searchTerm);
   }
+
+  // 정렬: 최신/오래된순은 등록일, taken은 촬영일(없는 값은 뒤로 — SQLite는 NULLS LAST 미지원)
+  const orderBy =
+    sort === 'oldest'
+      ? 'ORDER BY gp.created_at ASC, gp.id ASC'
+      : sort === 'taken'
+        ? 'ORDER BY gp.taken_date IS NULL, gp.taken_date DESC, gp.created_at DESC, gp.id DESC'
+        : 'ORDER BY gp.created_at DESC, gp.id DESC';
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
   const countResult = await queryD1<{ count: number }>(
@@ -615,7 +643,7 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
      FROM gallery_photos gp
      LEFT JOIN events e ON gp.event_id = e.id
      ${whereClause}
-     ORDER BY gp.sort_order ASC, gp.created_at DESC, gp.id DESC
+     ${orderBy}
      LIMIT ? OFFSET ?`,
     [...params, limit, offset]
   );
@@ -624,6 +652,26 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
     photos,
     total: countResult[0]?.count || 0,
   };
+}
+
+/**
+ * 보관함 사진 플래그(공개/강조)를 여러 장 한 번에 설정한다.
+ * 공개·강조는 event_images 동기화가 필요 없어 단일 UPDATE로 처리한다.
+ */
+export async function bulkSetGalleryPhotoFlag(
+  ids: number[],
+  field: 'is_published' | 'is_featured',
+  value: boolean
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const placeholders = ids.map(() => '?').join(', ');
+  await executeD1(
+    `UPDATE gallery_photos
+     SET ${field} = ?, updated_at = datetime('now')
+     WHERE id IN (${placeholders})`,
+    [value ? 1 : 0, ...ids]
+  );
+  return ids.length;
 }
 
 export async function getGalleryPhotoById(id: number): Promise<GalleryPhoto | null> {
@@ -652,8 +700,8 @@ export async function createGalleryPhoto(input: CreateGalleryPhotoInput): Promis
     `INSERT INTO gallery_photos (
       image_url, r2_key, caption_ko, caption_en, taken_date,
       event_id, is_published, is_featured, sort_order,
-      width, height, size
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      width, height, size, uploaded_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.image_url,
       input.r2_key,
@@ -667,6 +715,7 @@ export async function createGalleryPhoto(input: CreateGalleryPhotoInput): Promis
       input.width || null,
       input.height || null,
       input.size || null,
+      input.uploaded_by || null,
     ]
   );
 

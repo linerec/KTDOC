@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Serif_KR, Outfit } from 'next/font/google';
 import Providers from '@/components/Providers';
 import { getSetting, SETTING_HEADER_BACKGROUND } from '@/lib/d1';
-import { parseHeaderBackground, toHeaderCssVars } from '@/lib/headerBackground';
+import { parseHeaderBackground, toHeaderCssVars, DEFAULT_HEADER_BACKGROUND } from '@/lib/headerBackground';
 import './globals.css';
 
 const notoSerifKr = Noto_Serif_KR({
@@ -99,7 +99,9 @@ export default async function RootLayout({
   } catch {
     headerBgRaw = null;
   }
-  const headerCssVars = toHeaderCssVars(parseHeaderBackground(headerBgRaw));
+  const headerBg = parseHeaderBackground(headerBgRaw);
+  const headerCssVars = toHeaderCssVars(headerBg);
+  const headerLogo = headerBg?.logo ?? DEFAULT_HEADER_BACKGROUND.logo;
 
   return (
     <html lang="ko" className={`${notoSerifKr.variable} ${outfit.variable}`}>
@@ -110,7 +112,7 @@ export default async function RootLayout({
         </noscript>
       </head>
       <body style={headerCssVars as React.CSSProperties} data-header-bg={headerBgRaw ?? undefined}>
-        <Providers>
+        <Providers initialLogo={headerLogo}>
           <div className="bg-layer" aria-hidden="true" />
           {inkAmbient && (
             <div className="ink-ambient" aria-hidden="true">

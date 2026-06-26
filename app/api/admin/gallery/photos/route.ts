@@ -25,6 +25,8 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '80', 10);
     const organizedParam = searchParams.get('organized');
     const publishedParam = searchParams.get('published');
+    const eventIdParam = searchParams.get('eventId');
+    const sortParam = searchParams.get('sort');
 
     const result = await getGalleryPhotos({
       page,
@@ -34,6 +36,8 @@ export async function GET(request: Request) {
         ? organizedParam
         : 'all',
       published: publishedParam === null ? undefined : publishedParam === 'true',
+      eventId: eventIdParam ? Number(eventIdParam) : undefined,
+      sort: sortParam === 'oldest' || sortParam === 'taken' ? sortParam : 'recent',
     });
 
     return NextResponse.json({ success: true, data: result });

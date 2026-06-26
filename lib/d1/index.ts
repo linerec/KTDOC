@@ -55,6 +55,7 @@ export {
   getGalleryPhotoById,
   createGalleryPhoto,
   updateGalleryPhoto,
+  bulkSetGalleryPhotoFlag,
   markGalleryPhotoEventImage,
   clearGalleryPhotoEventImage,
   deleteGalleryPhoto,

@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
+import { useHeaderSettings } from '@/contexts/HeaderSettingsContext';
 import IntlObject from '@/components/common/IntlObject';
 import HeaderBackgroundEditor from '@/components/HeaderBackgroundEditor';
 import { isAdmin } from '@/lib/isAdmin';
+import { headerLogoAsset } from '@/lib/headerBackground';
 
 const menuItems = [
     { keycode: 'header.home', href: '/', hasDropdown: true },
@@ -23,13 +24,14 @@ export default function Header() {
     const { data: session, status } = useSession();
     const { locale, changeLanguage, availableLangs } = useLanguage();
     const { isEditMode, toggleEditMode } = useBuilder();
-    const pathname = usePathname();
+    const { logo } = useHeaderSettings();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
-    // 메인 페이지 최상단에서만 로고를 크게 노출하고, 스크롤하거나 다른 페이지로 이동하면 축소
-    const isHome = pathname === '/';
-    const isLogoExpanded = isHome && !isScrolled;
+    // 모든 페이지에서 최상단일 때 로고를 크게 노출하고, 스크롤하면 축소
+    const isLogoExpanded = !isScrolled;
+    // 로고 변형도 배경과 동일하게 최상단/스크롤 후 상태별로 적용
+    const logoAsset = headerLogoAsset(isScrolled ? logo.scrolled : logo.top);
     const headerClassName = [isScrolled && 'scrolled', isLogoExpanded && 'logo-expanded']
         .filter(Boolean)
         .join(' ');
@@ -98,7 +100,6 @@ export default function Header() {
                             >
                                 {isEditMode ? 'Edit ON' : 'Edit'}
                             </button>
-                            {isEditMode && <HeaderBackgroundEditor />}
                         </>
                     )}
                     <span className="auth-user">{session.user?.name || session.user?.email}</span>
@@ -120,15 +121,17 @@ export default function Header() {
     return (
         <>
             <header id="main-header" className={headerClassName}>
+                {/* Top Bar 섹션 설정 진입 버튼 — 헤더 영역 좌하단. 편집 모드 관리자에게만 노출 */}
+                {session && isAdmin(session) && isEditMode && <HeaderBackgroundEditor />}
                 <div className="header-inner">
                     {/* Logo - Center Top */}
                     <div className="header-logo">
                         <Link href="/">
                             <Image
-                                src="/assets/logo/logo_white.png"
+                                src={logoAsset.src}
                                 alt="KTDOC Logo"
-                                width={400}
-                                height={242}
+                                width={logoAsset.width}
+                                height={logoAsset.height}
                                 style={{ width: 'auto' }}
                                 priority
                             />

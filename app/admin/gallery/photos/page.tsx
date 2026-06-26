@@ -3,10 +3,10 @@
  * 날짜/이벤트 미정리 사진 보관함
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { getEvents, getGalleryPhotos } from '@/lib/d1';
+import { requireMenuAccess } from '@/lib/admin/permissions';
+import { getGalleryPhotos } from '@/lib/d1';
 import PhotoInboxManager from '@/components/admin/gallery/PhotoInboxManager';
 
 export const metadata = {
@@ -18,14 +18,15 @@ const PHOTO_INBOX_PAGE_SIZE = 60;
 
 export default async function AdminGalleryPhotosPage() {
   const session = await auth();
-  if (!session) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'gallery.photos');
 
-  const [photosResult, eventsResult] = await Promise.all([
-    getGalleryPhotos({ published: undefined, organized: 'all', page: 1, limit: PHOTO_INBOX_PAGE_SIZE }),
-    getEvents({ published: 'all', limit: 500 }),
-  ]);
+  // 이벤트는 더 이상 전체를 미리 로드하지 않는다 — EventPicker가 필요 시 서버 검색한다.
+  const photosResult = await getGalleryPhotos({
+    published: undefined,
+    organized: 'all',
+    page: 1,
+    limit: PHOTO_INBOX_PAGE_SIZE,
+  });
 
   return (
     <div className="admin-page">
@@ -40,8 +41,8 @@ export default async function AdminGalleryPhotosPage() {
           </div>
           <h1 className="admin-title">사진 보관함</h1>
           <p className="admin-subtitle">
-            날짜와 공연 정보가 없어도 사진을 먼저 업로드하고 공개할 수 있습니다.
-            이후 각 사진에 촬영일과 이벤트를 연결해 정리합니다.
+            사진을 올리는 &lsquo;업로드&rsquo; 탭과 올라온 사진을 정리하는 &lsquo;사진 정리&rsquo; 탭으로 나뉩니다.
+            정리 탭에서는 여러 장을 한 번에 선택해 공개·이벤트 연결·삭제하고, 촬영일과 설명을 정리할 수 있습니다.
           </p>
         </div>
         <div className="admin-header-actions">
@@ -58,7 +59,6 @@ export default async function AdminGalleryPhotosPage() {
         initialPhotos={photosResult.photos}
         initialTotal={photosResult.total}
         pageSize={PHOTO_INBOX_PAGE_SIZE}
-        events={eventsResult.events}
       />
     </div>
   );

@@ -81,10 +81,14 @@ export interface GalleryPhoto {
   size: number | null;
   created_at: string;
   updated_at: string;
+  /** 제출자(MySQL users.id). NULL = 운영진 직접 업로드, 값 있음 = 학생·학부모 제출 */
+  uploaded_by: string | null;
   event_title_ko?: string | null;
   event_title_en?: string | null;
   event_year?: number | null;
   event_slug?: string | null;
+  /** uploaded_by를 회원 이름으로 해석한 값 — 일부 조회에서만 채워진다 */
+  uploader_name?: string | null;
 }
 
 export interface EventDetail extends EventWithCategory {
@@ -118,6 +122,14 @@ export interface GalleryPhotoFilters {
   limit?: number;
   published?: boolean;
   organized?: 'all' | 'assigned' | 'unassigned';
+  /** 특정 이벤트로 필터 */
+  eventId?: number;
+  /** 정렬 기준 (기본 recent) */
+  sort?: 'recent' | 'oldest' | 'taken';
+  /** 특정 회원(users.id)이 올린 사진만 — 학생 본인 "내 사진" 목록용 */
+  uploadedBy?: string;
+  /** 제출 출처 필터: student=학생 제출(uploaded_by 있음), staff=직접 업로드(NULL) */
+  submitted?: 'all' | 'student' | 'staff';
 }
 
 export interface PaginationInfo {
@@ -181,6 +193,8 @@ export interface CreateGalleryPhotoInput {
   width?: number;
   height?: number;
   size?: number;
+  /** 제출자(users.id). 학생 제출 시 설정, 운영진 업로드 시 생략 */
+  uploaded_by?: string;
 }
 
 export interface UpdateGalleryPhotoInput {

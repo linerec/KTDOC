@@ -200,7 +200,7 @@ ul {
   backdrop-filter: blur(10px);
 }
 
-/* 메인 페이지 최상단: 로고를 크게 노출하며 헤더 여백 확대 */
+/* 최상단(스크롤 전): 로고를 크게 노출하며 헤더 여백 확대 — 전 페이지 공통 */
 #main-header.logo-expanded {
   padding-top: 30px;
 }
@@ -227,10 +227,7 @@ ul {
   transition: height 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 메인 페이지 최상단에서 확대된 로고 */
-#main-header.logo-expanded .header-logo {
-  margin-bottom: 22px;
-}
+/* 최상단(스크롤 전)에서 확대된 로고 — 전 페이지 공통 */
 
 #main-header.logo-expanded .header-logo img {
   height: 112px;
@@ -253,19 +250,25 @@ ul {
 
 #main-nav a {
   font-weight: 400;
-  font-size: 0.75rem;
+  font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--text-color);
-  transition: color 0.3s;
+  /* 관리자 편집 모드에서 지정 가능. 미지정 시 기본 글자색(흰색) 유지. */
+  color: var(--header-nav-color-top, var(--text-color));
+  transition: color 0.3s, opacity 0.3s;
   position: relative;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
+/* 스크롤 후 메뉴 글자색 (최상단과 별도 지정) */
+#main-header.scrolled #main-nav a {
+  color: var(--header-nav-color-scrolled, var(--text-color));
+}
+
 #main-nav a:hover {
-  color: var(--text-muted);
+  opacity: 0.65;
 }
 
 .dropdown-arrow {
@@ -291,6 +294,50 @@ ul {
   height: 2px;
   background-color: var(--text-color);
   transition: 0.3s;
+}
+
+/* ----------------------------------------
+   데스크톱 스크롤 동작
+   최상단: 로고단(1단) + 메뉴 바(2단) 모두 노출
+   스크롤: 로고단은 위로 접혀 사라지고 메뉴 바만 최상단에 고정
+   → 콘텐츠 몰입을 높이되 필요한 메뉴는 항상 보이게 한다.
+   (모바일은 nav가 드로어이므로 제외) */
+@media (min-width: 769px) {
+  .header-logo {
+    max-height: 140px;
+    overflow: hidden;
+    transition:
+      max-height 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      margin-bottom 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.35s ease,
+      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .header-auth {
+    transition:
+      top 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* 스크롤: 메뉴 바를 화면 최상단에 고정 */
+  #main-header.scrolled {
+    padding-top: 0;
+  }
+
+  /* 스크롤: 로고단을 접어 위로 슬라이드 아웃 */
+  #main-header.scrolled .header-logo {
+    max-height: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(-18px);
+    pointer-events: none;
+  }
+
+  /* 스크롤: 우측 버튼을 메뉴 바 줄 중앙에 정렬 */
+  #main-header.scrolled .header-auth {
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 /* ========================================
@@ -1481,6 +1528,13 @@ ul {
   position: absolute;
   right: 40px;
   top: 15px;
+  /* 우측 버튼 기본 글자색을 관리자가 지정한 메뉴 글자색에 연동.
+     → 헤더 배경이 밝으면 어둡게, 어두우면 밝게 지정되어 항상 대비 확보 */
+  color: var(--header-nav-color-top, var(--text-color));
+}
+
+#main-header.scrolled .header-auth {
+  color: var(--header-nav-color-scrolled, var(--text-color));
 }
 
 .header-auth-actions {
@@ -1558,10 +1612,89 @@ ul {
   color: var(--primary-color);
 }
 
+/* ----------------------------------------
+   데스크톱 헤더 우측 버튼 — 크기 통일 + 배경 대비
+   (모바일은 .header-auth가 숨겨지므로 영향 없음)
+---------------------------------------- */
+/* 공통 형태: 같은 높이·정렬·폰트로 통일 */
+.header-auth .lang-btn,
+.header-auth .auth-btn,
+.header-auth .edit-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 14px;
+  font-size: 0.72rem;
+  line-height: 1;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+/* 일반 버튼(로그인·로그아웃): currentColor 기반이라 밝은/어두운 배경 모두 대비 확보.
+   강조 배경이 있는 회원가입(primary)·Admin(dashboard)은 제외하고 색만 유지 */
+.header-auth .auth-btn:not(.auth-btn-primary):not(.auth-btn-dashboard) {
+  color: currentColor;
+  border-color: color-mix(in srgb, currentColor 34%, transparent);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+.header-auth .auth-btn:not(.auth-btn-primary):not(.auth-btn-dashboard):hover {
+  border-color: color-mix(in srgb, currentColor 72%, transparent);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  color: currentColor;
+}
+
+/* 사용자 이름·로딩 표시도 동일 글자색 사용 */
+.header-auth .auth-user,
+.header-auth .auth-loading {
+  color: currentColor;
+  opacity: 0.78;
+}
+
+/* 편집 모드 토글(Edit / Edit ON): 금색 강조 유지하되 밝은 배경에서도 보이도록 옅은 칩 배경 추가 */
+.header-auth .edit-mode-toggle {
+  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+}
+
+.header-auth .edit-mode-toggle:hover {
+  background: color-mix(in srgb, var(--accent-color) 24%, transparent);
+}
+
+.header-auth .edit-mode-toggle.active {
+  background: var(--accent-color);
+  color: var(--primary-color);
+}
+
+/* 언어 전환 버튼: 높이 통일 + currentColor 대비 */
+.header-auth .lang-btn {
+  min-width: 38px;
+  padding: 0 11px;
+  color: currentColor;
+  opacity: 0.6;
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  background: transparent;
+}
+
+.header-auth .lang-btn:hover {
+  opacity: 1;
+  color: currentColor;
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.header-auth .lang-btn.active {
+  opacity: 1;
+  font-weight: 600;
+  color: currentColor;
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
 /* ========================================
    AUTH PAGES
 ======================================== */
 .auth-container {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1569,6 +1702,13 @@ ul {
   justify-content: center;
   padding: 40px 20px;
   background-color: var(--bg-color);
+}
+
+/* auth 페이지 우측 상단 언어 전환 */
+.auth-lang {
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }
 
 .auth-header {
@@ -1685,6 +1825,128 @@ ul {
 
 .auth-link a:hover {
   color: var(--text-color);
+}
+
+/* 가입 유형 선택 토글 (원생 / 학부모) */
+.auth-role-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.auth-role-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s;
+}
+
+.auth-role-option:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.auth-role-option.is-active {
+  border-color: var(--accent-color);
+  background: rgba(212, 160, 23, 0.12);
+}
+
+.auth-role-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-role-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.auth-role-desc {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* 학부모 안내 박스 */
+.auth-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: rgba(212, 160, 23, 0.08);
+  border: 1px solid rgba(212, 160, 23, 0.25);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.auth-hint strong {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* 입학년도 등 select은 입력 필드와 동일한 모양으로 */
+.auth-field select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  transition: border-color 0.3s, background 0.3s;
+  cursor: pointer;
+}
+
+.auth-field select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-field select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 네이티브 드롭다운 옵션 (상속 안 돼 별도 지정) */
+.auth-field select option {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* 가입 완료 — 승인 대기 안내 */
+.auth-pending {
+  text-align: center;
+}
+
+.auth-pending-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--white);
+  background: var(--secondary-color);
+  border-radius: 50%;
+}
+
+.auth-pending-desc {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin-bottom: 28px;
 }
 
 /* Auth Responsive */
@@ -2475,31 +2737,51 @@ ul {
   color: var(--text-muted);
 }
 
-.header-bg-field {
-  padding: 14px 0;
+/* 상태별(최상단/스크롤 후) 설정 묶음 */
+.header-bg-section {
+  padding: 16px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.header-bg-field:first-of-type {
+.header-bg-section:first-of-type {
   border-top: none;
   padding-top: 0;
 }
 
-.header-bg-field-head {
+.header-bg-section-head {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
-.header-bg-field-label {
-  font-size: 0.95rem;
+.header-bg-section-title {
+  font-size: 1rem;
   color: var(--text-color);
   font-weight: 600;
 }
 
-.header-bg-field-hint {
+.header-bg-section-hint {
   font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* 섹션 내부 한 줄: 라벨(고정폭) + 컨트롤 */
+.header-bg-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.header-bg-row:last-child {
+  margin-bottom: 0;
+}
+
+.header-bg-row-label {
+  width: 92px;
+  flex-shrink: 0;
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
@@ -2507,6 +2789,11 @@ ul {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+}
+
+.header-bg-row .header-logo-options {
+  flex: 1;
 }
 
 .header-bg-color {
@@ -2591,6 +2878,44 @@ ul {
   cursor: not-allowed;
 }
 
+/* 로고 변형 선택(화이트/일반) */
+.header-logo-options {
+  display: flex;
+  gap: 10px;
+}
+
+.header-logo-option {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: #0a0a0a;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.header-logo-option:hover {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.header-logo-option.active {
+  border-color: var(--secondary-color);
+  background: rgba(196, 48, 43, 0.15);
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* 메뉴 글자색 hex 표시 */
+.header-bg-nav-hex {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
 .image-object-uploading {
   position: absolute;
   top: 0;
@@ -2620,7 +2945,7 @@ ul {
   flex-direction: column;
   background:
     linear-gradient(180deg, #120c09 0%, var(--deep-umber) 34%, var(--soft-umber) 100%);
-  padding-top: var(--header-height);
+  padding-top: calc(var(--header-height) + 48px);
 }
 
 /* Gallery Hero */
@@ -3071,7 +3396,7 @@ ul {
   flex-direction: column;
   background:
     linear-gradient(180deg, #120c09 0%, var(--deep-umber) 45%, #120c09 100%);
-  padding-top: var(--header-height);
+  padding-top: calc(var(--header-height) + 108px);
 }
 
 .gallery-detail-nav {
@@ -4748,6 +5073,265 @@ ul {
   color: var(--accent-color);
 }
 
+/* 회원 상태 배지 */
+.admin-badge-warning {
+  background: rgba(212, 160, 23, 0.16);
+  color: var(--accent-color);
+}
+
+.admin-badge-danger {
+  background: rgba(209, 47, 39, 0.16);
+  color: var(--secondary-color);
+}
+
+/* 회원 관리 — 승인 대기 알림 배너 */
+.admin-callout {
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  background: rgba(212, 160, 23, 0.1);
+  border: 1px solid rgba(212, 160, 23, 0.3);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.admin-callout-link {
+  margin-left: 10px;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.admin-inline-error {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: rgba(209, 47, 39, 0.1);
+  border: 1px solid rgba(209, 47, 39, 0.3);
+  border-radius: 6px;
+  color: var(--secondary-color);
+  font-size: 0.85rem;
+}
+
+/* 회원 관리 — 작업 칼럼 (버튼 세로 정렬) */
+.admin-table-actions-col {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.admin-btn-row {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-role-select {
+  min-width: 0;
+  width: 100%;
+  font-size: 0.78rem;
+}
+
+.admin-table tr.is-busy {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* 회원 관리 — 학부모↔원생 연결 표시 */
+.admin-conn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.admin-conn-item {
+  line-height: 1.4;
+}
+
+.admin-conn-ok {
+  color: var(--text-color);
+}
+
+.admin-conn-warn {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--secondary-color);
+}
+
+.admin-conn-unresolved {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-conn-resolve {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.admin-conn-resolve .admin-filter-select {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.78rem;
+}
+
+/* ===== 권한 관리 매트릭스 ===== */
+.perm-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.perm-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.perm-dirty {
+  color: var(--accent-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.perm-table th.perm-th-role {
+  text-align: center;
+  width: 84px;
+  white-space: nowrap;
+}
+
+.perm-table th.perm-th-preset {
+  width: 130px;
+}
+
+.perm-menu-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.perm-menu-name.is-sub {
+  padding-left: 16px;
+}
+
+.perm-menu-name.is-sub .perm-menu-label::before {
+  content: '└ ';
+  color: var(--text-muted);
+}
+
+.perm-menu-label {
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.perm-lock-tag {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.perm-cell {
+  text-align: center;
+}
+
+/* 커스텀 체크박스 */
+.perm-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.perm-check input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.perm-check-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 0.18s, border-color 0.18s;
+  position: relative;
+}
+
+.perm-check input:checked + .perm-check-box {
+  background: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.perm-check input:checked + .perm-check-box::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.perm-check.is-locked {
+  cursor: not-allowed;
+}
+
+.perm-check.is-locked .perm-check-box {
+  opacity: 0.45;
+}
+
+.perm-check input:focus-visible + .perm-check-box {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.perm-preset-select {
+  font-size: 0.78rem;
+  width: 100%;
+}
+
+/* 고아 메뉴 정리 */
+.perm-orphans {
+  margin-top: 28px;
+  padding: 18px 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+}
+
+.perm-orphans-title {
+  font-size: 1rem;
+  color: var(--text-color);
+  margin-bottom: 6px;
+}
+
+.perm-orphans-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.perm-orphans-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
+
+.perm-orphans-list code {
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
 /* Admin Empty State */
 .admin-empty-state {
   text-align: center;
@@ -4776,6 +5360,82 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 30px;
+}
+
+/* 공연 · 갤러리 둘러보기 (학생용 읽기 전용) */
+.library-content {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.library-year-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--soft-gold, #d4a017);
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+.library-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.18s, transform 0.18s;
+}
+.library-card:hover {
+  border-color: rgba(212, 160, 23, 0.5);
+  transform: translateY(-2px);
+}
+.library-card-thumb {
+  aspect-ratio: 4 / 3;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.library-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.library-card-thumb-empty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.library-card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.library-card-category {
+  font-size: 0.72rem;
+  color: var(--soft-gold, #d4a017);
+  letter-spacing: 0.04em;
+}
+.library-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--warm-ivory, #f5f0e8);
+  margin: 0;
+  line-height: 1.4;
+}
+.library-card-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
 }
 
 /* 계정 섹션 — 비밀번호 변경 카드 */
@@ -4918,7 +5578,7 @@ ul {
 .admin-form-select option,
 .admin-filter-select option,
 .admin-status-select option,
-.photo-inbox-fields select option {
+.photo-drawer-fields select option {
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -5064,27 +5724,62 @@ ul {
   color: var(--text-muted);
 }
 
-/* Admin Photo Inbox */
+/* ==========================================================================
+   Admin Photo Inbox (사진 보관함) — 업로드/정리 탭 리모델링
+   ========================================================================== */
 .photo-inbox {
   display: grid;
-  gap: 24px;
+  gap: 20px;
 }
 
-.photo-inbox-upload {
+/* 탭 헤더 */
+.photo-inbox-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  width: fit-content;
+}
+
+.photo-inbox-tab {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.photo-inbox-tab:hover {
+  color: var(--text-color);
+}
+
+.photo-inbox-tab.is-active {
+  background: var(--accent-color);
+  color: var(--bg-color);
+}
+
+/* ── 업로드 탭 ───────────────────────── */
+.photo-upload-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px 24px;
+  gap: 16px 24px;
   align-items: start;
 }
 
-.photo-inbox-upload-copy p {
+.photo-upload-copy p {
   max-width: 760px;
   color: var(--text-muted);
   line-height: 1.75;
   word-break: keep-all;
 }
 
-.photo-inbox-publish {
+.photo-upload-publish {
   justify-self: end;
   padding: 10px 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -5093,107 +5788,316 @@ ul {
   color: var(--text-color);
 }
 
-.photo-inbox-upload .admin-dropzone {
+.photo-upload-dropzone {
   grid-column: 1 / -1;
 }
 
-/* 검색 / 필터 툴바 */
-.photo-inbox-toolbar {
+.photo-upload-msg {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* ── 정리 탭: 툴바 ───────────────────── */
+.photo-organize {
+  display: grid;
+  gap: 16px;
+  scroll-margin-top: 90px;
+}
+
+.photo-organize-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  scroll-margin-top: 90px;
 }
 
-.photo-inbox-search {
+.photo-organize-search {
   display: flex;
   gap: 8px;
-  flex: 1 1 240px;
+  flex: 1 1 220px;
   min-width: 0;
 }
 
-.photo-inbox-search .admin-filter-input {
+.photo-organize-search .admin-filter-input {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.photo-inbox-filters {
+.photo-organize-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.photo-inbox-count {
+.photo-organize-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-left: auto;
+}
+
+.photo-organize-density {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.photo-organize-count {
   font-size: 0.85rem;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-.photo-inbox-grid {
+/* ── 정리 탭: 선택/일괄 바 ───────────── */
+.photo-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  position: sticky;
+  top: 12px;
+  z-index: var(--z-overlay);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.photo-bulk-bar.is-active {
+  border-color: rgba(212, 160, 23, 0.5);
+  background: rgba(212, 160, 23, 0.08);
+}
+
+.photo-bulk-selectall {
+  color: var(--text-color);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.photo-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.photo-bulk-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 8px;
+  margin-left: 2px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ── 정리 탭: 썸네일 그리드 ──────────── */
+.photo-organize-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
+  gap: 10px;
   transition: opacity 0.2s ease;
 }
 
-.photo-inbox-grid.is-loading {
+.photo-organize-grid.density-compact {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.photo-organize-grid.density-comfortable {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.photo-organize-grid.is-loading {
   opacity: 0.45;
   pointer-events: none;
 }
 
-.photo-inbox-card {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+.photo-organize-empty {
+  grid-column: 1 / -1;
 }
 
-.photo-inbox-image {
+.photo-tile {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
   background: #111;
 }
 
-.photo-inbox-img {
+.photo-tile.is-selected {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.photo-tile-img-btn {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.photo-tile-img {
   object-fit: cover;
 }
 
-.photo-inbox-status {
+.photo-tile-check {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 5px 9px;
-  border-radius: 4px;
-  background: rgba(5, 5, 5, 0.76);
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 0.74rem;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  padding: 4px;
+  border-radius: 5px;
+  background: rgba(5, 5, 5, 0.6);
+  backdrop-filter: blur(3px);
 }
 
-.photo-inbox-status.is-public {
-  background: rgba(14, 112, 74, 0.9);
+.photo-tile-check input {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+  accent-color: var(--accent-color);
+}
+
+.photo-tile-badges {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.photo-tile-badge {
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: rgba(5, 5, 5, 0.76);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.photo-tile-badge.is-public {
+  background: rgba(14, 112, 74, 0.92);
   color: var(--white);
 }
 
-.photo-inbox-fields {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
+.photo-tile-badge.is-linked {
+  background: rgba(212, 160, 23, 0.9);
+  color: #1a1207;
 }
 
-.photo-inbox-fields label {
+.photo-tile-badge.is-loose {
+  background: rgba(5, 5, 5, 0.72);
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* ── 우측 상세 드로어 ───────────────── */
+.photo-drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal-backdrop);
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.photo-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 92vw);
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  background: #0c0c0c;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.5);
+  animation: photo-drawer-in 0.22s ease;
+}
+
+@keyframes photo-drawer-in {
+  from { transform: translateX(24px); opacity: 0.4; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.photo-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photo-drawer-header h3 {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.photo-drawer-close {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.photo-drawer-close:hover {
+  color: var(--text-color);
+}
+
+.photo-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.photo-drawer-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #111;
+  cursor: zoom-in;
+  padding: 0;
+}
+
+.photo-drawer-preview-img {
+  object-fit: cover;
+}
+
+.photo-drawer-zoom {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(5, 5, 5, 0.78);
+  color: var(--white);
+  font-size: 0.74rem;
+}
+
+.photo-drawer-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.photo-drawer-fields label {
   display: grid;
   gap: 6px;
   color: rgba(255, 255, 255, 0.74);
   font-size: 0.8rem;
 }
 
-.photo-inbox-fields input,
-.photo-inbox-fields select {
+.photo-drawer-fields input,
+.photo-drawer-fields select {
   width: 100%;
   padding: 10px 11px;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -5202,35 +6106,350 @@ ul {
   color: var(--text-color);
 }
 
-.photo-inbox-toggles {
+.photo-drawer-toggles {
   display: flex;
   flex-wrap: wrap;
+  gap: 16px;
+}
+
+.photo-drawer-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.photo-drawer-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── 라이트박스 ─────────────────────── */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.photo-lightbox-stage {
+  position: relative;
+  width: min(90vw, 1200px);
+  height: min(86vh, 860px);
+}
+
+.photo-lightbox-img {
+  object-fit: contain;
+}
+
+.photo-lightbox-caption {
+  position: absolute;
+  bottom: -34px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
   gap: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.85rem;
 }
 
-.photo-inbox-meta {
-  display: flex;
-  flex-wrap: wrap;
+.photo-lightbox-count {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.photo-lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 2.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.photo-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.photo-lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.photo-lightbox-prev { left: 20px; }
+.photo-lightbox-next { right: 20px; }
+
+@media (max-width: 768px) {
+  .photo-upload-panel {
+    grid-template-columns: 1fr;
+  }
+  .photo-upload-publish {
+    justify-self: start;
+  }
+  .photo-organize-toolbar-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .photo-organize-grid.density-comfortable {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+/* ==========================================================================
+   공용 이벤트 선택기 (EventPicker) — 검색형 풀 모달
+   ========================================================================== */
+.event-picker-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  min-width: 180px;
+  max-width: 280px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s;
 }
 
-.photo-inbox-meta span {
-  padding: 4px 7px;
+.event-picker-trigger:hover:not(:disabled) {
+  border-color: var(--accent-color);
+}
+
+.event-picker-trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.event-picker-trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-picker-trigger .is-placeholder {
+  color: var(--text-muted);
+}
+
+.event-picker-trigger svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* 폼(드로어) 안에서는 트리거를 가로 가득 */
+.photo-drawer-event-picker {
+  width: 100%;
+  max-width: none;
+}
+
+/* 오버레이 + 모달 */
+.event-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.event-picker-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100%);
+  max-height: min(80vh, 720px);
+  background: #0c0c0c;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.event-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-picker-header h3 {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.event-picker-header button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.event-picker-header button:hover {
+  color: var(--text-color);
+}
+
+.event-picker-search {
+  display: flex;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-picker-search .admin-filter-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.event-picker-list.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.event-picker-empty {
+  padding: 36px 12px;
+}
+
+.event-picker-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-color);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.event-picker-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.event-picker-card.is-current {
+  border-color: var(--accent-color);
+  background: rgba(212, 160, 23, 0.12);
+}
+
+.event-picker-clear {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  justify-content: flex-start;
+}
+
+.event-picker-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 42px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.event-picker-thumb-img {
+  object-fit: cover;
+}
+
+.event-picker-thumb-empty {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, #161616, #161616 6px, #1d1d1d 6px, #1d1d1d 12px);
+}
+
+.event-picker-info {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.event-picker-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-picker-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(212, 160, 23, 0.08);
-  color: rgba(246, 239, 226, 0.74);
-  font-size: 0.74rem;
+  background: rgba(5, 5, 5, 0.72);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.66rem;
+  font-weight: 500;
 }
 
-.photo-inbox-actions {
+.event-picker-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-picker-footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 16px 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.photo-inbox-empty {
-  grid-column: 1 / -1;
+.event-picker-footer .pagination {
+  margin-top: 0;
+}
+
+.event-picker-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 /* ==========================================================================
@@ -5737,7 +6956,7 @@ ul {
   background:
     radial-gradient(circle at 16% 22%, rgba(224, 184, 79, 0.10), transparent 38%),
     linear-gradient(180deg, #17100d 0%, #271815 100%);
-  padding: calc(var(--header-height) + 100px) 0 0;
+  padding: calc(var(--header-height) + 128px) 0 0;
   overflow: hidden;
 }
 
@@ -6198,7 +7417,7 @@ ul {
   min-height: min(760px, 88svh);
   display: flex;
   align-items: center;
-  padding: calc(var(--header-height) + 90px) 0 90px;
+  padding: calc(var(--header-height) + 128px) 0 90px;
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.98), rgba(5, 5, 5, 0.66) 48%, rgba(5, 5, 5, 0.92)),
@@ -6485,14 +7704,12 @@ ul {
   inset: 0;
 }
 
-/* ── Hero 배경 관리 진입 버튼 ──────────────────────────────────────────
-   편집 모드일 때 히어로 좌상단(헤더 아래)에 떠 있는 진입점. 상단 툴바와
-   겹치지 않도록 헤더 높이만큼 내려 배치한다. */
-.hero-bg-manage-btn {
-  position: absolute;
-  top: calc(var(--header-height) + 24px);
-  left: 24px;
-  z-index: var(--z-edit-controls);
+/* ── 섹션 설정 진입 버튼 (편집 모드) ──────────────────────────────────
+   관리자 편집 모드일 때 각 섹션의 설정 모달 진입 버튼을 그 섹션 박스의
+   "좌하단 안쪽" 모서리에 일관된 디자인(pill + 톱니 아이콘 + "OO 설정" 라벨)
+   으로 둔다. 버튼이 자기 섹션 영역 안에 있어 어떤 섹션 설정인지 자명하다.
+   bottom 기준 absolute라 헤더 등 가변 높이 요소와의 겹침 계산이 필요 없다. */
+.section-edit-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -6509,29 +7726,51 @@ ul {
   backdrop-filter: blur(6px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  z-index: var(--z-edit-controls);
 }
 
-.hero-bg-manage-btn:hover {
+.section-edit-btn:hover {
   background: rgba(196, 48, 43, 0.92);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-1px);
 }
 
-.hero-bg-manage-btn svg {
+.section-edit-btn svg {
   color: var(--accent-color, #d4a017);
   flex-shrink: 0;
 }
 
-.hero-bg-manage-btn:hover svg {
+.section-edit-btn:hover svg {
   color: #fff;
 }
 
+/* Top Bar 설정: 헤더(Top Bar) 영역의 좌하단 안쪽. 헤더와 함께 움직인다.
+   #main-header가 positioned(fixed)이므로 이 버튼의 기준이 된다. */
+.section-edit-btn--topbar {
+  position: absolute;
+  bottom: 12px;
+  left: 24px;
+}
+
+/* Hero 섹션 설정: Hero 섹션(#hero, relative)의 좌하단 안쪽. 섹션과 함께 스크롤된다. */
+.section-edit-btn--hero {
+  position: absolute;
+  bottom: 28px;
+  left: 24px;
+}
+
 @media (max-width: 768px) {
-  .hero-bg-manage-btn {
-    top: calc(var(--header-height) + 14px);
-    left: 14px;
+  .section-edit-btn {
     padding: 8px 13px;
     font-size: 0.76rem;
+  }
+  .section-edit-btn--topbar {
+    bottom: 10px;
+    left: 16px;
+  }
+  .section-edit-btn--hero {
+    bottom: 20px;
+    left: 16px;
   }
 }
 
@@ -6732,7 +7971,7 @@ ul {
 }
 
 .classes-hero {
-  padding: calc(var(--header-height) + 80px) 0 60px;
+  padding: calc(var(--header-height) + 128px) 0 60px;
   background:
     radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
     linear-gradient(180deg, var(--ink-umber), var(--ink-black));
@@ -7116,7 +8355,7 @@ ul {
   min-height: 56vh;
   display: flex;
   align-items: flex-end;
-  padding: calc(var(--header-height) + 40px) 0 56px;
+  padding: calc(var(--header-height) + 128px) 0 56px;
   overflow: hidden;
   background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
 }
@@ -7535,7 +8774,7 @@ ul {
   min-height: 86svh;
   display: flex;
   align-items: flex-end;
-  padding: calc(var(--header-height) + 40px) 0 70px;
+  padding: calc(var(--header-height) + 128px) 0 70px;
   overflow: hidden;
   background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
 }
