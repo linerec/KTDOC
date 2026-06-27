@@ -44,7 +44,12 @@ export default async function AdminLayout({
   const menuKey = resolveMenuKey(pathname);
 
   // 매트릭스를 먼저 로드해 접근 판정과 네비 계산에 함께 쓴다(요청당 1회 캐시).
-  const matrix = await getPermMatrix();
+  // 원격 DB 일시 장애로 로드가 실패해도 콘솔이 깨지지 않도록 빈 매트릭스로 폴백한다
+  // (레지스트리 defaultRoles로 판정 — admin은 무조건 통과).
+  const matrix = await getPermMatrix().catch((err) => {
+    console.error('권한 매트릭스 로드 실패 — 기본 권한으로 폴백:', err);
+    return {} as Awaited<ReturnType<typeof getPermMatrix>>;
+  });
   const menus = getAllowedMenus(role, matrix);
 
   // 현재 경로 메뉴 접근 강제(admin은 무조건 통과).

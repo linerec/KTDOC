@@ -33,10 +33,20 @@ import type {
 const ALL_ROLES: MemberRole[] = MEMBER_ROLES;
 
 /**
- * 권한 매트릭스 로드. React.cache로 요청당 1회만 DB 조회(중복 제거).
- * 테이블이 작아(≤수십 행) 요청마다 신선하게 읽으므로 저장 직후 즉시 반영된다.
+ * 프로세스 단위 TTL 캐시.
+ * admin 진입마다 원격 MySQL(us-east-2 RDS, 왕복 100ms+)을 치지 않도록 짧은 시간
+ * 매트릭스를 메모리에 들고 있는다. 권한 저장/삭제 시 즉시 무효화하므로 저장한
+ * 인스턴스는 바로 신선한 값을 본다(다른 인스턴스는 최대 TTL 동안 지연).
  */
-export const getPermMatrix = cache(async (): Promise<PermMatrix> => {
+const PERM_CACHE_TTL_MS = 30_000;
+let permCache: { matrix: PermMatrix; expires: number } | null = null;
+
+/** 권한 매트릭스 캐시 무효화 — 권한 저장/삭제 직후 호출. */
+export function invalidatePermMatrix(): void {
+  permCache = null;
+}
+
+async function loadPermMatrix(): Promise<PermMatrix> {
   const rows = await query<{ menu_key: string; role: MemberRole; allowed: number }[]>(
     'SELECT menu_key, role, allowed FROM menu_permissions'
   );
@@ -45,6 +55,29 @@ export const getPermMatrix = cache(async (): Promise<PermMatrix> => {
     (matrix[r.menu_key] ||= {})[r.role] = r.allowed === 1;
   }
   return matrix;
+}
+
+/**
+ * 권한 매트릭스 로드. 두 겹 캐시로 admin 진입 지연을 줄인다.
+ *  - React.cache: 같은 요청 내 중복 조회 제거.
+ *  - 프로세스 TTL 캐시(30s): 진입마다의 원격 DB 왕복 제거.
+ * DB 조회가 실패하면 stale 캐시라도 반환해 화면이 깨지지 않게 한다
+ * (캐시가 전혀 없으면 throw → 레이아웃이 기본 권한으로 폴백).
+ */
+export const getPermMatrix = cache(async (): Promise<PermMatrix> => {
+  const now = Date.now();
+  if (permCache && permCache.expires > now) return permCache.matrix;
+  try {
+    const matrix = await loadPermMatrix();
+    permCache = { matrix, expires: now + PERM_CACHE_TTL_MS };
+    return matrix;
+  } catch (err) {
+    if (permCache) {
+      console.error('권한 매트릭스 갱신 실패 — stale 캐시 사용:', err);
+      return permCache.matrix;
+    }
+    throw err;
+  }
 });
 
 /** 단일 메뉴 노드에 대한 역할 허용 판정 */
@@ -187,11 +220,13 @@ export async function savePermissions(
      ON DUPLICATE KEY UPDATE allowed = VALUES(allowed), updated_by = VALUES(updated_by)`,
     params
   );
+  invalidatePermMatrix(); // 저장 즉시 반영
 }
 
 /** 고아 메뉴 키의 DB 행 정리(레지스트리에 있는 키는 거부) */
 export async function deleteOrphanKey(menuKey: string): Promise<boolean> {
   if (isKnownMenuKey(menuKey)) return false;
   await query('DELETE FROM menu_permissions WHERE menu_key = ?', [menuKey]);
+  invalidatePermMatrix(); // 삭제 즉시 반영
   return true;
 }
