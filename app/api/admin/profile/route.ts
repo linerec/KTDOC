@@ -8,9 +8,12 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
+import { setPublicArchiveConsent } from '@/lib/members';
 
 interface ProfileBody {
   name?: string;
+  /** 공개 수강생 페이지 노출 동의(opt-in) — 본인 것만 변경 */
+  publicArchiveConsent?: boolean;
 }
 
 export async function PATCH(request: Request) {
@@ -41,7 +44,12 @@ export async function PATCH(request: Request) {
 
     await query('UPDATE users SET name = ? WHERE id = ?', [rawName, session.user.id]);
 
-    return NextResponse.json({ success: true, name: rawName, message: '이름이 변경되었습니다.' });
+    // 공개 노출 동의는 선택적으로 함께 갱신(boolean이 넘어온 경우에만)
+    if (typeof body.publicArchiveConsent === 'boolean') {
+      await setPublicArchiveConsent(session.user.id, body.publicArchiveConsent);
+    }
+
+    return NextResponse.json({ success: true, name: rawName, message: '저장되었습니다.' });
   } catch (error) {
     console.error('Profile update error:', error);
     return NextResponse.json(

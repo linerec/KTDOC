@@ -71,6 +71,8 @@ export interface Member {
   status: MemberStatus;
   /** 원생 입학년도 (원생이 아니면 null) */
   enrollment_year: number | null;
+  /** 공개 수강생 페이지(/students) 노출 동의 여부 (학생 본인이 프로필에서 토글) */
+  public_archive_consent: boolean;
   /** 이메일 인증 일시(ISO) 또는 미인증 시 null */
   email_verified: string | null;
   created_at: string;

@@ -78,7 +78,9 @@ export default async function StudentsPage() {
         <section className="students-body">
           <div className="students-container">
             {students.length === 0 ? (
-              <p className="students-empty">아직 공개된 수강생 명단이 없습니다.</p>
+              <p className="students-empty">
+                아직 공개에 동의한 수강생이 없습니다. 수강생은 ‘내 프로필’에서 공개 표시에 동의할 수 있습니다.
+              </p>
             ) : (
               grouped.map(([year, list]) => (
                 <section key={year ?? 'unknown'} className="students-year">
@@ -106,8 +108,8 @@ export default async function StudentsPage() {
             )}
 
             <p className="students-note">
-              참여 횟수는 각 수강생이 공연·이벤트에 체크인한 기록을 바탕으로 집계됩니다.
-              명단 등재나 표기에 대한 문의는{' '}
+              이 명단에는 공개 표시에 동의한 수강생만 표시됩니다. 참여 횟수는 각 수강생이 공연·이벤트에
+              체크인한 기록을 바탕으로 집계됩니다. 명단 등재나 표기에 대한 문의는{' '}
               <Link href="/about" className="students-note-link">
                 춤누리
               </Link>

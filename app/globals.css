@@ -5629,6 +5629,39 @@ ul {
   color: var(--text-muted);
 }
 
+/* 프로필 — 공개 노출 동의 토글 (학생) */
+.admin-consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: rgba(212, 160, 23, 0.06);
+  border: 1px solid rgba(212, 160, 23, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.admin-consent input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--accent-color, #d4a017);
+}
+.admin-consent-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.88rem;
+  color: var(--text-color);
+}
+.admin-consent-help {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
 /* 참여 현황 (운영진) */
 .participation-list {
   display: flex;

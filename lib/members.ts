@@ -51,6 +51,7 @@ interface MemberRow {
   role: MemberRole | null;
   status: MemberStatus | null;
   enrollment_year: number | null;
+  public_archive_consent: number | null;
   created_at: Date | string | null;
   updated_at: Date | string | null;
 }
@@ -74,12 +75,13 @@ function normalizeMember(row: MemberRow): Member {
     role: row.role && VALID_ROLES.includes(row.role) ? row.role : 'user',
     status: row.status && VALID_STATUSES.includes(row.status) ? row.status : 'active',
     enrollment_year: row.enrollment_year ?? null,
+    public_archive_consent: row.public_archive_consent === 1,
     created_at: toISO(row.created_at) ?? '',
     updated_at: toISO(row.updated_at) ?? '',
   };
 }
 
-const MEMBER_SELECT = `id, email, name, phone, email_verified, role, status, enrollment_year, created_at, updated_at`;
+const MEMBER_SELECT = `id, email, name, phone, email_verified, role, status, enrollment_year, public_archive_consent, created_at, updated_at`;
 
 /**
  * 회원 목록 조회 (검색·권한·상태 필터·페이지네이션 지원).
@@ -288,15 +290,27 @@ export interface PublicStudent {
 }
 
 /**
- * 공개 수강생 명단 — 정회원(active) 원생만. 이메일·전화 등 민감정보는 반환하지 않는다.
- * 연도별 페이지(`/students`)에서 입학년도로 묶어 보여준다. id는 참여도 집계용(미표시).
+ * 공개 수강생 명단 — 정회원(active) 원생 중 **공개 동의(opt-in)** 한 학생만.
+ * 이메일·전화 등 민감정보는 반환하지 않는다. 연도별 페이지(`/students`)에서
+ * 입학년도로 묶어 보여준다. id는 참여도 집계용(미표시).
  */
 export async function getActiveStudents(): Promise<PublicStudent[]> {
   return query<PublicStudent[]>(
     `SELECT id, name, enrollment_year FROM users
-     WHERE role = 'student' AND status = 'active'
+     WHERE role = 'student' AND status = 'active' AND public_archive_consent = 1
      ORDER BY enrollment_year DESC, name ASC`
   );
+}
+
+/** 공개 노출 동의 토글 — 본인 프로필에서만 호출(userId는 항상 본인). */
+export async function setPublicArchiveConsent(
+  userId: string,
+  consent: boolean
+): Promise<void> {
+  await query('UPDATE users SET public_archive_consent = ? WHERE id = ?', [
+    consent ? 1 : 0,
+    userId,
+  ]);
 }
 
 /**

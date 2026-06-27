@@ -16,6 +16,8 @@ interface ProfileFormProps {
   email: string;
   role: MemberRole;
   joinedAt: string | null;
+  /** 공개 수강생 페이지 노출 동의(학생만 의미 있음) */
+  initialConsent: boolean;
 }
 
 function formatDate(value: string | null): string {
@@ -25,16 +27,26 @@ function formatDate(value: string | null): string {
   return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`;
 }
 
-export default function ProfileForm({ initialName, email, role, joinedAt }: ProfileFormProps) {
+export default function ProfileForm({
+  initialName,
+  email,
+  role,
+  joinedAt,
+  initialConsent,
+}: ProfileFormProps) {
   const { update } = useSession();
   const router = useRouter();
 
   const [name, setName] = useState(initialName);
+  const [consent, setConsent] = useState(initialConsent);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const dirty = name.trim() !== initialName.trim();
+  // 동의 토글은 학생에게만 노출(공개 수강생 페이지가 원생만 나열)
+  const showConsent = role === 'student';
+  const dirty =
+    name.trim() !== initialName.trim() || (showConsent && consent !== initialConsent);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -52,7 +64,9 @@ export default function ProfileForm({ initialName, email, role, joinedAt }: Prof
       const res = await fetch('/api/admin/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed }),
+        body: JSON.stringify(
+          showConsent ? { name: trimmed, publicArchiveConsent: consent } : { name: trimmed }
+        ),
       });
       const data = await res.json();
 
@@ -64,7 +78,7 @@ export default function ProfileForm({ initialName, email, role, joinedAt }: Prof
       // 세션 토큰과 사이드바(서버 렌더)에 새 이름 반영
       await update({ name: trimmed });
       router.refresh();
-      setSuccess(data.message || '이름이 변경되었습니다.');
+      setSuccess(data.message || '저장되었습니다.');
     } catch {
       setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
@@ -111,6 +125,24 @@ export default function ProfileForm({ initialName, email, role, joinedAt }: Prof
         </span>
       </div>
 
+      {showConsent && (
+        <label className="admin-consent">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            disabled={saving}
+          />
+          <span className="admin-consent-text">
+            <strong>공개 수강생 페이지에 내 이름 표시 동의</strong>
+            <span className="admin-consent-help">
+              동의하면 누구나 볼 수 있는 ‘수강생 아카이브’ 페이지에 이름·입학년도·참여 횟수가 표시됩니다.
+              동의를 해제하면 즉시 제외됩니다.
+            </span>
+          </span>
+        </label>
+      )}
+
       {error && (
         <p className="admin-account-feedback admin-account-feedback--error" role="alert">
           {error}
@@ -124,7 +156,7 @@ export default function ProfileForm({ initialName, email, role, joinedAt }: Prof
 
       <div className="admin-domain-actions">
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving || !dirty}>
-          {saving ? '저장 중...' : '이름 저장'}
+          {saving ? '저장 중...' : '저장'}
         </button>
       </div>
     </form>

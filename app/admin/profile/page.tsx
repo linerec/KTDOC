@@ -44,7 +44,13 @@ export default async function AdminProfilePage() {
       </div>
 
       <div className="admin-profile-grid">
-        <ProfileForm initialName={name} email={email} role={role} joinedAt={joinedAt} />
+        <ProfileForm
+          initialName={name}
+          email={email}
+          role={role}
+          joinedAt={joinedAt}
+          initialConsent={member?.public_archive_consent ?? false}
+        />
         <ChangePasswordCard />
       </div>
     </div>

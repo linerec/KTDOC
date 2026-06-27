@@ -20,12 +20,12 @@
 - [x] **Phase 5 — 참여도/검증 뷰**: 운영진 페이지 `/admin/participation`(메뉴 `participation`, teacher·admin). `getEventsWithParticipantCounts`(참가 있는 이벤트+수) + `getCheckinsForEvents`(명단) + `getUserNamesByIds`(이름, MySQL). 이벤트 카드(참가자 수·비공개 배지·참가자 칩) + 요약(이벤트 수·연인원). **Playwright 검증 완료**(선생님 계정, 이름 해석 OK).
 - [ ] **Phase 6 — 마무리(사용자 결정 대기)**: ① 공개 `/students` 헤더 내비 링크(i18n keycode 필요) ② **실명 공개 정책 확정**(아래) ③ 체크인 대상 범위(공개 이벤트만 vs 예정 포함) ④ **main 병합·배포 승인**. Phase 1–5는 브랜치에서 완성·검증됨(미배포). 결정 후 진행.
 
-## 열린 결정 (사용자 확인 필요)
+## 결정/진행 로그
 
-1. **연도별 수강생 공개 범위/개인정보**: 실명을 공개 웹에 노출할지, 활동(동의/active) 학생만·예명·이니셜·옵트인 중 무엇으로 할지. 기본은 보수적으로(예: 동의 플래그) 갈지.
-2. **체크인 대상**: 공개(published) 이벤트만인지, 운영진이 만든 "참가 예정(upcoming)" 이벤트도 체크인 허용할지(`status='going'`).
-3. **공개 라우트 이름**: `/students` vs `/members` vs `/archive`.
-4. **검증(관계자) 접근**: 비로그인 공개로 둘지, 별도 링크/권한으로 둘지.
+1. ✅ **공개 범위 = 동의(opt-in)** (사용자 결정 2026-06-27). 구현: `users.public_archive_consent`(migration 0011, MySQL, 기본 0). 학생이 **내 프로필**에서 토글 → `/students`는 `getActiveStudents`가 `consent=1`만 노출. 해제 시 즉시 제외. Playwright 검증 완료. 부수: `profile` 메뉴를 student·parent도 접근하도록 확장(레지스트리 default + menu_permissions의 profile/student·parent=1 갱신).
+2. ⏳ **체크인 대상**: 현재 공개(published) 이벤트만. 예정(upcoming) 포함은 미정.
+3. ✅ **공개 라우트** = `/students`.
+4. ⏳ **관계자 접근**: `/students`는 비로그인 공개. 이벤트별 참가 명단(`/admin/participation`)은 운영진 전용 — 외부 공유 방식은 미정.
 
 ## 비고
 - 작업은 **feature 브랜치에서만**. 절반 상태가 운영에 배포되지 않도록 main push 보류(완성·검토 후 병합).
