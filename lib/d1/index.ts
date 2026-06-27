@@ -65,6 +65,18 @@ export {
 } from './gallery';
 
 export {
+  // Event Check-ins (학생 참여)
+  checkInEvent,
+  checkOutEvent,
+  isCheckedIn,
+  getUserCheckedInEventIds,
+  getUserCheckins,
+  getEventCheckins,
+  getCheckinCountsByEvent,
+  getCheckinCountsByUser,
+} from './checkins';
+
+export {
   // Programs
   getPrograms,
   getProgramById,

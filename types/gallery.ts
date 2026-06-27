@@ -91,6 +91,30 @@ export interface GalleryPhoto {
   uploader_name?: string | null;
 }
 
+// 이벤트 체크인(학생 참여) ------------------------------------------
+
+/** 체크인 상태: 참가 완료(attended) | 참가 예정(going, 향후 확장) */
+export type CheckinStatus = 'attended' | 'going';
+
+export interface EventCheckin {
+  id: number;
+  event_id: number;
+  /** 참여 학생 (MySQL users.id). 교차 저장소라 FK 없이 문자열만 보관 */
+  user_id: string;
+  status: CheckinStatus;
+  note: string | null;
+  checked_in_at: string;
+  created_at: string;
+  /** user_id를 회원 이름으로 해석한 값 — 참가자 목록 화면에서만 채워진다 */
+  user_name?: string | null;
+}
+
+/** 학생 아카이브 목록 한 줄: 체크인한 이벤트 상세 + 체크인 메타 */
+export interface CheckedInEvent extends EventWithCategory {
+  checked_in_at: string;
+  checkin_status: CheckinStatus;
+}
+
 export interface EventDetail extends EventWithCategory {
   images: EventImage[];
   /** 이벤트의 전체 이미지 수 (images는 페이지네이션된 첫 묶음일 수 있음) */
