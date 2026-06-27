@@ -122,20 +122,15 @@ export default async function AdminLibraryArchivePage() {
                         )}
                       </>
                     );
-                    return isDraft ? (
-                      <div key={event.id} className="library-card library-card--static">
-                        {inner}
-                      </div>
-                    ) : (
-                      <a
+                    // 콘솔 안 상세로 연결(비공개 이벤트도 열람 가능), 같은 탭
+                    return (
+                      <Link
                         key={event.id}
-                        href={`/gallery/${event.year}/${event.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/admin/library/${event.id}`}
                         className="library-card"
                       >
                         {inner}
-                      </a>
+                      </Link>
                     );
                   })}
                 </div>

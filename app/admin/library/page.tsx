@@ -197,9 +197,13 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                       key={event.id}
                       className={`library-card${isChecked ? ' is-checked' : ''}`}
                     >
-                      {isDraft ? (
-                        <div className="library-card-link library-card-link--static">{inner}</div>
+                      {canCheckIn ? (
+                        // 학생: 콘솔 안 상세로(비공개 이벤트도 열람 가능), 같은 탭
+                        <Link href={`/admin/library/${event.id}`} className="library-card-link">
+                          {inner}
+                        </Link>
                       ) : (
+                        // 그 외: 공개 갤러리 상세(공개 이벤트만 노출되므로 항상 유효)
                         <a
                           href={`/gallery/${event.year}/${event.slug}`}
                           target="_blank"

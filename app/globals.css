@@ -5615,6 +5615,37 @@ ul {
   padding: 3px 9px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
+/* 콘솔 이벤트 상세 (읽기 전용) */
+.library-detail-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.library-detail-checkin {
+  max-width: 260px;
+  margin: 0 0 24px;
+}
+.library-detail-checkin .library-checkin {
+  padding: 0;
+}
+.library-detail-desc {
+  margin: 0 0 28px;
+  max-width: 760px;
+  line-height: 1.8;
+  color: var(--text-color);
+  white-space: pre-wrap;
+}
+.library-detail-section {
+  margin-bottom: 36px;
+}
+.library-detail-section-title {
+  font-size: 1.05rem;
+  color: var(--soft-gold, #e0b84f);
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 /* 참여 체크인 토글 (학생용) — 카드 하단 */
 .library-checkin {
   padding: 0 16px 14px;
