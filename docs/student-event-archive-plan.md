@@ -15,8 +15,8 @@
 
 - [x] **Phase 1 — 기반**: 마이그레이션 0010(원격 적용 완료)·타입·데이터 계층·index 연결. tsc·라이브 D1 왕복 검증 완료.
 - [x] **Phase 2 — 체크인 UI(학생 콘솔)**: `/admin/library` 둘러보기 카드에 체크인/체크아웃 토글(`CheckinButton`, 학생 role에만 노출). API `/api/library/checkins`(GET 내 체크인 id·POST 체크인·DELETE 체크아웃, 본인·공개 이벤트만 서버 강제). 초기 상태는 `getUserCheckedInEventIds`로 서버 렌더. 카드 구조 `.library-card > .library-card-link + CheckinButton`. **Playwright로 체크인→영속(새로고침)→체크아웃 검증 완료.**
-- [ ] **Phase 3 — 학생 아카이브**: `/admin/library/archive`(메뉴 `library.archive`, defaultRoles student·parent·teacher·admin). `getUserCheckins` + 각 이벤트의 사진(event_id로 gallery_photos / event_images). 연도별 묶음.
-- [ ] **Phase 4 — 연도별 수강생 공개 페이지**: `/students`(또는 `/members`) — `users.enrollment_year` 그룹. 참여도 배지(`getCheckinCountsByUser`). ⚠️ **개인정보 결정 필요**(아래).
+- [x] **Phase 3 — 학생 아카이브**: `/admin/library/archive`(메뉴 `library.archive`). `getUserCheckins` + `getPreviewImagesForEvents`(이벤트당 상위 3장, 윈도우 함수 단일 쿼리). 연도별 묶음 + 참여 요약(총 N개·활동 연도). 빈 상태→둘러보기 유도. **Playwright 검증 완료**(빈 상태/채워진 상태/사이드바 메뉴).
+- [ ] **Phase 4 — 연도별 수강생 공개 페이지** (다음): `/students` — `users.enrollment_year` 그룹(active 학생), 참여도(`getCheckinCountsByUser`). ⚠️ **개인정보**: 브랜치 격리라 자동 배포 없음 → **보수적 기본값**(실명+활동연도+참여수만, 이메일·전화 등 PII 없음)으로 빌드하고, 실명 공개 가부(이니셜/opt-in/비공개)는 **병합 전 사용자 확정**. 아래 "열린 결정" 참고.
 - [ ] **Phase 5 — 참여도/검증 뷰**: 이벤트별 참가자 수(운영진·관계자용; `getCheckinCountsByEvent`, 참가자 명단=`getEventCheckins`+이름해석). 학생별 참여 리포트.
 - [ ] **Phase 6 — 마무리**: 카피 톤(차분한 합니다체) 점검, 반응형/접근성, 문서, main 병합·배포.
 

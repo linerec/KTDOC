@@ -5574,6 +5574,29 @@ ul {
   font-size: 0.74rem;
   color: var(--secondary-color, #d12f27);
 }
+/* 내 참여 아카이브 — 체크인 메타 + 사진 미리보기 스트립 */
+.archive-card-checkin {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  color: var(--soft-gold, #d4a017);
+}
+.archive-strip {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px 14px;
+}
+.archive-strip img {
+  width: 33.33%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.admin-empty-sub {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
 
 /* 내 사진 · 제출 (학생용) */
 .libmy {

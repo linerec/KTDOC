@@ -394,6 +394,39 @@ export async function getEventImages(eventId: number): Promise<EventImage[]> {
 }
 
 /**
+ * 여러 이벤트의 미리보기 이미지(이벤트당 상위 perEvent장)를 단일 쿼리로.
+ * 학생 아카이브처럼 여러 이벤트를 한 화면에 모을 때 N+1 라운드트립을 피한다.
+ * 반환: event_id → 이미지 배열(정렬 순).
+ */
+export async function getPreviewImagesForEvents(
+  eventIds: number[],
+  perEvent = 3
+): Promise<Map<number, EventImage[]>> {
+  if (eventIds.length === 0) return new Map();
+  const placeholders = eventIds.map(() => '?').join(', ');
+  const rows = await queryD1<EventImage>(
+    `SELECT id, event_id, image_url, r2_key, sort_order,
+            caption_ko, caption_en, width, height, size, created_at
+     FROM (
+       SELECT *, ROW_NUMBER() OVER (
+         PARTITION BY event_id ORDER BY sort_order ASC, id ASC
+       ) AS rn
+       FROM event_images
+       WHERE event_id IN (${placeholders})
+     )
+     WHERE rn <= ?`,
+    [...eventIds, perEvent]
+  );
+  const map = new Map<number, EventImage[]>();
+  for (const r of rows) {
+    const list = map.get(r.event_id) ?? [];
+    list.push(r);
+    map.set(r.event_id, list);
+  }
+  return map;
+}
+
+/**
  * 이벤트 이미지 페이지네이션 조회
  * 한 이벤트에 사진이 수백~수천 장이어도 페이지 단위로만 로드한다.
  * publishedOnly=true 이면 비공개 이벤트의 이미지는 노출하지 않는다(공개 API용).
