@@ -24,6 +24,8 @@ interface PageProps {
     year?: string;
     category?: string;
     search?: string;
+    /** '1'이면 학생 본인이 체크인한 이벤트만 모아 보기 */
+    mine?: string;
   }>;
 }
 
@@ -62,9 +64,16 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   ]);
 
   const { events, total, years } = eventsResult;
-  const grouped = groupByYear(events);
+
+  // 체크인한 것만 모아 보기 (학생 전용)
+  const mineOnly = canCheckIn && params.mine === '1';
+  const checkedInCount = canCheckIn ? events.filter((e) => checkedInIds.has(e.id)).length : 0;
+  const displayEvents = mineOnly ? events.filter((e) => checkedInIds.has(e.id)) : events;
+
+  const grouped = groupByYear(displayEvents);
   const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
-  const hasFilters = !!(params.year || params.category || params.search);
+  const hasFilters = !!(params.year || params.category || params.search || mineOnly);
+  const displayCount = mineOnly ? displayEvents.length : total;
 
   return (
     <div className="admin-page">
@@ -116,17 +125,38 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
               초기화
             </Link>
           )}
+
+          {canCheckIn && (
+            <Link
+              href={mineOnly ? '/admin/library' : '/admin/library?mine=1'}
+              className={`admin-btn admin-btn-sm ${mineOnly ? '' : 'admin-btn-outline'}`}
+            >
+              {mineOnly ? '전체 보기' : `✓ 체크인한 것만 (${checkedInCount})`}
+            </Link>
+          )}
+
+          {canCheckIn && (
+            <Link href="/admin/library/archive" className="admin-btn admin-btn-sm admin-btn-outline">
+              내 참여 아카이브 →
+            </Link>
+          )}
         </form>
 
         <div className="admin-filter-info">
-          {canCheckIn ? '이벤트' : '공개된 이벤트'} {total}개
+          {mineOnly ? '체크인한 이벤트' : canCheckIn ? '이벤트' : '공개된 이벤트'} {displayCount}개
         </div>
       </div>
 
       {/* 결과 */}
-      {events.length === 0 ? (
+      {displayEvents.length === 0 ? (
         <div className="admin-empty-state">
-          <p>{hasFilters ? '조건에 맞는 공연 · 갤러리가 없습니다.' : '아직 공개된 공연 · 갤러리가 없습니다.'}</p>
+          <p>
+            {mineOnly
+              ? '아직 체크인한 이벤트가 없습니다. 참여한 공연·이벤트에 체크인해 보세요.'
+              : hasFilters
+                ? '조건에 맞는 공연 · 갤러리가 없습니다.'
+                : '아직 공개된 공연 · 갤러리가 없습니다.'}
+          </p>
         </div>
       ) : (
         <div className="library-content">
@@ -138,6 +168,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                   const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
                   // 비공개(미공개) 이벤트는 공개 상세 페이지가 없으므로 링크하지 않고 배지로 표시한다.
                   const isDraft = event.is_published === 0;
+                  const isChecked = canCheckIn && checkedInIds.has(event.id);
                   const inner = (
                     <>
                       <div className="library-card-thumb">
@@ -147,6 +178,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                         ) : (
                           <span className="library-card-thumb-empty">이미지 없음</span>
                         )}
+                        {isChecked && <span className="library-card-checked-flag">✓ 참여함</span>}
                       </div>
                       <div className="library-card-body">
                         <span className="library-card-meta">
@@ -161,7 +193,10 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                     </>
                   );
                   return (
-                    <div key={event.id} className="library-card">
+                    <div
+                      key={event.id}
+                      className={`library-card${isChecked ? ' is-checked' : ''}`}
+                    >
                       {isDraft ? (
                         <div className="library-card-link library-card-link--static">{inner}</div>
                       ) : (
