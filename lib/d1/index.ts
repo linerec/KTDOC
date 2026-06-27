@@ -74,6 +74,8 @@ export {
   getUserCheckedInEventIds,
   getUserCheckins,
   getEventCheckins,
+  getEventsWithParticipantCounts,
+  getCheckinsForEvents,
   getCheckinCountsByEvent,
   getCheckinCountsByUser,
 } from './checkins';

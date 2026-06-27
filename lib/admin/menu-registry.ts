@@ -30,6 +30,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 내 사진 제출: 학생·학부모가 본인 사진을 올리면 보관함으로 들어가 운영진 검토 후 공개된다.
   { key: 'library.my', href: '/admin/library/my', label: '내 사진 · 제출', iconKey: 'photo', parentKey: 'library', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   { key: 'members', href: '/admin/members', label: '회원 관리', iconKey: 'users', defaultRoles: ['teacher', 'admin'] },
+  // 참여 현황: 이벤트별 참가자 수·명단(체크인 집계). 운영진·관계자 검증용.
+  { key: 'participation', href: '/admin/participation', label: '참여 현황', iconKey: 'calendar', defaultRoles: ['teacher', 'admin'] },
   { key: 'profile', href: '/admin/profile', label: '내 프로필', iconKey: 'profile', defaultRoles: ['teacher', 'admin'] },
   // 권한 관리 툴: 관리자 전용 하드플로어(매트릭스로 자기 자신을 잠그는 사고 방지)
   { key: 'settings.permissions', href: '/admin/permissions', label: '권한 관리', iconKey: 'shield', requireRole: 'admin', fixed: true, defaultRoles: ['admin'] },

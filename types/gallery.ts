@@ -115,6 +115,16 @@ export interface CheckedInEvent extends EventWithCategory {
   checkin_status: CheckinStatus;
 }
 
+/** 참여도 검증(운영진)용: 이벤트 1개 + 참가자 수 */
+export interface EventParticipation {
+  event_id: number;
+  title_ko: string;
+  year: number;
+  event_date: string;
+  is_published: number;
+  participant_count: number;
+}
+
 export interface EventDetail extends EventWithCategory {
   images: EventImage[];
   /** 이벤트의 전체 이미지 수 (images는 페이지네이션된 첫 묶음일 수 있음) */

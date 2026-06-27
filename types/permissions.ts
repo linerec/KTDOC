@@ -23,6 +23,7 @@ export type MenuKey =
   | 'library.archive'
   | 'library.my'
   | 'members'
+  | 'participation'
   | 'profile'
   | 'settings.permissions';
 

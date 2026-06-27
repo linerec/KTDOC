@@ -12,7 +12,12 @@
  */
 
 import { queryD1, executeD1 } from './client';
-import type { CheckedInEvent, CheckinStatus, EventCheckin } from '@/types/gallery';
+import type {
+  CheckedInEvent,
+  CheckinStatus,
+  EventCheckin,
+  EventParticipation,
+} from '@/types/gallery';
 
 /**
  * 체크인(멱등). 이미 체크인돼 있으면 상태·메모만 갱신한다.
@@ -101,6 +106,33 @@ export async function getEventCheckins(eventId: number): Promise<EventCheckin[]>
   return queryD1<EventCheckin>(
     'SELECT * FROM event_checkins WHERE event_id = ? ORDER BY checked_in_at ASC',
     [eventId]
+  );
+}
+
+/**
+ * 참가 기록이 있는 이벤트 + 참가자 수 — 운영진 참여도 검증 개요.
+ * 체크인이 1건 이상인 이벤트만(행사일 내림차순).
+ */
+export async function getEventsWithParticipantCounts(): Promise<EventParticipation[]> {
+  return queryD1<EventParticipation>(
+    `SELECT e.id AS event_id, e.title_ko, e.year, e.event_date, e.is_published,
+            COUNT(ec.id) AS participant_count
+     FROM events e
+     JOIN event_checkins ec ON ec.event_id = e.id
+     GROUP BY e.id
+     ORDER BY e.event_date DESC, e.id DESC`
+  );
+}
+
+/** 여러 이벤트의 체크인(참가자) 행 — 참가자 명단 구성용(이름 해석은 호출부 MySQL). */
+export async function getCheckinsForEvents(eventIds: number[]): Promise<EventCheckin[]> {
+  if (eventIds.length === 0) return [];
+  const placeholders = eventIds.map(() => '?').join(', ');
+  return queryD1<EventCheckin>(
+    `SELECT * FROM event_checkins
+     WHERE event_id IN (${placeholders})
+     ORDER BY checked_in_at ASC`,
+    eventIds
   );
 }
 
