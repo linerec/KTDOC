@@ -18,6 +18,7 @@ const menuItems = [
     { keycode: 'header.classes', href: '/classes', hasDropdown: true },
     { keycode: 'header.performances', href: '/performances', hasDropdown: true },
     { keycode: 'header.gallery', href: '/gallery', hasDropdown: false },
+    { keycode: 'header.students', href: '/students', hasDropdown: false },
 ];
 
 export default function Header() {
