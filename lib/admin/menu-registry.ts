@@ -25,6 +25,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'gallery.categories', href: '/admin/gallery/categories', label: '이벤트 카테고리', iconKey: 'tag', parentKey: 'gallery', defaultRoles: ['admin'] },
   // 학생·학부모용 둘러보기(읽기 전용): 공개된 공연·갤러리를 검색·열람.
   { key: 'library', href: '/admin/library', label: '공연 · 갤러리 둘러보기', iconKey: 'compass', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
+  // 캘린더: 다가오는/지난 이벤트를 월별로 한눈에. 내가 참여하는 이벤트 강조.
+  { key: 'library.calendar', href: '/admin/library/calendar', label: '캘린더', iconKey: 'calendar', parentKey: 'library', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 내 참여 아카이브: 체크인한 이벤트를 연도별로 모아 보여준다(참여 이력·사진).
   { key: 'library.archive', href: '/admin/library/archive', label: '내 참여 아카이브', iconKey: 'gallery', parentKey: 'library', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 내 사진 제출: 학생·학부모가 본인 사진을 올리면 보관함으로 들어가 운영진 검토 후 공개된다.

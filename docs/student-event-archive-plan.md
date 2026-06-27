@@ -40,7 +40,8 @@
 - [x] **A. 이벤트 상세 참가자 명단** — `/admin/library/[id]`에 체크인 인원 수·이름 표시(`getEventCheckins`+`getUserNamesByIds`).
 - [x] **B. 이벤트 실행 정보** — events에 `location/location_url/call_time/start_time/end_time/prep_notes`(D1 migration 0012). EventForm 입력 + 상세 표시(장소+지도링크·시간·준비물). create/update API·lib 반영.
 - [x] **C. 참여 예정(RSVP) 맥락** — `event_date>=today`면 "다가오는 이벤트". 라벨 분기(참여 신청/✓참여 예정 vs 참여 체크인/✓참여함). CheckinButton `upcoming` prop. 둘러보기 카드에 "다가오는" 플래그.
-- [ ] **D. 캘린더 + E. 멤버 홈(다가오는/응답필요)** — 다음 후보.
+- [x] **D. 캘린더** — `/admin/library/calendar`(메뉴 `library.calendar`). 월별 격자, 날짜별 이벤트 칩, 내 참여=금색, 비공개=점선, 오늘 강조, 월 네비(?month=YYYY-MM), 범례. 커스텀(외부 라이브러리 없음).
+- [x] **E. 다가오는 우선(둘러보기)** — 학생 둘러보기를 [응답 필요 콜아웃] + [📅 다가오는 이벤트(오름차순, 체크인)] + [연도별 지난 이벤트]로 재구성. 카드 렌더 헬퍼화. 필터바에 📅 캘린더 링크. (mineOnly·비학생은 기존 동작.) Playwright 검증 완료.
 - [ ] **F. 학부모 자녀 대행 체크인** (student_guardians 활용).
 - [ ] **G. 멤버 톤(ADMIN→마이페이지) · H. 알림/리마인더 · I. 모바일/PWA**.
 

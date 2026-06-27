@@ -73,10 +73,86 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const checkedInCount = canCheckIn ? events.filter((e) => checkedInIds.has(e.id)).length : 0;
   const displayEvents = mineOnly ? events.filter((e) => checkedInIds.has(e.id)) : events;
 
-  const grouped = groupByYear(displayEvents);
+  // 학생 기본 보기는 "다가오는 이벤트 먼저" — 응답을 유도하고 실수를 줄인다.
+  const showUpcomingFirst = canCheckIn && !mineOnly;
+  const upcomingEvents = showUpcomingFirst
+    ? displayEvents
+        .filter((e) => e.event_date >= today)
+        .sort((a, b) => a.event_date.localeCompare(b.event_date))
+    : [];
+  const listEvents = showUpcomingFirst
+    ? displayEvents.filter((e) => e.event_date < today)
+    : displayEvents;
+  // 다가오는 이벤트 중 아직 응답(체크인) 안 한 수 = 할 일
+  const pendingCount = upcomingEvents.filter((e) => !checkedInIds.has(e.id)).length;
+
+  const grouped = groupByYear(listEvents);
   const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
   const hasFilters = !!(params.year || params.category || params.search || mineOnly);
   const displayCount = mineOnly ? displayEvents.length : total;
+
+  // 이벤트 카드 1장(둘러보기 공통). 다가오는 섹션과 연도 목록에서 함께 쓴다.
+  const eventCard = (event: EventWithCategory) => {
+    const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
+    const isDraft = event.is_published === 0;
+    const isChecked = canCheckIn && checkedInIds.has(event.id);
+    const isUpcoming = event.event_date >= today;
+    const inner = (
+      <>
+        <div className="library-card-thumb">
+          {thumb ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={thumb} alt={event.title_ko} loading="lazy" />
+          ) : (
+            <span className="library-card-thumb-empty">이미지 없음</span>
+          )}
+          {isChecked && (
+            <span className="library-card-checked-flag">
+              ✓ {isUpcoming ? '참여 예정' : '참여함'}
+            </span>
+          )}
+          {!isChecked && isUpcoming && (
+            <span className="library-card-upcoming-flag">다가오는</span>
+          )}
+        </div>
+        <div className="library-card-body">
+          <span className="library-card-meta">
+            {event.category_name_ko && (
+              <span className="library-card-category">{event.category_name_ko}</span>
+            )}
+            {isDraft && <span className="library-card-draft">비공개</span>}
+          </span>
+          <h3 className="library-card-title">{event.title_ko}</h3>
+          <p className="library-card-date">{event.event_date}</p>
+        </div>
+      </>
+    );
+    return (
+      <div key={event.id} className={`library-card${isChecked ? ' is-checked' : ''}`}>
+        {canCheckIn ? (
+          <Link href={`/admin/library/${event.id}`} className="library-card-link">
+            {inner}
+          </Link>
+        ) : (
+          <a
+            href={`/gallery/${event.year}/${event.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="library-card-link"
+          >
+            {inner}
+          </a>
+        )}
+        {canCheckIn && (
+          <CheckinButton
+            eventId={event.id}
+            initialCheckedIn={checkedInIds.has(event.id)}
+            upcoming={isUpcoming}
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="admin-page">
@@ -138,6 +214,10 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
             </Link>
           )}
 
+          <Link href="/admin/library/calendar" className="admin-btn admin-btn-sm admin-btn-outline">
+            📅 캘린더
+          </Link>
+
           {canCheckIn && (
             <Link href="/admin/library/archive" className="admin-btn admin-btn-sm admin-btn-outline">
               내 참여 아카이브 →
@@ -149,6 +229,14 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           {mineOnly ? '체크인한 이벤트' : canCheckIn ? '이벤트' : '공개된 이벤트'} {displayCount}개
         </div>
       </div>
+
+      {/* 응답 필요 알림 (다가오는 이벤트 중 미응답) */}
+      {showUpcomingFirst && pendingCount > 0 && (
+        <div className="admin-callout">
+          다가오는 이벤트 중 <strong>{pendingCount}개</strong>에 아직 참여 응답을 하지 않았습니다.
+          아래에서 참여 여부를 정해 주세요.
+        </div>
+      )}
 
       {/* 결과 */}
       {displayEvents.length === 0 ? (
@@ -163,78 +251,21 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
         </div>
       ) : (
         <div className="library-content">
+          {/* 다가오는 이벤트 (학생, 미필터 시) */}
+          {showUpcomingFirst && upcomingEvents.length > 0 && (
+            <section className="library-year library-upcoming">
+              <h2 className="library-year-title">다가오는 이벤트</h2>
+              <div className="library-grid">{upcomingEvents.map(eventCard)}</div>
+            </section>
+          )}
+
+          {/* 지난 이벤트(연도별) — 학생은 과거만, 그 외는 전체 */}
           {sortedYears.map((year) => (
             <section key={year} className="library-year">
-              <h2 className="library-year-title">{year}</h2>
-              <div className="library-grid">
-                {(grouped.get(year) ?? []).map((event) => {
-                  const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
-                  // 비공개(미공개) 이벤트는 공개 상세 페이지가 없으므로 링크하지 않고 배지로 표시한다.
-                  const isDraft = event.is_published === 0;
-                  const isChecked = canCheckIn && checkedInIds.has(event.id);
-                  const isUpcoming = event.event_date >= today;
-                  const inner = (
-                    <>
-                      <div className="library-card-thumb">
-                        {thumb ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={thumb} alt={event.title_ko} loading="lazy" />
-                        ) : (
-                          <span className="library-card-thumb-empty">이미지 없음</span>
-                        )}
-                        {isChecked && (
-                          <span className="library-card-checked-flag">
-                            ✓ {isUpcoming ? '참여 예정' : '참여함'}
-                          </span>
-                        )}
-                        {!isChecked && isUpcoming && (
-                          <span className="library-card-upcoming-flag">다가오는</span>
-                        )}
-                      </div>
-                      <div className="library-card-body">
-                        <span className="library-card-meta">
-                          {event.category_name_ko && (
-                            <span className="library-card-category">{event.category_name_ko}</span>
-                          )}
-                          {isDraft && <span className="library-card-draft">비공개</span>}
-                        </span>
-                        <h3 className="library-card-title">{event.title_ko}</h3>
-                        <p className="library-card-date">{event.event_date}</p>
-                      </div>
-                    </>
-                  );
-                  return (
-                    <div
-                      key={event.id}
-                      className={`library-card${isChecked ? ' is-checked' : ''}`}
-                    >
-                      {canCheckIn ? (
-                        // 학생: 콘솔 안 상세로(비공개 이벤트도 열람 가능), 같은 탭
-                        <Link href={`/admin/library/${event.id}`} className="library-card-link">
-                          {inner}
-                        </Link>
-                      ) : (
-                        // 그 외: 공개 갤러리 상세(공개 이벤트만 노출되므로 항상 유효)
-                        <a
-                          href={`/gallery/${event.year}/${event.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="library-card-link"
-                        >
-                          {inner}
-                        </a>
-                      )}
-                      {canCheckIn && (
-                        <CheckinButton
-                          eventId={event.id}
-                          initialCheckedIn={checkedInIds.has(event.id)}
-                          upcoming={isUpcoming}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <h2 className="library-year-title">
+                {showUpcomingFirst ? `${year} · 지난 이벤트` : `${year}`}
+              </h2>
+              <div className="library-grid">{(grouped.get(year) ?? []).map(eventCard)}</div>
             </section>
           ))}
         </div>
