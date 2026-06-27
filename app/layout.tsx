@@ -1,6 +1,7 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Noto_Serif_KR, Outfit } from 'next/font/google';
 import Providers from '@/components/Providers';
+import PWARegister from '@/components/PWARegister';
 import { getSetting, SETTING_HEADER_BACKGROUND } from '@/lib/d1';
 import { parseHeaderBackground, toHeaderCssVars, DEFAULT_HEADER_BACKGROUND } from '@/lib/headerBackground';
 import './globals.css';
@@ -81,6 +82,18 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  appleWebApp: {
+    capable: true,
+    title: 'KTDOC',
+    statusBarStyle: 'black-translucent',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0a0a0a',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default async function RootLayout({
@@ -125,6 +138,7 @@ export default async function RootLayout({
           <div className="site-wrapper">
             {children}
           </div>
+          <PWARegister />
         </Providers>
       </body>
     </html>

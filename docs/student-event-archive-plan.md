@@ -45,7 +45,9 @@
 - [x] **F. 학부모 자녀 대행 체크인** — `student_guardians`로 보호자 검증. API에 `forUserId`(자녀) + `isGuardianOf` 검증. 이벤트 상세에 "자녀 참여 체크인"(ParentCheckin, 자녀별 토글). 멤버(학생·학부모)는 둘러보기/캘린더에서 전체 이벤트 + 콘솔 상세 링크. 체크인은 자녀 id로 기록(Playwright+DB 검증).
 - [x] **G. 멤버 톤** — 원생·학부모는 사이드바/모바일 헤더 부제 "관리 콘솔"→"마이페이지"(AdminShell `consoleLabel` prop, layout에서 역할별), 공개 헤더 진입 버튼 "Admin"→"마이페이지".
 - [x] **H. 알림/리마인더** — D-1 이메일 리마인더. `lib/mail.ts`(공유 nodemailer), `/api/cron/event-reminders`(내일 이벤트→참가자+보호자에게 일정·장소·집합·준비물 BCC 발송, CRON_SECRET 인증), `vercel.json` 매일 13:00 UTC. 로직 검증(수신자 집계 OK). ⚠️ 실제 발송은 Gmail 앱비번 만료(535)로 실패 — **운영 env에 GMAIL_APP_PASSWORD 갱신 + CRON_SECRET 설정 필요**(앱 전체 메일 공통 이슈).
-- [ ] **I. 모바일/PWA**.
+- [x] **I. 모바일/PWA** — `app/manifest.ts`(standalone·theme #0a0a0a), `public/icon.svg`(브랜드 SVG, 모든 크기), `public/sw.js`(네트워크 우선·/api·/admin 제외, 설치 가능성), `components/PWARegister`(프로덕션만 등록), layout viewport(themeColor·viewportFit)·appleWebApp. 모바일(390px) 둘러보기·캘린더 반응형 확인. (iOS는 SVG 터치아이콘 제약 — 추후 PNG 추가 여지.)
+
+**→ 멤버 앱 로드맵 A~I 전부 완료·배포.** 운영 메일 발송은 GMAIL_APP_PASSWORD 갱신 필요(H 참고).
 
 브랜치: `feature/event-info-rsvp` (A+B+C). migration 0012는 원격 D1 적용 완료(additive).
 
