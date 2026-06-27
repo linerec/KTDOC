@@ -1811,6 +1811,37 @@ ul {
   transform: none;
 }
 
+/* 개발 서버 전용 빠른 로그인 (역할별) */
+.auth-dev {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(212, 160, 23, 0.4);
+}
+.auth-dev-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-color, #d4a017);
+}
+.auth-dev-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.auth-button-dev {
+  margin-top: 0;
+  padding: 11px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.85rem;
+  background: var(--accent-color, #d4a017);
+  color: #0a0a0a;
+}
+.auth-button-dev:hover:not(:disabled) {
+  background: #b88a12;
+}
+
 .auth-link {
   text-align: center;
   margin-top: 24px;
