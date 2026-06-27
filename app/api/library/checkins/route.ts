@@ -5,7 +5,8 @@
  * DELETE /api/library/checkins {eventId} - 체크아웃(본인 것만)
  *
  * 보안: 로그인 + 정회원(active)만. 체크인/체크아웃 대상 user_id는 항상 본인으로 강제한다
- *   (남의 참여를 조작할 수 없다). 체크인은 공개(published) 이벤트에만 허용한다.
+ *   (남의 참여를 조작할 수 없다). 체크인은 존재하는 이벤트면 공개·비공개 모두 허용한다
+ *   (학생이 참여한 이벤트가 아직 아카이브에 공개되지 않았어도 체크인 가능).
  */
 
 import { NextResponse } from 'next/server';
@@ -66,17 +67,13 @@ export async function POST(request: Request) {
       );
     }
 
+    // 비공개(미공개) 이벤트도 학생이 참여 체크인할 수 있어야 한다(아카이브 공개 여부와 무관).
+    // 존재 여부만 검증한다.
     const state = await getCheckinEventState(eventId);
     if (!state.exists) {
       return NextResponse.json(
         { success: false, error: '이벤트를 찾을 수 없습니다.' },
         { status: 404 }
-      );
-    }
-    if (!state.published) {
-      return NextResponse.json(
-        { success: false, error: '공개된 이벤트에만 체크인할 수 있습니다.' },
-        { status: 409 }
       );
     }
 

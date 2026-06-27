@@ -87,14 +87,10 @@ export default async function AdminLibraryArchivePage() {
                       event.poster_url ||
                       strip[0]?.image_url ||
                       null;
-                    return (
-                      <a
-                        key={event.id}
-                        href={`/gallery/${event.year}/${event.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="library-card"
-                      >
+                    // 비공개(미공개) 이벤트는 공개 상세가 없어 링크하지 않고 배지로 표시
+                    const isDraft = event.is_published === 0;
+                    const inner = (
+                      <>
                         <div className="library-card-thumb">
                           {thumb ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -104,9 +100,12 @@ export default async function AdminLibraryArchivePage() {
                           )}
                         </div>
                         <div className="library-card-body">
-                          {event.category_name_ko && (
-                            <span className="library-card-category">{event.category_name_ko}</span>
-                          )}
+                          <span className="library-card-meta">
+                            {event.category_name_ko && (
+                              <span className="library-card-category">{event.category_name_ko}</span>
+                            )}
+                            {isDraft && <span className="library-card-draft">비공개</span>}
+                          </span>
                           <h3 className="library-card-title">{event.title_ko}</h3>
                           <p className="library-card-date">{event.event_date}</p>
                           <p className="archive-card-checkin">
@@ -121,6 +120,21 @@ export default async function AdminLibraryArchivePage() {
                             ))}
                           </div>
                         )}
+                      </>
+                    );
+                    return isDraft ? (
+                      <div key={event.id} className="library-card library-card--static">
+                        {inner}
+                      </div>
+                    ) : (
+                      <a
+                        key={event.id}
+                        href={`/gallery/${event.year}/${event.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="library-card"
+                      >
+                        {inner}
                       </a>
                     );
                   })}

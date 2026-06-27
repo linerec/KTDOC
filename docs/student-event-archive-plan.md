@@ -23,7 +23,7 @@
 ## 결정/진행 로그
 
 1. ✅ **공개 범위 = 동의(opt-in)** (사용자 결정 2026-06-27). 구현: `users.public_archive_consent`(migration 0011, MySQL, 기본 0). 학생이 **내 프로필**에서 토글 → `/students`는 `getActiveStudents`가 `consent=1`만 노출. 해제 시 즉시 제외. Playwright 검증 완료. 부수: `profile` 메뉴를 student·parent도 접근하도록 확장(레지스트리 default + menu_permissions의 profile/student·parent=1 갱신).
-2. ⏳ **체크인 대상**: 현재 공개(published) 이벤트만. 예정(upcoming) 포함은 미정.
+2. ✅ **체크인 대상 = 공개·비공개 모두** (사용자 결정 2026-06-27). 학생은 비공개(미공개) 이벤트에도 체크인 가능. 둘러보기는 학생에게 전체 이벤트 노출(`published:'all'`), 비공개 카드는 "비공개" 배지+공개 상세 링크 비활성. 그 외 역할은 공개 전용. API는 존재만 검증. Playwright 검증 완료(학생 비공개 체크인 OK, 학부모는 비공개 미노출).
 3. ✅ **공개 라우트** = `/students`.
 4. ⏳ **관계자 접근**: `/students`는 비로그인 공개. 이벤트별 참가 명단(`/admin/participation`)은 운영진 전용 — 외부 공유 방식은 미정.
 

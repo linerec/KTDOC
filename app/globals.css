@@ -5572,6 +5572,29 @@ ul {
   text-decoration: none;
   color: inherit;
 }
+/* 비공개(미공개) 이벤트 — 공개 상세가 없어 링크하지 않는 카드 */
+.library-card-link--static,
+.library-card--static {
+  cursor: default;
+}
+.library-card--static:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
+/* 카테고리 + 비공개 배지를 한 줄에 */
+.library-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.library-card-draft {
+  font-size: 0.66rem;
+  color: var(--secondary-color, #c4302b);
+  border: 1px solid rgba(196, 48, 43, 0.5);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
 /* 참여 체크인 토글 (학생용) — 카드 하단 */
 .library-checkin {
   padding: 0 16px 14px;

@@ -53,7 +53,9 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       category: params.category || undefined,
       search: params.search || undefined,
       limit: 100,
-      published: true, // 공개된 항목만 노출
+      // 학생은 비공개(미공개) 이벤트에도 체크인할 수 있어야 하므로 전체를 노출한다.
+      // 그 외 역할은 공개 아카이브만 둘러본다.
+      published: canCheckIn ? 'all' : true,
     }),
     getCategories(),
     canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
@@ -75,8 +77,9 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           </div>
           <h1 className="admin-title">공연 · 갤러리 둘러보기</h1>
           <p className="admin-subtitle">
-            공개된 공연과 갤러리를 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.
-            {canCheckIn && ' 본인이 참여한 공연은 카드 하단에서 체크인하면 내 아카이브에 모입니다.'}
+            {canCheckIn
+              ? '본인이 참여한 공연·이벤트에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개) 이벤트에도 체크인할 수 있습니다.'
+              : '공개된 공연과 갤러리를 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.'}
           </p>
         </div>
       </div>
@@ -115,7 +118,9 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           )}
         </form>
 
-        <div className="admin-filter-info">공개된 이벤트 {total}개</div>
+        <div className="admin-filter-info">
+          {canCheckIn ? '이벤트' : '공개된 이벤트'} {total}개
+        </div>
       </div>
 
       {/* 결과 */}
@@ -131,30 +136,44 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
               <div className="library-grid">
                 {(grouped.get(year) ?? []).map((event) => {
                   const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
-                  return (
-                    <div key={event.id} className="library-card">
-                      <a
-                        href={`/gallery/${event.year}/${event.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="library-card-link"
-                      >
-                        <div className="library-card-thumb">
-                          {thumb ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={thumb} alt={event.title_ko} loading="lazy" />
-                          ) : (
-                            <span className="library-card-thumb-empty">이미지 없음</span>
-                          )}
-                        </div>
-                        <div className="library-card-body">
+                  // 비공개(미공개) 이벤트는 공개 상세 페이지가 없으므로 링크하지 않고 배지로 표시한다.
+                  const isDraft = event.is_published === 0;
+                  const inner = (
+                    <>
+                      <div className="library-card-thumb">
+                        {thumb ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={thumb} alt={event.title_ko} loading="lazy" />
+                        ) : (
+                          <span className="library-card-thumb-empty">이미지 없음</span>
+                        )}
+                      </div>
+                      <div className="library-card-body">
+                        <span className="library-card-meta">
                           {event.category_name_ko && (
                             <span className="library-card-category">{event.category_name_ko}</span>
                           )}
-                          <h3 className="library-card-title">{event.title_ko}</h3>
-                          <p className="library-card-date">{event.event_date}</p>
-                        </div>
-                      </a>
+                          {isDraft && <span className="library-card-draft">비공개</span>}
+                        </span>
+                        <h3 className="library-card-title">{event.title_ko}</h3>
+                        <p className="library-card-date">{event.event_date}</p>
+                      </div>
+                    </>
+                  );
+                  return (
+                    <div key={event.id} className="library-card">
+                      {isDraft ? (
+                        <div className="library-card-link library-card-link--static">{inner}</div>
+                      ) : (
+                        <a
+                          href={`/gallery/${event.year}/${event.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="library-card-link"
+                        >
+                          {inner}
+                        </a>
+                      )}
                       {canCheckIn && (
                         <CheckinButton
                           eventId={event.id}
