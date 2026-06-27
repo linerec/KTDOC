@@ -9789,3 +9789,155 @@ ul {
     white-space: normal;
   }
 }
+
+/* ========================================
+   404 / Not Found — 한지에 스민 먹 위에서도 또렷한 안내 화면
+   글로벌 잉크 레이어(z-index:0) 위에 자체 비네트를 깔아 텍스트 가독성을 보장한다.
+   전역(app/not-found.tsx)·관리자(app/admin/not-found.tsx)가 공유한다.
+======================================== */
+.notfound {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: calc(var(--header-height) + 24px) 24px 80px;
+  color: var(--warm-ivory);
+}
+
+/* 중앙을 향해 어두워지는 비네트 — 밝은 텍스트가 먹 워시에 묻히지 않도록. */
+.notfound::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 55% at 50% 42%, rgba(9, 7, 5, 0.82), rgba(9, 7, 5, 0.5) 55%, rgba(9, 7, 5, 0) 100%);
+}
+
+.notfound-inner {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: notfoundRise 0.9s var(--ease-out-expo) both;
+}
+
+@keyframes notfoundRise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.notfound-code {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(5rem, 16vw, 9rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--warm-ivory);
+  text-shadow: 0 2px 40px rgba(224, 184, 79, 0.18);
+}
+
+.notfound-code b {
+  font-weight: 700;
+  color: var(--soft-gold);
+}
+
+.notfound-eyebrow {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(224, 184, 79, 0.72);
+}
+
+.notfound-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 4.5vw, 2rem);
+  color: var(--warm-ivory);
+}
+
+.notfound-text {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: rgba(246, 239, 226, 0.74);
+}
+
+.notfound-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.notfound .dancheong-divider {
+  margin: 4px 0 6px;
+}
+
+/* 관리자 콘솔 내부(AdminShell 안)에서 뜨는 not-found — 셸이 이미 배경을 가지므로
+   풀스크린 비네트 대신 카드 톤으로 차분하게. */
+.admin-notfound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  min-height: 52vh;
+  padding: 40px 24px;
+}
+
+.admin-notfound-code {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(3.5rem, 9vw, 5.5rem);
+  line-height: 1;
+  color: var(--soft-gold);
+}
+
+.admin-notfound-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+  color: var(--warm-ivory);
+}
+
+.admin-notfound-text {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: rgba(246, 239, 226, 0.7);
+  max-width: 420px;
+}
+
+.admin-notfound-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .notfound {
+    padding: calc(var(--header-height) + 16px) 20px 64px;
+  }
+}
