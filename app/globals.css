@@ -5598,6 +5598,130 @@ ul {
   color: var(--text-muted);
 }
 
+/* ===== 연도별 수강생 아카이브 (공개 /students) ===== */
+.students-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #120c09 0%, var(--deep-umber) 42%, #0a0a0a 100%);
+  padding-top: calc(var(--header-height) + 48px);
+}
+.students-container {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.students-hero {
+  padding: 56px 0 32px;
+  text-align: center;
+}
+.students-kicker {
+  font-size: 0.76rem;
+  letter-spacing: 0.22em;
+  color: var(--soft-gold);
+  margin: 0 0 12px;
+}
+.students-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--warm-ivory);
+  margin: 0 0 16px;
+}
+.students-lede {
+  max-width: 640px;
+  margin: 0 auto;
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+.students-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 28px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.students-stats strong {
+  color: var(--soft-gold);
+  font-size: 1.15rem;
+  margin-right: 4px;
+}
+.students-body {
+  padding: 24px 0 96px;
+}
+.students-year {
+  margin-bottom: 44px;
+}
+.students-year-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(224, 184, 79, 0.22);
+}
+.students-year-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--soft-gold);
+  margin: 0;
+}
+.students-year-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.students-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.student-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+.student-chip-name {
+  font-size: 0.95rem;
+  color: var(--warm-ivory);
+  font-weight: 500;
+}
+.student-chip-count {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--soft-gold);
+  background: rgba(224, 184, 79, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.students-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 60px 0;
+}
+.students-note {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.students-note-link {
+  color: var(--soft-gold);
+}
+
 /* 내 사진 · 제출 (학생용) */
 .libmy {
   display: flex;

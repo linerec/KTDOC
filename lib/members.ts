@@ -280,6 +280,25 @@ export async function getStudentOptions(): Promise<
   );
 }
 
+/** 공개 연도별 수강생 페이지 한 줄(민감정보 제외 — 이름·입학년도만) */
+export interface PublicStudent {
+  id: string;
+  name: string | null;
+  enrollment_year: number | null;
+}
+
+/**
+ * 공개 수강생 명단 — 정회원(active) 원생만. 이메일·전화 등 민감정보는 반환하지 않는다.
+ * 연도별 페이지(`/students`)에서 입학년도로 묶어 보여준다. id는 참여도 집계용(미표시).
+ */
+export async function getActiveStudents(): Promise<PublicStudent[]> {
+  return query<PublicStudent[]>(
+    `SELECT id, name, enrollment_year FROM users
+     WHERE role = 'student' AND status = 'active'
+     ORDER BY enrollment_year DESC, name ASC`
+  );
+}
+
 /**
  * 여러 회원 id를 이름으로 일괄 해석한다(id → name).
  * 갤러리 사진의 제출자(uploaded_by, D1)를 운영진 화면에 이름으로 표시할 때 사용.
