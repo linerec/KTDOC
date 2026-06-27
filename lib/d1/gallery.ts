@@ -268,8 +268,9 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
     `INSERT INTO events (
       slug, year, event_date, title_ko, title_en,
       description_ko, description_en, category_id,
-      is_published, is_featured, is_signature, signature_order
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      is_published, is_featured, is_signature, signature_order,
+      location, location_url, call_time, start_time, end_time, prep_notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       year,
@@ -283,6 +284,12 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       input.is_featured ? 1 : 0,
       input.is_signature ? 1 : 0,
       input.signature_order ?? 0,
+      input.location || null,
+      input.location_url || null,
+      input.call_time || null,
+      input.start_time || null,
+      input.end_time || null,
+      input.prep_notes || null,
     ]
   );
 
@@ -357,6 +364,31 @@ export async function updateEvent(
   if (input.signature_order !== undefined) {
     updates.push('signature_order = ?');
     params.push(input.signature_order);
+  }
+  // 실행 정보(빈 문자열은 null로 저장)
+  if (input.location !== undefined) {
+    updates.push('location = ?');
+    params.push(input.location || null);
+  }
+  if (input.location_url !== undefined) {
+    updates.push('location_url = ?');
+    params.push(input.location_url || null);
+  }
+  if (input.call_time !== undefined) {
+    updates.push('call_time = ?');
+    params.push(input.call_time || null);
+  }
+  if (input.start_time !== undefined) {
+    updates.push('start_time = ?');
+    params.push(input.start_time || null);
+  }
+  if (input.end_time !== undefined) {
+    updates.push('end_time = ?');
+    params.push(input.end_time || null);
+  }
+  if (input.prep_notes !== undefined) {
+    updates.push('prep_notes = ?');
+    params.push(input.prep_notes || null);
   }
 
   if (updates.length === 0) return;

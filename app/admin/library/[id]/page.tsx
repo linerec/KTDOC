@@ -12,7 +12,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEventById, isCheckedIn } from '@/lib/d1';
+import { getEventById, isCheckedIn, getEventCheckins } from '@/lib/d1';
+import { getUserNamesByIds } from '@/lib/members';
 import { formatEventDate } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import ImageGallery from '@/components/gallery/ImageGallery';
@@ -43,9 +44,26 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   const canCheckIn = role === 'student' && !!userId;
   const checkedIn = canCheckIn ? await isCheckedIn(eventId, userId) : false;
 
+  // 다가오는 이벤트 여부(event_date는 'YYYY-MM-DD' 문자열이라 사전식 비교로 충분)
+  const today = new Date().toISOString().slice(0, 10);
+  const isUpcoming = event.event_date >= today;
+
+  // 참가자(체크인 인원) — 이름은 MySQL에서 해석
+  const checkins = await getEventCheckins(eventId);
+  const participantNames = await getUserNamesByIds(checkins.map((c) => c.user_id));
+
   const isDraft = event.is_published === 0;
   const hasContent =
     !!event.description_ko || event.images.length > 0 || event.videos.length > 0;
+
+  // 실행 정보가 하나라도 있는지
+  const hasLogistics =
+    !!event.location ||
+    !!event.location_url ||
+    !!event.call_time ||
+    !!event.start_time ||
+    !!event.end_time ||
+    !!event.prep_notes;
 
   return (
     <div className="admin-page">
@@ -58,6 +76,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
           </div>
           <h1 className="admin-title">{event.title_ko}</h1>
           <p className="admin-subtitle library-detail-sub">
+            {isUpcoming && <span className="library-upcoming-badge">다가오는 이벤트</span>}
             {event.category_name_ko && <span>{event.category_name_ko}</span>}
             <span>{formatEventDate(event.event_date, 'ko')}</span>
             {isDraft && <span className="library-card-draft">비공개</span>}
@@ -67,9 +86,69 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
 
       {canCheckIn && (
         <div className="library-detail-checkin">
-          <CheckinButton eventId={eventId} initialCheckedIn={checkedIn} />
+          <CheckinButton eventId={eventId} initialCheckedIn={checkedIn} upcoming={isUpcoming} />
         </div>
       )}
+
+      {/* 실행 정보 — 어디서·언제·무엇을 준비 (다가오는 이벤트에서 특히 중요) */}
+      {hasLogistics && (
+        <section className="event-logistics">
+          {(event.location || event.location_url) && (
+            <div className="event-logistics-item">
+              <span className="event-logistics-label">장소</span>
+              <span className="event-logistics-value">
+                {event.location || '장소 안내'}
+                {event.location_url && (
+                  <a
+                    href={event.location_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="event-logistics-map"
+                  >
+                    지도 보기 ↗
+                  </a>
+                )}
+              </span>
+            </div>
+          )}
+          {(event.call_time || event.start_time || event.end_time) && (
+            <div className="event-logistics-item">
+              <span className="event-logistics-label">시간</span>
+              <span className="event-logistics-value">
+                {event.call_time && <>집합 {event.call_time}</>}
+                {event.start_time && <> · 시작 {event.start_time}</>}
+                {event.end_time && <> · 종료 {event.end_time}</>}
+              </span>
+            </div>
+          )}
+          {event.prep_notes && (
+            <div className="event-logistics-item">
+              <span className="event-logistics-label">준비물 · 안내</span>
+              <span className="event-logistics-value event-logistics-prep">{event.prep_notes}</span>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 참가자(체크인 인원) */}
+      <section className="event-participants">
+        <h2 className="library-detail-section-title">
+          참가자 <span className="event-participants-count">{checkins.length}</span>
+        </h2>
+        {checkins.length === 0 ? (
+          <p className="event-participants-empty">아직 체크인한 참가자가 없습니다.</p>
+        ) : (
+          <ul className="participation-people">
+            {checkins.map((c) => (
+              <li key={c.id} className="participation-person">
+                <span className="participation-person-name">
+                  {participantNames.get(c.user_id) || '이름 미상'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {event.description_ko && (
         <p className="library-detail-desc">{event.description_ko}</p>

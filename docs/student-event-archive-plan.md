@@ -33,6 +33,19 @@
 - **모아보기**: 둘러보기에 "✓ 체크인한 것만(n)" 필터(`?mine=1`) + "내 참여 아카이브 →" 링크. 풍부한 모아보기는 기존 `/admin/library/archive`(사진 포함).
 - **콘솔 이벤트 상세** `/admin/library/[id]` (읽기 전용): 둘러보기·아카이브 카드 클릭 시 콘솔 안에서 열림. **비공개 이벤트도 열람 가능**(공개 `/gallery` 상세는 404라). 설명·사진(ImageGallery 재사용)·영상(VideoList 재사용)·체크인 토글. 학생 카드는 이 상세로, 그 외 역할은 공개 `/gallery` 상세로 연결.
 
+## 멤버 앱 로드맵 (2026-06-27 방향 전환)
+
+목표: "지난 공연 아카이브"가 아니라 **멤버가 다가오는 이벤트 참여를 관리하는 능동형 앱**.
+
+- [x] **A. 이벤트 상세 참가자 명단** — `/admin/library/[id]`에 체크인 인원 수·이름 표시(`getEventCheckins`+`getUserNamesByIds`).
+- [x] **B. 이벤트 실행 정보** — events에 `location/location_url/call_time/start_time/end_time/prep_notes`(D1 migration 0012). EventForm 입력 + 상세 표시(장소+지도링크·시간·준비물). create/update API·lib 반영.
+- [x] **C. 참여 예정(RSVP) 맥락** — `event_date>=today`면 "다가오는 이벤트". 라벨 분기(참여 신청/✓참여 예정 vs 참여 체크인/✓참여함). CheckinButton `upcoming` prop. 둘러보기 카드에 "다가오는" 플래그.
+- [ ] **D. 캘린더 + E. 멤버 홈(다가오는/응답필요)** — 다음 후보.
+- [ ] **F. 학부모 자녀 대행 체크인** (student_guardians 활용).
+- [ ] **G. 멤버 톤(ADMIN→마이페이지) · H. 알림/리마인더 · I. 모바일/PWA**.
+
+브랜치: `feature/event-info-rsvp` (A+B+C). migration 0012는 원격 D1 적용 완료(additive).
+
 ## 비고
 - 작업은 **feature 브랜치에서만**. 절반 상태가 운영에 배포되지 않도록 main push 보류(완성·검토 후 병합).
 - 단, D1 스키마(0010)는 additive 새 테이블이라 원격 적용해도 무해(미배포 코드가 안 쓰면 그만).

@@ -5,6 +5,8 @@ import { useState } from 'react';
 interface CheckinButtonProps {
   eventId: number;
   initialCheckedIn: boolean;
+  /** 다가오는 이벤트면 "참여 예정", 지난 이벤트면 "참여함"으로 맥락 라벨 */
+  upcoming?: boolean;
 }
 
 /**
@@ -12,7 +14,7 @@ interface CheckinButtonProps {
  * 둘러보기 카드 하단에서 본인 참여 여부를 표시·전환한다.
  * 체크인 = POST, 체크아웃 = DELETE (/api/library/checkins). 대상은 서버가 본인으로 강제.
  */
-export default function CheckinButton({ eventId, initialCheckedIn }: CheckinButtonProps) {
+export default function CheckinButton({ eventId, initialCheckedIn, upcoming = false }: CheckinButtonProps) {
   const [checkedIn, setCheckedIn] = useState(initialCheckedIn);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +49,15 @@ export default function CheckinButton({ eventId, initialCheckedIn }: CheckinButt
         disabled={busy}
         aria-pressed={checkedIn}
       >
-        {busy ? '처리 중…' : checkedIn ? '✓ 참여함 · 체크인 취소' : '참여 체크인'}
+        {busy
+          ? '처리 중…'
+          : checkedIn
+            ? upcoming
+              ? '✓ 참여 예정 · 취소'
+              : '✓ 참여함 · 체크인 취소'
+            : upcoming
+              ? '참여 신청'
+              : '참여 체크인'}
       </button>
       {error && <p className="library-checkin-error">{error}</p>}
     </div>

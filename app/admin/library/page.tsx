@@ -65,6 +65,9 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
 
   const { events, total, years } = eventsResult;
 
+  // 다가오는 이벤트 판정용 오늘 날짜(event_date는 'YYYY-MM-DD')
+  const today = new Date().toISOString().slice(0, 10);
+
   // 체크인한 것만 모아 보기 (학생 전용)
   const mineOnly = canCheckIn && params.mine === '1';
   const checkedInCount = canCheckIn ? events.filter((e) => checkedInIds.has(e.id)).length : 0;
@@ -169,6 +172,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                   // 비공개(미공개) 이벤트는 공개 상세 페이지가 없으므로 링크하지 않고 배지로 표시한다.
                   const isDraft = event.is_published === 0;
                   const isChecked = canCheckIn && checkedInIds.has(event.id);
+                  const isUpcoming = event.event_date >= today;
                   const inner = (
                     <>
                       <div className="library-card-thumb">
@@ -178,7 +182,14 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                         ) : (
                           <span className="library-card-thumb-empty">이미지 없음</span>
                         )}
-                        {isChecked && <span className="library-card-checked-flag">✓ 참여함</span>}
+                        {isChecked && (
+                          <span className="library-card-checked-flag">
+                            ✓ {isUpcoming ? '참여 예정' : '참여함'}
+                          </span>
+                        )}
+                        {!isChecked && isUpcoming && (
+                          <span className="library-card-upcoming-flag">다가오는</span>
+                        )}
                       </div>
                       <div className="library-card-body">
                         <span className="library-card-meta">
@@ -217,6 +228,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                         <CheckinButton
                           eventId={event.id}
                           initialCheckedIn={checkedInIds.has(event.id)}
+                          upcoming={isUpcoming}
                         />
                       )}
                     </div>

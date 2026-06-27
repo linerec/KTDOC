@@ -107,6 +107,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.is_featured !== undefined) input.is_featured = body.is_featured;
     if (body.is_signature !== undefined) input.is_signature = body.is_signature;
     if (body.signature_order !== undefined) input.signature_order = body.signature_order;
+    if (body.location !== undefined) input.location = body.location;
+    if (body.location_url !== undefined) input.location_url = body.location_url;
+    if (body.call_time !== undefined) input.call_time = body.call_time;
+    if (body.start_time !== undefined) input.start_time = body.start_time;
+    if (body.end_time !== undefined) input.end_time = body.end_time;
+    if (body.prep_notes !== undefined) input.prep_notes = body.prep_notes;
 
     // Handle poster replacement - delete old R2 file
     if (input.poster_r2_key && event.poster_r2_key && event.poster_r2_key !== input.poster_r2_key) {

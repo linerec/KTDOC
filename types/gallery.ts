@@ -29,6 +29,13 @@ export interface Event {
   is_signature: number;
   signature_order: number;
   view_count: number;
+  // 실행 정보(멤버가 "어디서·언제·무엇을 준비"를 바로 파악). 모두 nullable.
+  location: string | null;
+  location_url: string | null;
+  call_time: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  prep_notes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -191,6 +198,13 @@ export interface CreateEventInput {
   is_signature?: boolean;
   signature_order?: number;
   slug?: string;
+  // 실행 정보
+  location?: string;
+  location_url?: string;
+  call_time?: string;
+  start_time?: string;
+  end_time?: string;
+  prep_notes?: string;
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {

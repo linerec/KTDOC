@@ -39,6 +39,13 @@ export default function EventForm({
     is_featured: event?.is_featured === 1,
     is_signature: event?.is_signature === 1,
     signature_order: event?.signature_order ?? 0,
+    // 실행 정보(위치·시간·준비물)
+    location: event?.location || '',
+    location_url: event?.location_url || '',
+    call_time: event?.call_time || '',
+    start_time: event?.start_time || '',
+    end_time: event?.end_time || '',
+    prep_notes: event?.prep_notes || '',
   });
 
   // Images and videos (managed separately)
@@ -77,6 +84,13 @@ export default function EventForm({
         is_featured: formData.is_featured,
         is_signature: formData.is_signature,
         signature_order: Number(formData.signature_order) || 0,
+        // 빈 문자열을 보내면 서버가 null로 저장(값 지우기 지원)
+        location: formData.location,
+        location_url: formData.location_url,
+        call_time: formData.call_time,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        prep_notes: formData.prep_notes,
       };
 
       const res = await fetch(url, {
@@ -184,6 +198,82 @@ export default function EventForm({
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* 실행 정보 — 멤버가 "어디서·언제·무엇을 준비"를 바로 파악 */}
+          <div className="admin-form-group">
+            <label htmlFor="location" className="admin-form-label">장소</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="예: 뉴저지 한인회관 대공연장"
+              className="admin-form-input"
+            />
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="location_url" className="admin-form-label">지도/길찾기 링크</label>
+            <input
+              type="url"
+              id="location_url"
+              name="location_url"
+              value={formData.location_url}
+              onChange={handleChange}
+              placeholder="https://maps.google.com/..."
+              className="admin-form-input"
+            />
+          </div>
+
+          <div className="admin-form-row">
+            <div className="admin-form-group">
+              <label htmlFor="call_time" className="admin-form-label">집합 시간</label>
+              <input
+                type="time"
+                id="call_time"
+                name="call_time"
+                value={formData.call_time}
+                onChange={handleChange}
+                className="admin-form-input"
+              />
+            </div>
+            <div className="admin-form-group">
+              <label htmlFor="start_time" className="admin-form-label">시작 시간</label>
+              <input
+                type="time"
+                id="start_time"
+                name="start_time"
+                value={formData.start_time}
+                onChange={handleChange}
+                className="admin-form-input"
+              />
+            </div>
+            <div className="admin-form-group">
+              <label htmlFor="end_time" className="admin-form-label">종료 시간</label>
+              <input
+                type="time"
+                id="end_time"
+                name="end_time"
+                value={formData.end_time}
+                onChange={handleChange}
+                className="admin-form-input"
+              />
+            </div>
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="prep_notes" className="admin-form-label">준비물 · 복장 · 안내</label>
+            <textarea
+              id="prep_notes"
+              name="prep_notes"
+              value={formData.prep_notes}
+              onChange={handleChange}
+              rows={3}
+              placeholder="예: 검정 치마저고리 지참, 머리끈, 도시락. 주차는 건물 뒤편."
+              className="admin-form-textarea"
+            />
           </div>
 
           <div className="admin-form-group">
