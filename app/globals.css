@@ -191,7 +191,8 @@ ul {
   width: 100%;
   z-index: var(--z-header);
   transition: background-color 0.3s ease, padding 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 15px 0 0;
+  /* standalone(PWA) + black-translucent 상태바에서 로고가 상태바 밑에 깔리지 않도록 안전영역 보정 */
+  padding: calc(15px + env(safe-area-inset-top)) 0 0;
 }
 
 #main-header.scrolled {
@@ -202,7 +203,7 @@ ul {
 
 /* 최상단(스크롤 전): 로고를 크게 노출하며 헤더 여백 확대 — 전 페이지 공통 */
 #main-header.logo-expanded {
-  padding-top: 30px;
+  padding-top: calc(30px + env(safe-area-inset-top));
 }
 
 .header-inner {
@@ -1983,7 +1984,7 @@ ul {
 /* Auth Responsive */
 @media (max-width: 768px) {
   #main-header {
-    padding: 12px 0;
+    padding: calc(12px + env(safe-area-inset-top)) 0 12px;
   }
 
   .header-inner {
@@ -2014,7 +2015,7 @@ ul {
   }
 
   #main-header.logo-expanded {
-    padding-top: 16px;
+    padding-top: calc(16px + env(safe-area-inset-top));
   }
 
   .header-auth {
@@ -4082,6 +4083,8 @@ ul {
     transform: translateX(-100%);
     transition: transform 0.26s var(--ease-out-quart);
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    /* 드로어 열렸을 때 브랜드/메뉴가 상태바 밑에 깔리지 않도록 */
+    padding-top: calc(22px + env(safe-area-inset-top));
   }
   .admin-shell.is-open .admin-sidebar {
     transform: none;
@@ -4110,8 +4113,9 @@ ul {
     position: sticky;
     top: 0;
     z-index: 900;
-    height: var(--admin-topbar-h, 56px);
-    padding: 0 14px;
+    /* standalone(PWA)에서 상태바가 상단바를 덮지 않도록 안전영역만큼 높이를 늘리고 아래로 민다 */
+    height: calc(var(--admin-topbar-h, 56px) + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 14px 0;
     background: rgba(10, 10, 10, 0.92);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid rgba(246, 239, 226, 0.08);
