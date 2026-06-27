@@ -1,0 +1,23 @@
+[
+  {
+    "role": "student",
+    "email": "student.test@ktdoc.org",
+    "password": "Test1234!",
+    "name": "테스트 원생",
+    "enrollmentYear": 2025
+  },
+  {
+    "role": "teacher",
+    "email": "teacher.test@ktdoc.org",
+    "password": "Test1234!",
+    "name": "테스트 선생님"
+  },
+  {
+    "role": "parent",
+    "email": "parent.test@ktdoc.org",
+    "password": "Test1234!",
+    "name": "테스트 학부모",
+    "childName": "테스트 원생",
+    "childEnrollmentYear": 2025
+  }
+]

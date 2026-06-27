@@ -5101,6 +5101,102 @@ ul {
   font-weight: 600;
 }
 
+/* 회원 관리 — 테스트 계정 게시 패널 (관리자 전용) */
+.admin-test-accounts {
+  margin: 0 0 20px;
+  padding: 0;
+  background: rgba(212, 160, 23, 0.08);
+  border: 1px solid rgba(212, 160, 23, 0.28);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-test-accounts > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 18px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  user-select: none;
+}
+
+.admin-test-accounts > summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-test-accounts > summary::before {
+  content: '▸';
+  margin-right: 8px;
+  color: var(--accent-color);
+}
+
+.admin-test-accounts[open] > summary::before {
+  content: '▾';
+}
+
+.admin-test-accounts-count {
+  display: inline-block;
+  min-width: 20px;
+  margin-left: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: #1a1a1a;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.admin-test-accounts-hint {
+  display: block;
+  margin-top: 6px;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-muted, #9a9a9a);
+}
+
+.admin-test-accounts-body {
+  padding: 0 18px 16px;
+  overflow-x: auto;
+}
+
+.admin-test-accounts-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-test-accounts-body th,
+.admin-test-accounts-body td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(212, 160, 23, 0.18);
+  white-space: nowrap;
+}
+
+.admin-test-accounts-body th {
+  font-weight: 600;
+  color: var(--text-muted, #9a9a9a);
+}
+
+.admin-test-accounts-body tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-test-accounts-body code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.82rem;
+  color: var(--accent-color);
+}
+
+.admin-test-accounts-note {
+  margin: 12px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted, #9a9a9a);
+}
+
 .admin-inline-error {
   margin-bottom: 16px;
   padding: 12px 16px;

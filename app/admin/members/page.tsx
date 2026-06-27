@@ -20,6 +20,7 @@ import {
   type MemberStatus,
 } from '@/lib/members';
 import MemberTable from '@/components/admin/members/MemberTable';
+import { TEST_ACCOUNTS } from '@/lib/testAccounts';
 
 export const metadata = {
   title: '회원 관리 | KTDOC Admin',
@@ -72,6 +73,42 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
           </p>
         </div>
       </div>
+
+      {canManageRoles && (
+        <details className="admin-test-accounts">
+          <summary>
+            테스트 계정 <span className="admin-test-accounts-count">{TEST_ACCOUNTS.length}</span>
+            <span className="admin-test-accounts-hint">
+              각 역할의 관리 콘솔을 점검하기 위한 고정 계정입니다. 비밀번호는 관리자에게만 표시됩니다.
+            </span>
+          </summary>
+          <div className="admin-test-accounts-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>역할</th>
+                  <th>이름</th>
+                  <th>이메일</th>
+                  <th>비밀번호</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TEST_ACCOUNTS.map((acc) => (
+                  <tr key={acc.email}>
+                    <td>{MEMBER_ROLE_LABELS[acc.role]}</td>
+                    <td>{acc.name}</td>
+                    <td><code>{acc.email}</code></td>
+                    <td><code>{acc.password}</code></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="admin-test-accounts-note">
+              계정을 생성하거나 비밀번호를 위 값으로 초기화하려면 <code>npm run seed:test</code>를 실행합니다.
+            </p>
+          </div>
+        </details>
+      )}
 
       {counts.pending > 0 && (
         <div className="admin-callout">

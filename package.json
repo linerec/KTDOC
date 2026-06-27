@@ -6,7 +6,8 @@
     "dev": "rm -f .next/dev/lock && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:test": "node scripts/seedTestAccounts.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
