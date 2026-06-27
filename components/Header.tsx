@@ -9,7 +9,7 @@ import { useBuilder } from '@/contexts/BuilderContext';
 import { useHeaderSettings } from '@/contexts/HeaderSettingsContext';
 import IntlObject from '@/components/common/IntlObject';
 import HeaderBackgroundEditor from '@/components/HeaderBackgroundEditor';
-import { isAdmin } from '@/lib/isAdmin';
+import { isAdmin, canEnterAdmin } from '@/lib/isAdmin';
 import { headerLogoAsset } from '@/lib/headerBackground';
 
 const menuItems = [
@@ -85,22 +85,25 @@ export default function Header() {
 
         if (session) {
             const admin = isAdmin(session);
+            // 관리 콘솔 진입: 권한(RBAC)이 있는 모든 역할(원생·학부모·선생님·관리자).
+            // 편집 모드는 사이트 콘텐츠 수정이라 관리자 전용으로 유지한다.
+            const canEnter = canEnterAdmin(session);
             return (
                 <div className="header-auth-actions">
+                    {canEnter && (
+                        <Link href="/admin" className="auth-btn auth-btn-dashboard" onClick={closeMenu}>
+                            Admin
+                        </Link>
+                    )}
                     {admin && (
-                        <>
-                            <Link href="/admin" className="auth-btn auth-btn-dashboard" onClick={closeMenu}>
-                                Admin
-                            </Link>
-                            <button
-                                type="button"
-                                className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
-                                onClick={handleEditModeToggle}
-                                title={isEditMode ? '편집 모드 끄기' : '편집 모드 켜기'}
-                            >
-                                {isEditMode ? 'Edit ON' : 'Edit'}
-                            </button>
-                        </>
+                        <button
+                            type="button"
+                            className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
+                            onClick={handleEditModeToggle}
+                            title={isEditMode ? '편집 모드 끄기' : '편집 모드 켜기'}
+                        >
+                            {isEditMode ? 'Edit ON' : 'Edit'}
+                        </button>
                     )}
                     <span className="auth-user">{session.user?.name || session.user?.email}</span>
                     <button type="button" className="auth-btn auth-btn-logout" onClick={handleSignOut}>

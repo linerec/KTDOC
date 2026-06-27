@@ -17,7 +17,7 @@ import { resolveMenuKey } from '@/lib/admin/resolveMenuKey';
 import {
   getPermMatrix,
   getAllowedMenus,
-  requireMenuAccess,
+  effectiveAllowedByKey,
 } from '@/lib/admin/permissions';
 import type { MemberRole } from '@/types/members';
 import AdminShell from '@/components/admin/AdminShell';
@@ -43,19 +43,23 @@ export default async function AdminLayout({
   const pathname = (await headers()).get('x-pathname');
   const menuKey = resolveMenuKey(pathname);
 
-  // 현재 경로 메뉴 접근 강제(권한 없으면 '/'로 리다이렉트).
-  // - 메뉴 키가 해석되면 매트릭스로 강제(중앙 방어).
-  // - 해석 불가(레지스트리 미등록 경로 등)면 fail-closed: 관리자만 통과,
-  //   그 외 역할은 차단한다(가드 누락된 신규 페이지가 노출되지 않도록).
-  if (menuKey) {
-    await requireMenuAccess(session, menuKey);
-  } else if (role !== 'admin') {
-    redirect('/');
-  }
-
-  // 네비 메뉴 계산(요청당 캐시된 매트릭스 재사용 → 추가 쿼리 없음)
+  // 매트릭스를 먼저 로드해 접근 판정과 네비 계산에 함께 쓴다(요청당 1회 캐시).
   const matrix = await getPermMatrix();
   const menus = getAllowedMenus(role, matrix);
+
+  // 현재 경로 메뉴 접근 강제(admin은 무조건 통과).
+  // - 권한이 없으면 '/'로 내치지 않고 이 역할이 볼 수 있는 "첫 허용 메뉴"로 보낸다.
+  //   콘솔 진입점(/admin=home) 권한이 없는 원생·학부모도 둘러보기 등 본인 메뉴로 착지한다.
+  // - 허용 메뉴가 하나도 없으면 '/'. menus[0]은 항상 접근 가능한 경로라 리다이렉트 루프가 없다.
+  // - 미매핑 경로(레지스트리 미등록)는 fail-closed: 관리자 외에는 접근 메뉴로 보낸다.
+  if (role !== 'admin') {
+    const allowed = menuKey
+      ? effectiveAllowedByKey(menuKey, role, matrix)
+      : false;
+    if (!allowed) {
+      redirect(menus[0]?.href ?? '/');
+    }
+  }
 
   const userName =
     session.user?.name || session.user?.email?.split('@')[0] || '관리자';

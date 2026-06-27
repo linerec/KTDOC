@@ -13,6 +13,7 @@
  * DB 의존성이 없어 서버/클라이언트 어디서나 import 가능하다.
  */
 
+import type { MemberRole } from '@/types/members';
 import type { MenuNode } from '@/types/permissions';
 
 export const MENU_REGISTRY: MenuNode[] = [
@@ -40,6 +41,19 @@ export const RETIRED_KEYS: readonly string[] = [];
 
 export function getMenuNode(key: string): MenuNode | undefined {
   return MENU_REGISTRY.find((m) => m.key === key);
+}
+
+/**
+ * 역할이 기본(defaultRoles/requireRole) 기준으로 접근 가능한 메뉴를 1개라도 갖는지.
+ *
+ * 클라이언트(헤더 ADMIN 버튼 노출)용 휴리스틱이다. DB 매트릭스 오버라이드는
+ * 반영하지 않으므로 최종 접근 가부는 서버(app/admin/layout.tsx)가 강제한다.
+ * 기본값상 admin·teacher·student·parent는 true, 레거시 'user'는 false.
+ */
+export function roleHasAnyMenu(role: MemberRole): boolean {
+  return MENU_REGISTRY.some((node) =>
+    node.requireRole ? role === node.requireRole : node.defaultRoles.includes(role)
+  );
 }
 
 /** 레지스트리에 존재하는 키 집합(고아 키 판정용) */
