@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Child {
   studentId: string;
@@ -20,6 +21,7 @@ interface ParentCheckinProps {
  * API에 forUserId(자녀 id)를 보내며, 서버가 보호자 관계를 검증한다.
  */
 export default function ParentCheckin({ eventId, childrenList, upcoming = false }: ParentCheckinProps) {
+  const router = useRouter();
   const [state, setState] = useState<Record<string, boolean>>(
     Object.fromEntries(childrenList.map((c) => [c.studentId, c.checkedIn]))
   );
@@ -39,6 +41,8 @@ export default function ParentCheckin({ eventId, childrenList, upcoming = false 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.error || '처리에 실패했습니다.');
       setState((s) => ({ ...s, [studentId]: !checked }));
+      // 참가자 목록(서버 렌더)을 즉시 반영
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : '처리에 실패했습니다.');
     } finally {

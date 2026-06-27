@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface CheckinButtonProps {
   eventId: number;
@@ -15,6 +16,7 @@ interface CheckinButtonProps {
  * 체크인 = POST, 체크아웃 = DELETE (/api/library/checkins). 대상은 서버가 본인으로 강제.
  */
 export default function CheckinButton({ eventId, initialCheckedIn, upcoming = false }: CheckinButtonProps) {
+  const router = useRouter();
   const [checkedIn, setCheckedIn] = useState(initialCheckedIn);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +35,8 @@ export default function CheckinButton({ eventId, initialCheckedIn, upcoming = fa
         throw new Error(data.error || '처리에 실패했습니다.');
       }
       setCheckedIn(!checkedIn);
+      // 같은 페이지의 참가자 목록(서버 렌더)을 즉시 다시 불러와 반영한다.
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : '처리에 실패했습니다.');
     } finally {
