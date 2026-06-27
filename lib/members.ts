@@ -313,6 +313,34 @@ export async function setPublicArchiveConsent(
   ]);
 }
 
+/** 학부모의 (연결 확정된) 자녀 목록 — 대행 체크인 대상. student_id 미해결 자녀는 제외. */
+export async function getGuardianChildren(
+  guardianId: string
+): Promise<{ studentId: string; studentName: string | null }[]> {
+  const rows = await query<{ student_id: string; student_name: string | null }[]>(
+    `SELECT sg.student_id, s.name AS student_name
+     FROM student_guardians sg
+     JOIN users s ON s.id = sg.student_id
+     WHERE sg.guardian_id = ? AND sg.student_id IS NOT NULL
+     ORDER BY s.name ASC`,
+    [guardianId]
+  );
+  return rows.map((r) => ({ studentId: r.student_id, studentName: r.student_name }));
+}
+
+/** guardianId가 studentId의 보호자(연결 확정)인지 — 대행 체크인 권한 검증. */
+export async function isGuardianOf(
+  guardianId: string,
+  studentId: string
+): Promise<boolean> {
+  const rows = await query<{ one: number }[]>(
+    `SELECT 1 AS one FROM student_guardians
+     WHERE guardian_id = ? AND student_id = ? LIMIT 1`,
+    [guardianId, studentId]
+  );
+  return rows.length > 0;
+}
+
 /**
  * 여러 회원 id를 이름으로 일괄 해석한다(id → name).
  * 갤러리 사진의 제출자(uploaded_by, D1)를 운영진 화면에 이름으로 표시할 때 사용.

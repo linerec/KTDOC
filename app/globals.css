@@ -5886,6 +5886,37 @@ ul {
   font-size: 0.74rem;
   color: var(--secondary-color, #d12f27);
 }
+/* 학부모 대행 체크인 (이벤트 상세) */
+.parent-checkin {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 460px;
+}
+.parent-checkin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+.parent-checkin-name {
+  font-size: 0.92rem;
+  color: var(--warm-ivory, #f6efe2);
+  font-weight: 500;
+}
+.parent-checkin-row .library-checkin-btn {
+  width: auto;
+  min-width: 132px;
+}
+.parent-checkin-empty {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
 /* 내 참여 아카이브 — 체크인 메타 + 사진 미리보기 스트립 */
 .archive-card-checkin {
   margin: 2px 0 0;

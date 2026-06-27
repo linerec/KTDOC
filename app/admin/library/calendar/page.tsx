@@ -44,13 +44,14 @@ export default async function AdminLibraryCalendarPage({ searchParams }: PagePro
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
   const canCheckIn = role === 'student' && !!userId;
+  const memberView = (role === 'student' || role === 'parent') && !!userId;
 
   const { month: monthParam } = await searchParams;
   const { year, month } = parseMonth(monthParam);
   const monthStr = ymd(year, month);
 
   const [eventsResult, checkedInIds] = await Promise.all([
-    getEvents({ limit: 500, published: canCheckIn ? 'all' : true }),
+    getEvents({ limit: 500, published: memberView ? 'all' : true }),
     canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
   ]);
 

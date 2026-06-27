@@ -1,12 +1,13 @@
 /**
- * 학생 이벤트 체크인 API
- * GET    /api/library/checkins        - 내가 체크인한 이벤트 id 목록
- * POST   /api/library/checkins {eventId} - 체크인(공개 이벤트만)
- * DELETE /api/library/checkins {eventId} - 체크아웃(본인 것만)
+ * 이벤트 체크인 API
+ * GET    /api/library/checkins                     - 내가 체크인한 이벤트 id 목록
+ * POST   /api/library/checkins {eventId, forUserId?} - 체크인
+ * DELETE /api/library/checkins {eventId, forUserId?} - 체크아웃
  *
- * 보안: 로그인 + 정회원(active)만. 체크인/체크아웃 대상 user_id는 항상 본인으로 강제한다
- *   (남의 참여를 조작할 수 없다). 체크인은 존재하는 이벤트면 공개·비공개 모두 허용한다
- *   (학생이 참여한 이벤트가 아직 아카이브에 공개되지 않았어도 체크인 가능).
+ * 보안: 로그인 + 정회원(active)만. 기본 대상은 본인(user_id=세션).
+ *   forUserId가 주어지면 **학부모가 자녀를 대행**하는 경우만 허용한다 —
+ *   요청자가 forUserId(자녀)의 보호자(student_guardians 연결 확정)인지 서버에서 검증.
+ *   체크인은 존재하는 이벤트면 공개·비공개 모두 허용.
  */
 
 import { NextResponse } from 'next/server';
@@ -18,6 +19,7 @@ import {
   getCheckinEventState,
   getUserCheckedInEventIds,
 } from '@/lib/d1';
+import { isGuardianOf } from '@/lib/members';
 
 function unauthorized() {
   return NextResponse.json(
@@ -26,16 +28,40 @@ function unauthorized() {
   );
 }
 
-/** body 또는 쿼리스트링에서 eventId를 정수로 파싱 */
-async function readEventId(request: Request): Promise<number | null> {
+/** body 또는 쿼리스트링에서 eventId·forUserId 파싱 */
+async function readBody(
+  request: Request
+): Promise<{ eventId: number | null; forUserId: string | null }> {
   const { searchParams } = new URL(request.url);
-  let raw: unknown = searchParams.get('eventId');
-  if (raw === null) {
+  let rawEvent: unknown = searchParams.get('eventId');
+  let forUserId: string | null = searchParams.get('forUserId');
+  if (rawEvent === null) {
     const body = await request.json().catch(() => ({}));
-    raw = (body as { eventId?: unknown }).eventId;
+    rawEvent = (body as { eventId?: unknown }).eventId;
+    const f = (body as { forUserId?: unknown }).forUserId;
+    if (typeof f === 'string') forUserId = f;
   }
-  const id = Number(raw);
-  return Number.isInteger(id) && id > 0 ? id : null;
+  const id = Number(rawEvent);
+  return {
+    eventId: Number.isInteger(id) && id > 0 ? id : null,
+    forUserId: forUserId || null,
+  };
+}
+
+/**
+ * 체크인 대상 user_id를 정한다. forUserId가 본인이 아니면 보호자 관계를 검증한다.
+ * 반환: { userId } 성공 | { error, status } 거부.
+ */
+async function resolveTarget(
+  selfId: string,
+  forUserId: string | null
+): Promise<{ userId: string } | { error: string; status: number }> {
+  if (!forUserId || forUserId === selfId) return { userId: selfId };
+  const ok = await isGuardianOf(selfId, forUserId);
+  if (!ok) {
+    return { error: '본인 또는 연결된 자녀만 체크인할 수 있습니다.', status: 403 };
+  }
+  return { userId: forUserId };
 }
 
 export async function GET() {
@@ -59,7 +85,7 @@ export async function POST(request: Request) {
   if (!session?.user?.id || !isApproved(session)) return unauthorized();
 
   try {
-    const eventId = await readEventId(request);
+    const { eventId, forUserId } = await readBody(request);
     if (eventId === null) {
       return NextResponse.json(
         { success: false, error: '유효하지 않은 이벤트입니다.' },
@@ -67,8 +93,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // 비공개(미공개) 이벤트도 학생이 참여 체크인할 수 있어야 한다(아카이브 공개 여부와 무관).
-    // 존재 여부만 검증한다.
+    const target = await resolveTarget(session.user.id, forUserId);
+    if ('error' in target) {
+      return NextResponse.json({ success: false, error: target.error }, { status: target.status });
+    }
+
+    // 비공개(미공개) 이벤트도 체크인 가능(아카이브 공개 여부와 무관). 존재 여부만 검증.
     const state = await getCheckinEventState(eventId);
     if (!state.exists) {
       return NextResponse.json(
@@ -77,7 +107,7 @@ export async function POST(request: Request) {
       );
     }
 
-    await checkInEvent(eventId, session.user.id);
+    await checkInEvent(eventId, target.userId);
     return NextResponse.json({ success: true, data: { eventId, checkedIn: true } });
   } catch (error) {
     console.error('Checkin error:', error);
@@ -93,7 +123,7 @@ export async function DELETE(request: Request) {
   if (!session?.user?.id || !isApproved(session)) return unauthorized();
 
   try {
-    const eventId = await readEventId(request);
+    const { eventId, forUserId } = await readBody(request);
     if (eventId === null) {
       return NextResponse.json(
         { success: false, error: '유효하지 않은 이벤트입니다.' },
@@ -101,7 +131,12 @@ export async function DELETE(request: Request) {
       );
     }
 
-    await checkOutEvent(eventId, session.user.id);
+    const target = await resolveTarget(session.user.id, forUserId);
+    if ('error' in target) {
+      return NextResponse.json({ success: false, error: target.error }, { status: target.status });
+    }
+
+    await checkOutEvent(eventId, target.userId);
     return NextResponse.json({ success: true, data: { eventId, checkedIn: false } });
   } catch (error) {
     console.error('Checkout error:', error);

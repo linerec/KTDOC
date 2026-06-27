@@ -13,12 +13,13 @@ import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEventById, isCheckedIn, getEventCheckins } from '@/lib/d1';
-import { getUserNamesByIds } from '@/lib/members';
+import { getUserNamesByIds, getGuardianChildren } from '@/lib/members';
 import { formatEventDate } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import ImageGallery from '@/components/gallery/ImageGallery';
 import { VideoList } from '@/components/gallery/VideoEmbed';
 import CheckinButton from '@/components/admin/library/CheckinButton';
+import ParentCheckin from '@/components/admin/library/ParentCheckin';
 
 export const metadata: Metadata = {
   title: '이벤트 상세 | KTDOC Admin',
@@ -42,6 +43,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
   const canCheckIn = role === 'student' && !!userId;
+  const isParent = role === 'parent' && !!userId;
   const checkedIn = canCheckIn ? await isCheckedIn(eventId, userId) : false;
 
   // 다가오는 이벤트 여부(event_date는 'YYYY-MM-DD' 문자열이라 사전식 비교로 충분)
@@ -51,6 +53,15 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   // 참가자(체크인 인원) — 이름은 MySQL에서 해석
   const checkins = await getEventCheckins(eventId);
   const participantNames = await getUserNamesByIds(checkins.map((c) => c.user_id));
+
+  // 학부모: 연결된 자녀 + 이 이벤트 참여 여부(대행 체크인용)
+  const checkedUserIds = new Set(checkins.map((c) => c.user_id));
+  const guardianChildren = isParent
+    ? (await getGuardianChildren(userId)).map((c) => ({
+        ...c,
+        checkedIn: checkedUserIds.has(c.studentId),
+      }))
+    : [];
 
   const isDraft = event.is_published === 0;
   const hasContent =
@@ -88,6 +99,17 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
         <div className="library-detail-checkin">
           <CheckinButton eventId={eventId} initialCheckedIn={checkedIn} upcoming={isUpcoming} />
         </div>
+      )}
+
+      {isParent && (
+        <section className="library-detail-section">
+          <h2 className="library-detail-section-title">자녀 참여 체크인</h2>
+          <ParentCheckin
+            eventId={eventId}
+            childrenList={guardianChildren}
+            upcoming={isUpcoming}
+          />
+        </section>
       )}
 
       {/* 실행 정보 — 어디서·언제·무엇을 준비 (다가오는 이벤트에서 특히 중요) */}

@@ -43,10 +43,13 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const session = await auth();
   await requireMenuAccess(session, 'library');
 
-  // 체크인은 수강생(student) 본인 참여 기록 — 학생에게만 토글을 노출한다.
+  // 체크인은 수강생(student) 본인 참여 기록 — 학생에게만 자기 토글을 노출한다.
+  // 학부모는 자녀 대행 체크인을 위해 이벤트 상세로 들어가야 하므로, 멤버(학생·학부모)는
+  // 전체 이벤트를 보고 콘솔 상세로 연결한다.
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
   const canCheckIn = role === 'student' && !!userId;
+  const memberView = (role === 'student' || role === 'parent') && !!userId;
 
   const params = await searchParams;
   const [eventsResult, categories, checkedInIds] = await Promise.all([
@@ -55,9 +58,8 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       category: params.category || undefined,
       search: params.search || undefined,
       limit: 100,
-      // 학생은 비공개(미공개) 이벤트에도 체크인할 수 있어야 하므로 전체를 노출한다.
-      // 그 외 역할은 공개 아카이브만 둘러본다.
-      published: canCheckIn ? 'all' : true,
+      // 멤버(학생·학부모)는 비공개 포함 전체, 그 외 역할은 공개 아카이브만.
+      published: memberView ? 'all' : true,
     }),
     getCategories(),
     canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
@@ -129,7 +131,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
     );
     return (
       <div key={event.id} className={`library-card${isChecked ? ' is-checked' : ''}`}>
-        {canCheckIn ? (
+        {memberView ? (
           <Link href={`/admin/library/${event.id}`} className="library-card-link">
             {inner}
           </Link>

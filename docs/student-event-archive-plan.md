@@ -42,7 +42,7 @@
 - [x] **C. 참여 예정(RSVP) 맥락** — `event_date>=today`면 "다가오는 이벤트". 라벨 분기(참여 신청/✓참여 예정 vs 참여 체크인/✓참여함). CheckinButton `upcoming` prop. 둘러보기 카드에 "다가오는" 플래그.
 - [x] **D. 캘린더** — `/admin/library/calendar`(메뉴 `library.calendar`). 월별 격자, 날짜별 이벤트 칩, 내 참여=금색, 비공개=점선, 오늘 강조, 월 네비(?month=YYYY-MM), 범례. 커스텀(외부 라이브러리 없음).
 - [x] **E. 다가오는 우선(둘러보기)** — 학생 둘러보기를 [응답 필요 콜아웃] + [📅 다가오는 이벤트(오름차순, 체크인)] + [연도별 지난 이벤트]로 재구성. 카드 렌더 헬퍼화. 필터바에 📅 캘린더 링크. (mineOnly·비학생은 기존 동작.) Playwright 검증 완료.
-- [ ] **F. 학부모 자녀 대행 체크인** (student_guardians 활용).
+- [x] **F. 학부모 자녀 대행 체크인** — `student_guardians`로 보호자 검증. API에 `forUserId`(자녀) + `isGuardianOf` 검증. 이벤트 상세에 "자녀 참여 체크인"(ParentCheckin, 자녀별 토글). 멤버(학생·학부모)는 둘러보기/캘린더에서 전체 이벤트 + 콘솔 상세 링크. 체크인은 자녀 id로 기록(Playwright+DB 검증).
 - [ ] **G. 멤버 톤(ADMIN→마이페이지) · H. 알림/리마인더 · I. 모바일/PWA**.
 
 브랜치: `feature/event-info-rsvp` (A+B+C). migration 0012는 원격 D1 적용 완료(additive).
