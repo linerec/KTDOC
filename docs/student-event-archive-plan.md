@@ -18,7 +18,7 @@
 - [x] **Phase 3 — 학생 아카이브**: `/admin/library/archive`(메뉴 `library.archive`). `getUserCheckins` + `getPreviewImagesForEvents`(이벤트당 상위 3장, 윈도우 함수 단일 쿼리). 연도별 묶음 + 참여 요약(총 N개·활동 연도). 빈 상태→둘러보기 유도. **Playwright 검증 완료**(빈 상태/채워진 상태/사이드바 메뉴).
 - [x] **Phase 4 — 연도별 수강생 공개 페이지**: `/students`(공개, 서버 컴포넌트 + Header/Footer). `getActiveStudents`(MySQL, active 원생, 이름·입학년도만) + `getCheckinCountsByUser`(D1). 입학년도 내림차순 그룹, 학생 칩에 "참여 N회" 배지, 상단 통계(수강생 수·연도 수·누적 참여). **Playwright 검증 완료**(그룹·배지·통계). ⚠️ **개인정보**: 보수적(이름+연도+참여수, PII 없음)으로 빌드함. 실명 공개 가부는 **병합 전 사용자 확정**. **남은 것: 헤더 내비 링크 미연결**(i18n keycode 필요 → Phase 6).
 - [x] **Phase 5 — 참여도/검증 뷰**: 운영진 페이지 `/admin/participation`(메뉴 `participation`, teacher·admin). `getEventsWithParticipantCounts`(참가 있는 이벤트+수) + `getCheckinsForEvents`(명단) + `getUserNamesByIds`(이름, MySQL). 이벤트 카드(참가자 수·비공개 배지·참가자 칩) + 요약(이벤트 수·연인원). **Playwright 검증 완료**(선생님 계정, 이름 해석 OK).
-- [ ] **Phase 6 — 마무리**: 카피 톤(차분한 합니다체) 점검, 반응형/접근성, 문서, main 병합·배포.
+- [ ] **Phase 6 — 마무리(사용자 결정 대기)**: ① 공개 `/students` 헤더 내비 링크(i18n keycode 필요) ② **실명 공개 정책 확정**(아래) ③ 체크인 대상 범위(공개 이벤트만 vs 예정 포함) ④ **main 병합·배포 승인**. Phase 1–5는 브랜치에서 완성·검증됨(미배포). 결정 후 진행.
 
 ## 열린 결정 (사용자 확인 필요)
 
