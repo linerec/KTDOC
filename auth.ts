@@ -94,4 +94,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     process.env.NODE_ENV === 'development'
       ? [credentialsProvider, devAdminProvider]
       : [credentialsProvider],
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt(params) {
+      // 엣지(미들웨어)용 기본 콜백 먼저 수행: 로그인 시 user→token, 프로필 이름 갱신.
+      const token = await authConfig.callbacks!.jwt!(params);
+      if (!token) return token;
+
+      // 레거시 토큰 자가 치유: status 게이트(auth.config) 도입 이전 발급된 토큰은
+      // role만 있고 status가 없어 /admin 진입이 막힌다(메인으로 리다이렉트).
+      // status 클레임이 비어 있으면 DB에서 현재 role·status를 보충해 토큰을 갱신한다.
+      // 이 콜백은 Node 런타임(auth.ts)에서만 도므로 DB 접근이 안전하며,
+      // 미들웨어가 쓰는 auth.config.ts는 DB-free로 유지된다.
+      if (token.id && !token.status) {
+        try {
+          const rows = await query<{ role: MemberRole; status: MemberStatus }[]>(
+            'SELECT role, status FROM users WHERE id = ?',
+            [token.id]
+          );
+          const fresh = rows[0];
+          if (fresh) {
+            token.role = fresh.role;
+            token.status = fresh.status;
+          }
+        } catch (err) {
+          // DB 일시 장애 시 토큰을 망가뜨리지 않는다(기존 클레임 유지).
+          console.error('JWT status 백필 실패:', err);
+        }
+      }
+
+      return token;
+    },
+  },
 });
