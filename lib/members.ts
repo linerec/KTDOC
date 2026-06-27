@@ -341,6 +341,42 @@ export async function isGuardianOf(
   return rows.length > 0;
 }
 
+/** 여러 회원의 연락 정보(id·이름·이메일) — 알림 발송 등. */
+export async function getUsersByIds(
+  ids: string[]
+): Promise<{ id: string; name: string | null; email: string }[]> {
+  const unique = Array.from(new Set(ids.filter(Boolean)));
+  if (!unique.length) return [];
+  const placeholders = unique.map(() => '?').join(', ');
+  return query<{ id: string; name: string | null; email: string }[]>(
+    `SELECT id, name, email FROM users WHERE id IN (${placeholders})`,
+    unique
+  );
+}
+
+/** 여러 원생의 보호자 이메일 — 자녀 일정 알림을 학부모에게도 보낼 때. studentId → 이메일[]. */
+export async function getGuardianEmailsForStudents(
+  studentIds: string[]
+): Promise<Map<string, string[]>> {
+  const unique = Array.from(new Set(studentIds.filter(Boolean)));
+  if (!unique.length) return new Map();
+  const placeholders = unique.map(() => '?').join(', ');
+  const rows = await query<{ student_id: string; email: string }[]>(
+    `SELECT sg.student_id, g.email
+     FROM student_guardians sg
+     JOIN users g ON g.id = sg.guardian_id
+     WHERE sg.student_id IN (${placeholders})`,
+    unique
+  );
+  const map = new Map<string, string[]>();
+  for (const r of rows) {
+    const list = map.get(r.student_id) ?? [];
+    list.push(r.email);
+    map.set(r.student_id, list);
+  }
+  return map;
+}
+
 /**
  * 여러 회원 id를 이름으로 일괄 해석한다(id → name).
  * 갤러리 사진의 제출자(uploaded_by, D1)를 운영진 화면에 이름으로 표시할 때 사용.

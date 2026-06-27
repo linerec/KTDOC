@@ -190,6 +190,16 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
   return { events, total, years };
 }
 
+/** 특정 날짜('YYYY-MM-DD')의 이벤트 — D-1 리마인더 등 일정 기준 조회. */
+export async function getEventsOnDate(dateStr: string): Promise<EventWithCategory[]> {
+  return queryD1<EventWithCategory>(
+    `SELECT e.*, c.name_ko AS category_name_ko, c.name_en AS category_name_en, c.slug AS category_slug
+     FROM events e LEFT JOIN event_categories c ON e.category_id = c.id
+     WHERE e.event_date = ?`,
+    [dateStr]
+  );
+}
+
 export async function getEventById(id: number): Promise<EventDetail | null> {
   const events = await queryD1<EventWithCategory>(
     `SELECT e.*,
