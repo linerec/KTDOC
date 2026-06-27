@@ -10,8 +10,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEvents, getCategories } from '@/lib/d1';
+import { getEvents, getCategories, getUserCheckedInEventIds } from '@/lib/d1';
 import type { EventWithCategory } from '@/types/gallery';
+import type { MemberRole } from '@/types/members';
+import CheckinButton from '@/components/admin/library/CheckinButton';
 
 export const metadata: Metadata = {
   title: '공연 · 갤러리 둘러보기 | KTDOC Admin',
@@ -39,8 +41,13 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const session = await auth();
   await requireMenuAccess(session, 'library');
 
+  // 체크인은 수강생(student) 본인 참여 기록 — 학생에게만 토글을 노출한다.
+  const role = (session?.user?.role ?? 'user') as MemberRole;
+  const userId = session?.user?.id ?? null;
+  const canCheckIn = role === 'student' && !!userId;
+
   const params = await searchParams;
-  const [eventsResult, categories] = await Promise.all([
+  const [eventsResult, categories, checkedInIds] = await Promise.all([
     getEvents({
       year: params.year ? parseInt(params.year) : undefined,
       category: params.category || undefined,
@@ -49,6 +56,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       published: true, // 공개된 항목만 노출
     }),
     getCategories(),
+    canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
   ]);
 
   const { events, total, years } = eventsResult;
@@ -68,6 +76,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           <h1 className="admin-title">공연 · 갤러리 둘러보기</h1>
           <p className="admin-subtitle">
             공개된 공연과 갤러리를 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.
+            {canCheckIn && ' 본인이 참여한 공연은 카드 하단에서 체크인하면 내 아카이브에 모입니다.'}
           </p>
         </div>
       </div>
@@ -123,29 +132,36 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                 {(grouped.get(year) ?? []).map((event) => {
                   const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
                   return (
-                    <a
-                      key={event.id}
-                      href={`/gallery/${event.year}/${event.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="library-card"
-                    >
-                      <div className="library-card-thumb">
-                        {thumb ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={thumb} alt={event.title_ko} loading="lazy" />
-                        ) : (
-                          <span className="library-card-thumb-empty">이미지 없음</span>
-                        )}
-                      </div>
-                      <div className="library-card-body">
-                        {event.category_name_ko && (
-                          <span className="library-card-category">{event.category_name_ko}</span>
-                        )}
-                        <h3 className="library-card-title">{event.title_ko}</h3>
-                        <p className="library-card-date">{event.event_date}</p>
-                      </div>
-                    </a>
+                    <div key={event.id} className="library-card">
+                      <a
+                        href={`/gallery/${event.year}/${event.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="library-card-link"
+                      >
+                        <div className="library-card-thumb">
+                          {thumb ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={thumb} alt={event.title_ko} loading="lazy" />
+                          ) : (
+                            <span className="library-card-thumb-empty">이미지 없음</span>
+                          )}
+                        </div>
+                        <div className="library-card-body">
+                          {event.category_name_ko && (
+                            <span className="library-card-category">{event.category_name_ko}</span>
+                          )}
+                          <h3 className="library-card-title">{event.title_ko}</h3>
+                          <p className="library-card-date">{event.event_date}</p>
+                        </div>
+                      </a>
+                      {canCheckIn && (
+                        <CheckinButton
+                          eventId={event.id}
+                          initialCheckedIn={checkedInIds.has(event.id)}
+                        />
+                      )}
+                    </div>
                   );
                 })}
               </div>

@@ -14,7 +14,7 @@
 ## 단계
 
 - [x] **Phase 1 — 기반**: 마이그레이션 0010(원격 적용 완료)·타입·데이터 계층·index 연결. tsc·라이브 D1 왕복 검증 완료.
-- [ ] **Phase 2 — 체크인 UI(학생 콘솔)**: `/admin/library` 둘러보기 카드(또는 전용 페이지)에 체크인/체크아웃 토글. API `/api/library/checkins`(POST 체크인·DELETE 체크아웃·GET 내 체크인). 공개 이벤트만 체크인 허용(서버 강제). 버튼 상태는 `getUserCheckedInEventIds`로.
+- [x] **Phase 2 — 체크인 UI(학생 콘솔)**: `/admin/library` 둘러보기 카드에 체크인/체크아웃 토글(`CheckinButton`, 학생 role에만 노출). API `/api/library/checkins`(GET 내 체크인 id·POST 체크인·DELETE 체크아웃, 본인·공개 이벤트만 서버 강제). 초기 상태는 `getUserCheckedInEventIds`로 서버 렌더. 카드 구조 `.library-card > .library-card-link + CheckinButton`. **Playwright로 체크인→영속(새로고침)→체크아웃 검증 완료.**
 - [ ] **Phase 3 — 학생 아카이브**: `/admin/library/archive`(메뉴 `library.archive`, defaultRoles student·parent·teacher·admin). `getUserCheckins` + 각 이벤트의 사진(event_id로 gallery_photos / event_images). 연도별 묶음.
 - [ ] **Phase 4 — 연도별 수강생 공개 페이지**: `/students`(또는 `/members`) — `users.enrollment_year` 그룹. 참여도 배지(`getCheckinCountsByUser`). ⚠️ **개인정보 결정 필요**(아래).
 - [ ] **Phase 5 — 참여도/검증 뷰**: 이벤트별 참가자 수(운영진·관계자용; `getCheckinCountsByEvent`, 참가자 명단=`getEventCheckins`+이름해석). 학생별 참여 리포트.

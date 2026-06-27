@@ -5533,6 +5533,47 @@ ul {
   color: var(--text-muted);
   margin: 0;
 }
+/* 카드 내부 링크 영역(썸네일+본문). 체크인 버튼과 형제로 분리 */
+.library-card-link {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
+/* 참여 체크인 토글 (학생용) — 카드 하단 */
+.library-checkin {
+  padding: 0 16px 14px;
+}
+.library-checkin-btn {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 160, 23, 0.45);
+  background: transparent;
+  color: var(--soft-gold, #d4a017);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s, border-color 0.16s, color 0.16s, opacity 0.16s;
+}
+.library-checkin-btn:hover:not(:disabled) {
+  background: rgba(212, 160, 23, 0.12);
+}
+.library-checkin-btn.is-checked {
+  background: rgba(212, 160, 23, 0.16);
+  border-color: rgba(212, 160, 23, 0.7);
+  color: var(--warm-ivory, #f5f0e8);
+}
+.library-checkin-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.library-checkin-error {
+  margin: 6px 0 0;
+  font-size: 0.74rem;
+  color: var(--secondary-color, #d12f27);
+}
 
 /* 내 사진 · 제출 (학생용) */
 .libmy {

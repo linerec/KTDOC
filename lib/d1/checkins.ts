@@ -42,6 +42,21 @@ export async function checkOutEvent(eventId: number, userId: string): Promise<bo
   return changes > 0;
 }
 
+/**
+ * 체크인 대상 이벤트의 존재·공개 여부(경량). 체크인 API가 "공개 이벤트만" 강제할 때 사용.
+ * getEventById는 이미지·영상까지 가져오므로, 검증에는 이 가벼운 조회를 쓴다.
+ */
+export async function getCheckinEventState(
+  eventId: number
+): Promise<{ exists: boolean; published: boolean }> {
+  const rows = await queryD1<{ is_published: number }>(
+    'SELECT is_published FROM events WHERE id = ?',
+    [eventId]
+  );
+  if (rows.length === 0) return { exists: false, published: false };
+  return { exists: true, published: rows[0].is_published === 1 };
+}
+
 /** 특정 사용자가 이 이벤트에 체크인했는지 */
 export async function isCheckedIn(eventId: number, userId: string): Promise<boolean> {
   const rows = await queryD1<{ id: number }>(
