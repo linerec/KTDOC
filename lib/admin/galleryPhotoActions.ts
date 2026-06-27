@@ -16,6 +16,7 @@ import {
   updateGalleryPhoto,
 } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
+import { getUserNamesByIds } from '@/lib/members';
 import type { GalleryPhoto, UpdateGalleryPhotoInput } from '@/types/gallery';
 
 /**
@@ -102,4 +103,17 @@ export async function deletePhotoFully(photo: GalleryPhoto): Promise<void> {
   } catch (error) {
     console.warn('Failed to delete gallery photo from R2:', error);
   }
+}
+
+/**
+ * 사진 목록의 제출자(uploaded_by, D1)를 회원 이름(MySQL)으로 해석해 uploader_name을 채운다.
+ * 저장소가 달라 조인 대신 id를 모아 한 번에 조회한다(운영진 보관함 표시용).
+ */
+export async function attachUploaderNames(photos: GalleryPhoto[]): Promise<GalleryPhoto[]> {
+  const ids = photos.map((p) => p.uploaded_by).filter((v): v is string => !!v);
+  if (ids.length === 0) return photos;
+  const names = await getUserNamesByIds(ids);
+  return photos.map((p) =>
+    p.uploaded_by ? { ...p, uploader_name: names.get(p.uploaded_by) ?? null } : p
+  );
 }
