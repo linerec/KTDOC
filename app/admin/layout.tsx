@@ -64,8 +64,12 @@ export default async function AdminLayout({
   const userName =
     session.user?.name || session.user?.email?.split('@')[0] || '관리자';
 
+  // 멤버(원생·학부모)에게는 "관리 콘솔" 대신 친근한 "마이페이지" 톤으로.
+  const consoleLabel =
+    role === 'student' || role === 'parent' ? '마이페이지' : '관리 콘솔';
+
   return (
-    <AdminShell userName={userName} menus={menus}>
+    <AdminShell userName={userName} menus={menus} consoleLabel={consoleLabel}>
       {children}
     </AdminShell>
   );

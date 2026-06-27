@@ -21,9 +21,16 @@ interface AdminShellProps {
   userName: string;
   menus: NavMenu[];
   children: ReactNode;
+  /** 사이드바/모바일 헤더의 부제목. 멤버는 "마이페이지", 운영진은 "관리 콘솔". */
+  consoleLabel?: string;
 }
 
-export default function AdminShell({ userName, menus, children }: AdminShellProps) {
+export default function AdminShell({
+  userName,
+  menus,
+  children,
+  consoleLabel = '관리 콘솔',
+}: AdminShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -60,7 +67,7 @@ export default function AdminShell({ userName, menus, children }: AdminShellProp
         <div className="admin-sidebar-brand">
           <Link href="/admin" className="admin-sidebar-wordmark" onClick={closeDrawer}>
             <span className="admin-sidebar-mark">KTDOC</span>
-            <span className="admin-sidebar-sub">관리 콘솔</span>
+            <span className="admin-sidebar-sub">{consoleLabel}</span>
           </Link>
         </div>
 
@@ -129,7 +136,7 @@ export default function AdminShell({ userName, menus, children }: AdminShellProp
             <span />
           </button>
           <Link href="/admin" className="admin-topbar-title">
-            KTDOC <span>관리 콘솔</span>
+            KTDOC <span>{consoleLabel}</span>
           </Link>
         </header>
 

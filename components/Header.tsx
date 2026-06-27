@@ -93,7 +93,7 @@ export default function Header() {
                 <div className="header-auth-actions">
                     {canEnter && (
                         <Link href="/admin" className="auth-btn auth-btn-dashboard" onClick={closeMenu}>
-                            Admin
+                            {admin ? 'Admin' : '마이페이지'}
                         </Link>
                     )}
                     {admin && (
