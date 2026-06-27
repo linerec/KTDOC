@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:test": "node scripts/seedTestAccounts.mjs"
+    "seed:test": "node scripts/seedTestAccounts.mjs",
+    "d1:migrate": "node scripts/d1Migrate.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
