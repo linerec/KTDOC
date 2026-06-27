@@ -2,10 +2,10 @@
  * Admin Application Detail
  */
 
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getApplicationById } from '@/lib/d1';
 import ApplicationStatusControl from '@/components/admin/applications/ApplicationStatusControl';
 
@@ -19,9 +19,7 @@ interface PageProps {
 
 export default async function ApplicationDetailPage({ params }: PageProps) {
   const session = await auth();
-  if (!isAdmin(session)) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'applications');
 
   const { id } = await params;
   const appId = parseInt(id);

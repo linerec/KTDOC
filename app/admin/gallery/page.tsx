@@ -3,9 +3,9 @@
  * 이벤트 목록 및 관리
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEvents, getCategories, getYears } from '@/lib/d1';
 import EventTable from '@/components/admin/gallery/EventTable';
 
@@ -24,9 +24,7 @@ interface PageProps {
 
 export default async function AdminGalleryPage({ searchParams }: PageProps) {
   const session = await auth();
-  if (!session) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'gallery');
 
   const params = await searchParams;
   const [eventsResult, categories, years] = await Promise.all([

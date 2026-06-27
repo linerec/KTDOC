@@ -1,9 +1,8 @@
 import type { CSSProperties } from 'react';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getCategories, getEvents, getGalleryPhotos, getPrograms, getApplicationCounts } from '@/lib/d1';
 import { getMemberCounts } from '@/lib/members';
 
@@ -68,12 +67,7 @@ interface GuideStep {
 
 export default async function AdminDashboardPage() {
   const session = await auth();
-  if (!session) {
-    redirect('/login');
-  }
-  if (!isAdmin(session)) {
-    redirect('/');
-  }
+  await requireMenuAccess(session, 'home');
 
   const [
     programsAll,
@@ -109,7 +103,7 @@ export default async function AdminDashboardPage() {
   const categoryCount = categories.length;
   const membersTotal = memberCounts.total;
 
-  const adminName = session.user?.name || session.user?.email?.split('@')[0] || '관리자';
+  const adminName = session?.user?.name || session?.user?.email?.split('@')[0] || '관리자';
   const isFreshSite = programsTotal === 0 && eventsPublished === 0 && appsTotal === 0;
   const hasNewApps = appsNew > 0;
 

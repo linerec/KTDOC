@@ -164,6 +164,11 @@ export default function PhotoDetailDrawer({
             <p className="photo-drawer-meta">
               {photo.event_image_id ? '이벤트에 들어있음' : '미분류'}
             </p>
+            {photo.uploaded_by && (
+              <p className="photo-drawer-meta photo-drawer-meta-submitted">
+                학생 제출{photo.uploader_name ? ` · ${photo.uploader_name}` : ''}
+              </p>
+            )}
           </div>
         </div>
 

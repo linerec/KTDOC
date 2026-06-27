@@ -3,13 +3,20 @@ import Credentials from 'next-auth/providers/credentials';
 import { query } from '@/lib/db';
 import { verifyPassword } from '@/lib/password';
 import { authConfig } from './auth.config';
+import type { MemberRole, MemberStatus } from '@/types/members';
 
 interface DBUser {
   id: string;
   email: string;
   password_hash: string;
   name: string | null;
-  role: 'user' | 'admin';
+  role: MemberRole;
+  status: MemberStatus;
+}
+
+/** 로그인 가능 상태: 승인 대기·정회원은 허용, 거절·정지는 차단 */
+function canSignIn(status: MemberStatus): boolean {
+  return status === 'pending' || status === 'active';
 }
 
 const credentialsProvider = Credentials({
@@ -23,7 +30,7 @@ const credentialsProvider = Credentials({
     }
 
     const users = await query<DBUser[]>(
-      'SELECT id, email, password_hash, name, role FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, name, role, status FROM users WHERE email = ?',
       [credentials.email]
     );
 
@@ -37,11 +44,18 @@ const credentialsProvider = Credentials({
 
     if (!isValid) return null;
 
+    // 거절·정지 회원은 로그인 차단 (승인 대기는 로그인 허용 후 안내)
+    if (!canSignIn(user.status)) {
+      console.warn(`로그인 차단: ${user.email} (status=${user.status})`);
+      return null;
+    }
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
+      status: user.status,
     };
   },
 });
@@ -57,7 +71,7 @@ const devAdminProvider = Credentials({
     if (!credentials?.email) return null;
 
     const users = await query<DBUser[]>(
-      'SELECT id, email, password_hash, name, role FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, name, role, status FROM users WHERE email = ?',
       [credentials.email]
     );
 
@@ -69,6 +83,7 @@ const devAdminProvider = Credentials({
       email: user.email,
       name: user.name,
       role: user.role,
+      status: user.status,
     };
   },
 });

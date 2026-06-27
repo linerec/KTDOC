@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 
 export const metadata: Metadata = {
   robots: {
@@ -16,6 +17,7 @@ export default function AuthLayout({
 }) {
   return (
     <div className="auth-container">
+      <LanguageSwitcher className="language-switcher auth-lang" />
       <div className="auth-header">
         <Link href="/">
           <Image

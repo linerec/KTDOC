@@ -3,10 +3,9 @@
  * 신청 현황 — 프로그램별 신청자 확인 및 상태 관리
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getApplications, getApplicationCounts, getPrograms } from '@/lib/d1';
 import ApplicationTable from '@/components/admin/applications/ApplicationTable';
 import {
@@ -25,9 +24,7 @@ interface PageProps {
 
 export default async function AdminApplicationsPage({ searchParams }: PageProps) {
   const session = await auth();
-  if (!isAdmin(session)) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'applications');
 
   const params = await searchParams;
   const statusFilter =

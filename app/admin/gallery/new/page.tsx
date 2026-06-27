@@ -3,9 +3,9 @@
  * 새 이벤트 생성
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getCategories } from '@/lib/d1';
 import EventForm from '@/components/admin/gallery/EventForm';
 
@@ -15,9 +15,7 @@ export const metadata = {
 
 export default async function AdminGalleryNewPage() {
   const session = await auth();
-  if (!session) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'gallery');
 
   const categories = await getCategories();
 

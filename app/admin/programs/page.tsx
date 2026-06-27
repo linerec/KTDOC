@@ -3,10 +3,9 @@
  * 수업·프로그램·캠프 목록 및 관리
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getPrograms } from '@/lib/d1';
 import ProgramTable from '@/components/admin/programs/ProgramTable';
 import { PROGRAM_TYPES, PROGRAM_TYPE_LABELS, type ProgramType } from '@/types/programs';
@@ -21,9 +20,7 @@ interface PageProps {
 
 export default async function AdminProgramsPage({ searchParams }: PageProps) {
   const session = await auth();
-  if (!isAdmin(session)) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'programs');
 
   const params = await searchParams;
   const typeFilter =

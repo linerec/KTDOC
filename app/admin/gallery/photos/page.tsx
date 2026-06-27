@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getGalleryPhotos } from '@/lib/d1';
+import { attachUploaderNames } from '@/lib/admin/galleryPhotoActions';
 import PhotoInboxManager from '@/components/admin/gallery/PhotoInboxManager';
 
 export const metadata = {
@@ -27,6 +28,7 @@ export default async function AdminGalleryPhotosPage() {
     page: 1,
     limit: PHOTO_INBOX_PAGE_SIZE,
   });
+  photosResult.photos = await attachUploaderNames(photosResult.photos);
 
   return (
     <div className="admin-page">

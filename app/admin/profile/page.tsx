@@ -3,10 +3,10 @@
  * 내 프로필 — 자신의 기본 정보(이름) 변경 및 비밀번호 변경
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getMemberById, type MemberRole } from '@/lib/members';
 import ProfileForm from '@/components/admin/profile/ProfileForm';
 import ChangePasswordCard from '@/components/admin/ChangePasswordCard';
@@ -17,9 +17,7 @@ export const metadata = {
 
 export default async function AdminProfilePage() {
   const session = await auth();
-  if (!isAdmin(session)) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'profile');
 
   // DB를 단일 출처로 사용 (세션 토큰보다 최신). 실패 시 세션 값으로 폴백.
   const member = await getMemberById(session!.user!.id!).catch(() => null);

@@ -3,9 +3,9 @@
  * 카테고리 관리
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getCategories } from '@/lib/d1';
 import CategoryManager from '@/components/admin/gallery/CategoryManager';
 
@@ -15,9 +15,7 @@ export const metadata = {
 
 export default async function AdminGalleryCategoriesPage() {
   const session = await auth();
-  if (!session) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'gallery.categories');
 
   const categories = await getCategories();
 

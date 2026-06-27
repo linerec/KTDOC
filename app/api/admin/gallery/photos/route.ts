@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
 import { createGalleryPhoto, getGalleryPhotoById, getGalleryPhotos } from '@/lib/d1';
+import { attachUploaderNames } from '@/lib/admin/galleryPhotoActions';
 import { uploadToR2 } from '@/lib/r2';
 
 export async function GET(request: Request) {
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
     const publishedParam = searchParams.get('published');
     const eventIdParam = searchParams.get('eventId');
     const sortParam = searchParams.get('sort');
+    const submittedParam = searchParams.get('submitted');
 
     const result = await getGalleryPhotos({
       page,
@@ -38,7 +40,10 @@ export async function GET(request: Request) {
       published: publishedParam === null ? undefined : publishedParam === 'true',
       eventId: eventIdParam ? Number(eventIdParam) : undefined,
       sort: sortParam === 'oldest' || sortParam === 'taken' ? sortParam : 'recent',
+      submitted: submittedParam === 'student' || submittedParam === 'staff' ? submittedParam : 'all',
     });
+
+    result.photos = await attachUploaderNames(result.photos);
 
     return NextResponse.json({ success: true, data: result });
   } catch (error) {

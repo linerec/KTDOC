@@ -3,9 +3,10 @@
  * 이벤트 편집
  */
 
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEventById, getCategories } from '@/lib/d1';
 import EventForm from '@/components/admin/gallery/EventForm';
 
@@ -24,9 +25,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function AdminGalleryEditPage({ params }: PageProps) {
   const session = await auth();
-  if (!session) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'gallery');
 
   const { id } = await params;
   const eventId = parseInt(id);

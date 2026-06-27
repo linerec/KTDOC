@@ -2,10 +2,10 @@
  * Admin Program Edit
  */
 
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getProgramById } from '@/lib/d1';
 import ProgramForm from '@/components/admin/programs/ProgramForm';
 
@@ -19,9 +19,7 @@ interface PageProps {
 
 export default async function EditProgramPage({ params }: PageProps) {
   const session = await auth();
-  if (!isAdmin(session)) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'programs');
 
   const { id } = await params;
   const programId = parseInt(id);

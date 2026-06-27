@@ -2,10 +2,9 @@
  * Admin Program Create
  */
 
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { requireMenuAccess } from '@/lib/admin/permissions';
 import ProgramForm from '@/components/admin/programs/ProgramForm';
 
 export const metadata = {
@@ -14,9 +13,7 @@ export const metadata = {
 
 export default async function NewProgramPage() {
   const session = await auth();
-  if (!isAdmin(session)) {
-    redirect('/login');
-  }
+  await requireMenuAccess(session, 'programs');
 
   return (
     <div className="admin-page">

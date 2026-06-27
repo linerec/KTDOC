@@ -5438,6 +5438,89 @@ ul {
   margin: 0;
 }
 
+/* 내 사진 · 제출 (학생용) */
+.libmy {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 24px;
+}
+.libmy-upload-copy {
+  margin-bottom: 18px;
+}
+.libmy-upload-copy p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 6px 0 0;
+}
+.libmy-msg {
+  margin-top: 14px;
+}
+.libmy-list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.libmy-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.libmy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  transition: opacity 0.18s;
+}
+.libmy-grid.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.libmy-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.libmy-tile-thumb {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.libmy-tile-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.libmy-status {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.libmy-status-pending {
+  background: rgba(212, 160, 23, 0.92);
+  color: #1a1207;
+}
+.libmy-status-published {
+  background: rgba(14, 112, 74, 0.92);
+  color: var(--white);
+}
+.libmy-status-linked {
+  background: rgba(120, 86, 196, 0.92);
+  color: var(--white);
+}
+.libmy-cancel {
+  align-self: flex-start;
+}
+
 /* 계정 섹션 — 비밀번호 변경 카드 */
 .admin-account {
   margin-top: 32px;
@@ -5993,6 +6076,16 @@ ul {
 .photo-tile-badge.is-loose {
   background: rgba(5, 5, 5, 0.72);
   color: rgba(255, 255, 255, 0.62);
+}
+
+.photo-tile-badge.is-submitted {
+  background: rgba(120, 86, 196, 0.92);
+  color: var(--white);
+}
+
+.photo-drawer-meta-submitted {
+  color: rgba(180, 160, 230, 0.95);
+  font-weight: 600;
 }
 
 /* ── 우측 상세 드로어 ───────────────── */

@@ -16,10 +16,13 @@ type BulkAction =
   | 'publish' | 'unpublish' | 'feature' | 'unfeature'
   | 'assignEvent' | 'unassignEvent' | 'delete';
 
+type SubmittedFilter = 'all' | 'student' | 'staff';
+
 interface FilterState {
   search: string;
   organized: OrganizedFilter;
   published: PublishedFilter;
+  submitted: SubmittedFilter;
   eventId: number | '';
   sort: SortOrder;
 }
@@ -28,6 +31,7 @@ const DEFAULT_FILTERS: FilterState = {
   search: '',
   organized: 'all',
   published: 'all',
+  submitted: 'all',
   eventId: '',
   sort: 'recent',
 };
@@ -74,6 +78,7 @@ export default function PhotoOrganizeBoard({
     filters.search.trim() !== '' ||
     filters.organized !== 'all' ||
     filters.published !== 'all' ||
+    filters.submitted !== 'all' ||
     filters.eventId !== '' ||
     filters.sort !== 'recent';
 
@@ -90,6 +95,7 @@ export default function PhotoOrganizeBoard({
         if (active.published !== 'all') {
           params.set('published', active.published === 'public' ? 'true' : 'false');
         }
+        if (active.submitted !== 'all') params.set('submitted', active.submitted);
         if (active.eventId !== '') params.set('eventId', String(active.eventId));
         if (active.sort !== 'recent') params.set('sort', active.sort);
         if (active.search.trim()) params.set('search', active.search.trim());
@@ -296,6 +302,18 @@ export default function PhotoOrganizeBoard({
             <option value="private">비공개</option>
           </select>
 
+          <select
+            className="admin-filter-select"
+            value={filters.submitted}
+            onChange={(e) => applyFilters({ submitted: e.target.value as SubmittedFilter })}
+            disabled={loadingPage}
+            aria-label="제출 출처"
+          >
+            <option value="all">전체 출처</option>
+            <option value="student">학생 제출</option>
+            <option value="staff">직접 업로드</option>
+          </select>
+
           <EventPicker
             value={filters.eventId === '' ? null : filters.eventId}
             valueLabel={filterEventLabel}
@@ -429,6 +447,11 @@ export default function PhotoOrganizeBoard({
 
                 <div className="photo-tile-badges">
                   {photo.is_published === 1 && <span className="photo-tile-badge is-public">공개</span>}
+                  {photo.uploaded_by && (
+                    <span className="photo-tile-badge is-submitted" title={photo.uploader_name ? `학생 제출 · ${photo.uploader_name}` : '학생 제출'}>
+                      학생 제출
+                    </span>
+                  )}
                   {photo.event_image_id ? (
                     <span className="photo-tile-badge is-linked">이벤트</span>
                   ) : (

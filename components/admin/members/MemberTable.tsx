@@ -2,16 +2,30 @@
 
 /**
  * MemberTable
- * 관리자용 회원 목록. 현재는 조회 전용(이메일 보내기 mailto).
- * 향후 권한 변경·삭제 등 액션을 '작업' 칼럼에 추가해 확장한다.
+ * 관리자용 회원 목록 + 승인/거절/정지/복구/역할변경/원생연결 액션.
+ * - 운영진(선생님·관리자)이 가입 회원을 승인한다.
+ * - 역할 변경은 관리자(canManageRoles)만 노출.
  */
 
-import type { Member } from '@/types/members';
-import { MEMBER_ROLE_LABELS } from '@/types/members';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import type { Member, MemberRole } from '@/types/members';
+import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from '@/types/members';
+
+interface StudentOption {
+  id: string;
+  name: string | null;
+  enrollment_year: number | null;
+}
 
 interface MemberTableProps {
   members: Member[];
+  students: StudentOption[];
+  canManageRoles: boolean;
 }
+
+/** 관리자가 부여 가능한 역할 (레거시 'user' 제외) */
+const ASSIGNABLE_ROLES: MemberRole[] = ['student', 'parent', 'teacher', 'admin'];
 
 function formatDate(value: string | null): string {
   if (!value) return '-';
@@ -20,7 +34,44 @@ function formatDate(value: string | null): string {
   return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`;
 }
 
-export default function MemberTable({ members }: MemberTableProps) {
+const STATUS_BADGE_CLASS: Record<string, string> = {
+  pending: 'admin-badge-warning',
+  active: 'admin-badge-success',
+  rejected: 'admin-badge-danger',
+  suspended: 'admin-badge-muted',
+};
+
+export default function MemberTable({
+  members,
+  students,
+  canManageRoles,
+}: MemberTableProps) {
+  const router = useRouter();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
+
+  async function runAction(memberId: string, body: Record<string, unknown>) {
+    setBusyId(memberId);
+    setError('');
+    try {
+      const res = await fetch(`/api/admin/members/${memberId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.error || '작업에 실패했습니다.');
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError('작업 중 오류가 발생했습니다.');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   if (members.length === 0) {
     return (
       <div className="admin-empty-state">
@@ -30,63 +81,244 @@ export default function MemberTable({ members }: MemberTableProps) {
   }
 
   return (
-    <div className="admin-table-wrapper">
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>회원</th>
-            <th style={{ width: '120px' }}>권한</th>
-            <th style={{ width: '150px' }}>이메일 인증</th>
-            <th style={{ width: '120px' }}>가입일</th>
-            <th style={{ width: '140px' }}>작업</th>
-          </tr>
-        </thead>
-        <tbody>
-          {members.map((member) => {
-            const displayName = member.name || member.email.split('@')[0];
-            const isAdminRole = member.role === 'admin';
-            return (
-              <tr key={member.id}>
-                <td>
-                  <div className="admin-table-link">
-                    <span className="admin-table-title">{displayName}</span>
-                    <a
-                      href={`mailto:${member.email}`}
-                      className="admin-table-link-inline admin-table-subtitle"
+    <>
+      {error && <div className="admin-inline-error">{error}</div>}
+      <div className="admin-table-wrapper">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>회원</th>
+              <th style={{ width: '110px' }}>역할</th>
+              <th style={{ width: '100px' }}>상태</th>
+              <th style={{ width: '220px' }}>연결</th>
+              <th style={{ width: '120px' }}>가입일</th>
+              <th style={{ width: '200px' }}>작업</th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.map((member) => {
+              const displayName = member.name || member.email.split('@')[0];
+              const busy = busyId === member.id;
+              return (
+                <tr key={member.id} className={busy ? 'is-busy' : undefined}>
+                  {/* 회원 */}
+                  <td>
+                    <div className="admin-table-link">
+                      <span className="admin-table-title">{displayName}</span>
+                      <a
+                        href={`mailto:${member.email}`}
+                        className="admin-table-link-inline admin-table-subtitle"
+                      >
+                        {member.email}
+                      </a>
+                      {member.phone && (
+                        <span className="admin-table-subtitle">{member.phone}</span>
+                      )}
+                      {member.role === 'student' && member.enrollment_year && (
+                        <span className="admin-table-subtitle">
+                          {member.enrollment_year}년 입학
+                        </span>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* 역할 */}
+                  <td>
+                    <span
+                      className={`admin-badge ${
+                        member.role === 'admin' || member.role === 'teacher'
+                          ? 'admin-badge-role'
+                          : 'admin-badge-muted'
+                      }`}
                     >
-                      {member.email}
-                    </a>
-                  </div>
-                </td>
-                <td>
-                  <span
-                    className={`admin-badge ${isAdminRole ? 'admin-badge-role' : 'admin-badge-muted'}`}
-                  >
-                    {MEMBER_ROLE_LABELS[member.role]}
-                  </span>
-                </td>
-                <td>
-                  {member.email_verified ? (
-                    <span className="admin-badge admin-badge-success">
-                      인증됨 · {formatDate(member.email_verified)}
+                      {MEMBER_ROLE_LABELS[member.role]}
                     </span>
-                  ) : (
-                    <span className="admin-table-muted">미인증</span>
-                  )}
-                </td>
-                <td>{formatDate(member.created_at)}</td>
-                <td>
-                  <div className="admin-table-actions">
-                    <a href={`mailto:${member.email}`} className="admin-btn admin-btn-sm">
-                      이메일 보내기
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  </td>
+
+                  {/* 상태 */}
+                  <td>
+                    <span
+                      className={`admin-badge ${
+                        STATUS_BADGE_CLASS[member.status] || 'admin-badge-muted'
+                      }`}
+                    >
+                      {MEMBER_STATUS_LABELS[member.status]}
+                    </span>
+                  </td>
+
+                  {/* 연결 (학부모→자녀 / 원생→보호자) */}
+                  <td>
+                    {member.role === 'parent' && (
+                      <div className="admin-conn">
+                        {(member.children ?? []).map((c) => (
+                          <div key={c.linkId} className="admin-conn-item">
+                            {c.studentId ? (
+                              <span className="admin-conn-ok">
+                                자녀: {c.studentName || c.claimedName}
+                              </span>
+                            ) : (
+                              <div className="admin-conn-unresolved">
+                                <span className="admin-conn-warn">
+                                  미연결: {c.claimedName}
+                                  {c.claimedEnrollmentYear
+                                    ? ` (${c.claimedEnrollmentYear}년)`
+                                    : ''}
+                                </span>
+                                <ResolveStudent
+                                  students={students}
+                                  disabled={busy}
+                                  onLink={(studentId) =>
+                                    runAction(member.id, {
+                                      action: 'linkStudent',
+                                      linkId: c.linkId,
+                                      studentId,
+                                    })
+                                  }
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {(member.children ?? []).length === 0 && (
+                          <span className="admin-table-muted">-</span>
+                        )}
+                      </div>
+                    )}
+                    {member.role === 'student' && (
+                      <div className="admin-conn">
+                        {(member.guardians ?? []).map((g) => (
+                          <span key={g.guardianId} className="admin-conn-item admin-conn-ok">
+                            보호자: {g.guardianName || g.guardianEmail}
+                          </span>
+                        ))}
+                        {(member.guardians ?? []).length === 0 && (
+                          <span className="admin-table-muted">-</span>
+                        )}
+                      </div>
+                    )}
+                    {member.role !== 'parent' && member.role !== 'student' && (
+                      <span className="admin-table-muted">-</span>
+                    )}
+                  </td>
+
+                  {/* 가입일 */}
+                  <td>{formatDate(member.created_at)}</td>
+
+                  {/* 작업 */}
+                  <td>
+                    <div className="admin-table-actions admin-table-actions-col">
+                      {member.status === 'pending' && (
+                        <div className="admin-btn-row">
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm admin-btn-primary"
+                            disabled={busy}
+                            onClick={() => runAction(member.id, { action: 'approve' })}
+                          >
+                            승인
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm admin-btn-outline"
+                            disabled={busy}
+                            onClick={() => runAction(member.id, { action: 'reject' })}
+                          >
+                            거절
+                          </button>
+                        </div>
+                      )}
+                      {member.status === 'active' && (
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-sm admin-btn-outline"
+                          disabled={busy}
+                          onClick={() => runAction(member.id, { action: 'suspend' })}
+                        >
+                          정지
+                        </button>
+                      )}
+                      {(member.status === 'rejected' || member.status === 'suspended') && (
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-sm admin-btn-primary"
+                          disabled={busy}
+                          onClick={() => runAction(member.id, { action: 'restore' })}
+                        >
+                          복구(승인)
+                        </button>
+                      )}
+
+                      {canManageRoles && (
+                        <select
+                          className="admin-filter-select admin-role-select"
+                          value={member.role}
+                          disabled={busy}
+                          onChange={(e) =>
+                            runAction(member.id, {
+                              action: 'setRole',
+                              role: e.target.value,
+                            })
+                          }
+                        >
+                          {!ASSIGNABLE_ROLES.includes(member.role) && (
+                            <option value={member.role}>
+                              {MEMBER_ROLE_LABELS[member.role]}
+                            </option>
+                          )}
+                          {ASSIGNABLE_ROLES.map((r) => (
+                            <option key={r} value={r}>
+                              {MEMBER_ROLE_LABELS[r]}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/** 미연결 학부모에게 실제 원생을 지정하는 셀렉트 */
+function ResolveStudent({
+  students,
+  disabled,
+  onLink,
+}: {
+  students: StudentOption[];
+  disabled: boolean;
+  onLink: (studentId: string) => void;
+}) {
+  const [value, setValue] = useState('');
+  return (
+    <div className="admin-conn-resolve">
+      <select
+        className="admin-filter-select"
+        value={value}
+        disabled={disabled}
+        onChange={(e) => setValue(e.target.value)}
+      >
+        <option value="">원생 선택...</option>
+        {students.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name || '(이름없음)'}
+            {s.enrollment_year ? ` · ${s.enrollment_year}년` : ''}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        className="admin-btn admin-btn-sm"
+        disabled={disabled || !value}
+        onClick={() => value && onLink(value)}
+      >
+        연결
+      </button>
     </div>
   );
 }
