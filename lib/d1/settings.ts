@@ -13,6 +13,12 @@ export const SETTING_HERO_FEATURED_VIDEO = 'hero.featured_video_id';
 /** 헤더(Top Bar) 배경 색상/투명도. JSON: {top:{color,opacity}, scrolled:{color,opacity}} */
 export const SETTING_HEADER_BACKGROUND = 'header.background';
 
+/**
+ * 구독형 캘린더 피드(/calendar.ics) 설정. JSON 직렬화:
+ * {name, description, timezone, enabled, includeEvents, includeCamps}
+ */
+export const SETTING_CALENDAR_CONFIG = 'calendar.config';
+
 interface SettingRow {
   setting_key: string;
   setting_value: string | null;

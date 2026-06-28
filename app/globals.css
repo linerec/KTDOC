@@ -71,25 +71,10 @@ footer {
   flex-shrink: 0;
 }
 
-/* Fixed Background Layer */
-.bg-layer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('/assets/images/black_stroke.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: -1;
-  pointer-events: none;
-}
-
 /* ── 한지에 스며드는 먹: 글로벌 앰비언트 잉크 레이어 ───────────────────────
-   .bg-layer 형제(DOM상 뒤)로 같은 z-index:-1에 깔린다. body 배경(#0a0a0a) 위·
-   섹션 아래에 합성되므로, 섹션 배경이 투명한 서브페이지·다크 영역의 여백에서
-   은은히 살아난다(홈은 섹션이 불투명해 가려짐 = 의도, 홈은 히어로 워시가 담당).
+   z-index:0으로 body 배경(#0a0a0a) 위·섹션 아래에 합성되므로, 섹션 배경이
+   투명한 서브페이지·다크 영역의 여백에서 은은히 살아난다(홈은 섹션이 불투명해
+   가려짐 = 의도, 홈은 히어로 워시가 담당).
    transform + opacity만 애니메이트 → 컴포지터 전용(페인트/레이아웃 0). */
 .ink-ambient {
   position: fixed;
@@ -1239,6 +1224,25 @@ ul {
   color: var(--accent-color);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.footer-links {
+  margin: 18px 0 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.footer-cal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--warm-ivory);
+  text-decoration: none;
+  transition: color 0.3s var(--ease-out-quart);
+}
+.footer-cal-link:hover {
+  color: var(--soft-gold);
 }
 
 /* ========================================
@@ -10385,5 +10389,310 @@ ul {
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding: 10px 14px;
+  }
+}
+
+/* ============================================
+   Calendar Subscribe (/calendar)
+   ============================================ */
+.calendar-page {
+  background: var(--ink-black);
+  min-height: 100vh;
+}
+
+.calendar-hero {
+  /* 고정 헤더(Top Bar)에 가리지 않도록 다른 페이지 히어로와 동일한 상단 오프셋 */
+  padding: calc(var(--header-height) + 128px) 0 50px;
+  text-align: center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
+    linear-gradient(180deg, var(--ink-umber), var(--ink-black));
+}
+.calendar-hero-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.calendar-hero-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--soft-gold);
+  margin-bottom: 18px;
+}
+.calendar-hero-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  line-height: 1.15;
+  color: var(--warm-ivory);
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.calendar-hero-desc {
+  margin: 22px auto 0;
+  max-width: 600px;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+/* IntlObject가 h1/p로 렌더해도 전역 .intl-object{display:inline} 때문에 인라인이 되어
+   제목/설명이 겹친다. 블록 요소로 쓰는 곳은 display를 복구한다. */
+.calendar-hero-title.intl-object,
+.calendar-hero-desc.intl-object {
+  display: block;
+}
+
+.calendar-subscribe-section {
+  padding: 20px 0 100px;
+}
+
+.cal-sub {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.cal-sub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.cal-sub-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1 1 240px;
+  padding: 18px 22px;
+  border-radius: 8px;
+  border: 1px solid rgba(224, 184, 79, 0.45);
+  background: rgba(224, 184, 79, 0.06);
+  color: var(--warm-ivory);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1.02rem;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease-out-quart), border-color 0.3s var(--ease-out-quart),
+    background 0.3s var(--ease-out-quart);
+}
+.cal-sub-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--soft-gold);
+  background: rgba(224, 184, 79, 0.12);
+}
+.cal-sub-btn--primary {
+  background: linear-gradient(135deg, var(--deep-red), var(--secondary-color));
+  border-color: transparent;
+  color: var(--warm-ivory);
+  box-shadow: 0 12px 30px rgba(143, 33, 29, 0.3);
+}
+.cal-sub-btn--primary:hover {
+  background: linear-gradient(135deg, var(--secondary-color), var(--deep-red));
+  border-color: transparent;
+}
+.cal-sub-btn-note {
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  opacity: 0.78;
+}
+
+.cal-sub-url {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+.cal-sub-url-text {
+  flex: 1 1 320px;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88rem;
+  color: var(--warm-ivory);
+}
+.cal-sub-copy {
+  flex: 0 0 auto;
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(224, 184, 79, 0.5);
+  background: transparent;
+  color: var(--warm-ivory);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease-out-quart), background 0.3s var(--ease-out-quart);
+}
+.cal-sub-copy:hover {
+  border-color: var(--soft-gold);
+  background: rgba(224, 184, 79, 0.1);
+}
+
+.cal-sub-guides {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+.cal-sub-guide {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+.cal-sub-guide > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 16px 20px;
+  font-weight: 600;
+  color: var(--warm-ivory);
+  position: relative;
+}
+.cal-sub-guide > summary::-webkit-details-marker {
+  display: none;
+}
+.cal-sub-guide > summary::after {
+  content: '+';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--soft-gold);
+  font-size: 1.2rem;
+}
+.cal-sub-guide[open] > summary::after {
+  content: '−';
+}
+.cal-sub-guide ol {
+  margin: 0;
+  padding: 0 22px 18px 40px;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+.cal-sub-guide ol li {
+  margin-bottom: 6px;
+}
+.cal-sub-guide ol li strong {
+  color: var(--warm-ivory);
+  font-weight: 600;
+}
+
+.cal-sub-hint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  border-left: 2px solid rgba(224, 184, 79, 0.5);
+  padding-left: 14px;
+}
+
+@media (max-width: 560px) {
+  .cal-sub-actions {
+    flex-direction: column;
+  }
+  .cal-sub-copy {
+    flex: 1 1 auto;
+  }
+}
+
+/* ============================================
+   Admin: Calendar Feed Manager (/admin/calendar)
+   ============================================ */
+.admin-cal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.admin-cal-grid .admin-account-card {
+  max-width: none;
+}
+
+.admin-cal-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-color);
+}
+.admin-cal-status-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.admin-cal-status.is-on .admin-cal-status-dot {
+  background: #3fb950;
+  box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.18);
+}
+.admin-cal-status.is-off .admin-cal-status-dot {
+  background: #d29922;
+  box-shadow: 0 0 0 3px rgba(210, 153, 34, 0.18);
+}
+.admin-cal-status strong {
+  color: var(--soft-gold);
+}
+
+.admin-cal-url {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.admin-cal-url-text {
+  flex: 1 1 260px;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 11px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.admin-cal-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-cal-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+.admin-cal-check input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+}
+
+@media (max-width: 900px) {
+  .admin-cal-grid {
+    grid-template-columns: 1fr;
   }
 }

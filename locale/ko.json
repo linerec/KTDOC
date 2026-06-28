@@ -193,5 +193,24 @@
 
   "gallery.card.readMore": "자세히 보기",
   "gallery.card.viewDetails": "상세 페이지로 이동",
-  "gallery.card.eventCount": "{count}개의 행사"
+  "gallery.card.eventCount": "{count}개의 행사",
+
+  "pages.calendar.eyebrow": "CALENDAR · 일정 구독",
+  "pages.calendar.title": "학원 일정을 내 기기에서 받아보세요",
+  "pages.calendar.description": "공연·행사·캠프 일정을 한 번만 구독하면, 새 일정이 추가되거나 시간·장소가 바뀌어도 애플·구글·아웃룩 캘린더에 자동으로 반영됩니다.",
+  "pages.calendar.sub.addDevice": "기기 캘린더에 추가",
+  "pages.calendar.sub.addDeviceNote": "애플 · iPhone · Mac · Outlook",
+  "pages.calendar.sub.addGoogle": "구글 캘린더에 추가",
+  "pages.calendar.sub.addGoogleNote": "Google Calendar",
+  "pages.calendar.sub.copy": "주소 복사",
+  "pages.calendar.sub.copied": "복사됨 ✓",
+  "pages.calendar.sub.guide.appleIos.title": "iPhone · iPad (애플 캘린더)",
+  "pages.calendar.sub.guide.appleIos.body": "<li>위 <strong>‘기기 캘린더에 추가’</strong>를 누르면 구독 창이 열립니다. 바로 안 열리면 ‘주소 복사’로 URL을 복사하세요.</li><li>설정 → 캘린더 → 계정 → 계정 추가 → 기타 → <strong>구독 캘린더 추가</strong>를 선택합니다.</li><li>복사한 주소를 붙여넣고 저장합니다.</li>",
+  "pages.calendar.sub.guide.mac.title": "Mac (애플 캘린더)",
+  "pages.calendar.sub.guide.mac.body": "<li>캘린더 앱에서 파일 → <strong>새로운 캘린더 구독</strong>을 엽니다.</li><li>위 주소를 붙여넣고 구독을 누른 뒤, 자동 새로고침 주기를 선택합니다.</li>",
+  "pages.calendar.sub.guide.google.title": "Google 캘린더",
+  "pages.calendar.sub.guide.google.body": "<li><strong>‘구글 캘린더에 추가’</strong> 버튼을 누릅니다(데스크톱 권장).</li><li>안 열리면 Google 캘린더 → 다른 캘린더 + → <strong>URL로 추가</strong>에 위 주소를 붙여넣습니다.</li><li>구글은 구독 캘린더 갱신이 최대 24시간 정도 걸릴 수 있습니다.</li>",
+  "pages.calendar.sub.guide.outlook.title": "Outlook",
+  "pages.calendar.sub.guide.outlook.body": "<li>Outlook 캘린더 → 캘린더 추가 → <strong>웹에서 구독</strong>을 엽니다.</li><li>위 주소를 붙여넣고 이름을 지정한 뒤 가져옵니다.</li>",
+  "pages.calendar.sub.hint": "한 번 구독하면 새 공연·행사·캠프가 추가되거나 변경·취소될 때 자동으로 반영됩니다. 반영 시점은 각 캘린더 앱의 새로고침 주기를 따릅니다."
 }

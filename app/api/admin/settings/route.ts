@@ -7,12 +7,14 @@ import {
   setSetting,
   SETTING_HERO_FEATURED_VIDEO,
   SETTING_HEADER_BACKGROUND,
+  SETTING_CALENDAR_CONFIG,
 } from '@/lib/d1';
 
 // 임의 키 쓰기를 막기 위해 허용된 설정 키만 받는다.
 const ALLOWED_KEYS = new Set<string>([
   SETTING_HERO_FEATURED_VIDEO,
   SETTING_HEADER_BACKGROUND,
+  SETTING_CALENDAR_CONFIG,
 ]);
 
 // GET - 설정값 조회 (관리자 전용)

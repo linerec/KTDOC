@@ -193,5 +193,24 @@
 
   "gallery.card.readMore": "Read More",
   "gallery.card.viewDetails": "View event details",
-  "gallery.card.eventCount": "{count, plural, one {# event} other {# events}}"
+  "gallery.card.eventCount": "{count, plural, one {# event} other {# events}}",
+
+  "pages.calendar.eyebrow": "CALENDAR · SUBSCRIBE",
+  "pages.calendar.title": "Get academy events on your own device",
+  "pages.calendar.description": "Subscribe once to our performances, events, and camps. When dates, times, or venues change, your Apple, Google, or Outlook calendar updates automatically.",
+  "pages.calendar.sub.addDevice": "Add to device calendar",
+  "pages.calendar.sub.addDeviceNote": "Apple · iPhone · Mac · Outlook",
+  "pages.calendar.sub.addGoogle": "Add to Google Calendar",
+  "pages.calendar.sub.addGoogleNote": "Google Calendar",
+  "pages.calendar.sub.copy": "Copy link",
+  "pages.calendar.sub.copied": "Copied ✓",
+  "pages.calendar.sub.guide.appleIos.title": "iPhone · iPad (Apple Calendar)",
+  "pages.calendar.sub.guide.appleIos.body": "<li>Tap <strong>‘Add to device calendar’</strong> above to open the subscribe dialog. If it doesn’t open, use ‘Copy link’.</li><li>Go to Settings → Calendar → Accounts → Add Account → Other → <strong>Add Subscribed Calendar</strong>.</li><li>Paste the link and save.</li>",
+  "pages.calendar.sub.guide.mac.title": "Mac (Apple Calendar)",
+  "pages.calendar.sub.guide.mac.body": "<li>In Calendar, choose File → <strong>New Calendar Subscription</strong>.</li><li>Paste the link, subscribe, then pick an auto-refresh interval.</li>",
+  "pages.calendar.sub.guide.google.title": "Google Calendar",
+  "pages.calendar.sub.guide.google.body": "<li>Click <strong>‘Add to Google Calendar’</strong> (desktop recommended).</li><li>If it doesn’t open, go to Google Calendar → Other calendars + → <strong>From URL</strong> and paste the link.</li><li>Google may take up to 24 hours to refresh subscribed calendars.</li>",
+  "pages.calendar.sub.guide.outlook.title": "Outlook",
+  "pages.calendar.sub.guide.outlook.body": "<li>In Outlook Calendar, choose Add calendar → <strong>Subscribe from web</strong>.</li><li>Paste the link, name it, then import.</li>",
+  "pages.calendar.sub.hint": "Once subscribed, new performances, events, and camps — and any changes or cancellations — appear automatically. Timing depends on each calendar app’s refresh interval."
 }

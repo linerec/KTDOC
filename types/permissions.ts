@@ -20,6 +20,7 @@ export type MenuKey =
   | 'gallery'
   | 'gallery.photos'
   | 'gallery.categories'
+  | 'calendar'
   | 'library'
   | 'library.calendar'
   | 'library.archive'
