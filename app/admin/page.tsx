@@ -5,6 +5,8 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getCategories, getEvents, getGalleryPhotos, getPrograms, getApplicationCounts } from '@/lib/d1';
 import { getMemberCounts } from '@/lib/members';
+import type { MemberRole } from '@/types/members';
+import StudentDashboard from '@/components/admin/StudentDashboard';
 
 export const metadata: Metadata = {
   title: '관리 홈 | KTDOC Admin',
@@ -68,6 +70,16 @@ interface GuideStep {
 export default async function AdminDashboardPage() {
   const session = await auth();
   await requireMenuAccess(session, 'home');
+
+  // 원생·학부모는 운영진 집계 대신 가벼운 마이 대시보드(알림 켜기·신청 안내)를 본다.
+  const role = (session?.user?.role ?? 'user') as MemberRole;
+  if (role === 'student' || role === 'parent') {
+    const userName =
+      session?.user?.name ||
+      session?.user?.email?.split('@')[0] ||
+      (role === 'parent' ? '학부모' : '원생');
+    return <StudentDashboard userName={userName} isParent={role === 'parent'} />;
+  }
 
   const [
     programsAll,

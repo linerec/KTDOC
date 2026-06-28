@@ -25,6 +25,7 @@ export type MenuKey =
   | 'library.my'
   | 'members'
   | 'participation'
+  | 'notify'
   | 'profile'
   | 'settings.permissions';
 

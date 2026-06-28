@@ -1,0 +1,84 @@
+/**
+ * StudentDashboard — 원생·학부모용 마이 대시보드(/admin 착지 화면)
+ *
+ * "안내받아 쉽게 등록" 두 갈래를 한 화면에 모은다:
+ *  1) 알림 받기(푸시 구독) — PushOptInCard
+ *  2) 수업·프로그램 신청 — 공개 신청 페이지(/classes)로 연결
+ * 그리고 자주 쓰는 메뉴(캘린더·아카이브·사진 제출·프로필) 바로가기.
+ */
+
+import Link from 'next/link';
+import PushOptInCard from '@/components/push/PushOptInCard';
+
+interface QuickLink {
+  href: string;
+  title: string;
+  desc: string;
+}
+
+const QUICK_LINKS: QuickLink[] = [
+  { href: '/admin/library/calendar', title: '캘린더', desc: '다가오는 공연·수업 일정' },
+  { href: '/admin/library/archive', title: '내 참여 아카이브', desc: '참여한 이벤트와 사진' },
+  { href: '/admin/library/my', title: '내 사진 · 제출', desc: '내가 올린 사진 / 새로 올리기' },
+  { href: '/admin/profile', title: '내 프로필', desc: '이름·비밀번호·공개 설정' },
+];
+
+export default function StudentDashboard({
+  userName,
+  isParent,
+}: {
+  userName: string;
+  isParent: boolean;
+}) {
+  return (
+    <div className="admin-page admin-console">
+      <header className="admin-onboard-head">
+        <div className="admin-onboard-headtop">
+          <div>
+            <p className="admin-kicker">KTDOC</p>
+            <h1 className="admin-onboard-greet">
+              <b>{userName}</b>님, 반갑습니다.
+            </h1>
+            <p className="admin-onboard-lede">
+              {isParent
+                ? '자녀의 공연·수업 소식을 한곳에서 확인하실 수 있습니다.'
+                : '나의 공연·수업 소식을 한곳에서 확인할 수 있어요.'}
+            </p>
+          </div>
+          <Link href="/" target="_blank" className="admin-btn admin-btn-outline">
+            사이트 보기 ↗
+          </Link>
+        </div>
+      </header>
+
+      {/* 1) 알림 받기 — 온보딩 핵심 */}
+      <PushOptInCard />
+
+      {/* 2) 수업·프로그램 신청 */}
+      <section className="dash-cta">
+        <div className="dash-cta-body">
+          <h2 className="dash-cta-title">수업 · 프로그램 신청</h2>
+          <p className="dash-cta-desc">
+            정규 수업과 여름 캠프 등 모집 중인 프로그램을 둘러보고 바로 신청할 수 있습니다.
+          </p>
+        </div>
+        <Link href="/classes" className="admin-btn admin-btn-gold">
+          신청하러 가기 →
+        </Link>
+      </section>
+
+      {/* 3) 바로가기 */}
+      <section className="dash-links-wrap">
+        <h2 className="dash-section-title">바로가기</h2>
+        <div className="dash-links">
+          {QUICK_LINKS.map((q) => (
+            <Link key={q.href} href={q.href} className="dash-link">
+              <span className="dash-link-title">{q.title}</span>
+              <span className="dash-link-desc">{q.desc}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -17,7 +17,8 @@ import type { MemberRole } from '@/types/members';
 import type { MenuNode } from '@/types/permissions';
 
 export const MENU_REGISTRY: MenuNode[] = [
-  { key: 'home', href: '/admin', label: '관리 홈', iconKey: 'home', exact: true, defaultRoles: ['teacher', 'admin'] },
+  // 홈(대시보드): 운영진은 관리 대시보드, 원생·학부모는 마이 대시보드(알림 켜기·신청 안내)를 본다.
+  { key: 'home', href: '/admin', label: '홈', iconKey: 'home', exact: true, defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램', iconKey: 'calendar', defaultRoles: ['admin'] },
   { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', defaultRoles: ['admin'] },
   { key: 'gallery', href: '/admin/gallery', label: '이벤트 아카이브 관리', iconKey: 'gallery', defaultRoles: ['admin'] },
@@ -34,6 +35,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'members', href: '/admin/members', label: '회원 관리', iconKey: 'users', defaultRoles: ['teacher', 'admin'] },
   // 참여 현황: 이벤트별 참가자 수·명단(체크인 집계). 운영진·관계자 검증용.
   { key: 'participation', href: '/admin/participation', label: '참여 현황', iconKey: 'calendar', defaultRoles: ['teacher', 'admin'] },
+  // 알림 보내기: 운영진이 원생·학부모에게 푸시 알림(전체/역할별/개인)을 발송한다.
+  { key: 'notify', href: '/admin/notify', label: '알림 보내기', iconKey: 'bell', defaultRoles: ['teacher', 'admin'] },
   { key: 'profile', href: '/admin/profile', label: '내 프로필', iconKey: 'profile', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 권한 관리 툴: 관리자 전용 하드플로어(매트릭스로 자기 자신을 잠그는 사고 방지)
   { key: 'settings.permissions', href: '/admin/permissions', label: '권한 관리', iconKey: 'shield', requireRole: 'admin', fixed: true, defaultRoles: ['admin'] },

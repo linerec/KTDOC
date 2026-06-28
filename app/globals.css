@@ -9945,3 +9945,286 @@ ul {
     padding: calc(var(--header-height) + 16px) 20px 64px;
   }
 }
+
+/* ============================================================
+   푸시 알림 — 온보딩 카드 / 학생 대시보드 / 발송 화면
+   ============================================================ */
+
+/* 알림 받기 온보딩 카드 */
+.push-card {
+  background: rgba(212, 160, 23, 0.06);
+  border: 1px solid rgba(212, 160, 23, 0.32);
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 24px;
+}
+.push-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.push-card-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(212, 160, 23, 0.16);
+  color: var(--soft-gold);
+}
+.push-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.push-card-title {
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: var(--warm-ivory);
+  margin: 0 0 4px;
+}
+.push-card-lede {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.push-badge {
+  margin-left: auto;
+  flex: 0 0 auto;
+  align-self: center;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.push-badge--on {
+  color: var(--soft-gold);
+  background: rgba(212, 160, 23, 0.16);
+  border: 1px solid rgba(212, 160, 23, 0.4);
+}
+.push-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.push-card-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.push-card-status {
+  margin: 16px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.push-card-install {
+  margin-top: 16px;
+}
+.push-steps {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+.push-steps b {
+  color: var(--warm-ivory);
+}
+.push-card-feedback {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+.push-card-feedback--ok {
+  color: var(--soft-gold);
+  background: rgba(212, 160, 23, 0.12);
+  border: 1px solid rgba(212, 160, 23, 0.4);
+}
+.push-card-feedback--err {
+  color: #ffb4b0;
+  background: rgba(196, 48, 43, 0.14);
+  border: 1px solid rgba(196, 48, 43, 0.4);
+}
+
+/* 학생 대시보드 — 신청 CTA */
+.dash-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 24px;
+}
+.dash-cta-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--warm-ivory);
+  margin: 0 0 6px;
+}
+.dash-cta-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 60ch;
+}
+
+/* 학생 대시보드 — 바로가기 */
+.dash-links-wrap {
+  margin-bottom: 16px;
+}
+.dash-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+}
+.dash-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.dash-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  transition: background 0.16s, border-color 0.16s, transform 0.16s;
+}
+.dash-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(212, 160, 23, 0.4);
+  transform: translateY(-2px);
+}
+.dash-link-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--warm-ivory);
+}
+.dash-link-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* 발송 화면 */
+.notify-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.notify-grid .admin-account-card {
+  max-width: none;
+}
+.notify-target-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.notify-tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s;
+}
+.notify-tab.is-active {
+  background: rgba(212, 160, 23, 0.18);
+  color: var(--soft-gold);
+}
+.notify-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.notify-role-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+.notify-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.notify-history-item {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.notify-history-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.notify-history-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--warm-ivory);
+}
+.notify-history-when {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.notify-history-body {
+  margin: 6px 0 10px;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+.notify-history-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.notify-chip {
+  font-weight: 600;
+  color: var(--soft-gold);
+  background: rgba(212, 160, 23, 0.12);
+  border: 1px solid rgba(212, 160, 23, 0.32);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+@media (max-width: 900px) {
+  .notify-grid {
+    grid-template-columns: 1fr;
+  }
+}

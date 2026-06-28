@@ -3,8 +3,10 @@
  * - 설치 가능성(PWA) 확보 + GET 요청 네트워크 우선.
  * - 인증/관리 콘텐츠가 stale되지 않도록 적극적 캐싱은 하지 않는다.
  *   네트워크 실패 시에만 캐시 폴백(있으면).
+ * - 웹 푸시(push)·알림 클릭(notificationclick) 처리.
  */
-const CACHE = 'ktdoc-runtime-v1';
+const CACHE = 'ktdoc-runtime-v2';
+const NOTIF_ICON = '/assets/logo/logo_default.png';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -39,5 +41,45 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => caches.match(request))
+  );
+});
+
+// 웹 푸시 수신 → OS 알림 표시. payload는 {title, body, url, tag} JSON.
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : '' };
+  }
+  const title = data.title || 'KTDOC';
+  const options = {
+    body: data.body || '',
+    icon: NOTIF_ICON,
+    badge: NOTIF_ICON,
+    data: { url: data.url || '/admin' },
+    tag: data.tag || undefined,
+    renotify: Boolean(data.tag),
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// 알림 클릭 → 해당 URL로 기존 창을 포커스/이동, 없으면 새 창.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || '/admin';
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if ('focus' in client) {
+            if ('navigate' in client) client.navigate(target).catch(() => {});
+            return client.focus();
+          }
+        }
+        if (self.clients.openWindow) return self.clients.openWindow(target);
+        return undefined;
+      })
   );
 });
