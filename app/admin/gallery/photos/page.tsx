@@ -52,7 +52,7 @@ export default async function AdminGalleryPhotosPage() {
             이벤트 아카이브
           </Link>
           <Link href="/gallery" className="admin-btn admin-btn-outline" target="_blank">
-            공개 Gallery
+            공개 갤러리
           </Link>
         </div>
       </div>

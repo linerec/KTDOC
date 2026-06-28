@@ -47,13 +47,13 @@ export default async function AdminLibraryArchivePage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin/library">공연 · 갤러리</Link>
+            <Link href="/admin/library">이벤트 둘러보기</Link>
             <span>/</span>
             <span>내 참여 아카이브</span>
           </div>
           <h1 className="admin-title">내 참여 아카이브</h1>
           <p className="admin-subtitle">
-            체크인한 공연·이벤트를 연도별로 모았습니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.
+            체크인한 이벤트를 연도별로 모았습니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.
           </p>
         </div>
       </div>
@@ -63,9 +63,9 @@ export default async function AdminLibraryArchivePage() {
           <p>아직 체크인한 이벤트가 없습니다.</p>
           <p className="admin-empty-sub">
             <Link href="/admin/library" className="admin-callout-link">
-              공연 · 갤러리 둘러보기 →
+              이벤트 둘러보기 →
             </Link>
-            에서 본인이 참여한 공연을 찾아 체크인하면 이곳에 모입니다.
+            에서 본인이 참여한 이벤트를 찾아 체크인하면 이곳에 모입니다.
           </p>
         </div>
       ) : (

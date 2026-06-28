@@ -81,7 +81,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin/library">공연 · 갤러리 둘러보기</Link>
+            <Link href="/admin/library">이벤트 둘러보기</Link>
             <span>/</span>
             <span>{event.title_ko}</span>
           </div>

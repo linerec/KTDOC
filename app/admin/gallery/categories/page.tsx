@@ -31,7 +31,7 @@ export default async function AdminGalleryCategoriesPage() {
             <span>카테고리</span>
           </div>
           <h1 className="admin-title">이벤트 카테고리 관리</h1>
-          <p className="admin-subtitle">방문자가 Gallery에서 이벤트를 분류해 볼 때 사용하는 카테고리입니다.</p>
+          <p className="admin-subtitle">방문자가 갤러리 페이지에서 이벤트를 분류해 볼 때 사용하는 카테고리입니다.</p>
         </div>
         <div className="admin-header-actions">
           <Link href="/admin/gallery" className="admin-btn admin-btn-outline">

@@ -53,7 +53,7 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
           </div>
           <h1 className="admin-title">이벤트 아카이브 관리</h1>
           <p className="admin-subtitle">
-            공개 Gallery에 표시될 이벤트를 관리합니다. 사진과 영상은 각 이벤트 편집 화면에서 추가합니다.
+            공개 갤러리 페이지에 표시될 이벤트를 관리합니다. 사진과 영상은 각 이벤트 편집 화면에서 추가합니다.
           </p>
         </div>
         <div className="admin-header-actions">

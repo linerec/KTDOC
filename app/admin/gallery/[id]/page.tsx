@@ -56,7 +56,7 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
           </div>
           <h1 className="admin-title">아카이브 이벤트 편집</h1>
           <p className="admin-subtitle">
-            {event.year}년 · {event.is_published ? '공개 Gallery에 표시 중' : '비공개 저장 중'}
+            {event.year}년 · {event.is_published ? '공개 갤러리 페이지에 표시 중' : '비공개 저장 중'}
           </p>
         </div>
         <div className="admin-header-actions">

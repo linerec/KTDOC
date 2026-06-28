@@ -1,8 +1,8 @@
 /**
- * 공연 · 갤러리 둘러보기 (학생 · 학부모용, 읽기 전용)
+ * 이벤트 둘러보기 (학생 · 학부모용, 읽기 전용)
  *
  * 공개된 이벤트 아카이브를 검색·필터·열람한다. 콘텐츠 편집 기능은 없으며,
- * 카드를 누르면 공개 갤러리의 이벤트 상세(사진·영상)로 이동한다.
+ * 카드를 누르면 공개 갤러리 페이지의 이벤트 상세(사진·영상)로 이동한다.
  * 본인 사진 업로드/제출(library.my)은 소유자 데이터 모델이 준비된 후 추가된다.
  */
 
@@ -16,7 +16,7 @@ import type { MemberRole } from '@/types/members';
 import CheckinButton from '@/components/admin/library/CheckinButton';
 
 export const metadata: Metadata = {
-  title: '공연 · 갤러리 둘러보기 | KTDOC Admin',
+  title: '이벤트 둘러보기 | KTDOC Admin',
 };
 
 interface PageProps {
@@ -161,15 +161,15 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <span>공연 · 갤러리</span>
+            <span>이벤트</span>
             <span>/</span>
             <span>둘러보기</span>
           </div>
-          <h1 className="admin-title">공연 · 갤러리 둘러보기</h1>
+          <h1 className="admin-title">이벤트 둘러보기</h1>
           <p className="admin-subtitle">
             {canCheckIn
-              ? '본인이 참여한 공연·이벤트에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개) 이벤트에도 체크인할 수 있습니다.'
-              : '공개된 공연과 갤러리를 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.'}
+              ? '본인이 참여하는 이벤트에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개) 이벤트에도 체크인할 수 있습니다.'
+              : '공개된 이벤트를 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.'}
           </p>
         </div>
       </div>
@@ -245,10 +245,10 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
         <div className="admin-empty-state">
           <p>
             {mineOnly
-              ? '아직 체크인한 이벤트가 없습니다. 참여한 공연·이벤트에 체크인해 보세요.'
+              ? '아직 체크인한 이벤트가 없습니다. 참여한 이벤트에 체크인해 보세요.'
               : hasFilters
-                ? '조건에 맞는 공연 · 갤러리가 없습니다.'
-                : '아직 공개된 공연 · 갤러리가 없습니다.'}
+                ? '조건에 맞는 이벤트가 없습니다.'
+                : '아직 공개된 이벤트가 없습니다.'}
           </p>
         </div>
       ) : (

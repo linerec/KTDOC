@@ -177,30 +177,30 @@ export default async function AdminDashboardPage() {
     },
     {
       n: 4,
-      label: '공연 기록',
-      title: '공연을 기록합니다',
-      desc: "지난 공연을 사진·유튜브 영상과 함께 등록합니다. '공개'한 공연은 갤러리에 연도별로 정리되어 쌓입니다. 무용단을 대표하는 무대 기록입니다.",
+      label: '이벤트 기록',
+      title: '이벤트를 기록합니다',
+      desc: "지난 공연·행사를 사진·유튜브 영상과 함께 이벤트로 등록합니다. '공개'한 이벤트는 갤러리 페이지에 연도별로 정리되어 쌓입니다. 무용단을 대표하는 무대 기록입니다.",
       state: eventsPublished > 0 ? 'done' : 'todo',
       status:
         eventsPublished > 0
-          ? `공개 공연 ${eventsPublished}개${eventsShowcase > 0 ? ` · 대표 공연 ${eventsShowcase}개` : ''}`
-          : '아직 공개된 공연이 없습니다.',
+          ? `공개 이벤트 ${eventsPublished}개${eventsShowcase > 0 ? ` · 대표 이벤트 ${eventsShowcase}개` : ''}`
+          : '아직 공개된 이벤트가 없습니다.',
       tip: loose > 0 ? `정리되지 않은 사진 ${loose}장이 사진 보관함에 있습니다.` : undefined,
       ctaHref: '/admin/gallery/new',
-      ctaLabel: '+ 첫 공연 등록',
+      ctaLabel: '+ 첫 이벤트 등록',
     },
     {
       n: 5,
-      label: '대표 공연',
-      title: '대표 공연을 지정합니다',
-      desc: "가장 내세우고 싶은 공연 하나를 '대표 공연'으로 지정하면, 공연 페이지 상단에 크게 소개됩니다. 마지막 단계입니다.",
+      label: '대표 이벤트',
+      title: '대표 이벤트를 지정합니다',
+      desc: "가장 내세우고 싶은 이벤트 하나를 '대표'로 지정하면, 공연 페이지 상단에 크게 소개됩니다. 마지막 단계입니다.",
       state: eventsShowcase > 0 ? 'done' : 'todo',
       status:
         eventsShowcase > 0
-          ? `대표 공연 ${eventsShowcase}개 · 공연 페이지에 소개됩니다`
+          ? `대표 이벤트 ${eventsShowcase}개 · 공연 페이지에 소개됩니다`
           : eventsPublished > 0
-          ? '대표 공연을 아직 지정하지 않았습니다.'
-          : '먼저 공연을 등록해 주세요.',
+          ? '대표 이벤트를 아직 지정하지 않았습니다.'
+          : '먼저 이벤트를 등록해 주세요.',
       ctaHref: '/admin/gallery',
       ctaLabel: '이벤트 관리 →',
     },
@@ -232,7 +232,7 @@ export default async function AdminDashboardPage() {
             <p className="admin-onboard-lede">
               {isFreshSite
                 ? '춤누리 홈페이지를 관리하는 공간입니다.'
-                : `오늘의 현황 — 공개 수업 ${programsPublished} · 새 신청 ${appsNew} · 공개 공연 ${eventsPublished}`}
+                : `오늘의 현황 — 공개 수업 ${programsPublished} · 새 신청 ${appsNew} · 공개 이벤트 ${eventsPublished}`}
             </p>
           </div>
           <Link href="/" target="_blank" className="admin-btn admin-btn-outline">
@@ -323,7 +323,7 @@ export default async function AdminDashboardPage() {
         </div>
         {isFreshSite && (
           <p className="admin-workshop-quiet-line">
-            익숙해지신 뒤에는 이곳에서 바로 관리하실 수 있습니다 — 프로그램 · 신청 · 회원 · 공연·갤러리
+            익숙해지신 뒤에는 이곳에서 바로 관리하실 수 있습니다 — 프로그램 · 신청 · 회원 · 이벤트
           </p>
         )}
 
@@ -421,10 +421,10 @@ export default async function AdminDashboardPage() {
                 </span>
               </div>
             </div>
-            <h2 className="admin-domain-title">공연 · 갤러리</h2>
+            <h2 className="admin-domain-title">이벤트 아카이브</h2>
             <p className="admin-domain-desc">
-              공연 기록과 현장 사진·영상을 관리하고, 대표 공연을 공연 페이지 쇼케이스에 노출합니다.
-              연도별 아카이브는 갤러리에 표시됩니다.
+              이벤트(공연·행사) 기록과 현장 사진·영상을 관리하고, 대표 이벤트를 공연 페이지 쇼케이스에 노출합니다.
+              연도별 아카이브는 갤러리 페이지에 표시됩니다.
             </p>
             <div className="admin-domain-actions">
               <Link href="/admin/gallery" className="admin-btn admin-btn-primary">
