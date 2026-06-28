@@ -173,18 +173,17 @@ function zonedWallTimeToUtc(
   return result;
 }
 
-/** 단일 VEVENT 블록 라인들을 생성한다. */
-function buildVEvent(event: ICSEvent, dtstamp: string, tz: string): string[] {
-  const lines: string[] = ['BEGIN:VEVENT', `UID:${event.uid}`, `DTSTAMP:${dtstamp}`];
+/** 이벤트의 시작/종료를 종일/타임드로 해석한다(DTSTART/DTEND·구글 dates 공용). */
+type EventRange =
+  | { allDay: true; startDate: string; endDateExclusive: string } // 'YYYYMMDD'
+  | { allDay: false; startUtc: Date; endUtc: Date };
 
+function resolveEventRange(event: ICSEvent, tz: string): EventRange {
   const hm = event.startTime ? parseHM(event.startTime) : null;
-
   if (hm) {
     // 타임드 이벤트 — 벽시계를 UTC로 변환
     const [y, mo, d] = event.start.split('-').map(Number);
     const startUtc = zonedWallTimeToUtc(y, mo, d, hm[0], hm[1], tz);
-    lines.push(`DTSTART:${toICSUtc(startUtc)}`);
-
     let endUtc: Date;
     const endHm = event.endTime ? parseHM(event.endTime) : null;
     if (endHm) {
@@ -196,14 +195,38 @@ function buildVEvent(event: ICSEvent, dtstamp: string, tz: string): string[] {
     } else {
       endUtc = new Date(startUtc.getTime() + DEFAULT_DURATION_MS);
     }
-    lines.push(`DTEND:${toICSUtc(endUtc)}`);
+    return { allDay: false, startUtc, endUtc };
+  }
+  // 종일 이벤트 — DTEND는 배타적(종료일 + 1)
+  return {
+    allDay: true,
+    startDate: toICSDate(event.start),
+    endDateExclusive: event.end ? shiftDateStr(event.end, 1) : shiftDateStr(event.start, 1),
+  };
+}
+
+/**
+ * Google Calendar "URL로 추가(TEMPLATE)" 링크의 `dates=` 파라미터 값을 만든다.
+ * 타임드: `YYYYMMDDTHHMMSSZ/YYYYMMDDTHHMMSSZ`(UTC), 종일: `YYYYMMDD/YYYYMMDD`(배타적).
+ */
+export function googleCalendarDates(event: ICSEvent, tz: string): string {
+  const r = resolveEventRange(event, tz);
+  return r.allDay
+    ? `${r.startDate}/${r.endDateExclusive}`
+    : `${toICSUtc(r.startUtc)}/${toICSUtc(r.endUtc)}`;
+}
+
+/** 단일 VEVENT 블록 라인들을 생성한다. */
+function buildVEvent(event: ICSEvent, dtstamp: string, tz: string): string[] {
+  const lines: string[] = ['BEGIN:VEVENT', `UID:${event.uid}`, `DTSTAMP:${dtstamp}`];
+
+  const range = resolveEventRange(event, tz);
+  if (range.allDay) {
+    lines.push(`DTSTART;VALUE=DATE:${range.startDate}`);
+    lines.push(`DTEND;VALUE=DATE:${range.endDateExclusive}`);
   } else {
-    // 종일 이벤트 — DTEND는 배타적(종료일 + 1)
-    lines.push(`DTSTART;VALUE=DATE:${toICSDate(event.start)}`);
-    const endExclusive = event.end
-      ? shiftDateStr(event.end, 1)
-      : shiftDateStr(event.start, 1);
-    lines.push(`DTEND;VALUE=DATE:${endExclusive}`);
+    lines.push(`DTSTART:${toICSUtc(range.startUtc)}`);
+    lines.push(`DTEND:${toICSUtc(range.endUtc)}`);
   }
 
   lines.push(`SUMMARY:${escapeText(event.summary)}`);

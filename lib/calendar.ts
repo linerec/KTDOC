@@ -9,7 +9,8 @@
  */
 
 import { getEvents, getPrograms, getSetting, SETTING_CALENDAR_CONFIG } from '@/lib/d1';
-import type { ICSEvent } from '@/lib/ical';
+import { googleCalendarDates, type ICSEvent } from '@/lib/ical';
+import type { Event } from '@/types/gallery';
 
 /** UID 도메인 — 변경/삭제 동기화를 위해 안정적으로 유지한다. */
 const UID_DOMAIN = 'ktdoc.org';
@@ -67,6 +68,47 @@ function toPlainDescription(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+/** 공연·행사(events) 한 건을 ICSEvent로 변환(피드·단일 .ics 공용). */
+export function eventToICSEvent(ev: Event, baseUrl: string): ICSEvent {
+  return {
+    uid: `event-${ev.id}@${UID_DOMAIN}`,
+    start: ev.event_date,
+    startTime: ev.start_time,
+    endTime: ev.end_time,
+    summary: ev.title_ko || ev.title_en || '행사',
+    description: toPlainDescription(ev.description_ko || ev.description_en),
+    location: ev.location,
+    // 한글 slug는 퍼센트 인코딩(ICS URL은 URI 값 타입)
+    url: `${baseUrl}/gallery/${ev.year}/${encodeURIComponent(ev.slug)}`,
+    created: ev.created_at,
+    lastModified: ev.updated_at,
+  };
+}
+
+/**
+ * 이벤트 1건을 "내 캘린더에 추가"하는 링크들을 만든다.
+ * - icsUrl: 단일 .ics 다운로드(애플/iOS/Mac/Outlook에서 일회성 추가)
+ * - googleUrl: Google Calendar TEMPLATE(미리 채워진 새 일정) 링크
+ */
+export function buildAddToCalendarLinks(
+  ev: Event,
+  baseUrl: string,
+  tz: string
+): { icsUrl: string; googleUrl: string } {
+  const ics = eventToICSEvent(ev, baseUrl);
+  const params = new URLSearchParams();
+  params.set('action', 'TEMPLATE');
+  params.set('text', ics.summary);
+  params.set('dates', googleCalendarDates(ics, tz));
+  if (ics.location) params.set('location', ics.location);
+  const details = [ics.description, ics.url].filter(Boolean).join('\n\n');
+  if (details) params.set('details', details);
+  return {
+    icsUrl: `${baseUrl}/api/calendar/event/${ev.id}`,
+    googleUrl: `https://calendar.google.com/calendar/render?${params.toString()}`,
+  };
+}
+
 /**
  * 공개 구독 피드에 포함할 모든 일정을 반환한다(설정의 포함범위 반영).
  * @param baseUrl 절대 URL 베이스(예: https://ktdoc.org) — 이벤트 상세 링크 생성에 사용
@@ -84,19 +126,7 @@ export async function getCalendarEvents(
     const { events } = await getEvents({ published: true, limit: 500 });
     for (const ev of events) {
       if (!ev.event_date) continue;
-      items.push({
-        uid: `event-${ev.id}@${UID_DOMAIN}`,
-        start: ev.event_date,
-        startTime: ev.start_time,
-        endTime: ev.end_time,
-        summary: ev.title_ko || ev.title_en || '행사',
-        description: toPlainDescription(ev.description_ko || ev.description_en),
-        location: ev.location,
-        // 한글 slug는 퍼센트 인코딩(ICS URL은 URI 값 타입)
-        url: `${baseUrl}/gallery/${ev.year}/${encodeURIComponent(ev.slug)}`,
-        created: ev.created_at,
-        lastModified: ev.updated_at,
-      });
+      items.push(eventToICSEvent(ev, baseUrl));
     }
   }
 

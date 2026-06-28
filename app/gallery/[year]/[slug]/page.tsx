@@ -4,10 +4,13 @@
  */
 
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { getEventBySlug, getAdjacentEvents, incrementViewCount } from '@/lib/d1';
+import { getCalendarConfig, buildAddToCalendarLinks } from '@/lib/calendar';
 import { formatEventDate } from '@/types/gallery';
+import IntlObject from '@/components/common/IntlObject';
 import ImageGallery from '@/components/gallery/ImageGallery';
 import { VideoList } from '@/components/gallery/VideoEmbed';
 import GalleryBackLink from '@/components/gallery/GalleryBackLink';
@@ -95,6 +98,13 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   const formattedDate = formatEventDate(event.event_date, 'ko');
 
+  // "내 캘린더에 추가" 링크(기기 .ics / 구글). 요청 host 기준 절대 URL.
+  const hdrs = await headers();
+  const host = hdrs.get('x-forwarded-host') || hdrs.get('host') || 'ktdoc.org';
+  const proto = hdrs.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
+  const calTz = (await getCalendarConfig()).timezone;
+  const calLinks = buildAddToCalendarLinks(event, `${proto}://${host}`, calTz);
+
   return (
     <main className="gallery-detail-page">
       {/* Back Navigation */}
@@ -116,6 +126,22 @@ export default async function EventDetailPage({ params }: PageProps) {
             <p className="gallery-detail-title-en">{event.title_en}</p>
           )}
           <p className="gallery-detail-date">{formattedDate}</p>
+
+          {/* 내 캘린더에 추가 (ko/en) */}
+          <div className="gallery-detail-cal">
+            <a className="gallery-cal-btn gallery-cal-btn--primary" href={calLinks.icsUrl}>
+              <span aria-hidden="true">📅</span>
+              <IntlObject keycode="pages.calendar.sub.addDevice" />
+            </a>
+            <a
+              className="gallery-cal-btn"
+              href={calLinks.googleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <IntlObject keycode="pages.calendar.sub.addGoogle" />
+            </a>
+          </div>
         </div>
       </section>
 

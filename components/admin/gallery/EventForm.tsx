@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { EventDetail, EventCategory, CreateEventInput, UpdateEventInput } from '@/types/gallery';
+import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
 import ImageUploader from './ImageUploader';
 import ImageSortable from './ImageSortable';
 import VideoManager from './VideoManager';
@@ -26,6 +27,13 @@ export default function EventForm({
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 저장 시 회원에게 푸시 알림(신규는 기본 ON, 공개 상태일 때만 발송)
+  const [notify, setNotify] = useState(isNew);
+  const [notifyTarget, setNotifyTarget] = useState<'all' | 'role'>('role');
+  const [notifyRoles, setNotifyRoles] = useState<MemberRole[]>(['student', 'parent']);
+  const toggleNotifyRole = (r: MemberRole) =>
+    setNotifyRoles((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
 
   // Form state
   const [formData, setFormData] = useState({
@@ -103,6 +111,37 @@ export default function EventForm({
 
       if (!data.success) {
         throw new Error(data.error || '저장에 실패했습니다.');
+      }
+
+      // 저장 성공 후, 선택 시 회원에게 푸시 알림(공개 이벤트만). 실패해도 저장은 유지.
+      const eventId = isNew ? data.data?.id : event?.id;
+      if (notify && formData.is_published && eventId) {
+        try {
+          const when = [formData.event_date, formData.start_time].filter(Boolean).join(' ');
+          const loc = formData.location ? ` · ${formData.location}` : '';
+          const title = `${isNew ? '[새 일정] ' : '[일정 변경] '}${formData.title_ko}`.slice(0, 200);
+          const pushBody = (`${when}${loc}`.trim() || '자세히 보려면 탭하세요.').slice(0, 1000);
+          const target =
+            notifyTarget === 'all'
+              ? { type: 'all' as const }
+              : { type: 'role' as const, roles: notifyRoles };
+          const pres = await fetch('/api/push/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title,
+              body: pushBody,
+              url: `/gallery/event/${eventId}`,
+              target,
+            }),
+          });
+          const pdata = await pres.json().catch(() => ({}));
+          if (!pres.ok || pdata.error) {
+            console.warn('알림 발송 실패:', pdata.error);
+          }
+        } catch (err) {
+          console.warn('알림 발송 오류:', err);
+        }
       }
 
       // Redirect to event list or detail page
@@ -355,6 +394,81 @@ export default function EventForm({
               />
             </div>
           </div>
+        </div>
+
+        {/* 회원에게 알림 */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">회원에게 알림</h3>
+          <p className="admin-form-help">
+            저장할 때 원생·학부모·선생님에게 푸시 알림을 보낼 수 있습니다. 알림을 탭하면 이
+            이벤트로 이동해 각자 캘린더에 추가할 수 있습니다.
+          </p>
+
+          <div className="admin-form-checkbox">
+            <input
+              type="checkbox"
+              id="notify"
+              checked={notify && formData.is_published}
+              onChange={(e) => setNotify(e.target.checked)}
+              disabled={!formData.is_published}
+            />
+            <label htmlFor="notify">저장 시 회원에게 알림 보내기</label>
+          </div>
+
+          {!formData.is_published && (
+            <p className="admin-form-help" style={{ marginTop: 8, borderBottom: 'none', paddingBottom: 0 }}>
+              ‘공개 Gallery에 표시’가 켜진 공개 이벤트일 때만 알림을 보낼 수 있습니다.
+            </p>
+          )}
+
+          {notify && formData.is_published && (
+            <div className="admin-form-group" style={{ marginTop: 14 }}>
+              <span className="admin-form-label">보낼 대상</span>
+              <div className="notify-target-tabs">
+                {(
+                  [
+                    ['all', '전체'],
+                    ['role', '역할별'],
+                  ] as ['all' | 'role', string][]
+                ).map(([val, label]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    className={`notify-tab${notifyTarget === val ? ' is-active' : ''}`}
+                    onClick={() => setNotifyTarget(val)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {notifyTarget === 'role' && (
+                <div className="notify-roles" style={{ marginTop: 10 }}>
+                  {(['student', 'parent', 'teacher', 'admin'] as MemberRole[]).map((r) => (
+                    <label key={r} className="notify-role-check">
+                      <input
+                        type="checkbox"
+                        checked={notifyRoles.includes(r)}
+                        onChange={() => toggleNotifyRole(r)}
+                      />
+                      <span>{MEMBER_ROLE_LABELS[r]}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              <p className="admin-form-help" style={{ marginTop: 12, borderBottom: 'none', paddingBottom: 0 }}>
+                미리보기:{' '}
+                <strong>
+                  {isNew ? '[새 일정] ' : '[일정 변경] '}
+                  {formData.title_ko || '(제목)'}
+                </strong>
+                {' — '}
+                {[formData.event_date, formData.start_time].filter(Boolean).join(' ') || '(날짜)'}
+                {formData.location ? ` · ${formData.location}` : ''}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Media Section - Only show for existing events */}

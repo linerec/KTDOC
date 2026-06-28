@@ -1349,6 +1349,15 @@ ul {
     font-size: 1.1rem;
   }
 
+  /* 모바일 드로어는 스크롤 상태와 무관하게 항상 어두운 배경(var(--bg-color))이다.
+     따라서 상단/스크롤용 메뉴 글자색 변수(--header-nav-color-*)에 연동하지 않고
+     항상 밝은 글자색을 강제해 가시성을 확보한다.
+     (최상단에서 어두운 글자색이 지정돼 드로어 글자가 안 보이던 문제 수정) */
+  #main-nav a,
+  #main-header.scrolled #main-nav a {
+    color: var(--text-color);
+  }
+
   .mobile-nav-auth {
     display: block;
     width: min(100%, 280px);
@@ -10695,4 +10704,44 @@ ul {
   .admin-cal-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============================================
+   Gallery event detail — "내 캘린더에 추가"
+   ============================================ */
+.gallery-detail-cal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.gallery-cal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(224, 184, 79, 0.5);
+  background: rgba(224, 184, 79, 0.06);
+  color: var(--warm-ivory);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease-out-quart), border-color 0.3s var(--ease-out-quart),
+    background 0.3s var(--ease-out-quart);
+}
+.gallery-cal-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--soft-gold);
+  background: rgba(224, 184, 79, 0.12);
+}
+.gallery-cal-btn--primary {
+  background: linear-gradient(135deg, var(--deep-red), var(--secondary-color));
+  border-color: transparent;
+  box-shadow: 0 10px 26px rgba(143, 33, 29, 0.28);
+}
+.gallery-cal-btn--primary:hover {
+  background: linear-gradient(135deg, var(--secondary-color), var(--deep-red));
+  border-color: transparent;
 }
