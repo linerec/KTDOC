@@ -126,7 +126,6 @@ export default async function RootLayout({
       </head>
       <body style={headerCssVars as React.CSSProperties} data-header-bg={headerBgRaw ?? undefined}>
         <Providers initialLogo={headerLogo}>
-          <div className="bg-layer" aria-hidden="true" />
           {inkAmbient && (
             <div className="ink-ambient" aria-hidden="true">
               <span className="ink-ambient__wash ink-ambient__wash--gold" />
