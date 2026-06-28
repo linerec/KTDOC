@@ -18,10 +18,20 @@ interface InboxItem {
   sender_name: string | null;
 }
 
+// 서버(UTC)·브라우저(로컬TZ) 렌더가 동일해야 하이드레이션 불일치(React #418)가 없다.
+// 고정 타임존(Asia/Seoul)으로 양쪽 동일 문자열을 만든다.
 function formatWhen(value: string): string {
   const d = new Date(value.includes('T') ? value : value.replace(' ', 'T') + 'Z');
   if (Number.isNaN(d.getTime())) return value;
-  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}. ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(d);
 }
 
 export default function InboxList({ initialItems }: { initialItems: InboxItem[] }) {

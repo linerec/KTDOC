@@ -33,10 +33,18 @@ type TargetType = 'all' | 'role' | 'user';
 
 const ROLE_CHOICES: MemberRole[] = ['student', 'parent', 'teacher', 'admin'];
 
+// 고정 타임존(Asia/Seoul)으로 서버·클라 렌더를 일치시켜 하이드레이션 불일치를 피한다.
 function formatWhen(value: string): string {
   const d = new Date(value.includes('T') ? value : value.replace(' ', 'T') + 'Z');
   if (Number.isNaN(d.getTime())) return value;
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(d);
 }
 
 export default function NotifyComposer({
