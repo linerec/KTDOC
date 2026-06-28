@@ -341,6 +341,26 @@ export async function isGuardianOf(
   return rows.length > 0;
 }
 
+/** 정회원(active) 전체의 user.id — 알림 "전체" 발송 대상 해석용. */
+export async function getActiveMemberIds(): Promise<string[]> {
+  const rows = await query<{ id: string }[]>(
+    `SELECT id FROM users WHERE status = 'active'`
+  );
+  return rows.map((r) => r.id);
+}
+
+/** 특정 역할(role)의 정회원 user.id — 알림 "역할별" 발송 대상 해석용. */
+export async function getMemberIdsByRoles(roles: MemberRole[]): Promise<string[]> {
+  const list = Array.from(new Set(roles.filter(Boolean)));
+  if (!list.length) return [];
+  const placeholders = list.map(() => '?').join(', ');
+  const rows = await query<{ id: string }[]>(
+    `SELECT id FROM users WHERE status = 'active' AND role IN (${placeholders})`,
+    list
+  );
+  return rows.map((r) => r.id);
+}
+
 /** 여러 회원의 연락 정보(id·이름·이메일) — 알림 발송 등. */
 export async function getUsersByIds(
   ids: string[]

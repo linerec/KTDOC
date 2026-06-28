@@ -19,6 +19,8 @@ import type { MenuNode } from '@/types/permissions';
 export const MENU_REGISTRY: MenuNode[] = [
   // 홈(대시보드): 운영진은 관리 대시보드, 원생·학부모는 마이 대시보드(알림 켜기·신청 안내)를 본다.
   { key: 'home', href: '/admin', label: '홈', iconKey: 'home', exact: true, defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
+  // 내 알림(받은 알림함): 운영진이 보낸 알림을 회원이 언제든 다시 보고 읽음/삭제.
+  { key: 'inbox', href: '/admin/inbox', label: '내 알림', iconKey: 'inbox', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램', iconKey: 'calendar', defaultRoles: ['admin'] },
   { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', defaultRoles: ['admin'] },
   { key: 'gallery', href: '/admin/gallery', label: '이벤트 아카이브 관리', iconKey: 'gallery', defaultRoles: ['admin'] },

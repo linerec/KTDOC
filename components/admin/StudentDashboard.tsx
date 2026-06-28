@@ -26,9 +26,11 @@ const QUICK_LINKS: QuickLink[] = [
 export default function StudentDashboard({
   userName,
   isParent,
+  unreadCount,
 }: {
   userName: string;
   isParent: boolean;
+  unreadCount: number;
 }) {
   return (
     <div className="admin-page admin-console">
@@ -71,6 +73,15 @@ export default function StudentDashboard({
       <section className="dash-links-wrap">
         <h2 className="dash-section-title">바로가기</h2>
         <div className="dash-links">
+          <Link href="/admin/inbox" className="dash-link">
+            <span className="dash-link-title">
+              내 알림
+              {unreadCount > 0 && <span className="dash-badge">{unreadCount}</span>}
+            </span>
+            <span className="dash-link-desc">
+              {unreadCount > 0 ? `안 읽은 알림 ${unreadCount}개` : '받은 공지·일정 알림'}
+            </span>
+          </Link>
           {QUICK_LINKS.map((q) => (
             <Link key={q.href} href={q.href} className="dash-link">
               <span className="dash-link-title">{q.title}</span>

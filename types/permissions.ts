@@ -14,6 +14,7 @@ import type { MemberRole } from '@/types/members';
  */
 export type MenuKey =
   | 'home'
+  | 'inbox'
   | 'programs'
   | 'applications'
   | 'gallery'

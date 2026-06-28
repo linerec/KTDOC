@@ -7,6 +7,7 @@ import { getCategories, getEvents, getGalleryPhotos, getPrograms, getApplication
 import { getMemberCounts } from '@/lib/members';
 import type { MemberRole } from '@/types/members';
 import StudentDashboard from '@/components/admin/StudentDashboard';
+import { countUnread } from '@/lib/push/notifications';
 
 export const metadata: Metadata = {
   title: '관리 홈 | KTDOC Admin',
@@ -78,7 +79,14 @@ export default async function AdminDashboardPage() {
       session?.user?.name ||
       session?.user?.email?.split('@')[0] ||
       (role === 'parent' ? '학부모' : '원생');
-    return <StudentDashboard userName={userName} isParent={role === 'parent'} />;
+    const unreadCount = await countUnread(session!.user!.id!).catch(() => 0);
+    return (
+      <StudentDashboard
+        userName={userName}
+        isParent={role === 'parent'}
+        unreadCount={unreadCount}
+      />
+    );
   }
 
   const [
