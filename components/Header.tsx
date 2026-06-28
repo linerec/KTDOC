@@ -9,6 +9,7 @@ import { useBuilder } from '@/contexts/BuilderContext';
 import { useHeaderSettings } from '@/contexts/HeaderSettingsContext';
 import IntlObject from '@/components/common/IntlObject';
 import HeaderBackgroundEditor from '@/components/HeaderBackgroundEditor';
+import HeaderWaves from '@/components/HeaderWaves';
 import { isAdmin, canEnterAdmin } from '@/lib/isAdmin';
 import { headerLogoAsset } from '@/lib/headerBackground';
 
@@ -36,6 +37,8 @@ export default function Header() {
     const headerClassName = [isScrolled && 'scrolled', isLogoExpanded && 'logo-expanded']
         .filter(Boolean)
         .join(' ');
+    // 헤더 Top Bar의 한국적 선 인터랙션. ink-ambient와 동일하게 환경변수로 끌 수 있다.
+    const headerWaves = process.env.NEXT_PUBLIC_HEADER_WAVES !== 'off';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -125,6 +128,8 @@ export default function Header() {
     return (
         <>
             <header id="main-header" className={headerClassName}>
+                {/* 한국적·단아한 선 인터랙션(canvas) — header-inner 뒤에 깔린다 */}
+                {headerWaves && <HeaderWaves />}
                 {/* Top Bar 섹션 설정 진입 버튼 — 헤더 영역 좌하단. 편집 모드 관리자에게만 노출 */}
                 {session && isAdmin(session) && isEditMode && <HeaderBackgroundEditor />}
                 <div className="header-inner">
