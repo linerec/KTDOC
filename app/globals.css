@@ -6464,6 +6464,18 @@ ul {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* 저장 결과를 버튼 옆(왼쪽)에 표시 */
+.admin-form-saved {
+  align-self: center;
+  margin-right: auto;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #3fb950;
+}
+.admin-form-saved--error {
+  color: var(--secondary-color);
+}
+
 /* Admin Alert */
 .admin-alert {
   padding: 14px 18px;

@@ -27,6 +27,9 @@ export default function EventForm({
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 저장 완료 피드백(편집 시 화면 변화가 없어 명확한 신호가 필요)
+  const [saved, setSaved] = useState(false);
+  const [savedMsg, setSavedMsg] = useState('');
 
   // 저장 시 회원에게 푸시 알림(신규는 기본 ON, 공개 상태일 때만 발송)
   const [notify, setNotify] = useState(isNew);
@@ -64,6 +67,9 @@ export default function EventForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+    // 다시 편집하기 시작하면 이전 저장 성공 표시를 지운다(오해 방지).
+    if (savedMsg) setSavedMsg('');
+    if (saved) setSaved(false);
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
@@ -73,6 +79,7 @@ export default function EventForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSavedMsg('');
     setSaving(true);
 
     try {
@@ -115,6 +122,7 @@ export default function EventForm({
 
       // 저장 성공 후, 선택 시 회원에게 푸시 알림(공개 이벤트만). 실패해도 저장은 유지.
       const eventId = isNew ? data.data?.id : event?.id;
+      let notifyNote = '';
       if (notify && formData.is_published && eventId) {
         try {
           const when = [formData.event_date, formData.start_time].filter(Boolean).join(' ');
@@ -138,17 +146,26 @@ export default function EventForm({
           const pdata = await pres.json().catch(() => ({}));
           if (!pres.ok || pdata.error) {
             console.warn('알림 발송 실패:', pdata.error);
+            notifyNote = ' (알림 발송은 실패했습니다)';
+          } else {
+            notifyNote = ' · 회원에게 알림을 보냈습니다';
           }
         } catch (err) {
           console.warn('알림 발송 오류:', err);
+          notifyNote = ' (알림 발송은 실패했습니다)';
         }
       }
 
-      // Redirect to event list or detail page
+      // 저장 완료를 명확히 알린다.
       if (isNew && data.data?.id) {
+        // 신규: 새 이벤트 편집 화면으로 이동(화면 전환 자체가 저장 신호)
         router.push(`/admin/gallery/${data.data.id}`);
       } else {
+        // 편집: 화면이 그대로이므로 성공 메시지·버튼 상태로 강하게 표시
+        setSaved(true);
+        setSavedMsg(`저장되었습니다${notifyNote}.`);
         router.refresh();
+        window.setTimeout(() => setSaved(false), 3000);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
@@ -517,6 +534,13 @@ export default function EventForm({
 
       {/* Actions */}
       <div className="admin-form-actions">
+        {/* 저장 결과를 버튼 옆에 바로 보여준다(편집 시 화면 변화가 없어도 명확히) */}
+        {savedMsg && (
+          <span className="admin-form-saved" role="status">✓ {savedMsg}</span>
+        )}
+        {error && (
+          <span className="admin-form-saved admin-form-saved--error" role="alert">{error}</span>
+        )}
         <button
           type="button"
           className="admin-btn admin-btn-outline"
@@ -527,10 +551,10 @@ export default function EventForm({
         </button>
         <button
           type="submit"
-          className="admin-btn admin-btn-primary"
+          className={`admin-btn ${saved ? 'admin-btn-gold' : 'admin-btn-primary'}`}
           disabled={saving}
         >
-          {saving ? '저장 중...' : isNew ? '생성' : '저장'}
+          {saving ? '저장 중...' : saved ? '저장됨 ✓' : isNew ? '생성' : '저장'}
         </button>
       </div>
     </form>
