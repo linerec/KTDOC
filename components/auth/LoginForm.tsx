@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import IntlObject from '@/components/common/IntlObject';
@@ -26,6 +26,15 @@ export default function LoginForm() {
     { label: '학부모', email: 'parent.test@ktdoc.org' },
   ];
 
+  // 로그인한 회원(관리자·선생님·원생·학부모)은 열람이 아니라 업무가 목적이므로
+  // 곧장 관리 콘솔로 보낸다. 역할별 착지는 admin 레이아웃이 첫 허용 메뉴로 처리.
+  // 승인 대기(pending) 회원은 콘솔 진입이 막혀 있어 홈으로 안내한다.
+  const redirectAfterLogin = async () => {
+    const session = await getSession();
+    router.push(session?.user?.status === 'active' ? '/admin' : '/');
+    router.refresh();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -41,8 +50,7 @@ export default function LoginForm() {
       if (result?.error) {
         setError(messages['auth.error.invalidCredentials']);
       } else {
-        router.push('/');
-        router.refresh();
+        await redirectAfterLogin();
       }
     } catch {
       setError(messages['auth.error.loginFailed']);
@@ -63,8 +71,7 @@ export default function LoginForm() {
       if (result?.error) {
         setError(messages['auth.error.invalidCredentials']);
       } else {
-        router.push('/');
-        router.refresh();
+        await redirectAfterLogin();
       }
     } catch {
       setError(messages['auth.error.loginFailed']);

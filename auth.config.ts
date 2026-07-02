@@ -22,9 +22,11 @@ export const authConfig: NextAuthConfig = {
       const isAdminRoute = pathname.startsWith('/admin');
       const isProtectedRoute = isAdminRoute || pathname.startsWith('/dashboard');
 
-      // 로그인 사용자는 인증 페이지 접근 시 홈으로
+      // 로그인 사용자는 인증 페이지 접근 시 콘솔로 — 회원은 열람이 아니라
+      // 업무가 목적. 승인 대기(pending)는 콘솔 진입 불가라 홈으로.
       if (isLoggedIn && isAuthPage) {
-        return Response.redirect(new URL('/', nextUrl.origin));
+        const target = status === 'active' ? '/admin' : '/';
+        return Response.redirect(new URL(target, nextUrl.origin));
       }
 
       // 관리 콘솔(/admin) 코스 게이트: 로그인 + 정회원(active)만.
