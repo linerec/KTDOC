@@ -32,6 +32,10 @@ export interface Event {
   // 실행 정보(멤버가 "어디서·언제·무엇을 준비"를 바로 파악). 모두 nullable.
   location: string | null;
   location_url: string | null;
+  // 구조화 위치(지오코딩 결과) — 좌표가 있으면 상세 페이지에 지도를 렌더링한다.
+  location_address: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
   call_time: string | null;
   start_time: string | null;
   end_time: string | null;
@@ -208,6 +212,10 @@ export interface CreateEventInput {
   // 실행 정보
   location?: string;
   location_url?: string;
+  // 구조화 위치 — null이면 값 지우기
+  location_address?: string | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
   call_time?: string;
   start_time?: string;
   end_time?: string;

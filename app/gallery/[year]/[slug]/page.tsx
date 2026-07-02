@@ -11,6 +11,7 @@ import { getEventBySlug, getAdjacentEvents, incrementViewCount } from '@/lib/d1'
 import { getCalendarConfig, buildAddToCalendarLinks } from '@/lib/calendar';
 import { formatEventDate } from '@/types/gallery';
 import IntlObject from '@/components/common/IntlObject';
+import EventLocationMap from '@/components/events/EventLocationMap';
 import ImageGallery from '@/components/gallery/ImageGallery';
 import { VideoList } from '@/components/gallery/VideoEmbed';
 import GalleryBackLink from '@/components/gallery/GalleryBackLink';
@@ -177,6 +178,27 @@ export default async function EventDetailPage({ params }: PageProps) {
                 <p>{event.description_en}</p>
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* 오시는 길 — 좌표가 있으면 지도, 없으면 장소명·링크만 */}
+      {(event.location ||
+        event.location_address ||
+        (event.location_lat !== null && event.location_lng !== null) ||
+        event.location_url) && (
+        <section className="gallery-detail-location">
+          <div className="container">
+            <GallerySectionTitle keycode="gallery.detail.location" />
+            <EventLocationMap
+              location={event.location}
+              address={event.location_address}
+              lat={event.location_lat}
+              lng={event.location_lng}
+              locationUrl={event.location_url}
+              directionsLabel={<IntlObject keycode="gallery.detail.directions" />}
+              largerMapLabel={<IntlObject keycode="gallery.detail.largerMap" />}
+            />
           </div>
         </section>
       )}

@@ -77,7 +77,12 @@ export function eventToICSEvent(ev: Event, baseUrl: string): ICSEvent {
     endTime: ev.end_time,
     summary: ev.title_ko || ev.title_en || '행사',
     description: toPlainDescription(ev.description_ko || ev.description_en),
-    location: ev.location,
+    // 장소명 + 주소 — 캘린더 앱이 주소로 지도를 연결할 수 있게 둘 다 담는다
+    location: [ev.location, ev.location_address].filter(Boolean).join(', ') || null,
+    geo:
+      ev.location_lat !== null && ev.location_lng !== null
+        ? { lat: ev.location_lat, lng: ev.location_lng }
+        : null,
     // 한글 slug는 퍼센트 인코딩(ICS URL은 URI 값 타입)
     url: `${baseUrl}/gallery/${ev.year}/${encodeURIComponent(ev.slug)}`,
     created: ev.created_at,

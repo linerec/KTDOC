@@ -1,0 +1,250 @@
+'use client';
+
+/**
+ * LocationPicker Component
+ * 이벤트 위치 입력 — 장소명 + 주소 자동완성(지오코딩) + 지도 미리보기
+ *
+ * 주소 검색은 /api/admin/geocode(서버 프록시)를 거치므로 지도 제공자를 교체해도
+ * 이 컴포넌트는 그대로다. 지도 미리보기는 lib/maps의 embedUrl(순수 함수)을 쓴다.
+ */
+
+import { useEffect, useRef, useState } from 'react';
+import { getMapsProvider, type GeocodeResult } from '@/lib/maps';
+
+export interface LocationValue {
+  /** 장소명 (예: "뉴저지 한인회관 대공연장") */
+  location: string;
+  /** 지오코딩된 전체 주소 */
+  location_address: string;
+  location_lat: number | null;
+  location_lng: number | null;
+  /** 수동 지도/길찾기 링크 — 비워두면 좌표로 자동 생성 */
+  location_url: string;
+}
+
+interface LocationPickerProps {
+  value: LocationValue;
+  onChange: (patch: Partial<LocationValue>) => void;
+}
+
+const SEARCH_DEBOUNCE_MS = 350;
+const MIN_QUERY_LENGTH = 3;
+
+export default function LocationPicker({ value, onChange }: LocationPickerProps) {
+  const provider = getMapsProvider();
+
+  // 검색 입력은 로컬 상태 — 확정(선택)된 주소만 부모(value.location_address)로 올린다
+  const [query, setQuery] = useState(value.location_address);
+  const [results, setResults] = useState<GeocodeResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [highlight, setHighlight] = useState(-1);
+
+  const debounceRef = useRef<number | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // 선택 직후 발생하는 query 변경은 재검색하지 않는다
+  const skipSearchRef = useRef(false);
+
+  const hasCoords = value.location_lat !== null && value.location_lng !== null;
+
+  // 바깥 클릭으로 제안 목록 닫기
+  useEffect(() => {
+    const onPointerDown = (e: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, []);
+
+  // 디바운스 검색
+  useEffect(() => {
+    if (skipSearchRef.current) {
+      skipSearchRef.current = false;
+      return;
+    }
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+
+    const q = query.trim();
+    if (q.length < MIN_QUERY_LENGTH) {
+      setResults([]);
+      setOpen(false);
+      setSearching(false);
+      return;
+    }
+
+    debounceRef.current = window.setTimeout(async () => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setSearching(true);
+      setSearchError(null);
+      try {
+        const res = await fetch(`/api/admin/geocode?q=${encodeURIComponent(q)}`, {
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        setResults(data.data);
+        setOpen(true);
+        setHighlight(-1);
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+        setResults([]);
+        setSearchError('주소 검색에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        setOpen(true);
+      } finally {
+        setSearching(false);
+      }
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [query]);
+
+  const selectResult = (r: GeocodeResult) => {
+    skipSearchRef.current = true;
+    setQuery(r.address);
+    setOpen(false);
+    setResults([]);
+    onChange({
+      location_address: r.address,
+      location_lat: r.lat,
+      location_lng: r.lng,
+      // 장소명이 비어 있으면 검색 결과의 이름으로 채워준다(수정 가능)
+      ...(r.name && !value.location.trim() ? { location: r.name } : {}),
+    });
+  };
+
+  const clearCoords = () => {
+    skipSearchRef.current = true;
+    setQuery('');
+    setResults([]);
+    setOpen(false);
+    onChange({ location_address: '', location_lat: null, location_lng: null });
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!open || results.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlight((h) => (h + 1) % results.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlight((h) => (h <= 0 ? results.length - 1 : h - 1));
+    } else if (e.key === 'Enter') {
+      if (highlight >= 0) {
+        e.preventDefault();
+        selectResult(results[highlight]);
+      }
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div className="location-picker" ref={rootRef}>
+      <div className="admin-form-group">
+        <label htmlFor="location" className="admin-form-label">장소명</label>
+        <input
+          type="text"
+          id="location"
+          value={value.location}
+          onChange={(e) => onChange({ location: e.target.value })}
+          placeholder="예: 뉴저지 한인회관 대공연장"
+          className="admin-form-input"
+        />
+      </div>
+
+      <div className="admin-form-group location-picker-search">
+        <label htmlFor="location_address" className="admin-form-label">주소 검색</label>
+        <input
+          type="text"
+          id="location_address"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onKeyDown}
+          onFocus={() => results.length > 0 && setOpen(true)}
+          placeholder="주소나 장소 이름을 입력해 검색 (예: 100 Grove St, Jersey City)"
+          className="admin-form-input"
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={open}
+          aria-controls="location-suggestions"
+        />
+        {searching && <span className="location-picker-status">검색 중…</span>}
+
+        {open && (
+          <ul id="location-suggestions" className="location-picker-suggestions" role="listbox">
+            {searchError && <li className="location-picker-empty">{searchError}</li>}
+            {!searchError && results.length === 0 && !searching && (
+              <li className="location-picker-empty">
+                검색 결과가 없습니다. 영문 주소로 검색해보세요.
+              </li>
+            )}
+            {results.map((r, i) => (
+              <li
+                key={`${r.lat},${r.lng},${i}`}
+                role="option"
+                aria-selected={i === highlight}
+                className={`location-picker-suggestion${i === highlight ? ' is-highlighted' : ''}`}
+                onPointerDown={(e) => {
+                  // input blur보다 먼저 처리
+                  e.preventDefault();
+                  selectResult(r);
+                }}
+                onMouseEnter={() => setHighlight(i)}
+              >
+                {r.name && <strong className="location-picker-suggestion-name">{r.name}</strong>}
+                <span className="location-picker-suggestion-address">{r.address}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <p className="admin-form-help location-picker-help">
+          검색 결과를 선택하면 좌표가 저장되고, 이벤트 페이지에 지도가 표시됩니다.
+        </p>
+      </div>
+
+      {hasCoords && (
+        <div className="location-picker-preview">
+          <iframe
+            className="location-picker-map"
+            src={provider.embedUrl(value.location_lat!, value.location_lng!)}
+            title="위치 미리보기 지도"
+            loading="lazy"
+          />
+          <div className="location-picker-preview-meta">
+            <span className="location-picker-coords">
+              {value.location_address || `${value.location_lat}, ${value.location_lng}`}
+            </span>
+            <button
+              type="button"
+              className="admin-btn admin-btn-outline location-picker-clear"
+              onClick={clearCoords}
+            >
+              위치 지우기
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="admin-form-group">
+        <label htmlFor="location_url" className="admin-form-label">지도/길찾기 링크 (선택)</label>
+        <input
+          type="url"
+          id="location_url"
+          value={value.location_url}
+          onChange={(e) => onChange({ location_url: e.target.value })}
+          placeholder="비워두면 위 좌표로 길찾기 링크가 자동 생성됩니다"
+          className="admin-form-input"
+        />
+      </div>
+    </div>
+  );
+}

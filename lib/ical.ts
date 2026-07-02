@@ -23,6 +23,8 @@ export interface ICSEvent {
   summary: string;
   description?: string | null;
   location?: string | null;
+  /** WGS84 좌표 — 캘린더 앱의 지도 미리보기용(GEO 속성) */
+  geo?: { lat: number; lng: number } | null;
   /** 상세 페이지 링크(URI) */
   url?: string | null;
   /** 생성 시각(SQLite datetime, UTC). 'YYYY-MM-DD HH:MM:SS' */
@@ -231,6 +233,7 @@ function buildVEvent(event: ICSEvent, dtstamp: string, tz: string): string[] {
 
   lines.push(`SUMMARY:${escapeText(event.summary)}`);
   if (event.location) lines.push(`LOCATION:${escapeText(event.location)}`);
+  if (event.geo) lines.push(`GEO:${event.geo.lat};${event.geo.lng}`);
   if (event.description) lines.push(`DESCRIPTION:${escapeText(event.description)}`);
   // URL 값 타입은 URI — TEXT 이스케이프를 적용하지 않는다.
   if (event.url) lines.push(`URL:${event.url}`);

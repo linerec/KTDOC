@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
 import { getEvents, createEvent } from '@/lib/d1';
+import { isValidLatLng } from '@/lib/maps';
 import type { CreateEventInput } from '@/types/gallery';
 
 // GET - 관리자용 이벤트 목록 (비공개 포함)
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title_ko, event_date, title_en, category_id, description_ko, description_en, is_published, is_featured, is_signature, signature_order, slug, location, location_url, call_time, start_time, end_time, prep_notes } = body;
+    const { title_ko, event_date, title_en, category_id, description_ko, description_en, is_published, is_featured, is_signature, signature_order, slug, location, location_url, location_address, location_lat, location_lng, call_time, start_time, end_time, prep_notes } = body;
 
     if (!title_ko || !event_date) {
       return NextResponse.json(
@@ -68,6 +69,16 @@ export async function POST(request: Request) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
       return NextResponse.json(
         { success: false, error: '행사 날짜 형식이 올바르지 않습니다. (예: 2026-07-01)' },
+        { status: 400 }
+      );
+    }
+
+    // 좌표는 둘 다 있거나(유효 범위) 둘 다 없어야 한다
+    const hasLat = location_lat !== undefined && location_lat !== null;
+    const hasLng = location_lng !== undefined && location_lng !== null;
+    if (hasLat !== hasLng || (hasLat && !isValidLatLng(location_lat, location_lng))) {
+      return NextResponse.json(
+        { success: false, error: '위치 좌표가 올바르지 않습니다. 주소 검색으로 다시 지정해주세요.' },
         { status: 400 }
       );
     }
@@ -86,6 +97,9 @@ export async function POST(request: Request) {
       slug,
       location,
       location_url,
+      location_address,
+      location_lat,
+      location_lng,
       call_time,
       start_time,
       end_time,

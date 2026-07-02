@@ -189,6 +189,9 @@
   "gallery.backToGallery": "Back to Gallery",
   "gallery.detail.photoGallery": "Photo Gallery",
   "gallery.detail.videos": "Videos",
+  "gallery.detail.location": "Location",
+  "gallery.detail.directions": "Directions",
+  "gallery.detail.largerMap": "View larger map",
   "gallery.detail.previous": "Previous",
   "gallery.detail.next": "Next",
 

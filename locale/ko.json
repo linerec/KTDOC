@@ -189,6 +189,9 @@
   "gallery.backToGallery": "갤러리로 돌아가기",
   "gallery.detail.photoGallery": "사진 갤러리",
   "gallery.detail.videos": "동영상",
+  "gallery.detail.location": "오시는 길",
+  "gallery.detail.directions": "길찾기",
+  "gallery.detail.largerMap": "큰 지도로 보기",
   "gallery.detail.previous": "이전",
   "gallery.detail.next": "다음",
 

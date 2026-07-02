@@ -16,6 +16,7 @@ import {
   filterR2KeysInArchive,
 } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
+import { isValidLatLng } from '@/lib/maps';
 import type { UpdateEventInput } from '@/types/gallery';
 
 interface RouteParams {
@@ -138,6 +139,20 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.signature_order !== undefined) input.signature_order = body.signature_order;
     if (body.location !== undefined) input.location = body.location;
     if (body.location_url !== undefined) input.location_url = body.location_url;
+    if (body.location_address !== undefined) input.location_address = body.location_address;
+    if (body.location_lat !== undefined || body.location_lng !== undefined) {
+      // 좌표는 둘 다 있거나(유효 범위) 둘 다 null이어야 한다
+      const lat = body.location_lat ?? null;
+      const lng = body.location_lng ?? null;
+      if ((lat === null) !== (lng === null) || (lat !== null && !isValidLatLng(lat, lng))) {
+        return NextResponse.json(
+          { success: false, error: '위치 좌표가 올바르지 않습니다. 주소 검색으로 다시 지정해주세요.' },
+          { status: 400 }
+        );
+      }
+      input.location_lat = lat;
+      input.location_lng = lng;
+    }
     if (body.call_time !== undefined) input.call_time = body.call_time;
     if (body.start_time !== undefined) input.start_time = body.start_time;
     if (body.end_time !== undefined) input.end_time = body.end_time;

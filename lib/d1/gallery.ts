@@ -310,8 +310,9 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       slug, year, event_date, title_ko, title_en,
       description_ko, description_en, category_id,
       is_published, is_featured, is_signature, signature_order,
-      location, location_url, call_time, start_time, end_time, prep_notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      location, location_url, location_address, location_lat, location_lng,
+      call_time, start_time, end_time, prep_notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       year,
@@ -327,6 +328,9 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       input.signature_order ?? 0,
       input.location || null,
       input.location_url || null,
+      input.location_address || null,
+      input.location_lat ?? null,
+      input.location_lng ?? null,
       input.call_time || null,
       input.start_time || null,
       input.end_time || null,
@@ -414,6 +418,18 @@ export async function updateEvent(
   if (input.location_url !== undefined) {
     updates.push('location_url = ?');
     params.push(input.location_url || null);
+  }
+  if (input.location_address !== undefined) {
+    updates.push('location_address = ?');
+    params.push(input.location_address || null);
+  }
+  if (input.location_lat !== undefined) {
+    updates.push('location_lat = ?');
+    params.push(input.location_lat ?? null);
+  }
+  if (input.location_lng !== undefined) {
+    updates.push('location_lng = ?');
+    params.push(input.location_lng ?? null);
   }
   if (input.call_time !== undefined) {
     updates.push('call_time = ?');

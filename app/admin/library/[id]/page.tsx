@@ -16,6 +16,7 @@ import { getEventById, isCheckedIn, getEventCheckins } from '@/lib/d1';
 import { getUserNamesByIds, getGuardianChildren } from '@/lib/members';
 import { formatEventDate } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
+import EventLocationMap from '@/components/events/EventLocationMap';
 import ImageGallery from '@/components/gallery/ImageGallery';
 import { VideoList } from '@/components/gallery/VideoEmbed';
 import CheckinButton from '@/components/admin/library/CheckinButton';
@@ -69,9 +70,12 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
     !!event.description_ko || event.images.length > 0 || event.videos.length > 0;
 
   // 실행 정보가 하나라도 있는지
+  const hasCoords = event.location_lat !== null && event.location_lng !== null;
   const hasLogistics =
     !!event.location ||
     !!event.location_url ||
+    !!event.location_address ||
+    hasCoords ||
     !!event.call_time ||
     !!event.start_time ||
     !!event.end_time ||
@@ -116,21 +120,19 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
       {/* 실행 정보 — 어디서·언제·무엇을 준비 (다가오는 이벤트에서 특히 중요) */}
       {hasLogistics && (
         <section className="event-logistics">
-          {(event.location || event.location_url) && (
+          {(event.location || event.location_url || event.location_address || hasCoords) && (
             <div className="event-logistics-item">
               <span className="event-logistics-label">장소</span>
               <span className="event-logistics-value">
-                {event.location || '장소 안내'}
-                {event.location_url && (
-                  <a
-                    href={event.location_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="event-logistics-map"
-                  >
-                    지도 보기 ↗
-                  </a>
-                )}
+                <EventLocationMap
+                  location={event.location}
+                  address={event.location_address}
+                  lat={event.location_lat}
+                  lng={event.location_lng}
+                  locationUrl={event.location_url}
+                  directionsLabel="길찾기"
+                  largerMapLabel="큰 지도로 보기"
+                />
               </span>
             </div>
           )}

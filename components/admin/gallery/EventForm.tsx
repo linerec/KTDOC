@@ -12,6 +12,7 @@ import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
 import ImageUploader from './ImageUploader';
 import ImageSortable from './ImageSortable';
 import VideoManager from './VideoManager';
+import LocationPicker from './LocationPicker';
 
 interface EventFormProps {
   event?: EventDetail | null;
@@ -53,6 +54,9 @@ export default function EventForm({
     // 실행 정보(위치·시간·준비물)
     location: event?.location || '',
     location_url: event?.location_url || '',
+    location_address: event?.location_address || '',
+    location_lat: event?.location_lat ?? null,
+    location_lng: event?.location_lng ?? null,
     call_time: event?.call_time || '',
     start_time: event?.start_time || '',
     end_time: event?.end_time || '',
@@ -102,6 +106,9 @@ export default function EventForm({
         // 빈 문자열을 보내면 서버가 null로 저장(값 지우기 지원)
         location: formData.location,
         location_url: formData.location_url,
+        location_address: formData.location_address,
+        location_lat: formData.location_lat,
+        location_lng: formData.location_lng,
         call_time: formData.call_time,
         start_time: formData.start_time,
         end_time: formData.end_time,
@@ -257,31 +264,20 @@ export default function EventForm({
           </div>
 
           {/* 실행 정보 — 멤버가 "어디서·언제·무엇을 준비"를 바로 파악 */}
-          <div className="admin-form-group">
-            <label htmlFor="location" className="admin-form-label">장소</label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="예: 뉴저지 한인회관 대공연장"
-              className="admin-form-input"
-            />
-          </div>
-
-          <div className="admin-form-group">
-            <label htmlFor="location_url" className="admin-form-label">지도/길찾기 링크</label>
-            <input
-              type="url"
-              id="location_url"
-              name="location_url"
-              value={formData.location_url}
-              onChange={handleChange}
-              placeholder="https://maps.google.com/..."
-              className="admin-form-input"
-            />
-          </div>
+          <LocationPicker
+            value={{
+              location: formData.location,
+              location_address: formData.location_address,
+              location_lat: formData.location_lat,
+              location_lng: formData.location_lng,
+              location_url: formData.location_url,
+            }}
+            onChange={(patch) => {
+              if (savedMsg) setSavedMsg('');
+              if (saved) setSaved(false);
+              setFormData((prev) => ({ ...prev, ...patch }));
+            }}
+          />
 
           <div className="admin-form-row">
             <div className="admin-form-group">
