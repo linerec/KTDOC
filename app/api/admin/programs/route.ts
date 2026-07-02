@@ -6,16 +6,16 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { isStaff } from '@/lib/isAdmin';
 import { getPrograms, createProgram } from '@/lib/d1';
 import { PROGRAM_TYPES, type CreateProgramInput, type ProgramType } from '@/types/programs';
 
 export async function GET(request: Request) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
@@ -45,9 +45,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
@@ -85,6 +85,11 @@ export async function POST(request: Request) {
       price_en: body.price_en,
       location_ko: body.location_ko,
       location_en: body.location_en,
+      weekdays: body.weekdays,
+      class_start_time: body.class_start_time,
+      class_end_time: body.class_end_time,
+      term_start_date: body.term_start_date,
+      term_end_date: body.term_end_date,
       is_published: body.is_published ?? false,
       is_featured: body.is_featured ?? false,
       sort_order: body.sort_order,

@@ -8,6 +8,7 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEvents, getCategories, getYears } from '@/lib/d1';
 import EventTable from '@/components/admin/gallery/EventTable';
+import CategoryManagerModal from '@/components/admin/gallery/CategoryManagerModal';
 
 export const metadata = {
   title: '이벤트 아카이브 관리 | KTDOC Admin',
@@ -57,12 +58,7 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
           </p>
         </div>
         <div className="admin-header-actions">
-          <Link
-            href="/admin/gallery/categories"
-            className="admin-btn admin-btn-outline"
-          >
-            이벤트 카테고리
-          </Link>
+          <CategoryManagerModal initialCategories={categories} />
           <Link
             href="/admin/gallery/photos"
             className="admin-btn admin-btn-outline"

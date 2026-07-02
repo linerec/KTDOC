@@ -246,7 +246,7 @@ export default function NotifyComposer({
             className="admin-form-input"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="/admin/library/calendar (비우면 홈)"
+            placeholder="/admin/schedule (비우면 홈)"
             disabled={sending}
           />
         </div>

@@ -21,21 +21,22 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'home', href: '/admin', label: '홈', iconKey: 'home', exact: true, defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 내 알림(받은 알림함): 운영진이 보낸 알림을 회원이 언제든 다시 보고 읽음/삭제.
   { key: 'inbox', href: '/admin/inbox', label: '내 알림', iconKey: 'inbox', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
-  { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램', iconKey: 'calendar', defaultRoles: ['admin'] },
-  { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', defaultRoles: ['admin'] },
+  // 캘린더(독립): 공연·행사(이벤트)와 내가 참여하는 수업 일정을 월별로 한눈에. 이벤트/수업을 모두 아우른다.
+  { key: 'schedule', href: '/admin/schedule', label: '캘린더', iconKey: 'calendar', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
+  // 내 수업(원생·학부모): 운영진이 배정한 수업·프로그램을 본인(학부모는 자녀별)으로 확인. 운영진은 programs에서 관리하므로 제외(admin은 항상 표시).
+  { key: 'my-classes', href: '/admin/my-classes', label: '내 수업', iconKey: 'calendar', defaultRoles: ['student', 'parent'] },
+  { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램 관리', iconKey: 'calendar', defaultRoles: ['teacher', 'admin'] },
+  // 신청 현황: '수업 · 프로그램 관리'의 하위 메뉴. 공개 신청 폼으로 들어온 신청자를 확인·응대(admin 전용).
+  { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', parentKey: 'programs', defaultRoles: ['admin'] },
   { key: 'gallery', href: '/admin/gallery', label: '이벤트 아카이브 관리', iconKey: 'gallery', defaultRoles: ['admin'] },
   { key: 'gallery.photos', href: '/admin/gallery/photos', label: '사진 보관함', iconKey: 'photo', parentKey: 'gallery', defaultRoles: ['admin'] },
-  { key: 'gallery.categories', href: '/admin/gallery/categories', label: '이벤트 카테고리', iconKey: 'tag', parentKey: 'gallery', defaultRoles: ['admin'] },
+  // 이벤트 카테고리는 별도 메뉴/페이지 없이 '이벤트 아카이브 관리' 페이지의 모달(버튼)에서 관리한다.
   // 캘린더 구독 피드: 공개 .ics 피드를 켜고(이름/설명/타임존/포함범위) 구독 주소를 공유한다.
   { key: 'calendar', href: '/admin/calendar', label: '캘린더 구독', iconKey: 'calendar', defaultRoles: ['admin'] },
   // 학생·학부모용 둘러보기(읽기 전용): 공개된 이벤트(공연·행사)를 검색·열람.
   { key: 'library', href: '/admin/library', label: '이벤트 둘러보기', iconKey: 'compass', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
-  // 캘린더: 다가오는/지난 이벤트를 월별로 한눈에. 내가 참여하는 이벤트 강조.
-  { key: 'library.calendar', href: '/admin/library/calendar', label: '캘린더', iconKey: 'calendar', parentKey: 'library', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
-  // 내 참여 아카이브: 체크인한 이벤트를 연도별로 모아 보여준다(참여 이력·사진).
-  { key: 'library.archive', href: '/admin/library/archive', label: '내 참여 아카이브', iconKey: 'gallery', parentKey: 'library', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
-  // 내 사진 제출: 학생·학부모가 본인 사진을 올리면 보관함으로 들어가 운영진 검토 후 공개된다.
-  { key: 'library.my', href: '/admin/library/my', label: '내 사진 · 제출', iconKey: 'photo', parentKey: 'library', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
+  // 내 참여 아카이브(독립): 참여한 수업과 체크인한 이벤트를 연도별로 모아 보여준다(참여 이력·사진).
+  { key: 'archive', href: '/admin/archive', label: '내 참여 아카이브', iconKey: 'gallery', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   { key: 'members', href: '/admin/members', label: '회원 관리', iconKey: 'users', defaultRoles: ['teacher', 'admin'] },
   // 참여 현황: 이벤트별 참가자 수·명단(체크인 집계). 운영진·관계자 검증용.
   { key: 'participation', href: '/admin/participation', label: '참여 현황', iconKey: 'calendar', defaultRoles: ['teacher', 'admin'] },
@@ -50,7 +51,15 @@ export const MENU_REGISTRY: MenuNode[] = [
  * 폐기된 키 목록(tombstone). 삭제한 메뉴의 키를 다른 용도로 재사용하면
  * 남아있는 DB 권한 행이 의도치 않게 "부활"할 수 있으므로 재사용을 금지한다.
  */
-export const RETIRED_KEYS: readonly string[] = [];
+export const RETIRED_KEYS: readonly string[] = [
+  // 'library.calendar'→'schedule', 'library.archive'→'archive'로 독립 승격, 'library.my'(사진 제출)는
+  // 메뉴 폐지 후 이벤트/수업 상세의 모달로 대체. 옛 키 재사용 금지(잔여 DB 권한 행 부활 방지).
+  'library.calendar',
+  'library.archive',
+  'library.my',
+  // 'gallery.categories': 별도 메뉴/페이지 폐지 후 '이벤트 아카이브 관리' 페이지의 모달로 대체.
+  'gallery.categories',
+];
 
 export function getMenuNode(key: string): MenuNode | undefined {
   return MENU_REGISTRY.find((m) => m.key === key);

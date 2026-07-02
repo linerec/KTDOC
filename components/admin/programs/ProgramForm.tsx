@@ -18,6 +18,17 @@ interface ProgramFormProps {
   isNew?: boolean;
 }
 
+// 요일 칩(0=일 ~ 6=토). weekdays 컬럼은 선택된 값들의 쉼표 문자열로 저장된다.
+const WEEKDAY_LABELS: { v: string; l: string }[] = [
+  { v: '0', l: '일' },
+  { v: '1', l: '월' },
+  { v: '2', l: '화' },
+  { v: '3', l: '수' },
+  { v: '4', l: '목' },
+  { v: '5', l: '금' },
+  { v: '6', l: '토' },
+];
+
 export default function ProgramForm({ program, isNew = false }: ProgramFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -40,6 +51,11 @@ export default function ProgramForm({ program, isNew = false }: ProgramFormProps
     price_en: program?.price_en || '',
     location_ko: program?.location_ko || '',
     location_en: program?.location_en || '',
+    weekdays: program?.weekdays || '',
+    class_start_time: program?.class_start_time || '',
+    class_end_time: program?.class_end_time || '',
+    term_start_date: program?.term_start_date?.split('T')[0] || '',
+    term_end_date: program?.term_end_date?.split('T')[0] || '',
     is_published: program?.is_published === 1,
     is_featured: program?.is_featured === 1,
   });
@@ -47,6 +63,17 @@ export default function ProgramForm({ program, isNew = false }: ProgramFormProps
   const [images, setImages] = useState(program?.images || []);
 
   const isCamp = formData.program_type === 'camp';
+
+  const selectedWeekdays = new Set(formData.weekdays.split(',').filter(Boolean));
+  const toggleWeekday = (d: string) => {
+    setFormData((prev) => {
+      const set = new Set(prev.weekdays.split(',').filter(Boolean));
+      if (set.has(d)) set.delete(d);
+      else set.add(d);
+      const ordered = ['0', '1', '2', '3', '4', '5', '6'].filter((x) => set.has(x));
+      return { ...prev, weekdays: ordered.join(',') };
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -85,6 +112,11 @@ export default function ProgramForm({ program, isNew = false }: ProgramFormProps
         schedule_en: isCamp ? undefined : formData.schedule_en || undefined,
         start_date: isCamp ? formData.start_date || undefined : undefined,
         end_date: isCamp ? formData.end_date || undefined : undefined,
+        weekdays: isCamp ? undefined : formData.weekdays || undefined,
+        class_start_time: isCamp ? undefined : formData.class_start_time || undefined,
+        class_end_time: isCamp ? undefined : formData.class_end_time || undefined,
+        term_start_date: isCamp ? undefined : formData.term_start_date || undefined,
+        term_end_date: isCamp ? undefined : formData.term_end_date || undefined,
         price_ko: formData.price_ko || undefined,
         price_en: formData.price_en || undefined,
         location_ko: formData.location_ko || undefined,
@@ -257,9 +289,79 @@ export default function ProgramForm({ program, isNew = false }: ProgramFormProps
             </>
           ) : (
             <>
-              <p className="admin-form-help">요일과 시간을 자유롭게 입력하세요. 예: 매주 토요일 10:00~12:00</p>
+              <p className="admin-form-help">
+                요일·시간·학기 기간을 입력하면 원생·학부모 캘린더에 매주 자동으로 표시됩니다.
+                아래 &lsquo;수업 일정 안내&rsquo;는 공개 페이지에 보이는 보조 설명입니다.
+              </p>
               <div className="admin-form-group">
-                <label htmlFor="schedule_ko" className="admin-form-label">수업 일정 (한글)</label>
+                <label className="admin-form-label">수업 요일</label>
+                <div className="admin-weekday-row">
+                  {WEEKDAY_LABELS.map((w) => (
+                    <button
+                      type="button"
+                      key={w.v}
+                      className={`admin-weekday-chip${selectedWeekdays.has(w.v) ? ' is-on' : ''}`}
+                      onClick={() => toggleWeekday(w.v)}
+                      aria-pressed={selectedWeekdays.has(w.v)}
+                    >
+                      {w.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="class_start_time" className="admin-form-label">시작 시간</label>
+                  <input
+                    type="time"
+                    id="class_start_time"
+                    name="class_start_time"
+                    value={formData.class_start_time}
+                    onChange={handleChange}
+                    className="admin-form-input"
+                  />
+                </div>
+                <div className="admin-form-group">
+                  <label htmlFor="class_end_time" className="admin-form-label">종료 시간</label>
+                  <input
+                    type="time"
+                    id="class_end_time"
+                    name="class_end_time"
+                    value={formData.class_end_time}
+                    onChange={handleChange}
+                    className="admin-form-input"
+                  />
+                </div>
+              </div>
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="term_start_date" className="admin-form-label">학기 시작일 (선택)</label>
+                  <input
+                    type="date"
+                    id="term_start_date"
+                    name="term_start_date"
+                    value={formData.term_start_date}
+                    onChange={handleChange}
+                    className="admin-form-input"
+                  />
+                </div>
+                <div className="admin-form-group">
+                  <label htmlFor="term_end_date" className="admin-form-label">학기 종료일 (선택)</label>
+                  <input
+                    type="date"
+                    id="term_end_date"
+                    name="term_end_date"
+                    value={formData.term_end_date}
+                    onChange={handleChange}
+                    className="admin-form-input"
+                  />
+                </div>
+              </div>
+              <p className="admin-form-help">
+                학기 기간을 비우면 상시 수업으로 보고 매월 해당 요일에 계속 표시합니다.
+              </p>
+              <div className="admin-form-group">
+                <label htmlFor="schedule_ko" className="admin-form-label">수업 일정 안내 (한글)</label>
                 <input
                   type="text"
                   id="schedule_ko"
@@ -271,7 +373,7 @@ export default function ProgramForm({ program, isNew = false }: ProgramFormProps
                 />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="schedule_en" className="admin-form-label">수업 일정 (영문)</label>
+                <label htmlFor="schedule_en" className="admin-form-label">수업 일정 안내 (영문)</label>
                 <input
                   type="text"
                   id="schedule_en"

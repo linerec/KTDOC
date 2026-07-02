@@ -216,12 +216,12 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
             </Link>
           )}
 
-          <Link href="/admin/library/calendar" className="admin-btn admin-btn-sm admin-btn-outline">
+          <Link href="/admin/schedule" className="admin-btn admin-btn-sm admin-btn-outline">
             📅 캘린더
           </Link>
 
           {canCheckIn && (
-            <Link href="/admin/library/archive" className="admin-btn admin-btn-sm admin-btn-outline">
+            <Link href="/admin/archive" className="admin-btn admin-btn-sm admin-btn-outline">
               내 참여 아카이브 →
             </Link>
           )}

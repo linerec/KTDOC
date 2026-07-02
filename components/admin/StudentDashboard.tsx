@@ -17,9 +17,10 @@ interface QuickLink {
 }
 
 const QUICK_LINKS: QuickLink[] = [
-  { href: '/admin/library/calendar', title: '캘린더', desc: '다가오는 공연·수업 일정' },
-  { href: '/admin/library/archive', title: '내 참여 아카이브', desc: '참여한 이벤트와 사진' },
-  { href: '/admin/library/my', title: '내 사진 · 제출', desc: '내가 올린 사진 / 새로 올리기' },
+  { href: '/admin/schedule', title: '캘린더', desc: '수업·공연 일정 한눈에' },
+  { href: '/admin/my-classes', title: '내 수업', desc: '배정된 수업·프로그램 보기' },
+  { href: '/admin/library', title: '이벤트 둘러보기', desc: '공개된 공연·행사' },
+  { href: '/admin/archive', title: '내 참여 아카이브', desc: '참여한 수업·이벤트와 사진' },
   { href: '/admin/profile', title: '내 프로필', desc: '이름·비밀번호·공개 설정' },
 ];
 

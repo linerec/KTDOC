@@ -79,6 +79,8 @@ export interface GalleryPhoto {
   caption_en: string | null;
   taken_date: string | null;
   event_id: number | null;
+  /** 수업(programs.id) 연결 — 학생이 '내 수업' 상세에서 제출한 사진. 이벤트/수업 중 택일 */
+  program_id: number | null;
   event_image_id: number | null;
   is_published: number;
   is_featured: number;
@@ -94,6 +96,9 @@ export interface GalleryPhoto {
   event_title_en?: string | null;
   event_year?: number | null;
   event_slug?: string | null;
+  /** program_id 조인 메타 — 일부 조회에서만 채워진다 */
+  program_title_ko?: string | null;
+  program_slug?: string | null;
   /** uploaded_by를 회원 이름으로 해석한 값 — 일부 조회에서만 채워진다 */
   uploader_name?: string | null;
 }
@@ -165,6 +170,8 @@ export interface GalleryPhotoFilters {
   organized?: 'all' | 'assigned' | 'unassigned';
   /** 특정 이벤트로 필터 */
   eventId?: number;
+  /** 특정 수업(programs.id)으로 필터 */
+  programId?: number;
   /** 정렬 기준 (기본 recent) */
   sort?: 'recent' | 'oldest' | 'taken';
   /** 특정 회원(users.id)이 올린 사진만 — 학생 본인 "내 사진" 목록용 */
@@ -236,6 +243,8 @@ export interface CreateGalleryPhotoInput {
   caption_en?: string;
   taken_date?: string;
   event_id?: number;
+  /** 수업 연결 — 학생이 '내 수업' 상세에서 제출 시 설정 */
+  program_id?: number;
   is_published?: boolean;
   is_featured?: boolean;
   width?: number;
@@ -250,6 +259,7 @@ export interface UpdateGalleryPhotoInput {
   caption_en?: string | null;
   taken_date?: string | null;
   event_id?: number | null;
+  program_id?: number | null;
   is_published?: boolean;
   is_featured?: boolean;
   sort_order?: number;

@@ -436,9 +436,6 @@ export default async function AdminDashboardPage() {
               <Link href="/admin/gallery/photos" className="admin-btn admin-btn-outline">
                 사진 보관함
               </Link>
-              <Link href="/admin/gallery/categories" className="admin-btn admin-btn-outline">
-                이벤트 카테고리
-              </Link>
             </div>
           </section>
         </div>

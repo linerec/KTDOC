@@ -88,6 +88,15 @@ export async function getProgramById(id: number): Promise<ProgramDetail | null> 
   return { ...programs[0], images };
 }
 
+/** 수업 존재 여부만 가볍게 확인한다 — getProgramById와 달리 이미지를 로드하지 않는다. */
+export async function programIdExists(id: number): Promise<boolean> {
+  const rows = await queryD1<{ id: number }>(
+    'SELECT id FROM programs WHERE id = ? LIMIT 1',
+    [id]
+  );
+  return rows.length > 0;
+}
+
 export async function getProgramBySlug(slug: string): Promise<ProgramDetail | null> {
   const programs = await queryD1<ProgramWithMeta>(
     `SELECT p.*,
@@ -109,9 +118,11 @@ export async function createProgram(input: CreateProgramInput): Promise<number> 
     `INSERT INTO programs (
       slug, program_type, title_ko, title_en, summary_ko, summary_en,
       description_ko, description_en, age_range, schedule_ko, schedule_en,
-      start_date, end_date, price_ko, price_en, location_ko, location_en,
+      start_date, end_date,
+      weekdays, class_start_time, class_end_time, term_start_date, term_end_date,
+      price_ko, price_en, location_ko, location_en,
       is_featured, is_published, sort_order
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       input.program_type,
@@ -126,6 +137,11 @@ export async function createProgram(input: CreateProgramInput): Promise<number> 
       input.schedule_en || null,
       input.start_date || null,
       input.end_date || null,
+      input.weekdays || null,
+      input.class_start_time || null,
+      input.class_end_time || null,
+      input.term_start_date || null,
+      input.term_end_date || null,
       input.price_ko || null,
       input.price_en || null,
       input.location_ko || null,
@@ -168,6 +184,11 @@ export async function updateProgram(id: number, input: UpdateProgramInput): Prom
   setText('schedule_en');
   setText('start_date');
   setText('end_date');
+  setText('weekdays');
+  setText('class_start_time');
+  setText('class_end_time');
+  setText('term_start_date');
+  setText('term_end_date');
   setText('price_ko');
   setText('price_en');
   setText('location_ko');

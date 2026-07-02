@@ -49,6 +49,12 @@ export interface Program {
   schedule_en: string | null;
   start_date: string | null;
   end_date: string | null;
+  // 정규 수업(class/program) 반복 일정 — 캘린더 표시용. camp는 start_date/end_date 사용.
+  weekdays: string | null; // 쉼표구분 요일(0=일 ~ 6=토). 예: "6"=토, "1,3"=월·수
+  class_start_time: string | null; // "HH:MM"
+  class_end_time: string | null; // "HH:MM"
+  term_start_date: string | null; // 학기 시작 "YYYY-MM-DD"(비우면 상시)
+  term_end_date: string | null; // 학기 종료 "YYYY-MM-DD"
   price_ko: string | null;
   price_en: string | null;
   location_ko: string | null;
@@ -113,6 +119,68 @@ export interface ApplicationWithProgram extends Application {
 }
 
 // ============================================
+// Enrollment (수강생)
+// ============================================
+//   운영진(관리자·선생님)이 programs에 원생(회원)을 수강생으로 배정한다.
+//   user_id = MySQL users.id. 회원 이름은 호출부에서 getUserNamesByIds(MySQL)로 해석.
+
+export type EnrollmentStatus = 'active' | 'waitlist' | 'completed' | 'cancelled';
+
+export const ENROLLMENT_STATUSES: EnrollmentStatus[] = [
+  'active',
+  'waitlist',
+  'completed',
+  'cancelled',
+];
+
+export const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, { ko: string; en: string }> = {
+  active: { ko: '수강 중', en: 'Active' },
+  waitlist: { ko: '대기', en: 'Waitlist' },
+  completed: { ko: '수료', en: 'Completed' },
+  cancelled: { ko: '취소', en: 'Cancelled' },
+};
+
+/** program_enrollments 행(D1 스키마 직렬화) */
+export interface ProgramEnrollment {
+  id: number;
+  program_id: number;
+  user_id: string;
+  status: EnrollmentStatus;
+  note: string | null;
+  enrolled_by: string | null;
+  enrolled_at: string;
+  created_at: string;
+}
+
+/** 운영진 프로그램 편집 화면용 — 회원 이름·입학년도 결합(이름은 MySQL에서 해석). */
+export interface EnrollmentWithMember extends ProgramEnrollment {
+  member_name: string | null;
+  enrollment_year: number | null;
+}
+
+/** 원생·학부모 '내 수업' 화면용 — 프로그램 메타를 중첩으로 결합. user_id는 학부모 자녀 그룹핑용. */
+export interface MyEnrollment {
+  enrollment_id: number;
+  user_id: string;
+  status: EnrollmentStatus;
+  note: string | null;
+  enrolled_at: string;
+  program: ProgramWithMeta;
+}
+
+export interface CreateEnrollmentInput {
+  user_id: string;
+  status?: EnrollmentStatus;
+  note?: string | null;
+  enrolled_by?: string | null;
+}
+
+export interface UpdateEnrollmentInput {
+  status?: EnrollmentStatus;
+  note?: string | null;
+}
+
+// ============================================
 // Filters
 // ============================================
 
@@ -157,6 +225,11 @@ export interface CreateProgramInput {
   schedule_en?: string;
   start_date?: string;
   end_date?: string;
+  weekdays?: string;
+  class_start_time?: string;
+  class_end_time?: string;
+  term_start_date?: string;
+  term_end_date?: string;
   price_ko?: string;
   price_en?: string;
   location_ko?: string;

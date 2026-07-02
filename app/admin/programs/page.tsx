@@ -11,7 +11,7 @@ import ProgramTable from '@/components/admin/programs/ProgramTable';
 import { PROGRAM_TYPES, PROGRAM_TYPE_LABELS, type ProgramType } from '@/types/programs';
 
 export const metadata = {
-  title: '수업 및 프로그램 관리 | KTDOC Admin',
+  title: '수업 · 프로그램 관리 | KTDOC Admin',
 };
 
 interface PageProps {
@@ -42,9 +42,9 @@ export default async function AdminProgramsPage({ searchParams }: PageProps) {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <span>수업 및 프로그램</span>
+            <span>수업 · 프로그램 관리</span>
           </div>
-          <h1 className="admin-title">수업 및 프로그램 관리</h1>
+          <h1 className="admin-title">수업 · 프로그램 관리</h1>
           <p className="admin-subtitle">
             공개 페이지에 표시될 수업·프로그램·캠프를 관리합니다. 사진은 각 프로그램 편집 화면에서 추가합니다.
           </p>

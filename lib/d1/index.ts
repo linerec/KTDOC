@@ -35,15 +35,20 @@ export {
   getEventsOnDate,
   getEventById,
   getEventBySlug,
+  eventIdExists,
+  isEventSlugTaken,
+  countEventsInCategory,
   createEvent,
   updateEvent,
   deleteEvent,
   incrementViewCount,
   // Event Images
   getEventImages,
+  getEventImageById,
   getPreviewImagesForEvents,
   getEventImagesPaged,
   createEventImage,
+  updateEventImageCaptions,
   updateImageOrder,
   deleteEventImage,
   deleteAllEventImages,
@@ -55,6 +60,8 @@ export {
   // Loose Gallery Photos
   getGalleryPhotos,
   getGalleryPhotoById,
+  getGalleryPhotoByEventImageId,
+  filterR2KeysInArchive,
   createGalleryPhoto,
   updateGalleryPhoto,
   bulkSetGalleryPhotoFlag,
@@ -86,6 +93,7 @@ export {
   getPrograms,
   getProgramById,
   getProgramBySlug,
+  programIdExists,
   createProgram,
   updateProgram,
   deleteProgram,
@@ -107,6 +115,18 @@ export {
   updateApplicationStatus,
   deleteApplication,
 } from './applications';
+
+export {
+  // Program Enrollments (수강생)
+  getProgramEnrollments,
+  getEnrollmentById,
+  getEnrollmentCountsByProgram,
+  getEnrollmentsForUser,
+  getEnrollmentsForUsers,
+  createEnrollment,
+  updateEnrollment,
+  deleteEnrollment,
+} from './enrollments';
 
 export {
   // Site Settings (key-value)

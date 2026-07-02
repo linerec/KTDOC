@@ -10,10 +10,13 @@ import type { EventCategory, CreateCategoryInput } from '@/types/gallery';
 
 interface CategoryManagerProps {
   initialCategories: EventCategory[];
+  /** 생성·수정·삭제가 성공할 때마다 호출 — 모달에서 부모 페이지(router.refresh)에 즉시 반영하는 데 쓴다. */
+  onChanged?: () => void;
 }
 
 export default function CategoryManager({
   initialCategories,
+  onChanged,
 }: CategoryManagerProps) {
   const [categories, setCategories] = useState(initialCategories);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -121,6 +124,7 @@ export default function CategoryManager({
       }
 
       resetForm();
+      onChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
     } finally {
@@ -145,6 +149,7 @@ export default function CategoryManager({
       }
 
       setCategories((prev) => prev.filter((cat) => cat.id !== id));
+      onChanged?.();
     } catch (err) {
       alert(err instanceof Error ? err.message : '삭제에 실패했습니다.');
     }

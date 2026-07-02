@@ -7,7 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { isStaff } from '@/lib/isAdmin';
 import { getProgramById, updateProgram, deleteProgram } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
 import { PROGRAM_TYPES, type UpdateProgramInput } from '@/types/programs';
@@ -19,9 +19,9 @@ interface RouteParams {
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
@@ -56,9 +56,9 @@ export async function GET(request: Request, { params }: RouteParams) {
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
@@ -95,6 +95,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const textFields: (keyof UpdateProgramInput)[] = [
       'title_ko', 'title_en', 'summary_ko', 'summary_en', 'description_ko', 'description_en',
       'age_range', 'schedule_ko', 'schedule_en', 'start_date', 'end_date',
+      'weekdays', 'class_start_time', 'class_end_time', 'term_start_date', 'term_end_date',
       'price_ko', 'price_en', 'location_ko', 'location_en', 'slug',
       'poster_url', 'poster_r2_key', 'thumbnail_url', 'thumbnail_r2_key',
     ];
@@ -137,9 +138,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }

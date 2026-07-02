@@ -5846,6 +5846,26 @@ ul {
   border-style: dashed;
   border-color: rgba(196, 48, 43, 0.6);
 }
+/* 캘린더의 '내 수업' 칸 — 이벤트와 구분되는 금색 좌측 보더 */
+.cal-class {
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  padding: 3px 6px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--warm-ivory, #f6efe2);
+  background: rgba(212, 160, 23, 0.14);
+  border: 1px solid rgba(212, 160, 23, 0.28);
+  border-left: 3px solid var(--soft-gold, #e0b84f);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s, border-color 0.15s;
+}
+.cal-class:hover {
+  background: rgba(212, 160, 23, 0.26);
+}
 .cal-legend {
   display: flex;
   gap: 18px;
@@ -5873,6 +5893,11 @@ ul {
 .cal-swatch.is-draft {
   border-style: dashed;
   border-color: rgba(196, 48, 43, 0.7);
+}
+.cal-swatch.is-class {
+  background: rgba(212, 160, 23, 0.14);
+  border-color: var(--soft-gold, #e0b84f);
+  border-left: 3px solid var(--soft-gold, #e0b84f);
 }
 @media (max-width: 720px) {
   .cal-cell {
@@ -6508,6 +6533,91 @@ ul {
   color: var(--secondary-color);
 }
 
+.admin-alert-success {
+  background: rgba(46, 160, 87, 0.12);
+  border: 1px solid rgba(46, 160, 87, 0.5);
+  color: #7ed99f;
+}
+
+/* ============================================================
+   PHOTO SUBMIT MODAL — 이벤트/수업 상세에서 사진 제출
+============================================================ */
+.photo-modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1000);
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.photo-modal {
+  width: min(520px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--ink-umber), var(--deep-umber));
+  border: 1px solid rgba(224, 184, 79, 0.22);
+  border-radius: 14px;
+  padding: 22px;
+}
+/* 카테고리 관리처럼 목록·폼이 들어가는 넓은 모달용 변형 */
+.photo-modal--wide {
+  width: min(760px, 100%);
+}
+.photo-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.photo-modal-head h3 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: var(--warm-ivory);
+  margin: 0;
+}
+.photo-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.photo-modal-close:hover {
+  color: var(--warm-ivory);
+  background: rgba(255, 255, 255, 0.06);
+}
+.photo-modal-drop {
+  width: 100%;
+  padding: 28px 16px;
+  margin: 12px 0;
+  border: 1px dashed rgba(224, 184, 79, 0.4);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--warm-ivory);
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.photo-modal-drop:hover:not(:disabled) {
+  border-color: var(--soft-gold);
+  background: rgba(212, 160, 23, 0.08);
+}
+.photo-modal-drop:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.photo-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
 .admin-hint {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -6857,6 +6967,12 @@ ul {
 .photo-tile-badge.is-loose {
   background: rgba(5, 5, 5, 0.72);
   color: rgba(255, 255, 255, 0.62);
+}
+
+/* 이벤트가 지정됐지만 아직 이벤트 사진으로 게시되지 않은 상태(학생 제출 검토 전 등) */
+.photo-tile-badge.is-pending {
+  background: rgba(196, 108, 24, 0.92);
+  color: var(--white);
 }
 
 .photo-tile-badge.is-submitted {
@@ -10770,4 +10886,197 @@ ul {
 .gallery-cal-btn--primary:hover {
   background: linear-gradient(135deg, var(--secondary-color), var(--deep-red));
   border-color: transparent;
+}
+
+/* 수업 요일 선택 칩(ProgramForm 정규수업 일정) */
+.admin-weekday-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-weekday-chip {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid rgba(224, 184, 79, 0.2);
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.admin-weekday-chip:hover {
+  border-color: rgba(212, 160, 23, 0.45);
+}
+.admin-weekday-chip.is-on {
+  background: rgba(212, 160, 23, 0.18);
+  border-color: var(--soft-gold);
+  color: var(--warm-ivory);
+}
+
+/* ============================================================
+   MY CLASSES — 원생·학부모 '내 수업'(배정된 수업 카드)
+============================================================ */
+.myclass-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.myclass-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  align-items: stretch;
+  background: linear-gradient(180deg, var(--ink-umber), var(--deep-umber));
+  border: 1px solid rgba(224, 184, 79, 0.16);
+  border-radius: 12px;
+}
+.myclass-card-link {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.myclass-card-link:hover {
+  border-color: rgba(212, 160, 23, 0.4);
+  transform: translateY(-2px);
+}
+.myclass-card-thumb {
+  flex: 0 0 auto;
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+.myclass-card-img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  display: block;
+}
+.myclass-card-noimg {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  color: rgba(224, 184, 79, 0.4);
+}
+.myclass-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.myclass-card-tags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.myclass-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(212, 160, 23, 0.12);
+  border: 1px solid rgba(212, 160, 23, 0.25);
+  color: var(--soft-gold);
+}
+.myclass-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+.myclass-status-active {
+  background: rgba(46, 160, 87, 0.15);
+  border-color: rgba(46, 160, 87, 0.4);
+  color: #7ed99f;
+}
+.myclass-status-waitlist {
+  background: rgba(212, 160, 23, 0.12);
+  border-color: rgba(212, 160, 23, 0.35);
+  color: var(--soft-gold);
+}
+.myclass-status-completed {
+  background: rgba(140, 150, 180, 0.14);
+  border-color: rgba(140, 150, 180, 0.32);
+  color: #b9c0d6;
+}
+.myclass-status-cancelled {
+  background: rgba(196, 48, 43, 0.14);
+  border-color: rgba(196, 48, 43, 0.36);
+  color: #e89b97;
+}
+.myclass-card-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.12rem;
+  color: var(--warm-ivory);
+  line-height: 1.3;
+  margin: 2px 0 0;
+}
+.myclass-card-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+.myclass-child-name {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.25rem;
+  color: var(--warm-ivory);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(224, 184, 79, 0.16);
+}
+
+/* 수업 상세 — 내 사진(제출 상태) */
+.myclass-detail-photohead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.myclass-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+.myclass-photo {
+  position: relative;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+.myclass-photo-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+.myclass-photo-status {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3px 6px;
+  font-size: 0.68rem;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.62);
+  color: var(--text-muted);
+}
+.myclass-photo-status.is-pub {
+  color: #7ed99f;
 }

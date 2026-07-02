@@ -22,7 +22,7 @@ export default async function NewProgramPage() {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <Link href="/admin/programs">수업 및 프로그램</Link>
+            <Link href="/admin/programs">수업 · 프로그램 관리</Link>
             <span>/</span>
             <span>새 프로그램</span>
           </div>

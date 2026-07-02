@@ -20,6 +20,7 @@ import ImageGallery from '@/components/gallery/ImageGallery';
 import { VideoList } from '@/components/gallery/VideoEmbed';
 import CheckinButton from '@/components/admin/library/CheckinButton';
 import ParentCheckin from '@/components/admin/library/ParentCheckin';
+import PhotoSubmitModal from '@/components/admin/library/PhotoSubmitModal';
 
 export const metadata: Metadata = {
   title: '이벤트 상세 | KTDOC Admin',
@@ -174,6 +175,16 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
 
       {event.description_ko && (
         <p className="library-detail-desc">{event.description_ko}</p>
+      )}
+
+      {(canCheckIn || isParent) && (
+        <section className="library-detail-section">
+          <h2 className="library-detail-section-title">사진 올리기</h2>
+          <p className="admin-form-help">
+            이 이벤트에서 찍은 사진을 올리면 운영진 검토 후 공개 갤러리에 반영됩니다.
+          </p>
+          <PhotoSubmitModal eventId={eventId} buttonLabel="이 이벤트에 사진 올리기" />
+        </section>
       )}
 
       {event.images.length > 0 && (

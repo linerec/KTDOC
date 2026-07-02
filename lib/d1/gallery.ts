@@ -270,9 +270,40 @@ export async function getEventBySlug(
   };
 }
 
+/** 'YYYY-MM-DD'에서 연도만 취한다 — new Date()는 서버 타임존에 따라 하루가 밀릴 수 있다. */
+function yearOfDateString(dateStr: string): number {
+  return parseInt(dateStr.slice(0, 4), 10);
+}
+
+/** slug가 이미 다른 이벤트에 쓰이고 있는지 (excludeId는 자기 자신 제외용) */
+export async function isEventSlugTaken(slug: string, excludeId?: number): Promise<boolean> {
+  const rows = await queryD1<{ id: number }>(
+    excludeId
+      ? 'SELECT id FROM events WHERE slug = ? AND id != ? LIMIT 1'
+      : 'SELECT id FROM events WHERE slug = ? LIMIT 1',
+    excludeId ? [slug, excludeId] : [slug]
+  );
+  return rows.length > 0;
+}
+
+/**
+ * slug 중복 회피 — 연례 행사처럼 같은 제목의 이벤트를 다시 만들 때
+ * UNIQUE 제약으로 생성이 통째로 실패하지 않도록 -2, -3… 접미사를 붙인다.
+ */
+async function ensureUniqueEventSlug(base: string): Promise<string> {
+  const safeBase = base || 'event';
+  for (let n = 1; n <= 50; n++) {
+    const candidate = n === 1 ? safeBase : `${safeBase}-${n}`;
+    if (!(await isEventSlugTaken(candidate))) return candidate;
+  }
+  throw new Error('사용 가능한 이벤트 주소(slug)를 찾지 못했습니다.');
+}
+
 export async function createEvent(input: CreateEventInput): Promise<number> {
-  const year = new Date(input.event_date).getFullYear();
-  const slug = input.slug || generateSlug(input.title_ko);
+  const year = yearOfDateString(input.event_date);
+  const slug = await ensureUniqueEventSlug(
+    input.slug || generateSlug(input.title_ko) || `event-${input.event_date}`
+  );
 
   const { lastRowId } = await executeD1(
     `INSERT INTO events (
@@ -325,7 +356,7 @@ export async function updateEvent(
     updates.push('event_date = ?');
     params.push(input.event_date);
     updates.push('year = ?');
-    params.push(new Date(input.event_date).getFullYear());
+    params.push(yearOfDateString(input.event_date));
   }
   if (input.description_ko !== undefined) {
     updates.push('description_ko = ?');
@@ -412,9 +443,27 @@ export async function updateEvent(
   );
 }
 
+/** 이벤트 존재 여부만 가볍게 확인한다 — getEventById와 달리 이미지·영상을 로드하지 않는다. */
+export async function eventIdExists(id: number): Promise<boolean> {
+  const rows = await queryD1<{ id: number }>(
+    'SELECT id FROM events WHERE id = ? LIMIT 1',
+    [id]
+  );
+  return rows.length > 0;
+}
+
 export async function deleteEvent(id: number): Promise<void> {
   // CASCADE will handle event_images and event_videos
   await executeD1('DELETE FROM events WHERE id = ?', [id]);
+}
+
+/** 카테고리를 사용 중인 이벤트 수 — 카테고리 삭제 전 안내용. */
+export async function countEventsInCategory(categoryId: number): Promise<number> {
+  const rows = await queryD1<{ count: number }>(
+    'SELECT COUNT(*) as count FROM events WHERE category_id = ?',
+    [categoryId]
+  );
+  return rows[0]?.count || 0;
 }
 
 export async function incrementViewCount(id: number): Promise<void> {
@@ -549,6 +598,43 @@ export async function createEventImage(
   return lastRowId;
 }
 
+export async function getEventImageById(id: number): Promise<EventImage | null> {
+  const rows = await queryD1<EventImage>(
+    'SELECT * FROM event_images WHERE id = ?',
+    [id]
+  );
+  return rows[0] || null;
+}
+
+/**
+ * 이벤트 이미지의 캡션만 갱신한다.
+ * 보관함 사진(gallery_photos)의 설명을 고칠 때 이벤트 사본과 어긋나지 않게 동기화하는 용도.
+ */
+export async function updateEventImageCaptions(
+  id: number,
+  captions: { caption_ko?: string | null; caption_en?: string | null }
+): Promise<void> {
+  const updates: string[] = [];
+  const params: unknown[] = [];
+
+  if (captions.caption_ko !== undefined) {
+    updates.push('caption_ko = ?');
+    params.push(captions.caption_ko || null);
+  }
+  if (captions.caption_en !== undefined) {
+    updates.push('caption_en = ?');
+    params.push(captions.caption_en || null);
+  }
+
+  if (updates.length === 0) return;
+
+  params.push(id);
+  await executeD1(
+    `UPDATE event_images SET ${updates.join(', ')} WHERE id = ?`,
+    params
+  );
+}
+
 export async function updateImageOrder(
   eventId: number,
   imageIds: number[]
@@ -647,6 +733,7 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
     published,
     organized = 'all',
     eventId,
+    programId,
     sort = 'recent',
     uploadedBy,
     submitted = 'all',
@@ -669,6 +756,11 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
   if (eventId) {
     conditions.push('gp.event_id = ?');
     params.push(eventId);
+  }
+
+  if (programId) {
+    conditions.push('gp.program_id = ?');
+    params.push(programId);
   }
 
   if (uploadedBy) {
@@ -714,9 +806,12 @@ export async function getGalleryPhotos(filters: GalleryPhotoFilters = {}): Promi
             e.title_ko as event_title_ko,
             e.title_en as event_title_en,
             e.year as event_year,
-            e.slug as event_slug
+            e.slug as event_slug,
+            pr.title_ko as program_title_ko,
+            pr.slug as program_slug
      FROM gallery_photos gp
      LEFT JOIN events e ON gp.event_id = e.id
+     LEFT JOIN programs pr ON gp.program_id = pr.id
      ${whereClause}
      ${orderBy}
      LIMIT ? OFFSET ?`,
@@ -755,9 +850,12 @@ export async function getGalleryPhotoById(id: number): Promise<GalleryPhoto | nu
             e.title_ko as event_title_ko,
             e.title_en as event_title_en,
             e.year as event_year,
-            e.slug as event_slug
+            e.slug as event_slug,
+            pr.title_ko as program_title_ko,
+            pr.slug as program_slug
      FROM gallery_photos gp
      LEFT JOIN events e ON gp.event_id = e.id
+     LEFT JOIN programs pr ON gp.program_id = pr.id
      WHERE gp.id = ?`,
     [id]
   );
@@ -774,9 +872,9 @@ export async function createGalleryPhoto(input: CreateGalleryPhotoInput): Promis
   const { lastRowId } = await executeD1(
     `INSERT INTO gallery_photos (
       image_url, r2_key, caption_ko, caption_en, taken_date,
-      event_id, is_published, is_featured, sort_order,
+      event_id, program_id, is_published, is_featured, sort_order,
       width, height, size, uploaded_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.image_url,
       input.r2_key,
@@ -784,6 +882,7 @@ export async function createGalleryPhoto(input: CreateGalleryPhotoInput): Promis
       input.caption_en || null,
       input.taken_date || null,
       input.event_id || null,
+      input.program_id || null,
       input.is_published ? 1 : 0,
       input.is_featured ? 1 : 0,
       sortOrder,
@@ -820,6 +919,10 @@ export async function updateGalleryPhoto(
     updates.push('event_id = ?');
     params.push(input.event_id || null);
   }
+  if (input.program_id !== undefined) {
+    updates.push('program_id = ?');
+    params.push(input.program_id || null);
+  }
   if (input.is_published !== undefined) {
     updates.push('is_published = ?');
     params.push(input.is_published ? 1 : 0);
@@ -842,6 +945,37 @@ export async function updateGalleryPhoto(
     `UPDATE gallery_photos SET ${updates.join(', ')} WHERE id = ?`,
     params
   );
+}
+
+/** 특정 event_image를 사본으로 쓰는 보관함 사진 조회 (이벤트 쪽에서 삭제할 때 원본 판별용) */
+export async function getGalleryPhotoByEventImageId(
+  eventImageId: number
+): Promise<GalleryPhoto | null> {
+  const rows = await queryD1<GalleryPhoto>(
+    'SELECT * FROM gallery_photos WHERE event_image_id = ?',
+    [eventImageId]
+  );
+  return rows[0] || null;
+}
+
+/**
+ * 주어진 R2 키 중 보관함(gallery_photos)이 원본으로 참조하는 키 집합을 돌려준다.
+ * 보관함에서 이벤트로 연결한 사진은 event_images가 같은 R2 객체를 공유하므로,
+ * 이벤트·이벤트 이미지를 삭제할 때 이 집합에 포함된 키는 R2에서 지우면 안 된다.
+ */
+export async function filterR2KeysInArchive(keys: string[]): Promise<Set<string>> {
+  const shared = new Set<string>();
+  const CHUNK = 80; // D1 바인딩 파라미터 한도(100) 이내 유지
+  for (let i = 0; i < keys.length; i += CHUNK) {
+    const chunk = keys.slice(i, i + CHUNK);
+    const placeholders = chunk.map(() => '?').join(', ');
+    const rows = await queryD1<{ r2_key: string }>(
+      `SELECT r2_key FROM gallery_photos WHERE r2_key IN (${placeholders})`,
+      chunk
+    );
+    for (const row of rows) shared.add(row.r2_key);
+  }
+  return shared;
 }
 
 export async function markGalleryPhotoEventImage(
