@@ -42,7 +42,7 @@ export default function Footer() {
                 </div>
                 <div className="footer-links">
                     <Link href="/calendar" className="footer-cal-link">
-                        📅 학원 일정 구독하기
+                        📅 <IntlObject keycode="footer.calendar" />
                     </Link>
                 </div>
                 <div className="footer-bottom">

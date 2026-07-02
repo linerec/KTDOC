@@ -15,6 +15,8 @@ interface IntlObjectProps {
   className?: string;
   style?: React.CSSProperties;
   isLogin?: boolean;
+  /** 메시지 안의 {이름} 자리표시자를 치환할 값. 예: "참여 {n}회" + {n: 3} → "참여 3회" */
+  params?: Record<string, string | number>;
 }
 
 interface LocaleData {
@@ -28,6 +30,7 @@ export default function IntlObject({
   className = '',
   style = {},
   isLogin,
+  params,
 }: IntlObjectProps) {
   const { data: session } = useSession();
   const { locale, messages, allMessages, refreshMessages } = useLanguage();
@@ -46,7 +49,14 @@ export default function IntlObject({
   const canEdit = isLogin !== undefined ? isLogin : isAdmin(session);
   const isEditable = canEdit && isEditMode;
 
-  const message = messages[keycode] || keycode;
+  const rawMessage = messages[keycode] || keycode;
+  // 편집 모달에는 자리표시자가 담긴 원문({n} 등)이 뜨고, 화면에는 치환된 값이 보인다
+  const message = params
+    ? Object.entries(params).reduce(
+        (acc, [key, value]) => acc.replaceAll(`{${key}}`, String(value)),
+        rawMessage
+      )
+    : rawMessage;
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!isEditable) return;

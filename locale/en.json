@@ -50,9 +50,12 @@
   "footer.tagline": "Based in New Jersey, KTDOC carries Korean traditional arts forward through education, performance, and cultural preservation.",
   "footer.contact": "Performance · Education · Community",
   "footer.copyright": "© 2026 KTDOC. All rights reserved.",
+  "footer.calendar": "Subscribe to Academy Calendar",
 
   "auth.login": "Login",
   "auth.logout": "Logout",
+  "auth.dashboard.admin": "Admin",
+  "auth.dashboard.member": "My Page",
   "auth.register": "Register",
   "auth.email": "Email",
   "auth.password": "Password",
@@ -221,5 +224,17 @@
   "pages.calendar.sub.guide.google.body": "<li>Click <strong>‘Add to Google Calendar’</strong> (desktop recommended).</li><li>If it doesn’t open, go to Google Calendar → Other calendars + → <strong>From URL</strong> and paste the link.</li><li>Google may take up to 24 hours to refresh subscribed calendars.</li>",
   "pages.calendar.sub.guide.outlook.title": "Outlook",
   "pages.calendar.sub.guide.outlook.body": "<li>In Outlook Calendar, choose Add calendar → <strong>Subscribe from web</strong>.</li><li>Paste the link, name it, then import.</li>",
-  "pages.calendar.sub.hint": "Once subscribed, new performances, events, and camps — and any changes or cancellations — appear automatically. Timing depends on each calendar app’s refresh interval."
+  "pages.calendar.sub.hint": "Once subscribed, new performances, events, and camps — and any changes or cancellations — appear automatically. Timing depends on each calendar app’s refresh interval.",
+
+  "students.title": "Student Archive",
+  "students.lede": "Students of KTDOC Choomnoori, grouped by enrollment year, together with a record of the performances and events each has taken part in.",
+  "students.stat.students": "<strong>{n}</strong> students",
+  "students.stat.years": "<strong>{n}</strong> enrollment years",
+  "students.stat.participation": "<strong>{n}</strong> total participations",
+  "students.empty": "No students have agreed to be listed yet. Students can opt in from ‘My Profile’.",
+  "students.year.unknown": "Enrollment year unknown",
+  "students.year.count": "{n} students",
+  "students.name.unknown": "Unnamed",
+  "students.chip.participation": "{n} events",
+  "students.note": "Only students who agreed to be listed appear here. Participation counts are based on each student’s check-ins at performances and events. For questions about this list, please contact <a href=\"/about\" class=\"students-note-link\">Choomnoori</a>."
 }

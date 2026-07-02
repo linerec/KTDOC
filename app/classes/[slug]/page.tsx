@@ -8,6 +8,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import IntlObject from '@/components/common/IntlObject';
 import ImageGallery from '@/components/gallery/ImageGallery';
 import RegistrationForm from '@/components/classes/RegistrationForm';
 import ProgramDetailFacts from '@/components/classes/ProgramDetailFacts';
@@ -72,7 +73,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
             {program.title_en && <p className="program-detail-title-en">{program.title_en}</p>}
             {program.summary_ko && <p className="program-detail-lede">{program.summary_ko}</p>}
             <a href="#apply" className="btn-ink-primary program-detail-apply-cta">
-              신청하기
+              <IntlObject keycode="programs.detail.applyCta" />
             </a>
           </div>
         </section>

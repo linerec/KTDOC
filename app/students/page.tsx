@@ -12,9 +12,9 @@
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import IntlObject from '@/components/common/IntlObject';
 import { getActiveStudents, type PublicStudent } from '@/lib/members';
 import { getCheckinCountsByUser } from '@/lib/d1';
 
@@ -56,20 +56,20 @@ export default async function StudentsPage() {
         <section className="students-hero">
           <div className="students-container">
             <p className="students-kicker">KTDOC ARCHIVE</p>
-            <h1 className="students-title">수강생 아카이브</h1>
-            <p className="students-lede">
-              춤누리 한국전통무용단에서 활동한 수강생을 입학년도별로 모았습니다.
-              각 수강생이 참여한 공연·이벤트 기록을 함께 보여드립니다.
-            </p>
+            <IntlObject keycode="students.title" returnType="h1" className="students-title" />
+            <IntlObject keycode="students.lede" returnType="p" className="students-lede" />
             <div className="students-stats">
               <span>
-                <strong>{students.length}</strong>명의 수강생
+                <IntlObject keycode="students.stat.students" params={{ n: students.length }} />
               </span>
               <span>
-                <strong>{grouped.filter(([y]) => y !== null).length}</strong>개 입학년도
+                <IntlObject
+                  keycode="students.stat.years"
+                  params={{ n: grouped.filter(([y]) => y !== null).length }}
+                />
               </span>
               <span>
-                누적 참여 <strong>{totalParticipation}</strong>회
+                <IntlObject keycode="students.stat.participation" params={{ n: totalParticipation }} />
               </span>
             </div>
           </div>
@@ -78,25 +78,29 @@ export default async function StudentsPage() {
         <section className="students-body">
           <div className="students-container">
             {students.length === 0 ? (
-              <p className="students-empty">
-                아직 공개에 동의한 수강생이 없습니다. 수강생은 ‘내 프로필’에서 공개 표시에 동의할 수 있습니다.
-              </p>
+              <IntlObject keycode="students.empty" returnType="p" className="students-empty" />
             ) : (
               grouped.map(([year, list]) => (
                 <section key={year ?? 'unknown'} className="students-year">
                   <div className="students-year-head">
-                    <h2 className="students-year-title">{year ?? '입학년도 미정'}</h2>
-                    <span className="students-year-count">{list.length}명</span>
+                    <h2 className="students-year-title">
+                      {year ?? <IntlObject keycode="students.year.unknown" />}
+                    </h2>
+                    <span className="students-year-count">
+                      <IntlObject keycode="students.year.count" params={{ n: list.length }} />
+                    </span>
                   </div>
                   <ul className="students-grid">
                     {list.map((s) => {
                       const n = counts.get(s.id) ?? 0;
                       return (
                         <li key={s.id} className="student-chip">
-                          <span className="student-chip-name">{s.name || '이름 미입력'}</span>
+                          <span className="student-chip-name">
+                            {s.name || <IntlObject keycode="students.name.unknown" />}
+                          </span>
                           {n > 0 && (
-                            <span className="student-chip-count" title={`참여 ${n}회`}>
-                              참여 {n}회
+                            <span className="student-chip-count">
+                              <IntlObject keycode="students.chip.participation" params={{ n }} />
                             </span>
                           )}
                         </li>
@@ -107,14 +111,8 @@ export default async function StudentsPage() {
               ))
             )}
 
-            <p className="students-note">
-              이 명단에는 공개 표시에 동의한 수강생만 표시됩니다. 참여 횟수는 각 수강생이 공연·이벤트에
-              체크인한 기록을 바탕으로 집계됩니다. 명단 등재나 표기에 대한 문의는{' '}
-              <Link href="/about" className="students-note-link">
-                춤누리
-              </Link>
-              로 연락해 주세요.
-            </p>
+            {/* 문의 링크(<a href="/about">)는 어순이 언어마다 달라 메시지 HTML에 포함한다 */}
+            <IntlObject keycode="students.note" returnType="p" className="students-note" />
           </div>
         </section>
       </main>
