@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { isAdmin } from '@/lib/isAdmin';
+import type { HeroOverlay } from '@/lib/heroBackground';
 import ImageObject from '@/components/common/ImageObject';
 import HeroBackgroundManager, { type HeroSlide } from '@/components/HeroBackgroundManager';
 
@@ -33,7 +34,7 @@ export const heroSlides: HeroSlide[] = [
   },
 ];
 
-export default function HeroBackground() {
+export default function HeroBackground({ overlay = null }: { overlay?: HeroOverlay | null }) {
   const { data: session } = useSession();
   const { isEditMode } = useBuilder();
   // 관리자 편집 모드에서만 배경 관리 진입점을 노출한다.
@@ -58,9 +59,11 @@ export default function HeroBackground() {
             />
           </div>
         ))}
+        {/* 관리자 톤 설정의 틴트(색 필터) 레이어 — 기본은 강도 0(투명) */}
+        <div className="hero-art-tint" />
       </div>
 
-      {canManage && <HeroBackgroundManager slides={heroSlides} />}
+      {canManage && <HeroBackgroundManager slides={heroSlides} initialOverlay={overlay} />}
     </>
   );
 }

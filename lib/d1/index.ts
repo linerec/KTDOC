@@ -131,6 +131,7 @@ export {
 export {
   // Site Settings (key-value)
   SETTING_HERO_FEATURED_VIDEO,
+  SETTING_HERO_OVERLAY,
   SETTING_HEADER_BACKGROUND,
   SETTING_CALENDAR_CONFIG,
   getSetting,
