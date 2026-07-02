@@ -454,6 +454,13 @@ export default function PhotoOrganizeBoard({
                   )}
                   {photo.event_image_id ? (
                     <span className="photo-tile-badge is-linked">이벤트</span>
+                  ) : photo.event_id ? (
+                    <span
+                      className="photo-tile-badge is-pending"
+                      title="이벤트가 지정됐지만 아직 이벤트 사진으로 게시되지 않았습니다. 사진을 열어 정리 저장하거나 '이벤트에 넣기'를 실행하세요."
+                    >
+                      연결 대기
+                    </span>
                   ) : (
                     <span className="photo-tile-badge is-loose">미분류</span>
                   )}

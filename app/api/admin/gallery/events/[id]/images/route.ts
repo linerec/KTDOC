@@ -7,7 +7,16 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getEventById, createEventImage, deleteEventImage } from '@/lib/d1';
+import {
+  getEventById,
+  createEventImage,
+  deleteEventImage,
+  getEventImageById,
+  getGalleryPhotoByEventImageId,
+  filterR2KeysInArchive,
+  updateGalleryPhoto,
+  clearGalleryPhotoEventImage,
+} from '@/lib/d1';
 import { uploadToR2, deleteFromR2 } from '@/lib/r2';
 
 interface RouteParams {
@@ -115,33 +124,53 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     }
 
     const { searchParams } = new URL(request.url);
-    const imageId = searchParams.get('imageId');
+    const imageIdParam = searchParams.get('imageId');
+    const imageId = imageIdParam ? parseInt(imageIdParam) : NaN;
 
-    if (!imageId) {
+    if (isNaN(imageId)) {
       return NextResponse.json(
-        { success: false, error: '이미지 ID가 필요합니다.' },
+        { success: false, error: '유효한 이미지 ID가 필요합니다.' },
         { status: 400 }
       );
     }
 
-    // Delete from DB and get image data
-    const deletedImage = await deleteEventImage(parseInt(imageId));
-
-    if (!deletedImage) {
+    const image = await getEventImageById(imageId);
+    if (!image) {
       return NextResponse.json(
         { success: false, error: '이미지를 찾을 수 없습니다.' },
         { status: 404 }
       );
     }
-
-    // Delete from R2
-    try {
-      await deleteFromR2(deletedImage.r2_key);
-    } catch (e) {
-      console.warn('Failed to delete image from R2:', e);
+    if (image.event_id !== eventId) {
+      return NextResponse.json(
+        { success: false, error: '이 이벤트에 속한 이미지가 아닙니다.' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ success: true });
+    // 보관함(gallery_photos)에서 연결된 사진인지 삭제 전에 판별한다
+    const archivePhoto = await getGalleryPhotoByEventImageId(imageId);
+
+    await deleteEventImage(imageId);
+
+    if (archivePhoto) {
+      // 보관함 원본이 있는 사진 — 이벤트에서만 빼고(연결 해제) 보관함과 R2 객체는 남긴다
+      await updateGalleryPhoto(archivePhoto.id, { event_id: null });
+      await clearGalleryPhotoEventImage(archivePhoto.id);
+      return NextResponse.json({ success: true, data: { detachedToArchive: true } });
+    }
+
+    // 이벤트에 직접 업로드된 이미지 — 혹시 보관함이 같은 R2 객체를 참조하면 남긴다
+    const archiveKeys = await filterR2KeysInArchive([image.r2_key]);
+    if (!archiveKeys.has(image.r2_key)) {
+      try {
+        await deleteFromR2(image.r2_key);
+      } catch (e) {
+        console.warn('Failed to delete image from R2:', e);
+      }
+    }
+
+    return NextResponse.json({ success: true, data: { detachedToArchive: false } });
   } catch (error) {
     console.error('Admin gallery image delete error:', error);
     return NextResponse.json(

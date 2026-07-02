@@ -65,6 +65,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
+      return NextResponse.json(
+        { success: false, error: '행사 날짜 형식이 올바르지 않습니다. (예: 2026-07-01)' },
+        { status: 400 }
+      );
+    }
+
     const input: CreateEventInput = {
       title_ko,
       event_date,

@@ -8,7 +8,13 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getEventById, updateEvent, deleteEvent } from '@/lib/d1';
+import {
+  getEventById,
+  updateEvent,
+  deleteEvent,
+  isEventSlugTaken,
+  filterR2KeysInArchive,
+} from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
 import type { UpdateEventInput } from '@/types/gallery';
 
@@ -106,6 +112,29 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.is_published !== undefined) input.is_published = body.is_published;
     if (body.is_featured !== undefined) input.is_featured = body.is_featured;
     if (body.is_signature !== undefined) input.is_signature = body.is_signature;
+
+    if (input.event_date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(input.event_date)) {
+      return NextResponse.json(
+        { success: false, error: '행사 날짜 형식이 올바르지 않습니다. (예: 2026-07-01)' },
+        { status: 400 }
+      );
+    }
+
+    // slug는 이벤트 URL이자 UNIQUE 컬럼 — 중복이면 저장 전에 명확히 알린다
+    if (input.slug !== undefined) {
+      if (!input.slug) {
+        return NextResponse.json(
+          { success: false, error: '이벤트 주소(slug)는 비울 수 없습니다.' },
+          { status: 400 }
+        );
+      }
+      if (await isEventSlugTaken(input.slug, eventId)) {
+        return NextResponse.json(
+          { success: false, error: '이미 다른 이벤트가 사용 중인 주소(slug)입니다. 다른 값을 입력해주세요.' },
+          { status: 409 }
+        );
+      }
+    }
     if (body.signature_order !== undefined) input.signature_order = body.signature_order;
     if (body.location !== undefined) input.location = body.location;
     if (body.location_url !== undefined) input.location_url = body.location_url;
@@ -173,9 +202,13 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Delete all images from R2 first
+    // Delete all images from R2 first.
+    // 단, 보관함(gallery_photos)에서 이벤트로 연결된 사진은 같은 R2 객체를 공유한다 —
+    // 이벤트가 삭제되면 그 사진은 연결만 풀리고(FK SET NULL) 보관함에 남으므로 R2 객체를 지우면 안 된다.
     if (event.images && event.images.length > 0) {
+      const archiveKeys = await filterR2KeysInArchive(event.images.map((img) => img.r2_key));
       for (const image of event.images) {
+        if (archiveKeys.has(image.r2_key)) continue;
         try {
           await deleteFromR2(image.r2_key);
         } catch (e) {

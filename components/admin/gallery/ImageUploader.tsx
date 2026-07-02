@@ -56,8 +56,16 @@ export default function ImageUploader({
           }
         );
 
-        const data = await res.json();
+        // 요청 자체가 서버에 닿지 못하면(용량 초과 등) 응답이 JSON이 아닐 수 있다
+        const data = await res.json().catch(() => null);
 
+        if (!data) {
+          throw new Error(
+            res.status === 413
+              ? '사진 용량이 너무 커서 서버가 받지 못했습니다. 장수를 나누거나 사진 크기를 줄여 다시 올려주세요.'
+              : `업로드 요청이 실패했습니다 (오류 ${res.status}). 잠시 후 다시 시도해주세요.`
+          );
+        }
         if (!data.success) {
           throw new Error(data.error || '업로드에 실패했습니다.');
         }

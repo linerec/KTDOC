@@ -10,9 +10,10 @@ import {
   createEventImage,
   deleteEventImage,
   deleteGalleryPhoto,
-  getEventById,
+  eventIdExists,
   getGalleryPhotoById,
   markGalleryPhotoEventImage,
+  updateEventImageCaptions,
   updateGalleryPhoto,
 } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
@@ -57,6 +58,16 @@ export async function organizePhoto(
       size: photo.size || undefined,
     });
     await markGalleryPhotoEventImage(photo.id, eventImageId);
+  } else if (
+    photo.event_image_id &&
+    input.event_id !== null &&
+    (input.caption_ko !== undefined || input.caption_en !== undefined)
+  ) {
+    // 연결이 그대로 유지되는 경우 — 캡션 수정을 이벤트 사본(event_images)에도 반영
+    await updateEventImageCaptions(photo.event_image_id, {
+      caption_ko: input.caption_ko,
+      caption_en: input.caption_en,
+    });
   }
 
   return getGalleryPhotoById(photo.id);
@@ -64,7 +75,7 @@ export async function organizePhoto(
 
 /** 연결할 이벤트가 실제로 존재하는지 검증 (없으면 false) */
 export async function eventExists(eventId: number): Promise<boolean> {
-  return (await getEventById(eventId)) !== null;
+  return eventIdExists(eventId);
 }
 
 /** 여러 장을 한 이벤트에 연결 (개별 사진은 organizePhoto 재사용) */

@@ -52,7 +52,15 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     if (body.caption_ko !== undefined) input.caption_ko = body.caption_ko;
     if (body.caption_en !== undefined) input.caption_en = body.caption_en;
-    if (body.taken_date !== undefined) input.taken_date = body.taken_date || null;
+    if (body.taken_date !== undefined) {
+      if (body.taken_date && !/^\d{4}-\d{2}-\d{2}$/.test(body.taken_date)) {
+        return NextResponse.json(
+          { success: false, error: '촬영일 형식이 올바르지 않습니다. (예: 2026-07-01)' },
+          { status: 400 }
+        );
+      }
+      input.taken_date = body.taken_date || null;
+    }
     if (body.event_id !== undefined) {
       const nextEventId = body.event_id ? Number(body.event_id) : null;
       if (nextEventId && !(await eventExists(nextEventId))) {

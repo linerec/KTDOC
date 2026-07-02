@@ -24,6 +24,7 @@ export default function ImageSortable({
 }: ImageSortableProps) {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleDelete = async (imageId: number) => {
@@ -73,6 +74,7 @@ export default function ImageSortable({
 
     // Save new order to server
     setSaving(true);
+    setOrderError(null);
     try {
       const imageIds = images.map((img) => img.id);
       const res = await fetch(
@@ -84,12 +86,15 @@ export default function ImageSortable({
         }
       );
 
-      const data = await res.json();
-      if (!data.success) {
-        console.error('Failed to save order:', data.error);
+      const data = await res.json().catch(() => null);
+      if (!data?.success) {
+        throw new Error(data?.error || '순서 저장에 실패했습니다.');
       }
     } catch (err) {
       console.error('Failed to save order:', err);
+      setOrderError(
+        '순서 저장에 실패했습니다. 화면의 순서와 실제 순서가 다를 수 있으니 새로고침 후 다시 시도해주세요.'
+      );
     } finally {
       setSaving(false);
     }
@@ -107,6 +112,12 @@ export default function ImageSortable({
         </span>
         <span className="admin-hint">드래그하여 순서 변경</span>
       </div>
+
+      {orderError && (
+        <div className="admin-alert admin-alert-error admin-alert-sm" role="alert">
+          {orderError}
+        </div>
+      )}
 
       <div className="admin-image-grid">
         {images.map((image, index) => (

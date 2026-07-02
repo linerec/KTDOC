@@ -18,7 +18,10 @@ export async function uploadToR2(
 ): Promise<UploadResult> {
   const timestamp = Date.now();
   const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const key = `${folder}/${timestamp}-${sanitizedFilename}`;
+  // 같은 밀리초에 같은 이름의 파일이 올라와도 키가 겹치지 않도록 난수 접미사를 붙인다
+  // (키가 겹치면 앞 객체를 덮어써, 서로 다른 사진 레코드가 한 객체를 공유하게 된다)
+  const unique = Math.random().toString(36).slice(2, 8);
+  const key = `${folder}/${timestamp}-${unique}-${sanitizedFilename}`;
 
   const contentType = getContentType(filename);
 

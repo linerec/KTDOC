@@ -9,7 +9,14 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getCategories, getCategoryById, createCategory, updateCategory, deleteCategory } from '@/lib/d1';
+import {
+  getCategories,
+  getCategoryById,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  countEventsInCategory,
+} from '@/lib/d1';
 import type { CreateCategoryInput } from '@/types/gallery';
 
 // GET - 카테고리 목록
@@ -156,6 +163,18 @@ export async function DELETE(request: Request) {
       return NextResponse.json(
         { success: false, error: '카테고리를 찾을 수 없습니다.' },
         { status: 404 }
+      );
+    }
+
+    // FK(NO ACTION) 위반으로 불친절한 500이 나기 전에, 사용 중이면 명확히 안내한다
+    const inUse = await countEventsInCategory(categoryId);
+    if (inUse > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `이 카테고리를 사용하는 이벤트가 ${inUse}개 있습니다. 먼저 해당 이벤트의 카테고리를 변경한 뒤 삭제해주세요.`,
+        },
+        { status: 409 }
       );
     }
 
