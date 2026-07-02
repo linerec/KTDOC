@@ -50,6 +50,7 @@ export default async function AdminProfilePage() {
           role={role}
           joinedAt={joinedAt}
           initialConsent={member?.public_archive_consent ?? false}
+          initialPhotoUrl={member?.profile_photo_url ?? null}
         />
         <ChangePasswordCard />
       </div>

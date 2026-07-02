@@ -226,6 +226,8 @@
   "pages.calendar.sub.guide.outlook.body": "<li>In Outlook Calendar, choose Add calendar → <strong>Subscribe from web</strong>.</li><li>Paste the link, name it, then import.</li>",
   "pages.calendar.sub.hint": "Once subscribed, new performances, events, and camps — and any changes or cancellations — appear automatically. Timing depends on each calendar app’s refresh interval.",
 
+  "students.hero.label": "ARCHIVE · STUDENTS",
+  "students.hero.subtitle": "Learning together, taking the stage together",
   "students.title": "Student Archive",
   "students.lede": "Students of KTDOC Choomnoori, grouped by enrollment year, together with a record of the performances and events each has taken part in.",
   "students.stat.students": "<strong>{n}</strong> students",

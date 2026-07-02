@@ -73,6 +73,8 @@ export interface Member {
   enrollment_year: number | null;
   /** 공개 수강생 페이지(/students) 노출 동의 여부 (학생 본인이 프로필에서 토글) */
   public_archive_consent: boolean;
+  /** 프로필 사진 R2 공개 URL (없으면 이니셜 아바타 폴백) */
+  profile_photo_url: string | null;
   /** 이메일 인증 일시(ISO) 또는 미인증 시 null */
   email_verified: string | null;
   created_at: string;

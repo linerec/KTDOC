@@ -12,6 +12,7 @@
  */
 
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import IntlObject from '@/components/common/IntlObject';
@@ -53,11 +54,13 @@ export default async function StudentsPage() {
     <>
       <Header />
       <main className="students-page">
+        {/* 표준 히어로 골격(label/title/subtitle/description) — gallery-hero가 캐노니컬 */}
         <section className="students-hero">
           <div className="students-container">
-            <p className="students-kicker">KTDOC ARCHIVE</p>
-            <IntlObject keycode="students.title" returnType="h1" className="students-title" />
-            <IntlObject keycode="students.lede" returnType="p" className="students-lede" />
+            <IntlObject keycode="students.hero.label" className="students-hero-label" />
+            <IntlObject keycode="students.title" returnType="h1" className="students-hero-title" />
+            <IntlObject keycode="students.hero.subtitle" returnType="p" className="students-hero-subtitle" />
+            <IntlObject keycode="students.lede" returnType="p" className="students-hero-description" />
             <div className="students-stats">
               <span>
                 <IntlObject keycode="students.stat.students" params={{ n: students.length }} />
@@ -94,15 +97,32 @@ export default async function StudentsPage() {
                     {list.map((s) => {
                       const n = counts.get(s.id) ?? 0;
                       return (
-                        <li key={s.id} className="student-chip">
-                          <span className="student-chip-name">
-                            {s.name || <IntlObject keycode="students.name.unknown" />}
+                        <li key={s.id} className="student-card">
+                          <span className="student-card-avatar" aria-hidden="true">
+                            {s.profile_photo_url ? (
+                              <Image
+                                src={s.profile_photo_url}
+                                alt=""
+                                width={56}
+                                height={56}
+                                className="student-card-photo"
+                              />
+                            ) : (
+                              <span className="student-card-initial">
+                                {(s.name || '?').trim()[0]?.toUpperCase() ?? '?'}
+                              </span>
+                            )}
                           </span>
-                          {n > 0 && (
-                            <span className="student-chip-count">
-                              <IntlObject keycode="students.chip.participation" params={{ n }} />
+                          <span className="student-card-body">
+                            <span className="student-card-name">
+                              {s.name || <IntlObject keycode="students.name.unknown" />}
                             </span>
-                          )}
+                            {n > 0 && (
+                              <span className="student-card-count">
+                                <IntlObject keycode="students.chip.participation" params={{ n }} />
+                              </span>
+                            )}
+                          </span>
                         </li>
                       );
                     })}

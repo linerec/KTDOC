@@ -52,6 +52,7 @@ interface MemberRow {
   status: MemberStatus | null;
   enrollment_year: number | null;
   public_archive_consent: number | null;
+  profile_photo_url: string | null;
   created_at: Date | string | null;
   updated_at: Date | string | null;
 }
@@ -76,12 +77,13 @@ function normalizeMember(row: MemberRow): Member {
     status: row.status && VALID_STATUSES.includes(row.status) ? row.status : 'active',
     enrollment_year: row.enrollment_year ?? null,
     public_archive_consent: row.public_archive_consent === 1,
+    profile_photo_url: row.profile_photo_url ?? null,
     created_at: toISO(row.created_at) ?? '',
     updated_at: toISO(row.updated_at) ?? '',
   };
 }
 
-const MEMBER_SELECT = `id, email, name, phone, email_verified, role, status, enrollment_year, public_archive_consent, created_at, updated_at`;
+const MEMBER_SELECT = `id, email, name, phone, email_verified, role, status, enrollment_year, public_archive_consent, profile_photo_url, created_at, updated_at`;
 
 /**
  * 회원 목록 조회 (검색·권한·상태 필터·페이지네이션 지원).
@@ -282,11 +284,12 @@ export async function getStudentOptions(): Promise<
   );
 }
 
-/** 공개 연도별 수강생 페이지 한 줄(민감정보 제외 — 이름·입학년도만) */
+/** 공개 연도별 수강생 페이지 한 줄(민감정보 제외 — 이름·입학년도·사진만) */
 export interface PublicStudent {
   id: string;
   name: string | null;
   enrollment_year: number | null;
+  profile_photo_url: string | null;
 }
 
 /**
@@ -296,7 +299,7 @@ export interface PublicStudent {
  */
 export async function getActiveStudents(): Promise<PublicStudent[]> {
   return query<PublicStudent[]>(
-    `SELECT id, name, enrollment_year FROM users
+    `SELECT id, name, enrollment_year, profile_photo_url FROM users
      WHERE role = 'student' AND status = 'active' AND public_archive_consent = 1
      ORDER BY enrollment_year DESC, name ASC`
   );
@@ -311,6 +314,23 @@ export async function setPublicArchiveConsent(
     consent ? 1 : 0,
     userId,
   ]);
+}
+
+/** 프로필 사진 URL 설정/해제 — 본인 프로필에서만 호출(userId는 항상 본인). */
+export async function setProfilePhotoUrl(
+  userId: string,
+  url: string | null
+): Promise<void> {
+  await query('UPDATE users SET profile_photo_url = ? WHERE id = ?', [url, userId]);
+}
+
+/** 프로필 사진 URL 조회 (교체/삭제 시 기존 R2 객체 정리에 사용) */
+export async function getProfilePhotoUrl(userId: string): Promise<string | null> {
+  const rows = await query<{ profile_photo_url: string | null }[]>(
+    'SELECT profile_photo_url FROM users WHERE id = ? LIMIT 1',
+    [userId]
+  );
+  return rows[0]?.profile_photo_url ?? null;
 }
 
 /** 학부모의 (연결 확정된) 자녀 목록 — 대행 체크인 대상. student_id 미해결 자녀는 제외. */
