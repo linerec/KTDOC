@@ -11080,3 +11080,321 @@ ul {
 .myclass-photo-status.is-pub {
   color: #7ed99f;
 }
+
+/* ==========================================================================
+   TIMELINE PAGE — 연혁 타임라인 (/timeline)
+   Aceternity Timeline 재해석: 세로줄 + sticky 연도 + 스크롤 진행 빔.
+   빔은 EventTimeline이 갱신하는 --timeline-progress를 scaleY로만 소비
+   (컴포지터 전용). 라인 위치 상수: 노드 중심 = 좌측 28px.
+   ========================================================================== */
+.timeline-page {
+  background:
+    linear-gradient(180deg, #120c09 0%, var(--deep-umber) 34%, var(--soft-umber) 100%);
+  padding-top: calc(var(--header-height) + 48px);
+}
+
+/* Hero — gallery-hero와 같은 결 */
+.timeline-hero {
+  padding: 80px 0 40px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
+    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+}
+
+.timeline-hero-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 20px;
+  padding: 8px 20px;
+  border: 1px solid rgba(212, 160, 23, 0.3);
+  border-radius: 20px;
+}
+
+.timeline-hero-title {
+  font-family: var(--font-heading);
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: var(--text-color);
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.timeline-hero-description {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.timeline-hero .intl-object {
+  display: block;
+}
+
+.timeline-hero-label.intl-object {
+  display: inline-block;
+}
+
+.timeline-main {
+  padding: 20px 0 120px;
+}
+
+.timeline-empty {
+  padding: 80px 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Track: 세로줄과 빔의 기준 컨테이너 */
+.timeline-track {
+  position: relative;
+  padding-bottom: 40px;
+}
+
+.timeline-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 27px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(246, 239, 226, 0.14) 8%,
+    rgba(246, 239, 226, 0.14) 92%,
+    transparent
+  );
+}
+
+.timeline-beam {
+  position: absolute;
+  inset: 0;
+  transform-origin: top;
+  transform: scaleY(var(--timeline-progress, 0));
+  opacity: min(1, calc(var(--timeline-progress, 0) * 8));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--accent-color) 55%,
+    var(--secondary-color) 100%
+  );
+  border-radius: 2px;
+  will-change: transform, opacity;
+}
+
+/* Entry: 연도 하나 = sticky 사이드(노드+연도) + 본문(카드 그리드) */
+.timeline-entry {
+  position: relative;
+  display: flex;
+  gap: 48px;
+  padding-top: 72px;
+}
+
+.timeline-entry:first-of-type {
+  padding-top: 28px;
+}
+
+.timeline-entry-side {
+  position: sticky;
+  top: calc(var(--header-height) + 44px);
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  width: 260px;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.timeline-node {
+  width: 44px;
+  height: 44px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--bg-color);
+  border: 1px solid rgba(246, 239, 226, 0.13);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.timeline-node span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  box-shadow: 0 0 12px rgba(212, 160, 23, 0.55);
+}
+
+.timeline-year-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timeline-year {
+  font-family: var(--font-heading);
+  font-size: 3.2rem;
+  font-weight: 300;
+  line-height: 1;
+  color: rgba(246, 239, 226, 0.35);
+}
+
+.timeline-year-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.timeline-entry-body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 모바일 전용 연도 헤딩 — 데스크톱에선 sticky 사이드가 담당 */
+.timeline-entry-heading {
+  display: none;
+}
+
+.timeline-events {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Event Card */
+.timeline-event-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(246, 239, 226, 0.055);
+  border: 1px solid rgba(246, 239, 226, 0.13);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.timeline-event-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-color);
+}
+
+.timeline-event-card-image {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.timeline-event-card-img {
+  object-fit: cover;
+}
+
+.timeline-event-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 22px 22px;
+  flex: 1;
+}
+
+.timeline-event-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.timeline-event-card-date {
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+}
+
+.timeline-event-card-category {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding: 3px 10px;
+  border: 1px solid rgba(246, 239, 226, 0.18);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.timeline-event-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--text-color);
+  line-height: 1.4;
+}
+
+.timeline-event-card-location {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.timeline-event-card-description {
+  font-size: 0.88rem;
+  color: rgba(246, 239, 226, 0.62);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.timeline-event-card-more {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: color 0.3s;
+}
+
+.timeline-event-card:hover .timeline-event-card-more {
+  color: var(--accent-color);
+}
+
+/* 모바일: 사이드는 노드만 남기고 연도는 본문 위로 */
+@media (max-width: 768px) {
+  .timeline-hero-title {
+    font-size: 2.4rem;
+  }
+
+  .timeline-entry {
+    gap: 12px;
+    padding-top: 48px;
+  }
+
+  .timeline-entry-side {
+    width: 50px;
+  }
+
+  .timeline-year-wrap {
+    display: none;
+  }
+
+  .timeline-entry-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .timeline-entry-heading .timeline-year {
+    font-size: 2.1rem;
+  }
+
+  .timeline-events {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-beam {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}

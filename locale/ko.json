@@ -17,6 +17,7 @@
   "header.classes": "수업 및 프로그램",
   "header.performances": "공연",
   "header.gallery": "갤러리",
+  "header.timeline": "타임라인",
   "header.students": "수강생",
 
   "hero.kicker": "KTDOC Mission",
@@ -194,6 +195,11 @@
   "gallery.card.readMore": "자세히 보기",
   "gallery.card.viewDetails": "상세 페이지로 이동",
   "gallery.card.eventCount": "{count}개의 행사",
+
+  "pages.timeline.eyebrow": "TIMELINE · 발자취",
+  "pages.timeline.title": "춤누리가 걸어온 길",
+  "pages.timeline.description": "연도별 공연과 행사 기록을 따라 춤누리의 여정을 한눈에 만나보세요. 카드를 누르면 각 행사의 사진과 이야기로 이어집니다.",
+  "pages.timeline.empty": "아직 등록된 기록이 없습니다.",
 
   "pages.calendar.eyebrow": "CALENDAR · 일정 구독",
   "pages.calendar.title": "학원 일정을 내 기기에서 받아보세요",

@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/performances', priority: 0.7 },
     { path: '/calendar', priority: 0.6 },
     { path: '/gallery', priority: 0.9 },
+    { path: '/timeline', priority: 0.6 },
     { path: '/community', priority: 0.5 },
     { path: '/media', priority: 0.5 },
   ];

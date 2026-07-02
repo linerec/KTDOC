@@ -17,6 +17,7 @@
   "header.classes": "Classes & Programs",
   "header.performances": "Performances",
   "header.gallery": "Gallery",
+  "header.timeline": "Timeline",
   "header.students": "Students",
 
   "hero.kicker": "KTDOC Mission",
@@ -194,6 +195,11 @@
   "gallery.card.readMore": "Read More",
   "gallery.card.viewDetails": "View event details",
   "gallery.card.eventCount": "{count, plural, one {# event} other {# events}}",
+
+  "pages.timeline.eyebrow": "TIMELINE · OUR JOURNEY",
+  "pages.timeline.title": "The Journey of Choomnoori",
+  "pages.timeline.description": "Follow our story year by year — every performance and event on one flowing timeline. Select a card to see the photos and story of each event.",
+  "pages.timeline.empty": "No records yet.",
 
   "pages.calendar.eyebrow": "CALENDAR · SUBSCRIBE",
   "pages.calendar.title": "Get academy events on your own device",
