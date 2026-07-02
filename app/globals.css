@@ -21,6 +21,37 @@
   --font-body: var(--font-outfit), sans-serif;
 
   --container-width: 1400px;
+
+  /* ── 안전영역(safe-area) — iOS 홈 화면 설치(standalone)·노치 대응 ──────
+     viewport-fit=cover + black-translucent 상태바 조합에서는 콘텐츠가
+     상태바/노치 밑까지 확장되므로, 고정 요소는 반드시 이 값으로 보정한다.
+     근거: WebKit 'Designing Websites for iPhone X', CSS env() 표준. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* ── 고정 헤더 실높이 토큰 ──────────────────────────────────────────
+     헤더 높이는 콘텐츠(패딩+로고+메뉴)로 결정되는 유동값이라 정적 상수로는
+     정확할 수 없다. 아래 폴백은 실측치(데스크톱 최상단 206px/스크롤 후 80px,
+     ≤1100px 92px/70px)이며, Header 컴포넌트가 ResizeObserver로 실제 높이를
+     재서 --header-offset을 덮어쓴다(안전영역 포함 실측이므로 PWA에서도 정확).
+     --header-height(100px)는 레거시 참조용으로 유지하되 새 코드에서는
+     --header-offset(최상단 기준)·--header-h-scrolled(스크롤 후 기준)를 쓸 것. */
+  --header-h-top: calc(206px + var(--safe-top));
+  --header-h-scrolled: calc(80px + var(--safe-top));
+  --header-offset: var(--header-h-top);
+
+  /* ── 페이지 상단 표준 시작선 ────────────────────────────────────────
+     모든 공개 페이지의 첫 콘텐츠는 이 두 토큰 중 하나로 시작한다.
+     - --page-offset:       히어로형(타이틀 화면). 헤더 + 넉넉한 숨통
+     - --page-offset-tight: 본문형(상세·유틸 페이지). 헤더 + 최소 간격
+     패턴: 여백은 main이 아니라 첫 섹션(히어로)이 소유한다 — 풀블리드 배경
+     히어로와 호환되는 유일한 구조. main에는 상단 padding을 주지 않는다. */
+  --page-top-gap: clamp(24px, 4vh, 44px);
+  --page-offset: calc(var(--header-offset) + var(--page-top-gap));
+  --page-offset-tight: calc(var(--header-offset) + 24px);
+
   --header-height: 100px;
 
   /* Z-Index 계층 구조 */
@@ -35,6 +66,14 @@
   --z-toast: 10000;
 }
 
+/* 헤더 콤팩트 브레이크포인트(≤1100px)의 실측 폴백 — 헤더 CSS와 짝 */
+@media (max-width: 1100px) {
+  :root {
+    --header-h-top: calc(92px + var(--safe-top));
+    --header-h-scrolled: calc(70px + var(--safe-top));
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -44,6 +83,8 @@
 html {
   scroll-behavior: smooth;
   height: 100%;
+  /* 앵커 이동 시 고정 헤더(스크롤 후 상태)에 목적지가 가리지 않도록 */
+  scroll-padding-top: calc(var(--header-h-scrolled) + 16px);
 }
 
 body {
@@ -161,7 +202,10 @@ ul {
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
+  /* 가로 노치(landscape) 안전영역까지 고려한 좌우 여백 */
   padding: 0 40px;
+  padding-left: max(40px, var(--safe-left));
+  padding-right: max(40px, var(--safe-right));
 }
 
 /* ========================================
@@ -244,7 +288,8 @@ ul {
 
 #main-nav ul {
   display: flex;
-  gap: 35px;
+  /* 좁은 데스크톱에서 항목 간격이 자연 압축되도록 뷰포트 연동 */
+  gap: clamp(18px, 2.4vw, 35px);
   justify-content: center;
 }
 
@@ -255,7 +300,11 @@ ul {
   letter-spacing: 1.5px;
   /* 관리자 편집 모드에서 지정 가능. 미지정 시 기본 글자색(흰색) 유지. */
   color: var(--header-nav-color-top, var(--text-color));
-  transition: color 0.3s, opacity 0.3s;
+  transition:
+    color 0.3s,
+    opacity 0.3s,
+    font-size 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    letter-spacing 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   display: flex;
   align-items: center;
@@ -296,13 +345,32 @@ ul {
   transition: 0.3s;
 }
 
+/* 드로어 열림 시 페이지 dim 레이어 — 바깥 탭으로 드로어를 닫는다.
+   헤더(z-header)보다 한 단계 아래라 드로어·햄버거 버튼은 항상 위에 남는다. */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-header) - 1);
+  background: rgba(5, 4, 3, 0.55);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.nav-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* ----------------------------------------
    데스크톱 스크롤 동작
    최상단: 로고단(1단) + 메뉴 바(2단) 모두 노출
    스크롤: 로고단은 위로 접혀 사라지고 메뉴 바만 최상단에 고정
    → 콘텐츠 몰입을 높이되 필요한 메뉴는 항상 보이게 한다.
-   (모바일은 nav가 드로어이므로 제외) */
-@media (min-width: 769px) {
+   (1100px 이하는 nav가 드로어이므로 제외 — 드로어 브레이크포인트는
+    EN 메뉴 폭 + 로그인 툴바 폭이 산술적으로 공존 가능한 하한선) */
+@media (min-width: 1101px) {
   .header-logo {
     max-height: 140px;
     overflow: hidden;
@@ -338,6 +406,84 @@ ul {
     top: 50%;
     transform: translateY(-50%);
   }
+
+  /* 메뉴 좌우에 플렉스 스페이서를 두고 그 사이에 ul을 앉힌다.
+     평소엔 양쪽이 균등하게 늘어나 메뉴가 화면 정중앙.
+     스크롤 고정 상태에선 우측 스페이서가 툴바 실측 폭(--header-auth-w,
+     Header.tsx의 ResizeObserver가 기록)만큼 최소폭을 확보한다.
+     → 공간이 넉넉하면 정중앙 유지, 부족하면 중앙을 포기하고 왼쪽으로
+       밀리되 툴바와는 구조적으로 겹칠 수 없다. */
+  #main-nav {
+    display: flex;
+    align-items: center;
+  }
+
+  #main-nav::before,
+  #main-nav::after {
+    content: '';
+    flex: 1 1 0;
+    min-width: 24px;
+    transition: min-width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  #main-nav ul {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  #main-header.scrolled #main-nav::after {
+    /* 툴바 폭 + 우측 오프셋(40px) + 여유(24px) + 스크롤바 보정(≈16px)
+       — nav는 100vw(스크롤바 포함), 툴바는 컨테이너 % 기준이라 기준차를 흡수 */
+    min-width: calc(var(--header-auth-w, 300px) + 80px);
+  }
+
+  /* 좌측 최소폭조차 부족한 극단 폭·로케일 조합에서는 겹침 대신 줄바꿈으로 강복 */
+  #main-header.scrolled #main-nav ul {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  /* 고정 바는 간결하게: 타이포 소폭 축소 + 사용자 이름 접기(폭 회수) */
+  #main-header.scrolled #main-nav a {
+    font-size: 0.92rem;
+    letter-spacing: 1.1px;
+  }
+
+  #main-header.scrolled .header-auth .auth-user {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  /* ----- 왼쪽 정렬 모드 (Top Bar 설정 > 로고·메뉴 정렬) -----
+     로고와 메뉴를 콘텐츠 컨테이너 좌측 모서리에 정렬한다.
+     메뉴가 왼쪽에서 시작해 우측 툴바와 만날 일이 사실상 없고,
+     만나더라도 ::after 예약이 그대로 지켜준다. */
+  #main-header.align-left .header-logo {
+    align-self: flex-start;
+  }
+
+  #main-header.align-left #main-nav::before {
+    flex: 0 0 auto;
+    /* 컨테이너(중앙 max-width) 좌측 패딩 모서리 — 로고·본문과 축을 맞춘다 */
+    min-width: calc(max((100vw - var(--container-width)) / 2, 0px) + 40px);
+  }
+}
+
+/* 좁은 데스크톱: 최상단(로고단)에서도 툴바가 로고와 붐비지 않도록 이름은 상시 접기,
+   고정 바에서는 EN 로케일도 한 줄을 유지하도록 타이포를 한 단계 더 압축 */
+@media (min-width: 1101px) and (max-width: 1320px) {
+  .header-auth .auth-user {
+    display: none;
+  }
+
+  #main-header.scrolled #main-nav a {
+    font-size: 0.85rem;
+    letter-spacing: 0.7px;
+  }
+
+  #main-header.scrolled #main-nav ul {
+    gap: clamp(14px, 1.6vw, 24px);
+  }
 }
 
 /* ========================================
@@ -348,7 +494,8 @@ ul {
   display: flex;
   align-items: center;
   background-color: #090705;
-  padding-top: var(--header-height);
+  /* 최상단(확장) 헤더 실높이만큼 밀어 콘텐츠가 헤더에 가리지 않게 */
+  padding-top: var(--header-offset);
   position: relative;
   overflow: hidden;
 }
@@ -397,15 +544,36 @@ ul {
   mix-blend-mode: multiply;
 }
 
+/* 어둡기 레이어 — 관리자 톤 설정의 --hero-dim(0~2, 기본 1)이 강도를 배율로 조절 */
 .hero-art-bg::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 3;
   background:
-    linear-gradient(180deg, rgba(5, 5, 5, 0.18), rgba(5, 5, 5, 0.58)),
-    radial-gradient(ellipse at 52% 48%, transparent 0%, rgba(5, 5, 5, 0.42) 76%);
+    linear-gradient(
+      180deg,
+      rgba(5, 5, 5, calc(0.18 * var(--hero-dim, 1))),
+      rgba(5, 5, 5, calc(0.58 * var(--hero-dim, 1)))
+    ),
+    radial-gradient(
+      ellipse at 52% 48%,
+      transparent 0%,
+      rgba(5, 5, 5, calc(0.42 * var(--hero-dim, 1))) 76%
+    );
   backdrop-filter: blur(0.2px);
+}
+
+/* 틴트(색 필터) 레이어 — 관리자 톤 설정. 기본 강도 0(투명).
+   z-index 2 + DOM 후순위 → 스트로크 텍스처 위, 어둡기(z:3) 아래에 얹힌다. */
+.hero-art-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--hero-tint-color, #8f211d);
+  opacity: var(--hero-tint-opacity, 0);
+  mix-blend-mode: var(--hero-tint-blend, multiply);
+  pointer-events: none;
 }
 
 .hero-art-preload {
@@ -430,7 +598,7 @@ ul {
 }
 
 .hero-art-frame:first-child {
-  opacity: 0.58;
+  opacity: var(--hero-img-opacity, 0.58);
   animation-name: heroArtCycleInitial;
 }
 
@@ -1168,7 +1336,8 @@ ul {
 #main-footer {
   background-color: var(--bg-dark);
   color: var(--text-color);
-  padding: 60px 0 30px;
+  /* 홈 인디케이터(standalone 하단 안전영역)에 마지막 줄이 가리지 않도록 */
+  padding: 60px 0 calc(30px + var(--safe-bottom));
 }
 
 .footer-top {
@@ -1311,7 +1480,12 @@ ul {
   }
 }
 
-@media (max-width: 768px) {
+/* ----------------------------------------
+   헤더 드로어 (≤1100px — 모바일·태블릿·좁은 노트북)
+   데스크톱(≥1101px)의 "중앙 메뉴 + 우측 툴바" 공존이 산술적으로 불가능한
+   폭에서는 겹침이라는 상태 자체가 없도록 드로어로 전환한다.
+   (헤더 외 일반 모바일 스타일은 기존 768px 브레이크포인트 유지) */
+@media (max-width: 1100px) {
   .mobile-menu-btn {
     display: flex;
     position: static;
@@ -1334,14 +1508,15 @@ ul {
     position: fixed;
     top: 0;
     right: -100%;
-    width: 80%;
-    height: 100vh;
+    /* 폰에선 화면 대부분, 태블릿에선 패널 폭 고정 — 과도하게 넓어지지 않게 */
+    width: min(420px, 88vw);
+    height: 100dvh;
     background: var(--bg-color);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 96px 28px 40px;
+    padding: calc(96px + env(safe-area-inset-top)) 28px calc(40px + env(safe-area-inset-bottom));
     transition: 0.4s ease;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
     overflow-y: auto;
@@ -1399,7 +1574,9 @@ ul {
     font-size: 0.78rem;
     letter-spacing: 1px;
   }
+}
 
+@media (max-width: 768px) {
   .hero-container {
     padding: 30px 20px 70px;
   }
@@ -1466,15 +1643,8 @@ ul {
     text-align: center;
   }
 
-  .feature-hero {
-    min-height: auto;
-    padding: calc(var(--header-height) + 80px) 0 70px;
-  }
-
-  .feature-title {
-    font-size: clamp(2.8rem, 12vw, 5rem);
-  }
-
+  /* .feature-hero/.feature-title 모바일 규칙은 ComingSoonPage 스타일 본문(후반부)
+     한 곳에서만 정의한다 — 이 블록의 중복 정의는 제거됨 */
   .feature-preview-grid {
     grid-template-columns: 1fr;
   }
@@ -1588,6 +1758,10 @@ ul {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* 스크롤 고정 바에서 max-width: 0으로 부드럽게 접힌다 */
+  transition:
+    max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
 }
 
 .auth-btn {
@@ -1728,7 +1902,8 @@ ul {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  /* 글로벌 헤더가 없는 페이지 — standalone 상태바/홈 인디케이터만 직접 보정 */
+  padding: calc(40px + var(--safe-top)) 20px calc(40px + var(--safe-bottom));
   background-color: var(--bg-color);
 }
 
@@ -2008,8 +2183,8 @@ ul {
   margin-bottom: 28px;
 }
 
-/* Auth Responsive */
-@media (max-width: 768px) {
+/* 헤더 콤팩트 레이아웃 (≤1100px) — 드로어 브레이크포인트와 짝 */
+@media (max-width: 1100px) {
   #main-header {
     padding: calc(12px + env(safe-area-inset-top)) 0 12px;
   }
@@ -2027,6 +2202,12 @@ ul {
     grid-row: 1;
     justify-self: center;
     margin-bottom: 0;
+  }
+
+  /* 왼쪽 정렬 모드: 콤팩트 바에서도 로고를 좌측 패딩 모서리에 */
+  #main-header.align-left .header-logo {
+    grid-column: 1 / 3;
+    justify-self: start;
   }
 
   .header-logo img {
@@ -2112,7 +2293,10 @@ ul {
   .auth-user {
     display: none;
   }
+}
 
+/* Auth Responsive */
+@media (max-width: 768px) {
   .auth-form {
     padding: 30px 20px;
   }
@@ -2523,16 +2707,18 @@ ul {
   }
 }
 
+/* 이미지 노출 불투명도는 관리자 톤 설정의 --hero-img-opacity(기본 0.58)를 따른다.
+   30% 시점은 기본(0.52/0.58 ≈ 0.9) 비율을 유지해 크로스페이드 흐름이 같게 보인다. */
 @keyframes heroArtCycle {
   0% {
     opacity: 0;
     transform: translate3d(5%, 0, 0) scale(1.04);
   }
   7% {
-    opacity: 0.58;
+    opacity: var(--hero-img-opacity, 0.58);
   }
   30% {
-    opacity: 0.52;
+    opacity: calc(var(--hero-img-opacity, 0.58) * 0.9);
     transform: translate3d(-2%, 0, 0) scale(1.08);
   }
   40% {
@@ -2547,11 +2733,11 @@ ul {
 
 @keyframes heroArtCycleInitial {
   0% {
-    opacity: 0.58;
+    opacity: var(--hero-img-opacity, 0.58);
     transform: translate3d(5%, 0, 0) scale(1.04);
   }
   30% {
-    opacity: 0.52;
+    opacity: calc(var(--hero-img-opacity, 0.58) * 0.9);
     transform: translate3d(-2%, 0, 0) scale(1.08);
   }
   40% {
@@ -2563,7 +2749,7 @@ ul {
     transform: translate3d(5%, 0, 0) scale(1.04);
   }
   100% {
-    opacity: 0.58;
+    opacity: var(--hero-img-opacity, 0.58);
     transform: translate3d(5%, 0, 0) scale(1.04);
   }
 }
@@ -2596,7 +2782,8 @@ ul {
   }
 
   .hero-art-frame:first-child {
-    opacity: 0.48 !important;
+    /* 모션 축소 시에도 톤 설정을 따르되 기본 대비(0.48/0.58)를 유지 */
+    opacity: calc(var(--hero-img-opacity, 0.58) * 0.83) !important;
   }
 }
 
@@ -3004,12 +3191,11 @@ ul {
   flex-direction: column;
   background:
     linear-gradient(180deg, #120c09 0%, var(--deep-umber) 34%, var(--soft-umber) 100%);
-  padding-top: calc(var(--header-height) + 48px);
 }
 
-/* Gallery Hero */
+/* Gallery Hero — 상단 오프셋은 히어로가 소유(표준 패턴) */
 .gallery-hero {
-  padding: 80px 0 60px;
+  padding: var(--page-offset) 0 60px;
   text-align: center;
   background:
     linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
@@ -3455,7 +3641,7 @@ ul {
   flex-direction: column;
   background:
     linear-gradient(180deg, #120c09 0%, var(--deep-umber) 45%, #120c09 100%);
-  padding-top: calc(var(--header-height) + 108px);
+  padding-top: var(--page-offset);
 }
 
 .gallery-detail-nav {
@@ -6115,7 +6301,6 @@ ul {
   flex-direction: column;
   min-height: 100vh;
   background: linear-gradient(180deg, #120c09 0%, var(--deep-umber) 42%, #0a0a0a 100%);
-  padding-top: calc(var(--header-height) + 48px);
 }
 .students-container {
   width: 100%;
@@ -6123,8 +6308,9 @@ ul {
   margin: 0 auto;
   padding: 0 24px;
 }
+/* 상단 오프셋은 히어로가 소유(표준 패턴) */
 .students-hero {
-  padding: 56px 0 32px;
+  padding: var(--page-offset) 0 32px;
   text-align: center;
 }
 .students-kicker {
@@ -7946,7 +8132,7 @@ ul {
   background:
     radial-gradient(circle at 16% 22%, rgba(224, 184, 79, 0.10), transparent 38%),
     linear-gradient(180deg, #17100d 0%, #271815 100%);
-  padding: calc(var(--header-height) + 128px) 0 0;
+  padding: var(--page-offset) 0 0;
   overflow: hidden;
 }
 
@@ -8269,10 +8455,6 @@ ul {
 }
 
 @media (max-width: 768px) {
-  .about-hero {
-    padding: calc(var(--header-height) + 80px) 0 0;
-  }
-
   /* 대각 레일 대신 상단 가중 세로 스크림: 스택된 텍스트는 읽히고
      사진은 하단으로 자연스럽게 비쳐 보인다. */
   .about-hero-bg::after {
@@ -8407,7 +8589,7 @@ ul {
   min-height: min(760px, 88svh);
   display: flex;
   align-items: center;
-  padding: calc(var(--header-height) + 128px) 0 90px;
+  padding: var(--page-offset) 0 90px;
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.98), rgba(5, 5, 5, 0.66) 48%, rgba(5, 5, 5, 0.92)),
@@ -8580,54 +8762,11 @@ ul {
   word-break: keep-all;
 }
 
-.page-hero {
-  padding-top: calc(var(--header-height) + 80px);
-  padding-bottom: 60px;
-  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-color) 100%);
-  text-align: center;
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-}
-
-.page-title {
-  font-family: var(--font-heading);
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--white);
-  margin-bottom: 1rem;
-  letter-spacing: 0.05em;
-}
-
-.page-description {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.8;
-}
-
-.page-content {
-  padding: 80px 0;
-  min-height: 400px;
-}
-
-.coming-soon {
-  text-align: center;
-  padding: 100px 20px;
-}
-
-.coming-soon p {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  color: var(--text-muted);
-  letter-spacing: 0.1em;
-}
-
 @media (max-width: 768px) {
   .feature-hero {
     min-height: auto;
-    padding: calc(var(--header-height) + 64px) 0 72px;
+    /* 상단 오프셋은 표준 토큰(모바일 실측 폴백 포함)이 담당 — 하단만 조정 */
+    padding-bottom: 72px;
   }
 
   .feature-title {
@@ -8644,23 +8783,6 @@ ul {
 
   .feature-description br {
     display: none;
-  }
-
-  .page-hero {
-    padding-top: calc(var(--header-height) + 40px);
-    padding-bottom: 40px;
-  }
-
-  .page-title {
-    font-size: 2rem;
-  }
-
-  .page-description {
-    font-size: 1rem;
-  }
-
-  .coming-soon p {
-    font-size: 1.2rem;
   }
 }
 
@@ -8777,6 +8899,7 @@ ul {
   padding: 20px;
   z-index: var(--z-dropdown);
   isolation: isolate;
+  transition: background 0.25s ease;
 }
 
 .hero-bg-manager-modal {
@@ -8788,6 +8911,17 @@ ul {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  transition: opacity 0.25s ease;
+}
+
+/* 톤 조절 중(hold-to-peek/고정) — 창이 투명해져 실제 배경을 보며 조절한다.
+   opacity만 낮추고 포인터 이벤트는 유지 → 슬라이더 드래그가 끊기지 않는다. */
+.hero-bg-manager-overlay.is-peeking {
+  background: rgba(0, 0, 0, 0);
+}
+
+.hero-bg-manager-overlay.is-peeking .hero-bg-manager-modal {
+  opacity: 0.07;
 }
 
 .hero-bg-manager-header {
@@ -8868,6 +9002,187 @@ ul {
   font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.5;
+}
+
+/* ── Hero 화면 톤 · 필터 컨트롤 ──────────────────────────────────────── */
+.hero-tone-section {
+  margin: 0 24px 20px;
+  padding: 18px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.hero-tone-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.hero-tone-head h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.hero-tone-peek-btn {
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.hero-tone-peek-btn:hover,
+.hero-tone-peek-btn.active {
+  color: var(--accent-color);
+  border-color: rgba(212, 160, 23, 0.5);
+}
+
+.hero-tone-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 7px 0;
+}
+
+.hero-tone-row label,
+.hero-tone-row .hero-tone-label {
+  width: 86px;
+  flex-shrink: 0;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.hero-tone-row input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+.hero-tone-value {
+  width: 44px;
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  color: var(--text-color);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-tone-swatches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-tone-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.hero-tone-swatch:hover {
+  transform: scale(1.1);
+}
+
+.hero-tone-swatch.active {
+  border-color: var(--accent-color);
+}
+
+.hero-tone-color-input {
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.hero-tone-blend-select {
+  flex: 1;
+  max-width: 220px;
+  padding: 7px 10px;
+  font-size: 0.84rem;
+  color: var(--text-color);
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.hero-tone-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-tone-feedback {
+  margin-right: auto;
+  font-size: 0.82rem;
+  color: #7ed99f;
+}
+
+.hero-tone-feedback--error {
+  color: #e08a86;
+}
+
+.hero-tone-btn {
+  padding: 7px 16px;
+  font-size: 0.84rem;
+  color: var(--text-color);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.hero-tone-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.hero-tone-btn--primary {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #1a1208;
+  font-weight: 600;
+}
+
+.hero-tone-btn--primary:hover {
+  background: var(--soft-gold);
+  border-color: var(--soft-gold);
+}
+
+.hero-tone-btn--primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .hero-tone-row {
+    flex-wrap: wrap;
+  }
+
+  .hero-tone-row label,
+  .hero-tone-row .hero-tone-label {
+    width: 100%;
+  }
 }
 
 @media (max-width: 640px) {
@@ -8961,7 +9276,7 @@ ul {
 }
 
 .classes-hero {
-  padding: calc(var(--header-height) + 128px) 0 60px;
+  padding: var(--page-offset) 0 60px;
   background:
     radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
     linear-gradient(180deg, var(--ink-umber), var(--ink-black));
@@ -9043,7 +9358,7 @@ ul {
   min-height: 78vh;
   display: flex;
   align-items: flex-end;
-  padding: calc(var(--header-height) + 40px) 0 64px;
+  padding: var(--page-offset-tight) 0 64px;
   overflow: hidden;
   background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
 }
@@ -9345,7 +9660,7 @@ ul {
   min-height: 56vh;
   display: flex;
   align-items: flex-end;
-  padding: calc(var(--header-height) + 128px) 0 56px;
+  padding: var(--page-offset) 0 56px;
   overflow: hidden;
   background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
 }
@@ -9417,7 +9732,8 @@ ul {
 }
 .program-detail-aside {
   position: sticky;
-  top: calc(var(--header-height) + 20px);
+  /* sticky는 스크롤 중 보이는 요소 — 축소된(스크롤 후) 헤더 실높이 기준 */
+  top: calc(var(--header-h-scrolled) + 20px);
 }
 
 /* facts card */
@@ -9606,7 +9922,7 @@ ul {
 .classes-loading {
   background: var(--ink-black);
   min-height: 100vh;
-  padding-top: var(--header-height);
+  padding-top: var(--header-offset);
 }
 .classes-loading-hero {
   height: 60vh;
@@ -9715,13 +10031,11 @@ ul {
 @media (max-width: 768px) {
   .camp-spotlight {
     min-height: auto;
-    padding: calc(var(--header-height) + 30px) 0 48px;
+    /* 상단 오프셋은 표준 토큰(모바일 실측 폴백 포함)이 담당 — 하단만 조정 */
+    padding-bottom: 48px;
   }
   .camp-spotlight-facts {
     gap: 14px 28px;
-  }
-  .classes-hero {
-    padding-top: calc(var(--header-height) + 50px);
   }
   .register-row {
     grid-template-columns: 1fr;
@@ -9764,7 +10078,7 @@ ul {
   min-height: 86svh;
   display: flex;
   align-items: flex-end;
-  padding: calc(var(--header-height) + 128px) 0 70px;
+  padding: var(--page-offset) 0 70px;
   overflow: hidden;
   background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
 }
@@ -9942,7 +10256,8 @@ ul {
 @media (max-width: 768px) {
   .performance-hero {
     min-height: auto;
-    padding: calc(var(--header-height) + 30px) 0 52px;
+    /* 상단 오프셋은 표준 토큰(모바일 실측 폴백 포함)이 담당 — 하단만 조정 */
+    padding-bottom: 52px;
   }
   .repertoire-title {
     white-space: normal;
@@ -9964,7 +10279,7 @@ ul {
   text-align: center;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: calc(var(--header-height) + 24px) 24px 80px;
+  padding: var(--page-offset-tight) 24px 80px;
   color: var(--warm-ivory);
 }
 
@@ -10097,7 +10412,7 @@ ul {
 
 @media (max-width: 768px) {
   .notfound {
-    padding: calc(var(--header-height) + 16px) 20px 64px;
+    padding: var(--page-offset-tight) 20px 64px;
   }
 }
 
@@ -10553,7 +10868,7 @@ ul {
 
 .calendar-hero {
   /* 고정 헤더(Top Bar)에 가리지 않도록 다른 페이지 히어로와 동일한 상단 오프셋 */
-  padding: calc(var(--header-height) + 128px) 0 50px;
+  padding: var(--page-offset) 0 50px;
   text-align: center;
   background:
     radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
@@ -11090,12 +11405,11 @@ ul {
 .timeline-page {
   background:
     linear-gradient(180deg, #120c09 0%, var(--deep-umber) 34%, var(--soft-umber) 100%);
-  padding-top: calc(var(--header-height) + 48px);
 }
 
-/* Hero — gallery-hero와 같은 결 */
+/* Hero — gallery-hero와 같은 결. 상단 오프셋은 히어로가 소유(표준 패턴) */
 .timeline-hero {
-  padding: 80px 0 40px;
+  padding: var(--page-offset) 0 40px;
   text-align: center;
   background:
     linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
@@ -11199,7 +11513,8 @@ ul {
 
 .timeline-entry-side {
   position: sticky;
-  top: calc(var(--header-height) + 44px);
+  /* sticky는 스크롤 중 보이는 요소 — 축소된(스크롤 후) 헤더 실높이 기준 */
+  top: calc(var(--header-h-scrolled) + 24px);
   align-self: flex-start;
   display: flex;
   align-items: center;
