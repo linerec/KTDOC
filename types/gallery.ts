@@ -295,8 +295,20 @@ export function extractYouTubeId(url: string): string | null {
   return null;
 }
 
+/**
+ * 'YYYY-MM-DD'를 로컬 자정 Date로 파싱한다.
+ * new Date('YYYY-MM-DD')는 UTC 자정으로 해석돼 미국 시간대에서 하루가 밀린다(-1일 버그).
+ */
+function parseLocalDate(dateStr: string): Date {
+  const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+  }
+  return new Date(dateStr);
+}
+
 export function formatEventDate(dateStr: string, locale: 'ko' | 'en' = 'ko'): string {
-  const date = new Date(dateStr);
+  const date = parseLocalDate(dateStr);
   if (locale === 'ko') {
     return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}`;
   }
@@ -313,7 +325,7 @@ export function formatEventDate(dateStr: string, locale: 'ko' | 'en' = 'ko'): st
  * 영어: Monday, December 9, 2024
  */
 export function formatEventDateIntl(dateStr: string, locale: 'ko' | 'en' = 'ko'): string {
-  const date = new Date(dateStr);
+  const date = parseLocalDate(dateStr);
   const localeCode = locale === 'ko' ? 'ko-KR' : 'en-US';
 
   const formatter = new Intl.DateTimeFormat(localeCode, {
