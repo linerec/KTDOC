@@ -8,6 +8,7 @@ import {
   parseHeaderBackground,
   serializeHeaderBackground,
   toRgba,
+  type HeaderAlign,
   type HeaderBackground,
   type HeaderLogoVariant,
   type HeaderStatePair,
@@ -32,7 +33,7 @@ function readInitial(): HeaderBackground {
  */
 export default function HeaderBackgroundEditor() {
   const router = useRouter();
-  const { logo, setLogo } = useHeaderSettings();
+  const { logo, setLogo, align, setAlign } = useHeaderSettings();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [bg, setBg] = useState<HeaderBackground>(DEFAULT_HEADER_BACKGROUND);
@@ -46,12 +47,14 @@ export default function HeaderBackgroundEditor() {
     navColorTop: string;
     navColorScrolled: string;
     logo: HeaderStatePair<HeaderLogoVariant>;
+    align: HeaderAlign;
   }>({
     top: '',
     scrolled: '',
     navColorTop: '',
     navColorScrolled: '',
     logo: DEFAULT_HEADER_BACKGROUND.logo,
+    align: DEFAULT_HEADER_BACKGROUND.align,
   });
 
   useEffect(() => setMounted(true), []);
@@ -64,10 +67,11 @@ export default function HeaderBackgroundEditor() {
     document.body.style.setProperty('--header-nav-color-top', bg.navColor.top);
     document.body.style.setProperty('--header-nav-color-scrolled', bg.navColor.scrolled);
     setLogo(bg.logo);
-  }, [open, bg, setLogo]);
+    setAlign(bg.align);
+  }, [open, bg, setLogo, setAlign]);
 
   const restoreBackup = useCallback(() => {
-    const { top, scrolled, navColorTop, navColorScrolled, logo: prevLogo } = backupRef.current;
+    const { top, scrolled, navColorTop, navColorScrolled, logo: prevLogo, align: prevAlign } = backupRef.current;
     if (top) document.body.style.setProperty('--header-bg-top', top);
     else document.body.style.removeProperty('--header-bg-top');
     if (scrolled) document.body.style.setProperty('--header-bg-scrolled', scrolled);
@@ -77,7 +81,8 @@ export default function HeaderBackgroundEditor() {
     if (navColorScrolled) document.body.style.setProperty('--header-nav-color-scrolled', navColorScrolled);
     else document.body.style.removeProperty('--header-nav-color-scrolled');
     setLogo(prevLogo);
-  }, [setLogo]);
+    setAlign(prevAlign);
+  }, [setLogo, setAlign]);
 
   const handleOpen = () => {
     backupRef.current = {
@@ -86,6 +91,7 @@ export default function HeaderBackgroundEditor() {
       navColorTop: document.body.style.getPropertyValue('--header-nav-color-top'),
       navColorScrolled: document.body.style.getPropertyValue('--header-nav-color-scrolled'),
       logo,
+      align,
     };
     setBg(readInitial());
     setError('');
@@ -142,12 +148,14 @@ export default function HeaderBackgroundEditor() {
       document.body.style.removeProperty('--header-nav-color-scrolled');
       delete document.body.dataset.headerBg;
       setLogo(DEFAULT_HEADER_BACKGROUND.logo);
+      setAlign(DEFAULT_HEADER_BACKGROUND.align);
       backupRef.current = {
         top: '',
         scrolled: '',
         navColorTop: '',
         navColorScrolled: '',
         logo: DEFAULT_HEADER_BACKGROUND.logo,
+        align: DEFAULT_HEADER_BACKGROUND.align,
       };
       setBg(DEFAULT_HEADER_BACKGROUND);
       setOpen(false);
@@ -170,6 +178,9 @@ export default function HeaderBackgroundEditor() {
 
   const updateNavColor = (key: 'top' | 'scrolled', color: string) =>
     setBg((prev) => ({ ...prev, navColor: { ...prev.navColor, [key]: color } }));
+
+  const updateAlign = (value: HeaderAlign) =>
+    setBg((prev) => ({ ...prev, align: value }));
 
   // 한 상태(최상단 또는 스크롤 후)의 배경/로고/메뉴 글자색을 한 섹션에 묶어 렌더
   const renderStateSection = (key: 'top' | 'scrolled', title: string, hint: string) => {
@@ -280,6 +291,35 @@ export default function HeaderBackgroundEditor() {
               </p>
 
               {error && <div className="intl-modal-error">{error}</div>}
+
+              <div className="header-bg-section">
+                <div className="header-bg-section-head">
+                  <span className="header-bg-section-title">레이아웃</span>
+                  <span className="header-bg-section-hint">최상단·스크롤 후 공통</span>
+                </div>
+
+                <div className="header-bg-row">
+                  <span className="header-bg-row-label">로고·메뉴 정렬</span>
+                  <div className="header-logo-options">
+                    <button
+                      type="button"
+                      className={`header-logo-option ${bg.align === 'center' ? 'active' : ''}`}
+                      onClick={() => updateAlign('center')}
+                      aria-pressed={bg.align === 'center'}
+                    >
+                      가운데
+                    </button>
+                    <button
+                      type="button"
+                      className={`header-logo-option ${bg.align === 'left' ? 'active' : ''}`}
+                      onClick={() => updateAlign('left')}
+                      aria-pressed={bg.align === 'left'}
+                    >
+                      왼쪽
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               {renderStateSection('top', '최상단', '페이지 맨 위 (스크롤 전)')}
               {renderStateSection('scrolled', '스크롤 후', '아래로 스크롤하여 헤더가 고정된 상태')}

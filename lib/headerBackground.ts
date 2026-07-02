@@ -17,6 +17,9 @@ export interface HeaderBgState {
 /** 상단 로고 변형: 흰색(white) 또는 기본(default) */
 export type HeaderLogoVariant = 'white' | 'default';
 
+/** 로고·메뉴 정렬: 가운데(center) 또는 왼쪽(left) */
+export type HeaderAlign = 'center' | 'left';
+
 /** 최상단(top)·스크롤 후(scrolled) 두 상태로 각각 갖는 값 */
 export interface HeaderStatePair<T> {
   /** 페이지 최상단(스크롤 전) 상태 */
@@ -34,6 +37,8 @@ export interface HeaderBackground {
   logo: HeaderStatePair<HeaderLogoVariant>;
   /** 메뉴(네비게이션) 글자 색상(#rrggbb). 최상단·스크롤 후 각각 지정 */
   navColor: HeaderStatePair<string>;
+  /** 로고·메뉴 정렬. 상태와 무관하게 하나의 값(레이아웃 정체성이라 상태별로 바뀌면 어색) */
+  align: HeaderAlign;
 }
 
 /**
@@ -45,6 +50,7 @@ export const DEFAULT_HEADER_BACKGROUND: HeaderBackground = {
   scrolled: { color: '#0a0a0a', opacity: 0.95 },
   logo: { top: 'white', scrolled: 'white' },
   navColor: { top: '#ffffff', scrolled: '#ffffff' },
+  align: 'center',
 };
 
 /** 로고 변형별 에셋 정보(경로 및 원본 크기). next/image의 비율 계산에 사용한다. */
@@ -85,6 +91,11 @@ function normalizeLogo(raw: unknown, fallback: HeaderLogoVariant): HeaderLogoVar
 
 function normalizeNavColor(raw: unknown, fallback: string): string {
   return typeof raw === 'string' && HEX_RE.test(raw) ? raw.toLowerCase() : fallback;
+}
+
+/** 정렬 정규화. 구버전 데이터(필드 없음)는 기본값(center) 유지. */
+function normalizeAlign(raw: unknown, fallback: HeaderAlign): HeaderAlign {
+  return raw === 'center' || raw === 'left' ? raw : fallback;
 }
 
 /** 로고 쌍 정규화. 구버전(단일 변형 문자열)은 최상단·스크롤 후 양쪽에 동일 적용. */
@@ -138,6 +149,7 @@ export function parseHeaderBackground(
       scrolled: normalizeState(obj.scrolled, DEFAULT_HEADER_BACKGROUND.scrolled),
       logo: normalizeLogoPair(obj.logo, DEFAULT_HEADER_BACKGROUND.logo),
       navColor: normalizeNavColorPair(obj.navColor, DEFAULT_HEADER_BACKGROUND.navColor),
+      align: normalizeAlign(obj.align, DEFAULT_HEADER_BACKGROUND.align),
     };
   } catch {
     return null;
@@ -151,6 +163,7 @@ export function serializeHeaderBackground(bg: HeaderBackground): string {
     scrolled: { color: bg.scrolled.color, opacity: clampOpacity(bg.scrolled.opacity) },
     logo: normalizeLogoPair(bg.logo, DEFAULT_HEADER_BACKGROUND.logo),
     navColor: normalizeNavColorPair(bg.navColor, DEFAULT_HEADER_BACKGROUND.navColor),
+    align: normalizeAlign(bg.align, DEFAULT_HEADER_BACKGROUND.align),
   });
 }
 

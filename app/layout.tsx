@@ -115,6 +115,7 @@ export default async function RootLayout({
   const headerBg = parseHeaderBackground(headerBgRaw);
   const headerCssVars = toHeaderCssVars(headerBg);
   const headerLogo = headerBg?.logo ?? DEFAULT_HEADER_BACKGROUND.logo;
+  const headerAlign = headerBg?.align ?? DEFAULT_HEADER_BACKGROUND.align;
 
   return (
     <html lang="ko" className={`${notoSerifKr.variable} ${outfit.variable}`}>
@@ -125,7 +126,7 @@ export default async function RootLayout({
         </noscript>
       </head>
       <body style={headerCssVars as React.CSSProperties} data-header-bg={headerBgRaw ?? undefined}>
-        <Providers initialLogo={headerLogo}>
+        <Providers initialLogo={headerLogo} initialAlign={headerAlign}>
           {inkAmbient && (
             <div className="ink-ambient" aria-hidden="true">
               <span className="ink-ambient__wash ink-ambient__wash--gold" />
