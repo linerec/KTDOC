@@ -44,6 +44,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
   const debounceRef = useRef<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   // 선택 직후 발생하는 query 변경은 재검색하지 않는다
   const skipSearchRef = useRef(false);
 
@@ -64,6 +65,10 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
   useEffect(() => {
     if (skipSearchRef.current) {
       skipSearchRef.current = false;
+      return;
+    }
+    // 사용자가 입력 중일 때만 검색 — 마운트 시(저장된 주소 초기값) 자동 검색 방지
+    if (typeof document !== 'undefined' && document.activeElement !== inputRef.current) {
       return;
     }
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -163,6 +168,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       <div className="admin-form-group location-picker-search">
         <label htmlFor="location_address" className="admin-form-label">주소 검색</label>
         <input
+          ref={inputRef}
           type="text"
           id="location_address"
           value={query}
