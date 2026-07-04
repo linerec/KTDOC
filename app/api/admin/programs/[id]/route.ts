@@ -8,9 +8,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
-import { getProgramById, updateProgram, deleteProgram } from '@/lib/d1';
+import { getProgramById, updateProgram, deleteProgram, setProgramSupplies } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
 import { PROGRAM_TYPES, type UpdateProgramInput } from '@/types/programs';
+import { normalizeSupplyLinks } from '@/types/supplies';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -125,6 +126,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     await updateProgram(programId, input);
+    if (body.supplies !== undefined) {
+      await setProgramSupplies(programId, normalizeSupplyLinks(body.supplies));
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Admin program update error:', error);

@@ -7,8 +7,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
-import { getPrograms, createProgram } from '@/lib/d1';
+import { getPrograms, createProgram, setProgramSupplies } from '@/lib/d1';
 import { PROGRAM_TYPES, type CreateProgramInput, type ProgramType } from '@/types/programs';
+import { normalizeSupplyLinks } from '@/types/supplies';
 
 export async function GET(request: Request) {
   try {
@@ -97,6 +98,9 @@ export async function POST(request: Request) {
     };
 
     const id = await createProgram(input);
+    if (body.supplies !== undefined) {
+      await setProgramSupplies(id, normalizeSupplyLinks(body.supplies));
+    }
     return NextResponse.json({ success: true, data: { id } });
   } catch (error) {
     console.error('Admin program create error:', error);

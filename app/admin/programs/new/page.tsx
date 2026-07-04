@@ -5,6 +5,7 @@
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
+import { getActiveSupplyItems } from '@/lib/d1';
 import ProgramForm from '@/components/admin/programs/ProgramForm';
 
 export const metadata = {
@@ -14,6 +15,8 @@ export const metadata = {
 export default async function NewProgramPage() {
   const session = await auth();
   await requireMenuAccess(session, 'programs');
+
+  const activeSupplies = await getActiveSupplyItems();
 
   return (
     <div className="admin-page">
@@ -31,7 +34,7 @@ export default async function NewProgramPage() {
         </div>
       </div>
 
-      <ProgramForm isNew />
+      <ProgramForm isNew activeSupplies={activeSupplies} />
     </div>
   );
 }

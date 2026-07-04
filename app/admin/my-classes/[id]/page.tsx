@@ -17,8 +17,10 @@ import {
   getEnrollmentsForUser,
   getEnrollmentsForUsers,
   getGalleryPhotos,
+  getProgramSupplies,
 } from '@/lib/d1';
 import { getGuardianChildren } from '@/lib/members';
+import SupplyList from '@/components/supplies/SupplyList';
 import type { MemberRole } from '@/types/members';
 import type { ProgramDetail } from '@/types/programs';
 import { PROGRAM_TYPE_LABELS } from '@/types/programs';
@@ -86,6 +88,7 @@ export default async function MyClassDetailPage({ params }: PageProps) {
     : [];
 
   const schedule = scheduleLine(program);
+  const programSupplies = await getProgramSupplies(programId);
 
   return (
     <div className="admin-page">
@@ -130,6 +133,8 @@ export default async function MyClassDetailPage({ params }: PageProps) {
           </div>
         )}
       </section>
+
+      <SupplyList supplies={programSupplies} />
 
       {program.description_ko && (
         <p className="library-detail-desc">{program.description_ko}</p>

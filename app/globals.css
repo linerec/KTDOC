@@ -12561,3 +12561,164 @@ ul {
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
+
+/* ── 관리자: 준비물 선택기 ── */
+.supply-picker-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.supply-picker-row {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+.supply-picker-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.supply-picker-name-en {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.supply-picker-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.supply-picker-fields .admin-form-input {
+  flex: 1;
+  min-width: 140px;
+}
+.supply-picker-req {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.supply-picker-add {
+  max-width: 320px;
+}
+
+/* ── 이벤트/수업 상세: 준비물 표시(공개·멤버 공용) ── */
+.supply-list-section {
+  margin: 24px 0;
+}
+.supply-list-heading {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--soft-gold);
+  margin: 0 0 14px;
+}
+.supply-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.supply-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+.supply-list-item.is-optional {
+  opacity: 0.85;
+}
+.supply-list-thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(224, 184, 79, 0.1);
+  border: 1px solid rgba(224, 184, 79, 0.2);
+}
+.supply-list-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.supply-list-img-placeholder {
+  font-size: 1.3rem;
+}
+.supply-list-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.supply-list-name {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--warm-ivory);
+  font-weight: 500;
+}
+.supply-list-name-en {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.supply-badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.supply-badge-req {
+  color: #fff;
+  background: rgba(196, 48, 43, 0.7);
+}
+.supply-badge-opt {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.08);
+}
+.supply-list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+.supply-list-qty {
+  color: var(--accent-color);
+}
+.supply-list-pron {
+  color: var(--soft-gold);
+  font-weight: 600;
+}
+.supply-list-term-link {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+.supply-list-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .supply-list {
+    grid-template-columns: 1fr;
+  }
+}

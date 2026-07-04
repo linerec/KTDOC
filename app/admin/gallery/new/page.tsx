@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getCategories } from '@/lib/d1';
+import { getCategories, getActiveSupplyItems } from '@/lib/d1';
 import EventForm from '@/components/admin/gallery/EventForm';
 
 export const metadata = {
@@ -17,7 +17,10 @@ export default async function AdminGalleryNewPage() {
   const session = await auth();
   await requireMenuAccess(session, 'gallery');
 
-  const categories = await getCategories();
+  const [categories, activeSupplies] = await Promise.all([
+    getCategories(),
+    getActiveSupplyItems(),
+  ]);
 
   return (
     <div className="admin-page">
@@ -38,7 +41,7 @@ export default async function AdminGalleryNewPage() {
       </div>
 
       <div className="admin-content">
-        <EventForm categories={categories} isNew />
+        <EventForm categories={categories} isNew activeSupplies={activeSupplies} />
       </div>
     </div>
   );

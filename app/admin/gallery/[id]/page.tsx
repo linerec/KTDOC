@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEventById, getCategories } from '@/lib/d1';
+import { getEventById, getCategories, getActiveSupplyItems, getEventSupplies } from '@/lib/d1';
 import EventForm from '@/components/admin/gallery/EventForm';
 
 interface PageProps {
@@ -34,14 +34,24 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
     notFound();
   }
 
-  const [event, categories] = await Promise.all([
+  const [event, categories, activeSupplies, eventSupplies] = await Promise.all([
     getEventById(eventId),
     getCategories(),
+    getActiveSupplyItems(),
+    getEventSupplies(eventId),
   ]);
 
   if (!event) {
     notFound();
   }
+
+  const initialSupplies = eventSupplies.map((s) => ({
+    supply_item_id: s.supply_item_id,
+    quantity: s.quantity ?? '',
+    note_ko: s.note_ko ?? '',
+    note_en: s.note_en ?? '',
+    is_required: s.is_required === 1,
+  }));
 
   return (
     <div className="admin-page">
@@ -73,7 +83,12 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
       </div>
 
       <div className="admin-content">
-        <EventForm event={event} categories={categories} />
+        <EventForm
+          event={event}
+          categories={categories}
+          activeSupplies={activeSupplies}
+          initialSupplies={initialSupplies}
+        />
       </div>
     </div>
   );

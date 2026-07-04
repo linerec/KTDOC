@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getProgramById, getProgramEnrollments } from '@/lib/d1';
+import { getProgramById, getProgramEnrollments, getActiveSupplyItems, getProgramSupplies } from '@/lib/d1';
 import { getStudentOptions, getUserNamesByIds } from '@/lib/members';
 import ProgramForm from '@/components/admin/programs/ProgramForm';
 import EnrollmentManager from '@/components/admin/programs/EnrollmentManager';
@@ -36,10 +36,19 @@ export default async function EditProgramPage({ params }: PageProps) {
   }
 
   // 수강생(배정된 원생) + 회원 이름 결합. studentOptions는 추가 드롭다운·입학년도 표시용.
-  const [enrollmentRows, studentOptions] = await Promise.all([
+  const [enrollmentRows, studentOptions, activeSupplies, programSupplies] = await Promise.all([
     getProgramEnrollments(programId),
     getStudentOptions(),
+    getActiveSupplyItems(),
+    getProgramSupplies(programId),
   ]);
+  const initialSupplies = programSupplies.map((s) => ({
+    supply_item_id: s.supply_item_id,
+    quantity: s.quantity ?? '',
+    note_ko: s.note_ko ?? '',
+    note_en: s.note_en ?? '',
+    is_required: s.is_required === 1,
+  }));
   const names = await getUserNamesByIds(enrollmentRows.map((e) => e.user_id));
   const yearById = new Map(studentOptions.map((s) => [s.id, s.enrollment_year]));
   const enrollments: EnrollmentWithMember[] = enrollmentRows.map((e) => ({
@@ -74,7 +83,11 @@ export default async function EditProgramPage({ params }: PageProps) {
         </div>
       </div>
 
-      <ProgramForm program={program} />
+      <ProgramForm
+        program={program}
+        activeSupplies={activeSupplies}
+        initialSupplies={initialSupplies}
+      />
 
       <div className="admin-form" style={{ marginTop: '24px' }}>
         <div className="admin-form-section">

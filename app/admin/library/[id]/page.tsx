@@ -12,8 +12,9 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEventById, isCheckedIn, getEventCheckins } from '@/lib/d1';
+import { getEventById, isCheckedIn, getEventCheckins, getEventSupplies } from '@/lib/d1';
 import { getUserNamesByIds, getGuardianChildren } from '@/lib/members';
+import SupplyList from '@/components/supplies/SupplyList';
 import { formatEventDate } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import EventLocationMap from '@/components/events/EventLocationMap';
@@ -42,6 +43,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   const event = await getEventById(eventId);
   if (!event) notFound();
 
+  const eventSupplies = await getEventSupplies(eventId);
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
   const canCheckIn = role === 'student' && !!userId;
@@ -154,6 +156,8 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
           )}
         </section>
       )}
+
+      <SupplyList supplies={eventSupplies} />
 
       {/* 참가자(체크인 인원) */}
       <section className="event-participants">

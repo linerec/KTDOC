@@ -96,3 +96,18 @@ export interface SupplyLinkInput {
   note_en?: string;
   is_required?: boolean;
 }
+
+/** API 바디의 임의 supplies 배열을 안전한 SupplyLinkInput[]로 정규화한다. */
+export function normalizeSupplyLinks(raw: unknown): SupplyLinkInput[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
+    .map((l) => ({
+      supply_item_id: Number(l.supply_item_id),
+      quantity: typeof l.quantity === 'string' ? l.quantity : undefined,
+      note_ko: typeof l.note_ko === 'string' ? l.note_ko : undefined,
+      note_en: typeof l.note_en === 'string' ? l.note_en : undefined,
+      is_required: l.is_required !== false,
+    }))
+    .filter((l) => Number.isFinite(l.supply_item_id) && l.supply_item_id > 0);
+}

@@ -14,10 +14,12 @@ import {
   deleteEvent,
   isEventSlugTaken,
   filterR2KeysInArchive,
+  setEventSupplies,
 } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
 import { isValidLatLng } from '@/lib/maps';
 import type { UpdateEventInput } from '@/types/gallery';
+import { normalizeSupplyLinks } from '@/types/supplies';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -177,6 +179,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     await updateEvent(eventId, input);
+    if (body.supplies !== undefined) {
+      await setEventSupplies(eventId, normalizeSupplyLinks(body.supplies));
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

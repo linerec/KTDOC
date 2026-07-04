@@ -7,9 +7,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getEvents, createEvent } from '@/lib/d1';
+import { getEvents, createEvent, setEventSupplies } from '@/lib/d1';
 import { isValidLatLng } from '@/lib/maps';
 import type { CreateEventInput } from '@/types/gallery';
+import { normalizeSupplyLinks } from '@/types/supplies';
 
 // GET - 관리자용 이벤트 목록 (비공개 포함)
 export async function GET(request: Request) {
@@ -107,6 +108,9 @@ export async function POST(request: Request) {
     };
 
     const eventId = await createEvent(input);
+    if (body.supplies !== undefined) {
+      await setEventSupplies(eventId, normalizeSupplyLinks(body.supplies));
+    }
 
     return NextResponse.json({
       success: true,

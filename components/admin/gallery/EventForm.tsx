@@ -13,21 +13,28 @@ import ImageUploader from './ImageUploader';
 import ImageSortable from './ImageSortable';
 import VideoManager from './VideoManager';
 import LocationPicker from './LocationPicker';
+import SupplyPicker, { type PickerRow } from '@/components/admin/supplies/SupplyPicker';
+import type { SupplyItem } from '@/types/supplies';
 
 interface EventFormProps {
   event?: EventDetail | null;
   categories: EventCategory[];
   isNew?: boolean;
+  activeSupplies?: SupplyItem[];
+  initialSupplies?: PickerRow[];
 }
 
 export default function EventForm({
   event,
   categories,
   isNew = false,
+  activeSupplies = [],
+  initialSupplies = [],
 }: EventFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [supplies, setSupplies] = useState<PickerRow[]>(initialSupplies);
   // 저장 완료 피드백(편집 시 화면 변화가 없어 명확한 신호가 필요)
   const [saved, setSaved] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
@@ -118,7 +125,7 @@ export default function EventForm({
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...body, supplies }),
       });
 
       const data = await res.json();
@@ -326,6 +333,15 @@ export default function EventForm({
               placeholder="예: 검정 치마저고리 지참, 머리끈, 도시락. 주차는 건물 뒤편."
               className="admin-form-textarea"
             />
+          </div>
+
+          <div className="admin-form-group">
+            <label className="admin-form-label">준비물 목록</label>
+            <p className="admin-form-help">
+              카탈로그에서 준비물을 골라 붙이면, 참가자가 사진·발음과 함께 &lsquo;무엇을 챙길지&rsquo; 확인합니다.
+              위 자유 안내와 함께 표시됩니다.
+            </p>
+            <SupplyPicker items={activeSupplies} value={supplies} onChange={setSupplies} />
           </div>
 
           <div className="admin-form-group">
