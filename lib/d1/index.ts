@@ -153,6 +153,21 @@ export {
 } from './glossary';
 
 export {
+  // Supply Items (준비물 카탈로그)
+  getSupplyItems,
+  getSupplyItemById,
+  createSupplyItem,
+  updateSupplyItem,
+  deleteSupplyItem,
+  getActiveSupplyItems,
+  // Supply Links (이벤트/수업 ↔ 준비물)
+  getEventSupplies,
+  getProgramSupplies,
+  setEventSupplies,
+  setProgramSupplies,
+} from './supplies';
+
+export {
   // Site Settings (key-value)
   SETTING_HERO_FEATURED_VIDEO,
   SETTING_HERO_OVERLAY,

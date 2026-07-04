@@ -20,6 +20,7 @@ export type MenuKey =
   | 'programs'
   | 'applications'
   | 'glossary'
+  | 'supplies'
   | 'gallery'
   | 'gallery.photos'
   | 'calendar'
