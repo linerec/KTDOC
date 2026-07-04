@@ -14,7 +14,10 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEventById, isCheckedIn, getEventCheckins, getEventSupplies, getEventSupplySets } from '@/lib/d1';
 import { getUserNamesByIds, getGuardianChildren } from '@/lib/members';
+import { isStaff } from '@/lib/isAdmin';
 import SupplyList from '@/components/supplies/SupplyList';
+import { getCommentThreads } from '@/lib/comments/thread';
+import CommentSection from '@/components/comments/CommentSection';
 import { formatEventDate } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import EventLocationMap from '@/components/events/EventLocationMap';
@@ -43,9 +46,10 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   const event = await getEventById(eventId);
   if (!event) notFound();
 
-  const [eventSupplies, eventSupplySets] = await Promise.all([
+  const [eventSupplies, eventSupplySets, commentThreads] = await Promise.all([
     getEventSupplies(eventId),
     getEventSupplySets(eventId),
+    getCommentThreads('event', eventId),
   ]);
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
@@ -214,6 +218,17 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
         <div className="admin-empty-state">
           <p>아직 등록된 상세 내용(사진·영상·설명)이 없습니다.</p>
         </div>
+      )}
+
+      {userId && (
+        <CommentSection
+          targetType="event"
+          targetId={eventId}
+          currentUserId={userId}
+          currentUserName={session?.user?.name || '회원'}
+          canAnnounce={isStaff(session)}
+          threads={commentThreads}
+        />
       )}
     </div>
   );

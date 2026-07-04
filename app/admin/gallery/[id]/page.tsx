@@ -8,7 +8,10 @@ import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEventById, getCategories, getActiveSupplyItems, getEventSupplies, getActiveSupplySets, getEventSupplySets } from '@/lib/d1';
+import { isStaff } from '@/lib/isAdmin';
 import EventForm from '@/components/admin/gallery/EventForm';
+import { getCommentThreads } from '@/lib/comments/thread';
+import CommentSection from '@/components/comments/CommentSection';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -34,13 +37,14 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
     notFound();
   }
 
-  const [event, categories, activeSupplies, eventSupplies, activeSupplySets, eventSupplySets] = await Promise.all([
+  const [event, categories, activeSupplies, eventSupplies, activeSupplySets, eventSupplySets, commentThreads] = await Promise.all([
     getEventById(eventId),
     getCategories(),
     getActiveSupplyItems(),
     getEventSupplies(eventId),
     getActiveSupplySets(),
     getEventSupplySets(eventId),
+    getCommentThreads('event', eventId),
   ]);
 
   if (!event) {
@@ -101,6 +105,17 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
           initialSupplySets={initialSupplySets}
         />
       </div>
+
+      {session?.user?.id && (
+        <CommentSection
+          targetType="event"
+          targetId={eventId}
+          currentUserId={session.user.id}
+          currentUserName={session.user.name || '선생님'}
+          canAnnounce={isStaff(session)}
+          threads={commentThreads}
+        />
+      )}
     </div>
   );
 }

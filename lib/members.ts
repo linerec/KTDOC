@@ -439,6 +439,41 @@ export async function getUserNamesByIds(
   return map;
 }
 
+/**
+ * 여러 회원 id를 이름·프로필사진으로 일괄 해석한다(id → {name, photo}).
+ * 댓글 등에서 작성자 아바타·이름을 표시할 때 사용(D1 콘텐츠 ↔ MySQL 회원 결합).
+ */
+export async function getUserProfilesByIds(
+  ids: string[]
+): Promise<Map<string, { name: string | null; photo: string | null }>> {
+  const unique = Array.from(new Set(ids.filter(Boolean)));
+  const map = new Map<string, { name: string | null; photo: string | null }>();
+  if (unique.length === 0) return map;
+  const placeholders = unique.map(() => '?').join(', ');
+  const rows = await query<{ id: string; name: string | null; profile_photo_url: string | null }[]>(
+    `SELECT id, name, profile_photo_url FROM users WHERE id IN (${placeholders})`,
+    unique
+  );
+  for (const r of rows) {
+    map.set(r.id, { name: r.name, photo: r.profile_photo_url });
+  }
+  return map;
+}
+
+/** 여러 원생의 보호자 user.id — 자녀 관련 알림을 학부모에게도 보낼 때. */
+export async function getGuardianUserIdsForStudents(studentIds: string[]): Promise<string[]> {
+  const unique = Array.from(new Set(studentIds.filter(Boolean)));
+  if (!unique.length) return [];
+  const placeholders = unique.map(() => '?').join(', ');
+  const rows = await query<{ guardian_id: string }[]>(
+    `SELECT DISTINCT sg.guardian_id
+     FROM student_guardians sg
+     WHERE sg.student_id IN (${placeholders}) AND sg.guardian_id IS NOT NULL`,
+    unique
+  );
+  return rows.map((r) => r.guardian_id);
+}
+
 /* ------------------------------------------------------------------ */
 /* 승인·상태·역할 변경 액션                                            */
 /* ------------------------------------------------------------------ */

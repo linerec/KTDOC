@@ -8,8 +8,11 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getProgramById, getProgramEnrollments, getActiveSupplyItems, getProgramSupplies, getActiveSupplySets, getProgramSupplySets } from '@/lib/d1';
 import { getStudentOptions, getUserNamesByIds } from '@/lib/members';
+import { isStaff } from '@/lib/isAdmin';
 import ProgramForm from '@/components/admin/programs/ProgramForm';
 import EnrollmentManager from '@/components/admin/programs/EnrollmentManager';
+import { getCommentThreads } from '@/lib/comments/thread';
+import CommentSection from '@/components/comments/CommentSection';
 import type { EnrollmentWithMember } from '@/types/programs';
 
 export const metadata = {
@@ -36,13 +39,14 @@ export default async function EditProgramPage({ params }: PageProps) {
   }
 
   // 수강생(배정된 원생) + 회원 이름 결합. studentOptions는 추가 드롭다운·입학년도 표시용.
-  const [enrollmentRows, studentOptions, activeSupplies, programSupplies, activeSupplySets, programSupplySets] = await Promise.all([
+  const [enrollmentRows, studentOptions, activeSupplies, programSupplies, activeSupplySets, programSupplySets, commentThreads] = await Promise.all([
     getProgramEnrollments(programId),
     getStudentOptions(),
     getActiveSupplyItems(),
     getProgramSupplies(programId),
     getActiveSupplySets(),
     getProgramSupplySets(programId),
+    getCommentThreads('program', programId),
   ]);
   const initialSupplies = programSupplies.map((s) => ({
     supply_item_id: s.supply_item_id,
@@ -114,6 +118,17 @@ export default async function EditProgramPage({ params }: PageProps) {
           />
         </div>
       </div>
+
+      {session?.user?.id && (
+        <CommentSection
+          targetType="program"
+          targetId={program.id}
+          currentUserId={session.user.id}
+          currentUserName={session.user.name || '선생님'}
+          canAnnounce={isStaff(session)}
+          threads={commentThreads}
+        />
+      )}
     </div>
   );
 }

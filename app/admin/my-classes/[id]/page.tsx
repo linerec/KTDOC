@@ -21,7 +21,10 @@ import {
   getProgramSupplySets,
 } from '@/lib/d1';
 import { getGuardianChildren } from '@/lib/members';
+import { isStaff } from '@/lib/isAdmin';
 import SupplyList from '@/components/supplies/SupplyList';
+import { getCommentThreads } from '@/lib/comments/thread';
+import CommentSection from '@/components/comments/CommentSection';
 import type { MemberRole } from '@/types/members';
 import type { ProgramDetail } from '@/types/programs';
 import { PROGRAM_TYPE_LABELS } from '@/types/programs';
@@ -89,9 +92,10 @@ export default async function MyClassDetailPage({ params }: PageProps) {
     : [];
 
   const schedule = scheduleLine(program);
-  const [programSupplies, programSupplySets] = await Promise.all([
+  const [programSupplies, programSupplySets, commentThreads] = await Promise.all([
     getProgramSupplies(programId),
     getProgramSupplySets(programId),
+    getCommentThreads('program', programId),
   ]);
 
   return (
@@ -174,6 +178,17 @@ export default async function MyClassDetailPage({ params }: PageProps) {
           </div>
         )}
       </section>
+
+      {userId && (
+        <CommentSection
+          targetType="program"
+          targetId={programId}
+          currentUserId={userId}
+          currentUserName={session?.user?.name || '회원'}
+          canAnnounce={isStaff(session)}
+          threads={commentThreads}
+        />
+      )}
     </div>
   );
 }

@@ -179,6 +179,15 @@ export {
 } from './supplies';
 
 export {
+  // Comments (수업·이벤트 댓글·대댓글)
+  getComments,
+  getCommentById,
+  createComment,
+  deleteComment,
+  countComments,
+} from './comments';
+
+export {
   // Site Settings (key-value)
   SETTING_HERO_FEATURED_VIDEO,
   SETTING_HERO_OVERLAY,
