@@ -2,34 +2,44 @@
 
 /**
  * GlossaryBrowser (말모이)
- * 공개 용어 사전의 검색·필터 UI. 전량을 서버에서 받아 클라이언트 메모리에서 필터한다
- * (수강생 아카이브처럼 데이터 규모가 작아 실시간 검색에 적합).
+ * 공개 용어 사전 + 노래(노랫말)의 검색·필터 UI. 전량을 서버에서 받아 클라이언트에서 필터한다.
  *
- * 검색은 한글 용어·영문 의미·로마자·발음·뜻을 모두 매칭하므로,
- * 미국 학생이 로마자("chumsawi")나 발음("choom")으로도 찾을 수 있다.
+ * 용어 탭: 한글·영문·로마자·발음·뜻을 매칭 → 미국 학생이 로마자("chumsawi")나 발음("choom")으로도 찾는다.
+ * 노래 탭: 별달거리처럼 가사를 줄별 한국어/발음/영어로 정렬해 따라 부르며 발음까지 연습한다.
  */
 
 import { useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { GlossaryTermWithCategory, GlossaryCategory } from '@/types/glossary';
+import { extractYouTubeId } from '@/types/gallery';
+import type {
+  GlossaryTermWithCategory,
+  GlossaryCategory,
+  GlossarySongWithLines,
+} from '@/types/glossary';
 
 interface Props {
   terms: GlossaryTermWithCategory[];
   categories: GlossaryCategory[];
+  songs: GlossarySongWithLines[];
 }
 
-export default function GlossaryBrowser({ terms, categories }: Props) {
+type Tab = 'all' | number | 'songs';
+
+export default function GlossaryBrowser({ terms, categories, songs }: Props) {
   const { locale, messages } = useLanguage();
   const isKorean = locale === 'ko';
   const t = (key: string, fallback: string) => messages[key] || fallback;
 
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState<number | 'all'>('all');
+  const [activeTab, setActiveTab] = useState<Tab>('all');
+  const [openSongId, setOpenSongId] = useState<number | null>(null);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+  const q = search.trim().toLowerCase();
+
+  const filteredTerms = useMemo(() => {
+    if (activeTab === 'songs') return [];
     return terms.filter((term) => {
-      if (activeCategory !== 'all' && term.category_id !== activeCategory) return false;
+      if (typeof activeTab === 'number' && term.category_id !== activeTab) return false;
       if (!q) return true;
       const haystack = [
         term.term_ko,
@@ -44,20 +54,36 @@ export default function GlossaryBrowser({ terms, categories }: Props) {
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [terms, search, activeCategory]);
+  }, [terms, q, activeTab]);
 
-  // 분류별 용어 수(필터 칩 배지). 전체 목록 기준(검색과 무관하게 안정적).
+  const filteredSongs = useMemo(() => {
+    if (activeTab !== 'songs') return [];
+    return songs.filter((song) => {
+      if (!q) return true;
+      const haystack = [
+        song.title_ko,
+        song.title_en,
+        song.romanization,
+        song.pronunciation,
+        ...song.lines.flatMap((l) => [l.text_ko, l.pronunciation, l.text_en]),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [songs, q, activeTab]);
+
   const countByCategory = useMemo(() => {
     const map = new Map<number, number>();
     for (const term of terms) {
-      if (term.category_id != null) {
-        map.set(term.category_id, (map.get(term.category_id) ?? 0) + 1);
-      }
+      if (term.category_id != null) map.set(term.category_id, (map.get(term.category_id) ?? 0) + 1);
     }
     return map;
   }, [terms]);
 
   const catName = (c: GlossaryCategory) => (isKorean ? c.name_ko : c.name_en || c.name_ko);
+  const resultCount = activeTab === 'songs' ? filteredSongs.length : filteredTerms.length;
 
   return (
     <div className="glossary-browser">
@@ -75,10 +101,10 @@ export default function GlossaryBrowser({ terms, categories }: Props) {
       <div className="glossary-filters" role="tablist" aria-label={t('glossary.filter.label', '분류')}>
         <button
           type="button"
-          className={`glossary-chip${activeCategory === 'all' ? ' is-active' : ''}`}
-          onClick={() => setActiveCategory('all')}
+          className={`glossary-chip${activeTab === 'all' ? ' is-active' : ''}`}
+          onClick={() => setActiveTab('all')}
           role="tab"
-          aria-selected={activeCategory === 'all'}
+          aria-selected={activeTab === 'all'}
         >
           {t('glossary.filter.all', '전체')}
           <span className="glossary-chip-count">{terms.length}</span>
@@ -90,31 +116,126 @@ export default function GlossaryBrowser({ terms, categories }: Props) {
             <button
               type="button"
               key={c.id}
-              className={`glossary-chip${activeCategory === c.id ? ' is-active' : ''}`}
-              onClick={() => setActiveCategory(c.id)}
+              className={`glossary-chip${activeTab === c.id ? ' is-active' : ''}`}
+              onClick={() => setActiveTab(c.id)}
               role="tab"
-              aria-selected={activeCategory === c.id}
+              aria-selected={activeTab === c.id}
             >
               {catName(c)}
               <span className="glossary-chip-count">{count}</span>
             </button>
           );
         })}
+        {songs.length > 0 && (
+          <button
+            type="button"
+            className={`glossary-chip glossary-chip-songs${activeTab === 'songs' ? ' is-active' : ''}`}
+            onClick={() => setActiveTab('songs')}
+            role="tab"
+            aria-selected={activeTab === 'songs'}
+          >
+            ♪ {t('glossary.filter.songs', '노래')}
+            <span className="glossary-chip-count">{songs.length}</span>
+          </button>
+        )}
       </div>
 
       <p className="glossary-result-info">
-        {filtered.length === terms.length
-          ? t('glossary.count.total', `총 ${terms.length}개 용어`).replace('{n}', String(terms.length))
-          : t('glossary.count.filtered', `${filtered.length}개 표시 중`).replace('{n}', String(filtered.length))}
+        {t('glossary.count.showing', `${resultCount}개 표시 중`).replace('{n}', String(resultCount))}
       </p>
 
-      {filtered.length === 0 ? (
-        <p className="glossary-empty">
-          {t('glossary.empty', '검색 결과가 없습니다. 다른 단어로 찾아보세요.')}
-        </p>
+      {/* 노래 탭 */}
+      {activeTab === 'songs' ? (
+        filteredSongs.length === 0 ? (
+          <p className="glossary-empty">{t('glossary.empty', '검색 결과가 없습니다. 다른 단어로 찾아보세요.')}</p>
+        ) : (
+          <ul className="song-list">
+            {filteredSongs.map((song) => {
+              const open = openSongId === song.id;
+              const ytId = song.youtube_url ? extractYouTubeId(song.youtube_url) : null;
+              const description = isKorean
+                ? song.description_ko || song.description_en
+                : song.description_en || song.description_ko;
+              return (
+                <li key={song.id} className={`song-card${open ? ' is-open' : ''}`}>
+                  <button
+                    type="button"
+                    className="song-card-head"
+                    onClick={() => setOpenSongId(open ? null : song.id)}
+                    aria-expanded={open}
+                  >
+                    <span className="song-card-titles">
+                      <span className="song-card-title">{song.title_ko}</span>
+                      {song.title_en && <span className="song-card-title-en">{song.title_en}</span>}
+                    </span>
+                    <span className="song-card-meta">
+                      {song.pronunciation && <span className="song-card-pron">/ {song.pronunciation} /</span>}
+                      <span className="song-card-toggle" aria-hidden="true">{open ? '−' : '+'}</span>
+                    </span>
+                  </button>
+
+                  {open && (
+                    <div className="song-card-body">
+                      {description && <p className="song-desc">{description}</p>}
+
+                      {ytId && (
+                        <div className="song-video">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${ytId}`}
+                            title={song.title_ko}
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      )}
+                      {!ytId && song.youtube_url && (
+                        <a href={song.youtube_url} target="_blank" rel="noopener noreferrer" className="song-listen-link">
+                          ▶ {t('glossary.song.listen', '음원 듣기')}
+                        </a>
+                      )}
+
+                      {song.lines.length > 0 && (
+                        <div className="song-lyrics" role="table">
+                          <div className="song-lyrics-head" role="row">
+                            <span role="columnheader">{t('glossary.song.col.ko', '한국어')}</span>
+                            <span role="columnheader">{t('glossary.song.col.say', '발음')}</span>
+                            <span role="columnheader">{t('glossary.song.col.en', 'English')}</span>
+                          </div>
+                          {song.lines.map((line) => (
+                            <div
+                              key={line.id}
+                              className={`song-lyrics-row${line.is_refrain ? ' is-refrain' : ''}`}
+                              role="row"
+                            >
+                              <span className="song-ly-ko" role="cell">
+                                {line.is_refrain && (
+                                  <span className="song-refrain-tag">{t('glossary.song.refrain', '후렴')}</span>
+                                )}
+                                {line.text_ko}
+                              </span>
+                              <span className="song-ly-say" role="cell">
+                                {line.pronunciation || line.romanization || ''}
+                              </span>
+                              <span className="song-ly-en" role="cell">
+                                {line.text_en || ''}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )
+      ) : filteredTerms.length === 0 ? (
+        <p className="glossary-empty">{t('glossary.empty', '검색 결과가 없습니다. 다른 단어로 찾아보세요.')}</p>
       ) : (
         <ul className="glossary-list">
-          {filtered.map((term) => {
+          {filteredTerms.map((term) => {
             const definition = isKorean
               ? term.definition_ko || term.definition_en
               : term.definition_en || term.definition_ko;

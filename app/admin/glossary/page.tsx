@@ -52,6 +52,9 @@ export default async function AdminGlossaryPage({ searchParams }: PageProps) {
           <Link href="/glossary" target="_blank" className="admin-btn admin-btn-outline">
             공개 페이지 보기
           </Link>
+          <Link href="/admin/glossary/songs" className="admin-btn admin-btn-outline">
+            ♪ 노래 관리
+          </Link>
           <Link href="/admin/glossary/new" className="admin-btn admin-btn-primary">
             + 새 용어 추가
           </Link>

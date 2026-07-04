@@ -252,5 +252,12 @@
   "glossary.filter.all": "전체",
   "glossary.count.total": "총 {n}개 용어",
   "glossary.count.filtered": "{n}개 표시 중",
-  "glossary.empty": "검색 결과가 없습니다. 다른 단어로 찾아보세요."
+  "glossary.empty": "검색 결과가 없습니다. 다른 단어로 찾아보세요.",
+  "glossary.count.showing": "{n}개 표시 중",
+  "glossary.filter.songs": "노래",
+  "glossary.song.listen": "음원 듣기",
+  "glossary.song.col.ko": "한국어",
+  "glossary.song.col.say": "발음",
+  "glossary.song.col.en": "English",
+  "glossary.song.refrain": "후렴"
 }

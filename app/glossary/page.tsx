@@ -13,7 +13,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import IntlObject from '@/components/common/IntlObject';
 import GlossaryBrowser from '@/components/glossary/GlossaryBrowser';
-import { getGlossaryTerms, getGlossaryCategories } from '@/lib/d1';
+import { getGlossaryTerms, getGlossaryCategories, getPublishedSongsWithLines } from '@/lib/d1';
 
 export const metadata: Metadata = {
   title: '말모이 · 용어집 | KTDOC',
@@ -22,10 +22,12 @@ export const metadata: Metadata = {
 };
 
 export default async function GlossaryPage() {
-  const [{ terms }, categories] = await Promise.all([
+  const [{ terms }, categories, songs] = await Promise.all([
     getGlossaryTerms({ published: true, limit: 1000 }),
     getGlossaryCategories(),
+    getPublishedSongsWithLines(),
   ]);
+  const isEmpty = terms.length === 0 && songs.length === 0;
 
   return (
     <>
@@ -43,10 +45,10 @@ export default async function GlossaryPage() {
 
         <section className="glossary-body">
           <div className="glossary-container">
-            {terms.length === 0 ? (
+            {isEmpty ? (
               <IntlObject keycode="glossary.empty.page" returnType="p" className="glossary-empty" />
             ) : (
-              <GlossaryBrowser terms={terms} categories={categories} />
+              <GlossaryBrowser terms={terms} categories={categories} songs={songs} />
             )}
           </div>
         </section>

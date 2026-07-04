@@ -13,6 +13,13 @@ import type {
   UpdateGlossaryTermInput,
   CreateGlossaryCategoryInput,
   UpdateGlossaryCategoryInput,
+  GlossarySong,
+  GlossarySongLine,
+  GlossarySongWithLines,
+  GlossarySongFilters,
+  CreateGlossarySongInput,
+  UpdateGlossarySongInput,
+  SongLineInput,
 } from '@/types/glossary';
 import { generateSlug } from '@/types/glossary';
 
@@ -245,4 +252,193 @@ export async function getGlossaryTermsByIds(ids: number[]): Promise<GlossaryTerm
     `SELECT * FROM glossary_terms WHERE id IN (${placeholders})`,
     ids
   );
+}
+
+// ============================================
+// Songs (노래 · 노랫말)
+// ============================================
+
+/** 노래 목록(가사 줄 없이 메타만). 관리 목록·검색용. */
+export async function getGlossarySongs(filters: GlossarySongFilters = {}): Promise<{
+  songs: GlossarySong[];
+  total: number;
+}> {
+  const { search, published = true, limit = 500, page = 1 } = filters;
+
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (published === true) {
+    conditions.push('is_published = 1');
+  } else if (published === false) {
+    conditions.push('is_published = 0');
+  }
+
+  if (search) {
+    conditions.push('(title_ko LIKE ? OR title_en LIKE ? OR romanization LIKE ?)');
+    const term = `%${search}%`;
+    params.push(term, term, term);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const countResult = await queryD1<{ count: number }>(
+    `SELECT COUNT(*) as count FROM glossary_songs ${whereClause}`,
+    params
+  );
+  const total = countResult[0]?.count || 0;
+
+  const offset = (page - 1) * limit;
+  const songs = await queryD1<GlossarySong>(
+    `SELECT * FROM glossary_songs ${whereClause}
+     ORDER BY sort_order ASC, title_ko ASC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
+
+  return { songs, total };
+}
+
+async function getLinesForSongs(songIds: number[]): Promise<Map<number, GlossarySongLine[]>> {
+  const map = new Map<number, GlossarySongLine[]>();
+  if (songIds.length === 0) return map;
+  const placeholders = songIds.map(() => '?').join(', ');
+  const lines = await queryD1<GlossarySongLine>(
+    `SELECT * FROM glossary_song_lines
+     WHERE song_id IN (${placeholders})
+     ORDER BY song_id ASC, line_order ASC`,
+    songIds
+  );
+  for (const line of lines) {
+    const list = map.get(line.song_id) ?? [];
+    list.push(line);
+    map.set(line.song_id, list);
+  }
+  return map;
+}
+
+/** 공개 말모이용 — 공개된 노래 전량 + 가사 줄을 결합해 반환. */
+export async function getPublishedSongsWithLines(): Promise<GlossarySongWithLines[]> {
+  const { songs } = await getGlossarySongs({ published: true, limit: 1000 });
+  const linesMap = await getLinesForSongs(songs.map((s) => s.id));
+  return songs.map((s) => ({ ...s, lines: linesMap.get(s.id) ?? [] }));
+}
+
+export async function getGlossarySongById(id: number): Promise<GlossarySongWithLines | null> {
+  const rows = await queryD1<GlossarySong>('SELECT * FROM glossary_songs WHERE id = ?', [id]);
+  if (rows.length === 0) return null;
+  const linesMap = await getLinesForSongs([id]);
+  return { ...rows[0], lines: linesMap.get(id) ?? [] };
+}
+
+async function replaceSongLines(songId: number, lines: SongLineInput[]): Promise<void> {
+  await executeD1('DELETE FROM glossary_song_lines WHERE song_id = ?', [songId]);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.text_ko || !line.text_ko.trim()) continue;
+    await executeD1(
+      `INSERT INTO glossary_song_lines
+        (song_id, line_order, text_ko, romanization, pronunciation, text_en, is_refrain)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        songId,
+        i,
+        line.text_ko.trim(),
+        line.romanization || null,
+        line.pronunciation || null,
+        line.text_en || null,
+        line.is_refrain ? 1 : 0,
+      ]
+    );
+  }
+}
+
+export async function createGlossarySong(input: CreateGlossarySongInput): Promise<number> {
+  const slug = input.slug || generateSlug(input.romanization || input.title_en || input.title_ko);
+
+  const { lastRowId } = await executeD1(
+    `INSERT INTO glossary_songs (
+      slug, title_ko, title_en, romanization, pronunciation,
+      description_ko, description_en, youtube_url, is_published, sort_order
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      slug,
+      input.title_ko,
+      input.title_en || null,
+      input.romanization || null,
+      input.pronunciation || null,
+      input.description_ko || null,
+      input.description_en || null,
+      input.youtube_url || null,
+      input.is_published === false ? 0 : 1,
+      input.sort_order ?? 0,
+    ]
+  );
+
+  if (input.lines) {
+    await replaceSongLines(lastRowId, input.lines);
+  }
+
+  return lastRowId;
+}
+
+export async function updateGlossarySong(
+  id: number,
+  input: UpdateGlossarySongInput
+): Promise<void> {
+  const updates: string[] = [];
+  const params: unknown[] = [];
+
+  const setText = (key: keyof UpdateGlossarySongInput, column?: string) => {
+    if (input[key] !== undefined) {
+      updates.push(`${column || key} = ?`);
+      params.push((input[key] as string | undefined) || null);
+    }
+  };
+
+  if (input.title_ko !== undefined) {
+    updates.push('title_ko = ?');
+    params.push(input.title_ko);
+  }
+  setText('title_en');
+  setText('romanization');
+  setText('pronunciation');
+  setText('description_ko');
+  setText('description_en');
+  setText('youtube_url');
+  if (input.slug !== undefined) {
+    updates.push('slug = ?');
+    params.push(input.slug);
+  }
+  if (input.is_published !== undefined) {
+    updates.push('is_published = ?');
+    params.push(input.is_published ? 1 : 0);
+  }
+  if (input.sort_order !== undefined) {
+    updates.push('sort_order = ?');
+    params.push(input.sort_order);
+  }
+
+  if (updates.length > 0) {
+    updates.push("updated_at = datetime('now')");
+    params.push(id);
+    await executeD1(`UPDATE glossary_songs SET ${updates.join(', ')} WHERE id = ?`, params);
+  }
+
+  // lines가 제공되면(undefined가 아니면) 전량 교체. 빈 배열이면 모든 줄 삭제.
+  if (input.lines !== undefined) {
+    await replaceSongLines(id, input.lines);
+  }
+}
+
+export async function deleteGlossarySong(id: number): Promise<boolean> {
+  const rows = await queryD1<{ id: number }>('SELECT id FROM glossary_songs WHERE id = ? LIMIT 1', [id]);
+  if (rows.length === 0) return false;
+  // CASCADE가 glossary_song_lines 행을 함께 지운다.
+  await executeD1('DELETE FROM glossary_songs WHERE id = ?', [id]);
+  return true;
+}
+
+export async function incrementSongViewCount(id: number): Promise<void> {
+  await executeD1('UPDATE glossary_songs SET view_count = view_count + 1 WHERE id = ?', [id]);
 }

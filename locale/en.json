@@ -252,5 +252,12 @@
   "glossary.filter.all": "All",
   "glossary.count.total": "{n} terms",
   "glossary.count.filtered": "Showing {n}",
-  "glossary.empty": "No results. Try a different word."
+  "glossary.empty": "No results. Try a different word.",
+  "glossary.count.showing": "Showing {n}",
+  "glossary.filter.songs": "Songs",
+  "glossary.song.listen": "Listen",
+  "glossary.song.col.ko": "Korean",
+  "glossary.song.col.say": "Pronunciation",
+  "glossary.song.col.en": "English",
+  "glossary.song.refrain": "Refrain"
 }

@@ -142,6 +142,14 @@ export {
   deleteGlossaryTerm,
   incrementGlossaryViewCount,
   getGlossaryTermsByIds,
+  // Glossary Songs (말모이 노래·노랫말)
+  getGlossarySongs,
+  getPublishedSongsWithLines,
+  getGlossarySongById,
+  createGlossarySong,
+  updateGlossarySong,
+  deleteGlossarySong,
+  incrementSongViewCount,
 } from './glossary';
 
 export {

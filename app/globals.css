@@ -12221,3 +12221,243 @@ ul {
     font-size: 1.4rem;
   }
 }
+
+/* 말모이 '노래' 탭 칩 강조 */
+.glossary-chip-songs {
+  border-color: rgba(196, 48, 43, 0.4);
+}
+.glossary-chip-songs.is-active {
+  background: var(--color-secondary, #c4302b);
+  border-color: var(--color-secondary, #c4302b);
+  color: #fff;
+}
+
+/* 노래 목록 — 아코디언 카드 */
+.song-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.song-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.25s ease;
+}
+.song-card.is-open,
+.song-card:hover {
+  border-color: rgba(224, 184, 79, 0.32);
+}
+.song-card-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+.song-card-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.song-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--warm-ivory);
+}
+.song-card-title-en {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.song-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.song-card-pron {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--soft-gold);
+}
+.song-card-toggle {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  width: 1.2em;
+  text-align: center;
+}
+.song-card-body {
+  padding: 0 20px 20px;
+}
+.song-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+/* 유튜브 임베드(16:9) */
+.song-video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 16px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+.song-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.song-listen-link {
+  display: inline-block;
+  margin: 0 0 16px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  color: var(--soft-gold);
+  border: 1px solid rgba(224, 184, 79, 0.4);
+  border-radius: 999px;
+  text-decoration: none;
+}
+.song-listen-link:hover {
+  background: rgba(224, 184, 79, 0.08);
+}
+
+/* 가사 줄별 3단(한국어 / 발음 / 영어) */
+.song-lyrics {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.song-lyrics-head,
+.song-lyrics-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.1fr;
+  gap: 12px;
+  padding: 10px 14px;
+}
+.song-lyrics-head {
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  background: rgba(224, 184, 79, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.song-lyrics-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.95rem;
+  align-items: baseline;
+}
+.song-lyrics-row:last-child {
+  border-bottom: none;
+}
+.song-lyrics-row.is-refrain {
+  background: rgba(196, 48, 43, 0.08);
+}
+.song-ly-ko {
+  color: var(--warm-ivory);
+  font-weight: 500;
+}
+.song-ly-say {
+  color: var(--soft-gold);
+  font-size: 0.9rem;
+}
+.song-ly-en {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.song-refrain-tag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 7px;
+  font-size: 0.62rem;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: rgba(196, 48, 43, 0.7);
+  border-radius: 999px;
+}
+
+@media (max-width: 640px) {
+  /* 모바일: 3단 표를 줄별 스택으로 접는다 */
+  .song-lyrics-head {
+    display: none;
+  }
+  .song-lyrics-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 12px 14px;
+  }
+  .song-ly-say::before {
+    content: '🔊 ';
+  }
+}
+
+/* ── 관리자: 가사 줄 편집기 ── */
+.song-line-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.song-line-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+.song-line-row.is-refrain {
+  border-color: rgba(196, 48, 43, 0.35);
+  background: rgba(196, 48, 43, 0.05);
+}
+.song-line-order {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.song-line-num {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.song-line-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.song-line-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.song-line-refrain {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
