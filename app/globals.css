@@ -6829,6 +6829,117 @@ ul {
 }
 
 /* ============================================================
+   ADMIN INLINE PANEL — 목록 상단 접이식 관리 패널(분류 관리 등)
+============================================================ */
+.admin-inline-panel {
+  margin-bottom: 20px;
+}
+
+.admin-inline-panel-body {
+  margin-top: 12px;
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+/* 칩 목록 — 분류 항목을 인라인 칩으로 나열 */
+.admin-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+}
+
+.admin-chip-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.admin-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.admin-chip-btn {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-chip-btn:hover:not(:disabled) {
+  color: var(--text-color);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-chip-btn-danger {
+  min-width: 24px;
+  padding: 4px 6px;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.admin-chip-btn-danger:hover:not(:disabled) {
+  color: var(--white);
+  border-color: var(--secondary-color);
+  background: var(--secondary-color);
+}
+
+.admin-chip-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 인라인 추가 폼 — 새 분류 입력 */
+.admin-inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-inline-form .admin-form-input {
+  width: auto;
+  flex: 1 1 180px;
+  min-width: 140px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+/* ============================================================
    PHOTO SUBMIT MODAL — 이벤트/수업 상세에서 사진 제출
 ============================================================ */
 .photo-modal-scrim {
