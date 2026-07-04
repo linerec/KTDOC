@@ -11987,3 +11987,237 @@ ul {
     height: 200px;
   }
 }
+
+/* =========================================================
+   말모이 (Word Guide / 용어집) — 공개 페이지
+   수강생 아카이브(students-*)와 동일한 히어로 골격·톤을 따른다.
+   ========================================================= */
+.glossary-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #120c09 0%, var(--deep-umber) 42%, #0a0a0a 100%);
+}
+.glossary-container {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+/* 히어로 — 상단 오프셋은 히어로가 소유(표준 패턴) */
+.glossary-hero {
+  padding: var(--page-offset) 0 48px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
+    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+}
+.glossary-hero .intl-object {
+  display: block;
+}
+.glossary-hero-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 20px;
+  padding: 8px 20px;
+  border: 1px solid rgba(212, 160, 23, 0.3);
+  border-radius: 20px;
+}
+.glossary-hero-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 300;
+  color: var(--text-color);
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+.glossary-hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  margin-bottom: 15px;
+}
+.glossary-hero-description {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.glossary-body {
+  padding: 8px 0 96px;
+}
+
+/* 검색 바 — 스크롤해도 상단에 붙어 항상 검색 가능 */
+.glossary-search {
+  position: sticky;
+  top: var(--header-h-scrolled, 80px);
+  z-index: 5;
+  padding: 16px 0;
+  background: linear-gradient(180deg, rgba(10, 8, 6, 0.96) 70%, rgba(10, 8, 6, 0));
+}
+.glossary-search-input {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 1rem;
+  color: var(--warm-ivory);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(224, 184, 79, 0.3);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.glossary-search-input::placeholder {
+  color: var(--text-muted);
+}
+.glossary-search-input:focus {
+  border-color: rgba(224, 184, 79, 0.6);
+  background: rgba(224, 184, 79, 0.06);
+}
+
+/* 분류 필터 칩 */
+.glossary-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.glossary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.glossary-chip:hover {
+  border-color: rgba(224, 184, 79, 0.4);
+  color: var(--warm-ivory);
+}
+.glossary-chip.is-active {
+  color: #1a1206;
+  background: var(--soft-gold);
+  border-color: var(--soft-gold);
+  font-weight: 600;
+}
+.glossary-chip-count {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+.glossary-chip.is-active .glossary-chip-count {
+  opacity: 0.7;
+}
+.glossary-result-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 4px 0 16px;
+}
+
+/* 용어 목록 */
+.glossary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.glossary-item {
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.glossary-item:hover {
+  border-color: rgba(224, 184, 79, 0.32);
+  background: rgba(224, 184, 79, 0.04);
+}
+.glossary-item-head {
+  margin-bottom: 10px;
+}
+.glossary-term {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 6px;
+}
+.glossary-term-ko {
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 400;
+  color: var(--warm-ivory);
+  line-height: 1.2;
+}
+.glossary-term-meaning {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+/* 발음 — 학습의 핵심이므로 금색으로 강조 */
+.glossary-pron {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+.glossary-pron-say {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--soft-gold);
+}
+.glossary-pron-roman {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.glossary-def {
+  font-size: 0.92rem;
+  color: var(--text-color);
+  line-height: 1.65;
+  margin: 0 0 8px;
+}
+.glossary-example {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+.glossary-example-mark {
+  color: var(--soft-gold);
+  opacity: 0.7;
+}
+.glossary-item-cat {
+  display: inline-block;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  background: rgba(212, 160, 23, 0.1);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.glossary-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 60px 0;
+}
+
+@media (max-width: 640px) {
+  .glossary-list {
+    grid-template-columns: 1fr;
+  }
+  .glossary-term-ko {
+    font-size: 1.4rem;
+  }
+}

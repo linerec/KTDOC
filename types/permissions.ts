@@ -19,6 +19,7 @@ export type MenuKey =
   | 'my-classes'
   | 'programs'
   | 'applications'
+  | 'glossary'
   | 'gallery'
   | 'gallery.photos'
   | 'calendar'

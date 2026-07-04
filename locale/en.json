@@ -238,5 +238,19 @@
   "students.year.count": "{n} students",
   "students.name.unknown": "Unnamed",
   "students.chip.participation": "{n} events",
-  "students.note": "Only students who agreed to be listed appear here. Participation counts are based on each student’s check-ins at performances and events. For questions about this list, please contact <a href=\"/about\" class=\"students-note-link\">Choomnoori</a>."
+  "students.note": "Only students who agreed to be listed appear here. Participation counts are based on each student’s check-ins at performances and events. For questions about this list, please contact <a href=\"/about\" class=\"students-note-link\">Choomnoori</a>.",
+
+  "header.glossary": "Word Guide",
+  "glossary.hero.label": "WORD GUIDE · 말모이",
+  "glossary.title": "Word Guide",
+  "glossary.hero.subtitle": "The words that shape our dance",
+  "glossary.lede": "Korean traditional dance terms, with their spelling, pronunciation, and meaning. Search for a word to learn how to say it and what it means.",
+  "glossary.empty.page": "No terms yet. Check back soon.",
+  "glossary.search.placeholder": "Search by term, sound, or meaning…",
+  "glossary.search.label": "Search terms",
+  "glossary.filter.label": "Categories",
+  "glossary.filter.all": "All",
+  "glossary.count.total": "{n} terms",
+  "glossary.count.filtered": "Showing {n}",
+  "glossary.empty": "No results. Try a different word."
 }

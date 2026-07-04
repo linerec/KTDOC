@@ -238,5 +238,19 @@
   "students.year.count": "{n}명",
   "students.name.unknown": "이름 미입력",
   "students.chip.participation": "참여 {n}회",
-  "students.note": "이 명단에는 공개 표시에 동의한 수강생만 표시됩니다. 참여 횟수는 각 수강생이 공연·이벤트에 체크인한 기록을 바탕으로 집계됩니다. 명단 등재나 표기에 대한 문의는 <a href=\"/about\" class=\"students-note-link\">춤누리</a>로 연락해 주세요."
+  "students.note": "이 명단에는 공개 표시에 동의한 수강생만 표시됩니다. 참여 횟수는 각 수강생이 공연·이벤트에 체크인한 기록을 바탕으로 집계됩니다. 명단 등재나 표기에 대한 문의는 <a href=\"/about\" class=\"students-note-link\">춤누리</a>로 연락해 주세요.",
+
+  "header.glossary": "말모이",
+  "glossary.hero.label": "WORD GUIDE · 말모이",
+  "glossary.title": "말모이",
+  "glossary.hero.subtitle": "우리 춤을 이루는 말들",
+  "glossary.lede": "한국 전통무용에서 쓰는 용어를 한글과 발음, 뜻으로 정리했습니다. 궁금한 말을 검색해 어떻게 읽고 무슨 뜻인지 확인해 보세요.",
+  "glossary.empty.page": "아직 등록된 용어가 없습니다. 곧 채워집니다.",
+  "glossary.search.placeholder": "용어, 발음, 뜻으로 검색…",
+  "glossary.search.label": "용어 검색",
+  "glossary.filter.label": "분류",
+  "glossary.filter.all": "전체",
+  "glossary.count.total": "총 {n}개 용어",
+  "glossary.count.filtered": "{n}개 표시 중",
+  "glossary.empty": "검색 결과가 없습니다. 다른 단어로 찾아보세요."
 }

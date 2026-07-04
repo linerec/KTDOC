@@ -129,6 +129,22 @@ export {
 } from './enrollments';
 
 export {
+  // Glossary Categories (말모이 분류)
+  getGlossaryCategories,
+  createGlossaryCategory,
+  updateGlossaryCategory,
+  deleteGlossaryCategory,
+  // Glossary Terms (말모이 용어)
+  getGlossaryTerms,
+  getGlossaryTermById,
+  createGlossaryTerm,
+  updateGlossaryTerm,
+  deleteGlossaryTerm,
+  incrementGlossaryViewCount,
+  getGlossaryTermsByIds,
+} from './glossary';
+
+export {
   // Site Settings (key-value)
   SETTING_HERO_FEATURED_VIDEO,
   SETTING_HERO_OVERLAY,

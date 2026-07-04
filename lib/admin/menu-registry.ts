@@ -28,6 +28,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램 관리', iconKey: 'calendar', defaultRoles: ['teacher', 'admin'] },
   // 신청 현황: '수업 · 프로그램 관리'의 하위 메뉴. 공개 신청 폼으로 들어온 신청자를 확인·응대(admin 전용).
   { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', parentKey: 'programs', defaultRoles: ['admin'] },
+  // 말모이(용어집): 한국 전통무용 용어·발음을 운영진이 편집. 원생·학부모는 공개 페이지(/glossary)에서 열람.
+  { key: 'glossary', href: '/admin/glossary', label: '말모이 (용어집)', iconKey: 'compass', defaultRoles: ['teacher', 'admin'] },
   { key: 'gallery', href: '/admin/gallery', label: '이벤트 아카이브 관리', iconKey: 'gallery', defaultRoles: ['admin'] },
   { key: 'gallery.photos', href: '/admin/gallery/photos', label: '사진 보관함', iconKey: 'photo', parentKey: 'gallery', defaultRoles: ['admin'] },
   // 이벤트 카테고리는 별도 메뉴/페이지 없이 '이벤트 아카이브 관리' 페이지의 모달(버튼)에서 관리한다.
