@@ -12222,14 +12222,102 @@ ul {
   }
 }
 
-/* 말모이 '노래' 탭 칩 강조 */
-.glossary-chip-songs {
-  border-color: rgba(196, 48, 43, 0.4);
+/* 1차 축 — 콘텐츠 타입 세그먼트 탭 (분류 칩과 시각적으로 구분) */
+.glossary-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin: 4px 0 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
 }
-.glossary-chip-songs.is-active {
-  background: var(--color-secondary, #c4302b);
-  border-color: var(--color-secondary, #c4302b);
-  color: #fff;
+.glossary-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.glossary-tab:hover {
+  color: var(--warm-ivory);
+}
+.glossary-tab.is-active {
+  color: #1a1206;
+  background: var(--soft-gold);
+  font-weight: 600;
+}
+.glossary-tab-count {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+/* 섹션 헤더 — '전체' 뷰에서 용어/노래를 명확히 구분 */
+.glossary-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.glossary-section {
+  scroll-margin-top: calc(var(--header-h-scrolled, 80px) + 80px);
+}
+.glossary-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(224, 184, 79, 0.18);
+}
+.glossary-section-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--warm-ivory);
+}
+.glossary-section-note {
+  color: var(--soft-gold);
+}
+.glossary-section-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.glossary-section-songs .glossary-section-note {
+  color: var(--color-secondary, #c4302b);
+}
+
+/* 분류별 그룹 소제목 ('전체' 뷰) */
+.glossary-group + .glossary-group {
+  margin-top: 26px;
+}
+.glossary-group-head {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin: 0 0 12px;
+}
+
+@media (max-width: 640px) {
+  .glossary-tabs {
+    display: flex;
+    width: 100%;
+  }
+  .glossary-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 9px 10px;
+  }
+  .glossary-section-title {
+    font-size: 1.3rem;
+  }
 }
 
 /* 노래 목록 — 아코디언 카드 */
