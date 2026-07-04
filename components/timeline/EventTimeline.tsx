@@ -11,7 +11,7 @@
  * Tailwind 클래스는 globals.css의 .timeline-* Plain CSS로 대체.
  */
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { EventWithCategory } from '@/types/gallery';
@@ -83,8 +83,12 @@ export default function EventTimeline({ events }: EventTimelineProps) {
   const { locale, messages } = useLanguage();
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // 연도 오름차순(과거→현재), 연도 안에서는 날짜순 — 걸어온 길을 위에서부터 읽는다
+  // 정렬 방향: asc = 과거→현재(기본), desc = 현재→과거
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // 선택 방향으로 연도·연도 내 날짜를 함께 정렬한다
   const yearGroups = useMemo(() => {
+    const dir = sortOrder === 'asc' ? 1 : -1;
     const map = new Map<number, EventWithCategory[]>();
     for (const event of events) {
       const list = map.get(event.year) || [];
@@ -92,12 +96,12 @@ export default function EventTimeline({ events }: EventTimelineProps) {
       map.set(event.year, list);
     }
     return Array.from(map.entries())
-      .sort((a, b) => a[0] - b[0])
+      .sort((a, b) => (a[0] - b[0]) * dir)
       .map(
         ([year, list]) =>
-          [year, [...list].sort((a, b) => a.event_date.localeCompare(b.event_date))] as const
+          [year, [...list].sort((a, b) => a.event_date.localeCompare(b.event_date) * dir)] as const
       );
-  }, [events]);
+  }, [events, sortOrder]);
 
   // 스크롤 진행 빔: 빔 선단(뷰포트 60% 지점)이 트랙을 통과한 비율을 CSS 변수로
   useEffect(() => {
@@ -140,12 +144,41 @@ export default function EventTimeline({ events }: EventTimelineProps) {
     );
   }
 
+  const sortAscLabel = messages['pages.timeline.sort.asc'] || '과거 → 현재';
+  const sortDescLabel = messages['pages.timeline.sort.desc'] || '현재 → 과거';
+
   return (
-    <div className="timeline-track" ref={trackRef}>
-      <ScrollReveal />
-      <div className="timeline-line" aria-hidden="true">
-        <div className="timeline-beam" />
+    <>
+      <div className="timeline-controls">
+        <div
+          className="timeline-sort"
+          role="group"
+          aria-label={messages['pages.timeline.sort.label'] || '정렬 순서'}
+        >
+          <button
+            type="button"
+            className={`timeline-sort-btn${sortOrder === 'asc' ? ' is-active' : ''}`}
+            onClick={() => setSortOrder('asc')}
+            aria-pressed={sortOrder === 'asc'}
+          >
+            {sortAscLabel}
+          </button>
+          <button
+            type="button"
+            className={`timeline-sort-btn${sortOrder === 'desc' ? ' is-active' : ''}`}
+            onClick={() => setSortOrder('desc')}
+            aria-pressed={sortOrder === 'desc'}
+          >
+            {sortDescLabel}
+          </button>
+        </div>
       </div>
+
+      <div className="timeline-track" ref={trackRef}>
+        <ScrollReveal />
+        <div className="timeline-line" aria-hidden="true">
+          <div className="timeline-beam" />
+        </div>
 
       {yearGroups.map(([year, list]) => (
         <section className="timeline-entry" key={year} id={`timeline-${year}`}>
@@ -177,6 +210,7 @@ export default function EventTimeline({ events }: EventTimelineProps) {
           </div>
         </section>
       ))}
-    </div>
+      </div>
+    </>
   );
 }

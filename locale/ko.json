@@ -206,6 +206,9 @@
   "pages.timeline.title": "춤누리가 걸어온 길",
   "pages.timeline.description": "연도별 공연과 행사 기록을 따라 춤누리의 여정을 한눈에 만나보세요. 카드를 누르면 각 행사의 사진과 이야기로 이어집니다.",
   "pages.timeline.empty": "아직 등록된 기록이 없습니다.",
+  "pages.timeline.sort.label": "정렬 순서",
+  "pages.timeline.sort.asc": "과거 → 현재",
+  "pages.timeline.sort.desc": "현재 → 과거",
 
   "pages.calendar.eyebrow": "CALENDAR · 일정 구독",
   "pages.calendar.title": "학원 일정을 내 기기에서 받아보세요",

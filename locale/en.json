@@ -206,6 +206,9 @@
   "pages.timeline.title": "The Journey of Choomnoori",
   "pages.timeline.description": "Follow our story year by year — every performance and event on one flowing timeline. Select a card to see the photos and story of each event.",
   "pages.timeline.empty": "No records yet.",
+  "pages.timeline.sort.label": "Sort order",
+  "pages.timeline.sort.asc": "Oldest first",
+  "pages.timeline.sort.desc": "Newest first",
 
   "pages.calendar.eyebrow": "CALENDAR · SUBSCRIBE",
   "pages.calendar.title": "Get academy events on your own device",
