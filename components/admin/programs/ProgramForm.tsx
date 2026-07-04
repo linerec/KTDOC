@@ -10,16 +10,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ProgramDetail, CreateProgramInput, UpdateProgramInput, ProgramType } from '@/types/programs';
 import { PROGRAM_TYPES, PROGRAM_TYPE_LABELS } from '@/types/programs';
-import type { SupplyItem } from '@/types/supplies';
+import type { SupplyItem, SupplySetWithItems } from '@/types/supplies';
 import ProgramImageUploader from './ProgramImageUploader';
 import ProgramImageSortable from './ProgramImageSortable';
 import SupplyPicker, { type PickerRow } from '@/components/admin/supplies/SupplyPicker';
+import SetPicker, { type SetPickerRow } from '@/components/admin/supplies/SetPicker';
 
 interface ProgramFormProps {
   program?: ProgramDetail | null;
   isNew?: boolean;
   activeSupplies?: SupplyItem[];
   initialSupplies?: PickerRow[];
+  activeSupplySets?: SupplySetWithItems[];
+  initialSupplySets?: SetPickerRow[];
 }
 
 // 요일 칩(0=일 ~ 6=토). weekdays 컬럼은 선택된 값들의 쉼표 문자열로 저장된다.
@@ -38,11 +41,14 @@ export default function ProgramForm({
   isNew = false,
   activeSupplies = [],
   initialSupplies = [],
+  activeSupplySets = [],
+  initialSupplySets = [],
 }: ProgramFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supplies, setSupplies] = useState<PickerRow[]>(initialSupplies);
+  const [supplySets, setSupplySets] = useState<SetPickerRow[]>(initialSupplySets);
 
   const [formData, setFormData] = useState({
     program_type: (program?.program_type || 'program') as ProgramType,
@@ -138,7 +144,7 @@ export default function ProgramForm({
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...body, supplies }),
+        body: JSON.stringify({ ...body, supplies, supply_sets: supplySets }),
       });
       const data = await res.json();
       if (!data.success) {
@@ -471,9 +477,14 @@ export default function ProgramForm({
         <div className="admin-form-section">
           <h3 className="admin-form-section-title">준비물</h3>
           <p className="admin-form-help">
-            이 수업·프로그램에 필요한 준비물을 카탈로그에서 골라 붙이세요. 원생·학부모가 &lsquo;내 수업&rsquo;과 공개 상세에서 확인합니다.
+            이 수업·프로그램에 필요한 준비물을 카탈로그에서 골라 붙이세요. 개별 항목과 세트를 섞어 지정할 수 있습니다.
+            원생·학부모가 &lsquo;내 수업&rsquo;과 공개 상세에서 확인합니다.
           </p>
           <SupplyPicker items={activeSupplies} value={supplies} onChange={setSupplies} />
+          <div className="supply-picker-setblock">
+            <span className="admin-form-label">세트</span>
+            <SetPicker sets={activeSupplySets} value={supplySets} onChange={setSupplySets} />
+          </div>
         </div>
 
         {/* 사진 (편집 시에만) */}

@@ -15,11 +15,12 @@ import {
   isEventSlugTaken,
   filterR2KeysInArchive,
   setEventSupplies,
+  setEventSupplySets,
 } from '@/lib/d1';
 import { deleteFromR2 } from '@/lib/r2';
 import { isValidLatLng } from '@/lib/maps';
 import type { UpdateEventInput } from '@/types/gallery';
-import { normalizeSupplyLinks } from '@/types/supplies';
+import { normalizeSupplyLinks, normalizeSupplySetLinks } from '@/types/supplies';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -181,6 +182,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
     await updateEvent(eventId, input);
     if (body.supplies !== undefined) {
       await setEventSupplies(eventId, normalizeSupplyLinks(body.supplies));
+    }
+    if (body.supply_sets !== undefined) {
+      await setEventSupplySets(eventId, normalizeSupplySetLinks(body.supply_sets));
     }
 
     return NextResponse.json({ success: true });

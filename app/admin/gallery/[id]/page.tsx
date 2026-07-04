@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEventById, getCategories, getActiveSupplyItems, getEventSupplies } from '@/lib/d1';
+import { getEventById, getCategories, getActiveSupplyItems, getEventSupplies, getActiveSupplySets, getEventSupplySets } from '@/lib/d1';
 import EventForm from '@/components/admin/gallery/EventForm';
 
 interface PageProps {
@@ -34,11 +34,13 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
     notFound();
   }
 
-  const [event, categories, activeSupplies, eventSupplies] = await Promise.all([
+  const [event, categories, activeSupplies, eventSupplies, activeSupplySets, eventSupplySets] = await Promise.all([
     getEventById(eventId),
     getCategories(),
     getActiveSupplyItems(),
     getEventSupplies(eventId),
+    getActiveSupplySets(),
+    getEventSupplySets(eventId),
   ]);
 
   if (!event) {
@@ -47,6 +49,13 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
 
   const initialSupplies = eventSupplies.map((s) => ({
     supply_item_id: s.supply_item_id,
+    quantity: s.quantity ?? '',
+    note_ko: s.note_ko ?? '',
+    note_en: s.note_en ?? '',
+    is_required: s.is_required === 1,
+  }));
+  const initialSupplySets = eventSupplySets.map((s) => ({
+    supply_set_id: s.supply_set_id,
     quantity: s.quantity ?? '',
     note_ko: s.note_ko ?? '',
     note_en: s.note_en ?? '',
@@ -88,6 +97,8 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
           categories={categories}
           activeSupplies={activeSupplies}
           initialSupplies={initialSupplies}
+          activeSupplySets={activeSupplySets}
+          initialSupplySets={initialSupplySets}
         />
       </div>
     </div>

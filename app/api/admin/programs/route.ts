@@ -7,9 +7,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
-import { getPrograms, createProgram, setProgramSupplies } from '@/lib/d1';
+import { getPrograms, createProgram, setProgramSupplies, setProgramSupplySets } from '@/lib/d1';
 import { PROGRAM_TYPES, type CreateProgramInput, type ProgramType } from '@/types/programs';
-import { normalizeSupplyLinks } from '@/types/supplies';
+import { normalizeSupplyLinks, normalizeSupplySetLinks } from '@/types/supplies';
 
 export async function GET(request: Request) {
   try {
@@ -100,6 +100,9 @@ export async function POST(request: Request) {
     const id = await createProgram(input);
     if (body.supplies !== undefined) {
       await setProgramSupplies(id, normalizeSupplyLinks(body.supplies));
+    }
+    if (body.supply_sets !== undefined) {
+      await setProgramSupplySets(id, normalizeSupplySetLinks(body.supply_sets));
     }
     return NextResponse.json({ success: true, data: { id } });
   } catch (error) {

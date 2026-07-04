@@ -14,7 +14,8 @@ import ImageSortable from './ImageSortable';
 import VideoManager from './VideoManager';
 import LocationPicker from './LocationPicker';
 import SupplyPicker, { type PickerRow } from '@/components/admin/supplies/SupplyPicker';
-import type { SupplyItem } from '@/types/supplies';
+import SetPicker, { type SetPickerRow } from '@/components/admin/supplies/SetPicker';
+import type { SupplyItem, SupplySetWithItems } from '@/types/supplies';
 
 interface EventFormProps {
   event?: EventDetail | null;
@@ -22,6 +23,8 @@ interface EventFormProps {
   isNew?: boolean;
   activeSupplies?: SupplyItem[];
   initialSupplies?: PickerRow[];
+  activeSupplySets?: SupplySetWithItems[];
+  initialSupplySets?: SetPickerRow[];
 }
 
 export default function EventForm({
@@ -30,11 +33,14 @@ export default function EventForm({
   isNew = false,
   activeSupplies = [],
   initialSupplies = [],
+  activeSupplySets = [],
+  initialSupplySets = [],
 }: EventFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supplies, setSupplies] = useState<PickerRow[]>(initialSupplies);
+  const [supplySets, setSupplySets] = useState<SetPickerRow[]>(initialSupplySets);
   // 저장 완료 피드백(편집 시 화면 변화가 없어 명확한 신호가 필요)
   const [saved, setSaved] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
@@ -125,7 +131,7 @@ export default function EventForm({
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...body, supplies }),
+        body: JSON.stringify({ ...body, supplies, supply_sets: supplySets }),
       });
 
       const data = await res.json();
@@ -342,6 +348,10 @@ export default function EventForm({
               위 자유 안내와 함께 표시됩니다.
             </p>
             <SupplyPicker items={activeSupplies} value={supplies} onChange={setSupplies} />
+            <div className="supply-picker-setblock">
+              <span className="admin-form-label">세트</span>
+              <SetPicker sets={activeSupplySets} value={supplySets} onChange={setSupplySets} />
+            </div>
           </div>
 
           <div className="admin-form-group">

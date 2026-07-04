@@ -111,3 +111,99 @@ export function normalizeSupplyLinks(raw: unknown): SupplyLinkInput[] {
     }))
     .filter((l) => Number.isFinite(l.supply_item_id) && l.supply_item_id > 0);
 }
+
+// ============================================
+// Supply Set (준비물 세트 — 항목을 묶은 상위 레이어)
+// ============================================
+
+export interface SupplySet {
+  id: number;
+  slug: string;
+  name_ko: string;
+  name_en: string | null;
+  description_ko: string | null;
+  description_en: string | null;
+  is_active: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** 세트 구성 항목(세트에 포함된 카탈로그 항목의 요약). */
+export interface SupplySetMemberItem {
+  supply_item_id: number;
+  name_ko: string;
+  name_en: string | null;
+  image_url: string | null;
+  term_slug: string | null;
+  term_pronunciation: string | null;
+}
+
+/** 관리 목록·선택기·표시용 — 세트 + 포함 항목들. */
+export interface SupplySetWithItems extends SupplySet {
+  items: SupplySetMemberItem[];
+}
+
+export interface CreateSupplySetInput {
+  name_ko: string;
+  name_en?: string;
+  description_ko?: string;
+  description_en?: string;
+  is_active?: boolean;
+  sort_order?: number;
+  slug?: string;
+  /** 세트 구성 항목 id 목록(제공되면 전량 교체). */
+  item_ids?: number[];
+}
+
+export type UpdateSupplySetInput = Partial<CreateSupplySetInput>;
+
+export interface SupplySetFilters {
+  search?: string;
+  active?: boolean | 'all';
+  limit?: number;
+  page?: number;
+}
+
+// ============================================
+// Set links (이벤트/수업 ↔ 세트)
+// ============================================
+
+/** 폼 제출용 세트 연결 입력. */
+export interface SupplySetLinkInput {
+  supply_set_id: number;
+  quantity?: string;
+  note_ko?: string;
+  note_en?: string;
+  is_required?: boolean;
+}
+
+/** 상세 표시용 — 세트 연결 + 세트 정보 + 포함 항목들. */
+export interface SupplySetLinkWithItems {
+  id: number;
+  supply_set_id: number;
+  quantity: string | null;
+  note_ko: string | null;
+  note_en: string | null;
+  is_required: number;
+  sort_order: number;
+  name_ko: string;
+  name_en: string | null;
+  description_ko: string | null;
+  description_en: string | null;
+  items: SupplySetMemberItem[];
+}
+
+export function normalizeSupplySetLinks(raw: unknown): SupplySetLinkInput[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
+    .map((l) => ({
+      supply_set_id: Number(l.supply_set_id),
+      quantity: typeof l.quantity === 'string' ? l.quantity : undefined,
+      note_ko: typeof l.note_ko === 'string' ? l.note_ko : undefined,
+      note_en: typeof l.note_en === 'string' ? l.note_en : undefined,
+      is_required: l.is_required !== false,
+    }))
+    .filter((l) => Number.isFinite(l.supply_set_id) && l.supply_set_id > 0);
+}

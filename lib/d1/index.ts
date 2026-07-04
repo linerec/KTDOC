@@ -165,6 +165,17 @@ export {
   getProgramSupplies,
   setEventSupplies,
   setProgramSupplies,
+  // Supply Sets (준비물 세트)
+  getSupplySets,
+  getSupplySetById,
+  getActiveSupplySets,
+  createSupplySet,
+  updateSupplySet,
+  deleteSupplySet,
+  getEventSupplySets,
+  getProgramSupplySets,
+  setEventSupplySets,
+  setProgramSupplySets,
 } from './supplies';
 
 export {

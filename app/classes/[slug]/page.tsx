@@ -13,7 +13,7 @@ import ImageGallery from '@/components/gallery/ImageGallery';
 import RegistrationForm from '@/components/classes/RegistrationForm';
 import ProgramDetailFacts from '@/components/classes/ProgramDetailFacts';
 import SupplyList from '@/components/supplies/SupplyList';
-import { getProgramBySlug, incrementProgramViewCount, getProgramSupplies } from '@/lib/d1';
+import { getProgramBySlug, incrementProgramViewCount, getProgramSupplies, getProgramSupplySets } from '@/lib/d1';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,7 +56,10 @@ export default async function ProgramDetailPage({ params }: PageProps) {
 
   incrementProgramViewCount(program.id).catch(() => {});
 
-  const programSupplies = await getProgramSupplies(program.id);
+  const [programSupplies, programSupplySets] = await Promise.all([
+    getProgramSupplies(program.id),
+    getProgramSupplySets(program.id),
+  ]);
   const heroImage = program.poster_url || program.first_image_url || program.thumbnail_url;
 
   return (
@@ -91,7 +94,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
                 </div>
               )}
 
-              <SupplyList supplies={programSupplies} />
+              <SupplyList supplies={programSupplies} sets={programSupplySets} />
 
               {program.images.length > 0 && (
                 <div className="program-detail-gallery">

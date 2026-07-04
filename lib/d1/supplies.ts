@@ -12,6 +12,14 @@ import type {
   UpdateSupplyItemInput,
   SupplyLinkWithItem,
   SupplyLinkInput,
+  SupplySet,
+  SupplySetWithItems,
+  SupplySetMemberItem,
+  SupplySetFilters,
+  CreateSupplySetInput,
+  UpdateSupplySetInput,
+  SupplySetLinkInput,
+  SupplySetLinkWithItems,
 } from '@/types/supplies';
 import { generateSlug } from '@/types/supplies';
 
@@ -224,4 +232,238 @@ export async function getActiveSupplyItems(): Promise<SupplyItem[]> {
   return queryD1<SupplyItem>(
     'SELECT * FROM supply_items WHERE is_active = 1 ORDER BY sort_order ASC, name_ko ASC'
   );
+}
+
+// ============================================
+// Supply Sets (준비물 세트)
+// ============================================
+
+/** 여러 세트의 구성 항목을 한 번에 로드해 set_id별로 묶는다. */
+async function getMembersForSets(setIds: number[]): Promise<Map<number, SupplySetMemberItem[]>> {
+  const map = new Map<number, SupplySetMemberItem[]>();
+  if (setIds.length === 0) return map;
+  const placeholders = setIds.map(() => '?').join(', ');
+  const rows = await queryD1<SupplySetMemberItem & { set_id: number }>(
+    `SELECT si.set_id as set_id,
+            si.supply_item_id as supply_item_id,
+            s.name_ko as name_ko, s.name_en as name_en, s.image_url as image_url,
+            t.slug as term_slug, t.pronunciation as term_pronunciation
+     FROM supply_set_items si
+     JOIN supply_items s ON s.id = si.supply_item_id
+     LEFT JOIN glossary_terms t ON t.id = s.glossary_term_id
+     WHERE si.set_id IN (${placeholders})
+     ORDER BY si.set_id ASC, si.sort_order ASC`,
+    setIds
+  );
+  for (const r of rows) {
+    const { set_id, ...member } = r;
+    const list = map.get(set_id) ?? [];
+    list.push(member);
+    map.set(set_id, list);
+  }
+  return map;
+}
+
+export async function getSupplySets(filters: SupplySetFilters = {}): Promise<{
+  sets: SupplySetWithItems[];
+  total: number;
+}> {
+  const { search, active = 'all', limit = 500, page = 1 } = filters;
+
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+  if (active === true) conditions.push('is_active = 1');
+  else if (active === false) conditions.push('is_active = 0');
+  if (search) {
+    conditions.push('(name_ko LIKE ? OR name_en LIKE ?)');
+    const term = `%${search}%`;
+    params.push(term, term);
+  }
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const countResult = await queryD1<{ count: number }>(
+    `SELECT COUNT(*) as count FROM supply_sets ${whereClause}`,
+    params
+  );
+  const total = countResult[0]?.count || 0;
+
+  const offset = (page - 1) * limit;
+  const rows = await queryD1<SupplySet>(
+    `SELECT * FROM supply_sets ${whereClause}
+     ORDER BY sort_order ASC, name_ko ASC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
+  const membersMap = await getMembersForSets(rows.map((s) => s.id));
+  const sets = rows.map((s) => ({ ...s, items: membersMap.get(s.id) ?? [] }));
+
+  return { sets, total };
+}
+
+export async function getSupplySetById(id: number): Promise<SupplySetWithItems | null> {
+  const rows = await queryD1<SupplySet>('SELECT * FROM supply_sets WHERE id = ?', [id]);
+  if (rows.length === 0) return null;
+  const membersMap = await getMembersForSets([id]);
+  return { ...rows[0], items: membersMap.get(id) ?? [] };
+}
+
+/** 폼 선택기용 — 활성 세트 전량 + 구성 항목. */
+export async function getActiveSupplySets(): Promise<SupplySetWithItems[]> {
+  const { sets } = await getSupplySets({ active: true, limit: 500 });
+  return sets;
+}
+
+async function replaceSetMembers(setId: number, itemIds: number[]): Promise<void> {
+  await executeD1('DELETE FROM supply_set_items WHERE set_id = ?', [setId]);
+  const seen = new Set<number>();
+  let order = 0;
+  for (const itemId of itemIds) {
+    const id = Number(itemId);
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    await executeD1(
+      'INSERT INTO supply_set_items (set_id, supply_item_id, sort_order) VALUES (?, ?, ?)',
+      [setId, id, order++]
+    );
+  }
+}
+
+export async function createSupplySet(input: CreateSupplySetInput): Promise<number> {
+  const slug = input.slug || generateSlug(input.name_en || input.name_ko);
+  const { lastRowId } = await executeD1(
+    `INSERT INTO supply_sets (slug, name_ko, name_en, description_ko, description_en, is_active, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      slug,
+      input.name_ko,
+      input.name_en || null,
+      input.description_ko || null,
+      input.description_en || null,
+      input.is_active === false ? 0 : 1,
+      input.sort_order ?? 0,
+    ]
+  );
+  if (input.item_ids) {
+    await replaceSetMembers(lastRowId, input.item_ids);
+  }
+  return lastRowId;
+}
+
+export async function updateSupplySet(id: number, input: UpdateSupplySetInput): Promise<void> {
+  const updates: string[] = [];
+  const params: unknown[] = [];
+
+  const setText = (key: keyof UpdateSupplySetInput, column?: string) => {
+    if (input[key] !== undefined) {
+      updates.push(`${column || key} = ?`);
+      params.push((input[key] as string | undefined) || null);
+    }
+  };
+
+  if (input.name_ko !== undefined) {
+    updates.push('name_ko = ?');
+    params.push(input.name_ko);
+  }
+  setText('name_en');
+  setText('description_ko');
+  setText('description_en');
+  if (input.slug !== undefined) {
+    updates.push('slug = ?');
+    params.push(input.slug);
+  }
+  if (input.is_active !== undefined) {
+    updates.push('is_active = ?');
+    params.push(input.is_active ? 1 : 0);
+  }
+  if (input.sort_order !== undefined) {
+    updates.push('sort_order = ?');
+    params.push(input.sort_order);
+  }
+
+  if (updates.length > 0) {
+    updates.push("updated_at = datetime('now')");
+    params.push(id);
+    await executeD1(`UPDATE supply_sets SET ${updates.join(', ')} WHERE id = ?`, params);
+  }
+
+  if (input.item_ids !== undefined) {
+    await replaceSetMembers(id, input.item_ids);
+  }
+}
+
+export async function deleteSupplySet(id: number): Promise<boolean> {
+  const rows = await queryD1<{ id: number }>('SELECT id FROM supply_sets WHERE id = ? LIMIT 1', [id]);
+  if (rows.length === 0) return false;
+  // CASCADE가 supply_set_items 및 event/program 연결을 함께 제거한다.
+  await executeD1('DELETE FROM supply_sets WHERE id = ?', [id]);
+  return true;
+}
+
+// ── 이벤트/수업 ↔ 세트 연결 ──
+
+const SET_LINK_COLS = `l.id, l.supply_set_id, l.quantity, l.note_ko, l.note_en,
+  l.is_required, l.sort_order,
+  ss.name_ko as name_ko, ss.name_en as name_en,
+  ss.description_ko as description_ko, ss.description_en as description_en`;
+
+async function loadSetLinks(
+  table: 'event_supply_sets' | 'program_supply_sets',
+  ownerColumn: 'event_id' | 'program_id',
+  ownerId: number
+): Promise<SupplySetLinkWithItems[]> {
+  const rows = await queryD1<Omit<SupplySetLinkWithItems, 'items'>>(
+    `SELECT ${SET_LINK_COLS}
+     FROM ${table} l
+     JOIN supply_sets ss ON ss.id = l.supply_set_id
+     WHERE l.${ownerColumn} = ?
+     ORDER BY l.sort_order ASC, l.id ASC`,
+    [ownerId]
+  );
+  const membersMap = await getMembersForSets(rows.map((r) => r.supply_set_id));
+  return rows.map((r) => ({ ...r, items: membersMap.get(r.supply_set_id) ?? [] }));
+}
+
+export async function getEventSupplySets(eventId: number): Promise<SupplySetLinkWithItems[]> {
+  return loadSetLinks('event_supply_sets', 'event_id', eventId);
+}
+
+export async function getProgramSupplySets(programId: number): Promise<SupplySetLinkWithItems[]> {
+  return loadSetLinks('program_supply_sets', 'program_id', programId);
+}
+
+async function replaceSetLinks(
+  table: 'event_supply_sets' | 'program_supply_sets',
+  ownerColumn: 'event_id' | 'program_id',
+  ownerId: number,
+  links: SupplySetLinkInput[]
+): Promise<void> {
+  await executeD1(`DELETE FROM ${table} WHERE ${ownerColumn} = ?`, [ownerId]);
+  const seen = new Set<number>();
+  let order = 0;
+  for (const link of links) {
+    if (!link.supply_set_id || seen.has(link.supply_set_id)) continue;
+    seen.add(link.supply_set_id);
+    await executeD1(
+      `INSERT INTO ${table}
+        (${ownerColumn}, supply_set_id, quantity, note_ko, note_en, is_required, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        ownerId,
+        link.supply_set_id,
+        link.quantity || null,
+        link.note_ko || null,
+        link.note_en || null,
+        link.is_required === false ? 0 : 1,
+        order++,
+      ]
+    );
+  }
+}
+
+export async function setEventSupplySets(eventId: number, links: SupplySetLinkInput[]): Promise<void> {
+  await replaceSetLinks('event_supply_sets', 'event_id', eventId, links);
+}
+
+export async function setProgramSupplySets(programId: number, links: SupplySetLinkInput[]): Promise<void> {
+  await replaceSetLinks('program_supply_sets', 'program_id', programId, links);
 }

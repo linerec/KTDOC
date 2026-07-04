@@ -7,10 +7,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getEvents, createEvent, setEventSupplies } from '@/lib/d1';
+import { getEvents, createEvent, setEventSupplies, setEventSupplySets } from '@/lib/d1';
 import { isValidLatLng } from '@/lib/maps';
 import type { CreateEventInput } from '@/types/gallery';
-import { normalizeSupplyLinks } from '@/types/supplies';
+import { normalizeSupplyLinks, normalizeSupplySetLinks } from '@/types/supplies';
 
 // GET - 관리자용 이벤트 목록 (비공개 포함)
 export async function GET(request: Request) {
@@ -110,6 +110,9 @@ export async function POST(request: Request) {
     const eventId = await createEvent(input);
     if (body.supplies !== undefined) {
       await setEventSupplies(eventId, normalizeSupplyLinks(body.supplies));
+    }
+    if (body.supply_sets !== undefined) {
+      await setEventSupplySets(eventId, normalizeSupplySetLinks(body.supply_sets));
     }
 
     return NextResponse.json({
