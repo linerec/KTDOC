@@ -135,6 +135,23 @@ export async function requireMenuAccess(
   if (!effectiveAllowedByKey(key, role, matrix)) redirect('/');
 }
 
+/**
+ * API 라우트용 메뉴 접근 판정(redirect 없이 boolean 반환).
+ * 페이지는 requireMenuAccess, JSON 응답을 돌려줘야 하는 API는 이 함수를 쓴다.
+ * admin은 DB 조회 없이 통과, 나머지는 정회원(active) + 매트릭스 판정.
+ */
+export async function hasMenuAccess(
+  session: Session | null,
+  key: MenuKey
+): Promise<boolean> {
+  if (!session?.user) return false;
+  const role = (session.user.role ?? 'user') as MemberRole;
+  if (role === 'admin') return true;
+  if (session.user.status !== 'active') return false;
+  const matrix = await getPermMatrix().catch(() => ({}) as PermMatrix);
+  return effectiveAllowedByKey(key, role, matrix);
+}
+
 /* ------------------------------------------------------------------ */
 /* 권한 관리 툴용                                                       */
 /* ------------------------------------------------------------------ */

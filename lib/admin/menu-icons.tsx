@@ -100,6 +100,14 @@ function IconBell() {
     </svg>
   );
 }
+function IconNews() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 21h15a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v13a2 2 0 0 1-2-2V9" />
+      <path d="M10 8h7M10 12h7M10 16h4" />
+    </svg>
+  );
+}
 function IconDot() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -115,6 +123,7 @@ const ICONS: Record<string, () => ReactNode> = {
   gallery: IconGallery,
   compass: IconCompass,
   photo: IconPhoto,
+  news: IconNews,
   tag: IconTag,
   users: IconUsers,
   profile: IconProfile,

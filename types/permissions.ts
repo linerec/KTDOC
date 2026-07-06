@@ -23,6 +23,7 @@ export type MenuKey =
   | 'supplies'
   | 'gallery'
   | 'gallery.photos'
+  | 'news'
   | 'calendar'
   | 'library'
   | 'archive'

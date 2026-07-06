@@ -13,13 +13,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/gallery', priority: 0.9 },
     { path: '/timeline', priority: 0.6 },
     { path: '/community', priority: 0.5 },
-    { path: '/media', priority: 0.5 },
+    { path: '/media', priority: 0.7 },
   ];
 
   return routes.map((route) => ({
     url: `${baseUrl}${route.path}`,
     lastModified: now,
-    changeFrequency: route.path === '/gallery' ? 'weekly' : 'monthly',
+    changeFrequency:
+      route.path === '/gallery' || route.path === '/media' ? 'weekly' : 'monthly',
     priority: route.priority,
   }));
 }

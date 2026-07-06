@@ -6,13 +6,6 @@ import IntlObject from '@/components/common/IntlObject';
 
 const categories = [
     {
-        id: 'performance',
-        keycode: 'category.performance',
-        titleKeycode: 'categories.performance',
-        href: '/performances',
-        fallbackSrc: '/assets/images/site/fan-dance-parade.jpg',
-    },
-    {
         id: 'education',
         keycode: 'category.education',
         titleKeycode: 'categories.education',
@@ -20,11 +13,19 @@ const categories = [
         fallbackSrc: '/assets/images/site/sogo-stage.jpg',
     },
     {
-        id: 'community',
-        keycode: 'category.community',
-        titleKeycode: 'categories.community',
-        href: '/community',
-        fallbackSrc: '/assets/images/site/group-portrait.jpg',
+        id: 'performance',
+        keycode: 'category.performance',
+        titleKeycode: 'categories.performance',
+        href: '/performances',
+        fallbackSrc: '/assets/images/site/fan-dance-parade.jpg',
+    },
+    {
+        id: 'timeline',
+        keycode: 'category.timeline',
+        titleKeycode: 'categories.timeline',
+        href: '/timeline',
+        // 공연 카드의 D1 관리 이미지(단체사진)와 겹치지 않도록 거리 퍼레이드 컷 사용
+        fallbackSrc: '/assets/images/site/community-street.jpg',
     },
     {
         id: 'media',

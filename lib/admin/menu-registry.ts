@@ -35,6 +35,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'gallery', href: '/admin/gallery', label: '이벤트 아카이브 관리', iconKey: 'gallery', defaultRoles: ['admin'] },
   { key: 'gallery.photos', href: '/admin/gallery/photos', label: '사진 보관함', iconKey: 'photo', parentKey: 'gallery', defaultRoles: ['admin'] },
   // 이벤트 카테고리는 별도 메뉴/페이지 없이 '이벤트 아카이브 관리' 페이지의 모달(버튼)에서 관리한다.
+  // 뉴스·미디어: 공개 /media 페이지 게시물(소식·언론 보도·영상) 관리. 관리자와 선생님이 게시한다.
+  { key: 'news', href: '/admin/news', label: '뉴스 · 미디어 관리', iconKey: 'news', defaultRoles: ['teacher', 'admin'] },
   // 캘린더 구독 피드: 공개 .ics 피드를 켜고(이름/설명/타임존/포함범위) 구독 주소를 공유한다.
   { key: 'calendar', href: '/admin/calendar', label: '캘린더 구독', iconKey: 'calendar', defaultRoles: ['admin'] },
   // 학생·학부모용 둘러보기(읽기 전용): 공개된 이벤트(공연·행사)를 검색·열람.

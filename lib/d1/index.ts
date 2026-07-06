@@ -188,6 +188,15 @@ export {
 } from './comments';
 
 export {
+  // News (뉴스·미디어 게시물)
+  getNewsPosts,
+  getNewsPostById,
+  createNewsPost,
+  updateNewsPost,
+  deleteNewsPost,
+} from './news';
+
+export {
   // Site Settings (key-value)
   SETTING_HERO_FEATURED_VIDEO,
   SETTING_HERO_OVERLAY,
