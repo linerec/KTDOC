@@ -83,8 +83,8 @@ export default function EventTimeline({ events }: EventTimelineProps) {
   const { locale, messages } = useLanguage();
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // 정렬 방향: asc = 과거→현재(기본), desc = 현재→과거
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  // 정렬 방향: desc = 현재→과거(기본), asc = 과거→현재
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // 선택 방향으로 연도·연도 내 날짜를 함께 정렬한다
   const yearGroups = useMemo(() => {
