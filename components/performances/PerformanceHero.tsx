@@ -25,7 +25,7 @@ export default function PerformanceHero({ event }: PerformanceHeroProps) {
   const img = event.poster_url || event.thumbnail_url || event.first_image_url;
 
   return (
-    <section className="performance-hero">
+    <section className={`performance-hero${img ? '' : ' performance-hero--no-image'}`}>
       {img && (
         <div className="performance-hero-bg" aria-hidden="true">
           <Image src={img} alt="" fill priority sizes="100vw" className="performance-hero-img" />

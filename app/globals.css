@@ -10286,18 +10286,71 @@ ul {
   min-height: 100vh;
 }
 
-/* --- Cinematic hero --- */
+/* --- Standard hero — gallery-hero와 같은 결(상단 오프셋은 히어로가 소유) --- */
+.performances-hero {
+  padding: var(--page-offset) 0 60px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
+    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+}
+
+.performances-hero-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 20px;
+  padding: 8px 20px;
+  border: 1px solid rgba(212, 160, 23, 0.3);
+  border-radius: 20px;
+}
+
+.performances-hero-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 300;
+  color: var(--text-color);
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.performances-hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  margin-bottom: 15px;
+}
+
+.performances-hero-description {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* IntlObject 기본 inline 표시 보정 */
+.performances-hero .intl-object {
+  display: block;
+}
+
+.performances-hero-label.intl-object {
+  display: inline-block;
+}
+
+/* --- Cinematic feature banner (대표 공연) — 표준 히어로 아래 섹션 --- */
 .performance-hero {
   position: relative;
-  min-height: 86svh;
+  min-height: 64svh;
   display: flex;
   align-items: flex-end;
   padding: var(--page-offset) 0 70px;
   overflow: hidden;
   background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
 }
-.performance-hero--empty {
-  min-height: 70svh;
+/* 대표 공연에 이미지가 없으면 빈 배경을 길게 늘이지 않는다 */
+.performance-hero--no-image {
+  min-height: 0;
 }
 .performance-hero-bg {
   position: absolute;
@@ -10332,7 +10385,7 @@ ul {
 .performance-hero-title {
   font-family: var(--font-heading);
   font-weight: 400;
-  font-size: clamp(2.8rem, 6vw, 5.6rem);
+  font-size: clamp(2.4rem, 5vw, 4.6rem);
   line-height: 1.06;
   color: var(--warm-ivory);
   max-width: 16ch;

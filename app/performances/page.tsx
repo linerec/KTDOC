@@ -1,13 +1,11 @@
 /**
  * Performances Page
- * 공연 시네마틱 쇼케이스 — 대표 공연(is_signature) 큐레이션. 정식 상세/연도 기록은 /gallery.
+ * 공연 쇼케이스 — 표준 히어로 + 대표 공연(is_signature) 시네마틱 배너 + 카테고리별 레퍼토리.
+ * 대표 공연이 지정되지 않았으면 최근 공개 공연 그리드로 폴백(배너 없음). 정식 상세/연도 기록은 /gallery.
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import IntlObject from '@/components/common/IntlObject';
+import PerformancesHero from '@/components/performances/PerformancesHero';
 import PerformanceHero from '@/components/performances/PerformanceHero';
 import RepertoireSection from '@/components/performances/RepertoireSection';
 import ArchiveBridge from '@/components/performances/ArchiveBridge';
@@ -17,7 +15,8 @@ import type { EventWithCategory } from '@/types/gallery';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '공연 | KTDOC',
+  // 루트 레이아웃의 title 템플릿('%s | KTDOC')이 접미사를 붙인다
+  title: '공연',
   description:
     '춤누리 한국전통무용단의 대표 공연. 전통무용, 타악, K-Drum Ensemble로 구성된 무대를 소개합니다.',
   alternates: { canonical: '/performances' },
@@ -57,59 +56,39 @@ function groupByCategory(events: EventWithCategory[]): CategoryGroup[] {
 export default async function PerformancesPage() {
   // 큐레이션된 대표 공연 우선, 없으면 최근 공개 공연으로 폴백
   const showcase = await getEvents({ showcase: true, published: true, limit: 50 });
+  const curated = showcase.events.length > 0;
   let events = showcase.events;
-  if (events.length === 0) {
+  if (!curated) {
     const fallback = await getEvents({ published: true, limit: 12 });
     events = fallback.events;
   }
 
-  const heroEvent = events[0] || null;
-  const restGroups = groupByCategory(events.slice(1));
+  // 시네마틱 배너는 큐레이션된 대표 공연이 있을 때만 — 폴백(미큐레이션) 데이터는 크게 노출하지 않는다
+  const featured = curated ? events[0] : null;
+  const restGroups = groupByCategory(curated ? events.slice(1) : events);
 
   return (
-    <>
-      <Header />
-      <main className="performances-page">
-        {heroEvent ? (
-          <PerformanceHero event={heroEvent} />
-        ) : (
-          <section className="performance-hero performance-hero--empty">
-            <div className="performance-hero-overlay" aria-hidden="true" />
-            <div className="container performance-hero-inner">
-              <p className="performance-hero-eyebrow">
-                <IntlObject keycode="pages.performances.signature.eyebrow" />
-              </p>
-              <IntlObject keycode="pages.performances.title" returnType="h1" className="performance-hero-title" />
-              <IntlObject
-                keycode="pages.performances.description"
-                returnType="p"
-                className="performance-hero-meta"
+    <main className="performances-page">
+      <PerformancesHero />
+
+      {featured && <PerformanceHero event={featured} />}
+
+      {restGroups.length > 0 && (
+        <section className="performances-main">
+          <div className="container">
+            {restGroups.map((group) => (
+              <RepertoireSection
+                key={group.slug}
+                categoryKo={group.categoryKo}
+                categoryEn={group.categoryEn}
+                events={group.events}
               />
-              <Link href="/gallery" className="btn-ink-ghost performance-hero-cta">
-                <IntlObject keycode="pages.performances.viewArchiveCta" />
-              </Link>
-            </div>
-          </section>
-        )}
+            ))}
+          </div>
+        </section>
+      )}
 
-        {restGroups.length > 0 && (
-          <section className="performances-main">
-            <div className="container">
-              {restGroups.map((group) => (
-                <RepertoireSection
-                  key={group.slug}
-                  categoryKo={group.categoryKo}
-                  categoryEn={group.categoryEn}
-                  events={group.events}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {heroEvent && <ArchiveBridge />}
-      </main>
-      <Footer />
-    </>
+      <ArchiveBridge />
+    </main>
   );
 }
