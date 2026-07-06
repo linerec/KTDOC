@@ -35,12 +35,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!event) {
     return {
-      title: 'Event Not Found | KTDOC Gallery',
+      title: 'Event Not Found',
     };
   }
 
   return {
-    title: `${event.title_ko} | KTDOC Gallery`,
+    title: event.title_ko,
     description: event.description_ko || `${event.title_ko} - ${year}년 공연 아카이브`,
     alternates: {
       canonical: `/gallery/${year}/${slug}`,

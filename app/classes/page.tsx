@@ -14,7 +14,7 @@ import { getPrograms } from '@/lib/d1';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '수업 및 프로그램 | KTDOC',
+  title: '수업 및 프로그램',
   description:
     '춤누리 한국전통무용단의 수업, 프로그램, 여름 캠프 안내. 한국 전통무용을 통해 호흡·예절·문화적 뿌리를 함께 배웁니다.',
   alternates: { canonical: '/classes' },

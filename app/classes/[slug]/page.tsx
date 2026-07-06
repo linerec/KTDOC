@@ -26,12 +26,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const program = await getProgramBySlug(decodeURIComponent(slug));
 
   if (!program || !program.is_published) {
-    return { title: 'Not Found | KTDOC' };
+    return { title: 'Not Found' };
   }
 
   const heroImage = program.poster_url || program.first_image_url || undefined;
   return {
-    title: `${program.title_ko} | KTDOC`,
+    title: program.title_ko,
     description: program.summary_ko || program.description_ko || `${program.title_ko} 안내`,
     alternates: { canonical: `/classes/${slug}` },
     openGraph: {

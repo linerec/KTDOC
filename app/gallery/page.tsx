@@ -14,7 +14,7 @@ import PhotoStreamSection from '@/components/gallery/PhotoStreamSection';
 import type { EventWithCategory } from '@/types/gallery';
 
 export const metadata: Metadata = {
-  title: 'Gallery | KTDOC',
+  title: 'Gallery',
   description: 'Performances Through the Years - Korean Traditional Dance of Choomnoori archive',
   alternates: {
     canonical: '/gallery',

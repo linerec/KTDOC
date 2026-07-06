@@ -13,7 +13,7 @@ import CalendarSubscribe from '@/components/CalendarSubscribe';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '일정 구독 | KTDOC',
+  title: '일정 구독',
   description:
     '춤누리 한국전통무용학원의 공연·행사·캠프 일정을 애플·구글·아웃룩 캘린더에 구독하세요. 일정이 추가·변경되면 자동으로 반영됩니다.',
   alternates: { canonical: '/calendar' },

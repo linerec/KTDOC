@@ -20,7 +20,7 @@ import { getActiveStudents, type PublicStudent } from '@/lib/members';
 import { getCheckinCountsByUser } from '@/lib/d1';
 
 export const metadata: Metadata = {
-  title: '수강생 아카이브 | KTDOC',
+  title: '수강생 아카이브',
   description: 'KTDOC 춤누리 한국전통무용단에서 활동한 수강생을 연도별로 모았습니다.',
 };
 
