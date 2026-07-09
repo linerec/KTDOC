@@ -10,8 +10,10 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
 import { uploadToR2 } from '@/lib/r2';
+import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+// Vercel 함수 바디 한도(4.5MB) 내 실효 한도 — lib/uploadLimits.ts 참조
+const MAX_FILE_SIZE = MAX_UPLOAD_FILE_BYTES;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 export async function POST(request: Request) {
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
 
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, error: '파일 크기는 10MB 이하여야 합니다.' },
+        { success: false, error: `파일 크기는 ${MAX_UPLOAD_FILE_MB}MB 이하여야 합니다.` },
         { status: 400 }
       );
     }

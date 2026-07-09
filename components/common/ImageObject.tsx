@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { isAdmin } from '@/lib/isAdmin';
+import { uploadImageFile } from '@/lib/uploadClient';
 
 /**
  * 같은 keycode를 쓰는 ImageObject 인스턴스들끼리 갱신을 동기화하기 위한 이벤트.
@@ -145,19 +146,10 @@ export default function ImageObject({
 
     try {
       // 1. R2에 업로드
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', 'images');
-
-      const uploadRes = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const uploadData = await uploadRes.json();
-
-      if (!uploadData.success) {
-        throw new Error(uploadData.error);
-      }
+      const uploadData = await uploadImageFile<{
+        success: boolean;
+        data: { url: string; key: string; size: number; contentType: string };
+      }>('/api/upload', file, { fields: { folder: 'images' } });
 
       // 2. 이미지 크기 가져오기
       const img = document.createElement('img');

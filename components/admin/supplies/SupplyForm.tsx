@@ -14,6 +14,7 @@ import type {
   UpdateSupplyItemInput,
 } from '@/types/supplies';
 import type { GlossaryTermWithCategory } from '@/types/glossary';
+import { uploadImageFile } from '@/lib/uploadClient';
 
 interface SupplyFormProps {
   item?: SupplyItemWithTerm | null;
@@ -55,12 +56,11 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
     setUploading(true);
     setError(null);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/admin/supplies/upload', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || '업로드에 실패했습니다.');
-      setFormData((prev) => ({ ...prev, image_url: data.data.url, image_r2_key: data.data.key }));
+      const res = await uploadImageFile<{
+        success: boolean;
+        data: { url: string; key: string };
+      }>('/api/admin/supplies/upload', file);
+      setFormData((prev) => ({ ...prev, image_url: res.data.url, image_r2_key: res.data.key }));
     } catch (err) {
       setError(err instanceof Error ? err.message : '업로드에 실패했습니다.');
     } finally {
@@ -203,7 +203,11 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
                   className="admin-form-input"
                 />
               )}
-              {uploading && <p className="admin-form-help">업로드 중...</p>}
+              {uploading ? (
+                <p className="admin-form-help">업로드 중...</p>
+              ) : (
+                !formData.image_url && <p className="admin-form-help">4MB 이하의 이미지 파일.</p>
+              )}
             </div>
           </div>
 

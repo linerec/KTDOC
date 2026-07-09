@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { NewsPost, NewsCategory, CreateNewsPostInput, UpdateNewsPostInput } from '@/types/news';
 import { NEWS_CATEGORIES, NEWS_CATEGORY_LABELS } from '@/types/news';
+import { uploadImageFile } from '@/lib/uploadClient';
 
 interface NewsFormProps {
   post?: NewsPost | null;
@@ -59,17 +60,14 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
     setError(null);
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/admin/news/upload', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error || '이미지 업로드에 실패했습니다.');
-      }
+      const res = await uploadImageFile<{
+        success: boolean;
+        data: { url: string; key: string };
+      }>('/api/admin/news/upload', file, { failMessage: '이미지 업로드에 실패했습니다.' });
       setFormData((prev) => ({
         ...prev,
-        thumbnail_url: data.data.url,
-        thumbnail_r2_key: data.data.key,
+        thumbnail_url: res.data.url,
+        thumbnail_r2_key: res.data.key,
       }));
     } catch (err) {
       setError(err instanceof Error ? err.message : '이미지 업로드에 실패했습니다.');
@@ -301,7 +299,7 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
         <div className="admin-form-section">
           <h3 className="admin-form-section-title">대표 이미지</h3>
           <p className="admin-form-help">
-            카드와 상세 화면 상단에 표시됩니다. 10MB 이하의 JPEG·PNG·WebP·GIF 파일을 올릴 수 있습니다.
+            카드와 상세 화면 상단에 표시됩니다. 4MB 이하의 JPEG·PNG·WebP·GIF 파일을 올릴 수 있습니다.
           </p>
 
           {formData.thumbnail_url ? (

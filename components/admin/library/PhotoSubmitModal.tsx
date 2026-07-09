@@ -10,6 +10,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { uploadImageFiles, MAX_UPLOAD_FILE_MB, type UploadResponse } from '@/lib/uploadClient';
 
 interface PhotoSubmitModalProps {
   eventId?: number;
@@ -39,23 +40,16 @@ export default function PhotoSubmitModal({
     setBusy(true);
     setError(null);
     try {
-      const fd = new FormData();
-      Array.from(files).forEach((f) => fd.append('files', f));
-      if (eventId) fd.append('eventId', String(eventId));
-      if (programId) fd.append('programId', String(programId));
+      const fields: Record<string, string> = {};
+      if (eventId) fields.eventId = String(eventId);
+      if (programId) fields.programId = String(programId);
 
-      const res = await fetch('/api/library/photos', { method: 'POST', body: fd });
-      // 요청 자체가 서버에 닿지 못하면(용량 초과 등) 응답이 JSON이 아닐 수 있다
-      const data = await res.json().catch(() => null);
-      if (!data) {
-        throw new Error(
-          res.status === 413
-            ? '사진 용량이 너무 커서 서버가 받지 못했습니다. 장수를 나누거나 사진 크기를 줄여 다시 올려주세요.'
-            : `제출 요청이 실패했습니다 (오류 ${res.status}). 잠시 후 다시 시도해주세요.`
-        );
-      }
-      if (!data.success) throw new Error(data.error || '사진 제출에 실패했습니다.');
-      setDoneCount((n) => n + (data.data?.count ?? 0));
+      const results = await uploadImageFiles<UploadResponse<{ count?: number }>>(
+        '/api/library/photos',
+        Array.from(files),
+        { fields, failMessage: '사진 제출에 실패했습니다.' }
+      );
+      setDoneCount((n) => n + results.reduce((sum, r) => sum + (r.data?.count ?? 0), 0));
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : '사진 제출에 실패했습니다.');
@@ -95,7 +89,8 @@ export default function PhotoSubmitModal({
               </button>
             </div>
             <p className="admin-form-help">
-              여기서 찍은 사진을 올리면 운영진 검토 후 공개됩니다. 한 번에 여러 장 선택할 수 있어요.
+              여기서 찍은 사진을 올리면 운영진 검토 후 공개됩니다. 한 번에 여러 장 선택할 수
+              있어요. (장당 최대 {MAX_UPLOAD_FILE_MB}MB)
             </p>
 
             {error && <div className="admin-alert admin-alert-error admin-alert-sm">{error}</div>}

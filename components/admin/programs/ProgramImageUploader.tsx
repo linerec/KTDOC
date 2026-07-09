@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { ProgramImage } from '@/types/programs';
+import { pickImageFiles, uploadImageFiles, MAX_UPLOAD_FILE_MB } from '@/lib/uploadClient';
 
 interface ProgramImageUploaderProps {
   programId: number;
@@ -32,33 +33,20 @@ export default function ProgramImageUploader({
       setProgress(0);
 
       try {
-        const formData = new FormData();
-        const validFiles: File[] = [];
-
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          if (file.type.startsWith('image/')) {
-            validFiles.push(file);
-            formData.append('files', file);
-          }
-        }
-
+        const validFiles = pickImageFiles(files);
         if (validFiles.length === 0) {
           throw new Error('이미지 파일만 업로드할 수 있습니다.');
         }
 
-        const res = await fetch(`/api/admin/programs/${programId}/images`, {
-          method: 'POST',
-          body: formData,
+        const results = await uploadImageFiles<{
+          success: boolean;
+          data: { images: ProgramImage[] };
+        }>(`/api/admin/programs/${programId}/images`, validFiles, {
+          onProgress: (done, total) => setProgress(Math.round((done / total) * 100)),
         });
 
-        const data = await res.json();
-        if (!data.success) {
-          throw new Error(data.error || '업로드에 실패했습니다.');
-        }
-
         setProgress(100);
-        onUploadComplete(data.data.images);
+        onUploadComplete(results.flatMap((r) => r.data.images));
       } catch (err) {
         setError(err instanceof Error ? err.message : '업로드에 실패했습니다.');
       } finally {
@@ -144,7 +132,9 @@ export default function ProgramImageUploader({
               <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
             </svg>
             <p className="admin-dropzone-text">이미지를 드래그하거나 클릭하여 업로드</p>
-            <p className="admin-dropzone-hint">여러 이미지를 한 번에 업로드할 수 있습니다</p>
+            <p className="admin-dropzone-hint">
+              여러 이미지를 한 번에 업로드할 수 있습니다 · 장당 최대 {MAX_UPLOAD_FILE_MB}MB
+            </p>
           </div>
         )}
       </div>

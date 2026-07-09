@@ -12,8 +12,10 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { uploadToR2, deleteFromR2, R2_PUBLIC_URL } from '@/lib/r2';
 import { getProfilePhotoUrl, setProfilePhotoUrl } from '@/lib/members';
+import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB — 아바타 용도라 갤러리(10MB)보다 작게
+// Vercel 함수 바디 한도(4.5MB) 내 실효 한도 — lib/uploadLimits.ts 참조
+const MAX_FILE_SIZE = MAX_UPLOAD_FILE_BYTES;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 /** 공개 URL → R2 키. 우리 버킷 URL이 아니면 null(외부 URL은 건드리지 않음). */
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
     }
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, error: '파일 크기가 5MB를 초과합니다.' },
+        { success: false, error: `파일 크기가 ${MAX_UPLOAD_FILE_MB}MB를 초과합니다.` },
         { status: 400 }
       );
     }

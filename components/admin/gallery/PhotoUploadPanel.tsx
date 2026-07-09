@@ -1,6 +1,12 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import {
+  pickImageFiles,
+  uploadImageFiles,
+  MAX_UPLOAD_FILE_MB,
+  type UploadResponse,
+} from '@/lib/uploadClient';
 
 interface PhotoUploadPanelProps {
   /** 업로드 성공 시 정리 보드를 새로고침하기 위한 콜백 */
@@ -29,38 +35,23 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
       setUploading(true);
 
       try {
-        const formData = new FormData();
-        let count = 0;
-        for (const file of Array.from(files)) {
-          if (file.type.startsWith('image/')) {
-            formData.append('files', file);
-            count++;
-          }
-        }
-        if (count === 0) {
+        const validFiles = pickImageFiles(files);
+        if (validFiles.length === 0) {
           setError('이미지 파일만 업로드할 수 있습니다.');
           return;
         }
-        formData.append('publishNow', publishNow ? 'true' : 'false');
 
-        const res = await fetch('/api/admin/gallery/photos', {
-          method: 'POST',
-          body: formData,
-        });
-        // 요청 자체가 서버에 닿지 못하면(용량 초과 등) 응답이 JSON이 아닐 수 있다
-        const data = await res.json().catch(() => null);
-        if (!data) {
-          throw new Error(
-            res.status === 413
-              ? '사진 용량이 너무 커서 서버가 받지 못했습니다. 장수를 나누거나 사진 크기를 줄여 다시 올려주세요.'
-              : `업로드 요청이 실패했습니다 (오류 ${res.status}). 잠시 후 다시 시도해주세요.`
-          );
-        }
-        if (!data.success) {
-          throw new Error(data.error || '사진 업로드에 실패했습니다.');
-        }
+        const results = await uploadImageFiles<UploadResponse<{ count?: number }>>(
+          '/api/admin/gallery/photos',
+          validFiles,
+          {
+            fields: { publishNow: publishNow ? 'true' : 'false' },
+            failMessage: '사진 업로드에 실패했습니다.',
+          }
+        );
 
-        setLastCount(data.data?.count ?? count);
+        const uploaded = results.reduce((sum, r) => sum + (r.data?.count ?? 0), 0);
+        setLastCount(uploaded > 0 ? uploaded : validFiles.length);
         onUploaded();
       } catch (err) {
         setError(err instanceof Error ? err.message : '사진 업로드에 실패했습니다.');
@@ -133,7 +124,9 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
           <p className="admin-dropzone-text">
             {uploading ? '업로드 중...' : '사진을 드래그하거나 클릭하여 업로드'}
           </p>
-          <p className="admin-dropzone-hint">JPG·PNG 등 이미지 파일을 여러 장 한 번에 올릴 수 있습니다.</p>
+          <p className="admin-dropzone-hint">
+            JPG·PNG 등 이미지 파일을 여러 장 한 번에 올릴 수 있습니다. 장당 최대 {MAX_UPLOAD_FILE_MB}MB.
+          </p>
         </div>
       </div>
 

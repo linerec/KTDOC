@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { EventImage } from '@/types/gallery';
+import { pickImageFiles, uploadImageFiles, MAX_UPLOAD_FILE_MB } from '@/lib/uploadClient';
 
 interface ImageUploaderProps {
   eventId: number;
@@ -32,46 +33,20 @@ export default function ImageUploader({
       setProgress(0);
 
       try {
-        const formData = new FormData();
-        const validFiles: File[] = [];
-
-        // Filter valid image files
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          if (file.type.startsWith('image/')) {
-            validFiles.push(file);
-            formData.append('files', file);
-          }
-        }
-
+        const validFiles = pickImageFiles(files);
         if (validFiles.length === 0) {
           throw new Error('이미지 파일만 업로드할 수 있습니다.');
         }
 
-        const res = await fetch(
-          `/api/admin/gallery/events/${eventId}/images`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
-
-        // 요청 자체가 서버에 닿지 못하면(용량 초과 등) 응답이 JSON이 아닐 수 있다
-        const data = await res.json().catch(() => null);
-
-        if (!data) {
-          throw new Error(
-            res.status === 413
-              ? '사진 용량이 너무 커서 서버가 받지 못했습니다. 장수를 나누거나 사진 크기를 줄여 다시 올려주세요.'
-              : `업로드 요청이 실패했습니다 (오류 ${res.status}). 잠시 후 다시 시도해주세요.`
-          );
-        }
-        if (!data.success) {
-          throw new Error(data.error || '업로드에 실패했습니다.');
-        }
+        const results = await uploadImageFiles<{
+          success: boolean;
+          data: { images: EventImage[] };
+        }>(`/api/admin/gallery/events/${eventId}/images`, validFiles, {
+          onProgress: (done, total) => setProgress(Math.round((done / total) * 100)),
+        });
 
         setProgress(100);
-        onUploadComplete(data.data.images);
+        onUploadComplete(results.flatMap((r) => r.data.images));
       } catch (err) {
         setError(err instanceof Error ? err.message : '업로드에 실패했습니다.');
       } finally {
@@ -164,7 +139,7 @@ export default function ImageUploader({
               이미지를 드래그하거나 클릭하여 업로드
             </p>
             <p className="admin-dropzone-hint">
-              여러 이미지를 한 번에 업로드할 수 있습니다
+              여러 이미지를 한 번에 업로드할 수 있습니다 · 장당 최대 {MAX_UPLOAD_FILE_MB}MB
             </p>
           </div>
         )}

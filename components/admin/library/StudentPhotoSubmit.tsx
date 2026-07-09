@@ -3,6 +3,12 @@
 import { useCallback, useRef, useState } from 'react';
 import type { GalleryPhoto } from '@/types/gallery';
 import Pagination from '@/components/common/Pagination';
+import {
+  pickImageFiles,
+  uploadImageFiles,
+  MAX_UPLOAD_FILE_MB,
+  type UploadResponse,
+} from '@/lib/uploadClient';
 
 interface StudentPhotoSubmitProps {
   initialPhotos: GalleryPhoto[];
@@ -72,25 +78,21 @@ export default function StudentPhotoSubmit({
       setError(null);
       setNotice(null);
 
-      const formData = new FormData();
-      let count = 0;
-      for (const file of Array.from(files)) {
-        if (file.type.startsWith('image/')) {
-          formData.append('files', file);
-          count++;
-        }
-      }
-      if (count === 0) {
+      const validFiles = pickImageFiles(files);
+      if (validFiles.length === 0) {
         setError('이미지 파일만 올릴 수 있습니다.');
         return;
       }
 
       setUploading(true);
       try {
-        const res = await fetch('/api/library/photos', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || '사진 제출에 실패했습니다.');
-        setNotice(`${data.data?.count ?? count}장을 제출했습니다. 운영진 검토 후 공개됩니다.`);
+        const results = await uploadImageFiles<UploadResponse<{ count?: number }>>(
+          '/api/library/photos',
+          validFiles,
+          { failMessage: '사진 제출에 실패했습니다.' }
+        );
+        const submitted = results.reduce((sum, r) => sum + (r.data?.count ?? 0), 0);
+        setNotice(`${submitted > 0 ? submitted : validFiles.length}장을 제출했습니다. 운영진 검토 후 공개됩니다.`);
         await loadPage(1);
       } catch (err) {
         setError(err instanceof Error ? err.message : '사진 제출에 실패했습니다.');
@@ -177,7 +179,9 @@ export default function StudentPhotoSubmit({
             <p className="admin-dropzone-text">
               {uploading ? '제출 중...' : '사진을 드래그하거나 클릭하여 올리기'}
             </p>
-            <p className="admin-dropzone-hint">JPG·PNG 등 이미지 파일을 한 번에 여러 장 올릴 수 있습니다.</p>
+            <p className="admin-dropzone-hint">
+              JPG·PNG 등 이미지 파일을 한 번에 여러 장 올릴 수 있습니다. 장당 최대 {MAX_UPLOAD_FILE_MB}MB.
+            </p>
           </div>
         </div>
 

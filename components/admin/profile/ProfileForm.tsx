@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
+import { uploadImageFile } from '@/lib/uploadClient';
 
 interface ProfileFormProps {
   initialName: string;
@@ -60,19 +61,16 @@ export default function ProfileForm({
     setSuccess('');
     setPhotoBusy(true);
     try {
-      const form = new FormData();
-      form.append('file', file);
-      const res = await fetch('/api/admin/profile/photo', { method: 'POST', body: form });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setError(data.error || '사진 업로드에 실패했습니다.');
-        return;
-      }
+      const data = await uploadImageFile<{ success: boolean; url: string }>(
+        '/api/admin/profile/photo',
+        file,
+        { failMessage: '사진 업로드에 실패했습니다.' }
+      );
       setPhotoUrl(data.url);
       setSuccess('프로필 사진이 저장되었습니다.');
       router.refresh();
-    } catch {
-      setError('사진 업로드 중 오류가 발생했습니다.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '사진 업로드 중 오류가 발생했습니다.');
     } finally {
       setPhotoBusy(false);
     }
@@ -188,7 +186,7 @@ export default function ProfileForm({
               </button>
             )}
             <p className="admin-avatar-help">
-              JPEG·PNG·WebP, 5MB 이하. 공개 수강생 페이지에는 공개 표시에 동의한 원생의
+              JPEG·PNG·WebP, 4MB 이하. 공개 수강생 페이지에는 공개 표시에 동의한 원생의
               사진만 표시됩니다.
             </p>
           </div>

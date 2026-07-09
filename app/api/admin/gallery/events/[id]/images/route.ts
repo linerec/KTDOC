@@ -18,6 +18,7 @@ import {
   clearGalleryPhotoEventImage,
 } from '@/lib/d1';
 import { uploadToR2, deleteFromR2 } from '@/lib/r2';
+import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -58,6 +59,18 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (files.length === 0) {
       return NextResponse.json(
         { success: false, error: '업로드할 파일이 없습니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 파일별 용량 상한 — 클라이언트 검증을 우회한 직접 호출 방어 (lib/uploadLimits.ts)
+    const oversize = files.find((file) => file.size > MAX_UPLOAD_FILE_BYTES);
+    if (oversize) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `${MAX_UPLOAD_FILE_MB}MB를 넘는 사진은 올릴 수 없습니다: ${oversize.name}`,
+        },
         { status: 400 }
       );
     }
