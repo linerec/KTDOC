@@ -6,8 +6,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import IntlObject from '@/components/common/IntlObject';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { telHref } from '@/lib/seoBusiness';
 
-export default function LoginForm() {
+interface LoginFormProps {
+  /** 비밀번호 분실 안내의 전화 연결 — SEO 패널 연락처(D1)가 단일 소스 */
+  contactTel?: string;
+}
+
+export default function LoginForm({ contactTel = '' }: LoginFormProps) {
   const router = useRouter();
   const { messages } = useLanguage();
   const [email, setEmail] = useState('');
@@ -138,6 +144,17 @@ export default function LoginForm() {
       <p className="auth-link">
         <IntlObject keycode="auth.noAccount" /> <Link href="/register"><IntlObject keycode="auth.register" /></Link>
       </p>
+
+      {/* 비밀번호 분실 안내 — 셀프서비스 재설정(이메일) 도입 전까지 운영진 발급 경로 안내 */}
+      <div className="auth-forgot">
+        <strong className="auth-forgot-title"><IntlObject keycode="auth.forgot.question" /></strong>
+        <p className="auth-forgot-guide"><IntlObject keycode="auth.forgot.guide" /></p>
+        {contactTel && (
+          <a href={telHref(contactTel)} className="auth-forgot-call">
+            <IntlObject keycode="auth.forgot.call" /> · {contactTel}
+          </a>
+        )}
+      </div>
     </form>
   );
 }

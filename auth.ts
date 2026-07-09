@@ -12,6 +12,7 @@ interface DBUser {
   name: string | null;
   role: MemberRole;
   status: MemberStatus;
+  must_change_password: 0 | 1;
 }
 
 /** 로그인 가능 상태: 승인 대기·정회원은 허용, 거절·정지는 차단 */
@@ -30,7 +31,7 @@ const credentialsProvider = Credentials({
     }
 
     const users = await query<DBUser[]>(
-      'SELECT id, email, password_hash, name, role, status FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, name, role, status, must_change_password FROM users WHERE email = ?',
       [credentials.email]
     );
 
@@ -56,6 +57,8 @@ const credentialsProvider = Credentials({
       name: user.name,
       role: user.role,
       status: user.status,
+      // 임시 비밀번호 발급 상태 — 미들웨어가 새 비밀번호 설정 페이지로 강제 이동
+      mustChangePassword: user.must_change_password === 1,
     };
   },
 });
@@ -71,7 +74,7 @@ const devAdminProvider = Credentials({
     if (!credentials?.email) return null;
 
     const users = await query<DBUser[]>(
-      'SELECT id, email, password_hash, name, role, status FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, name, role, status, must_change_password FROM users WHERE email = ?',
       [credentials.email]
     );
 
@@ -84,6 +87,7 @@ const devAdminProvider = Credentials({
       name: user.name,
       role: user.role,
       status: user.status,
+      mustChangePassword: user.must_change_password === 1,
     };
   },
 });
@@ -106,20 +110,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // status 클레임이 비어 있으면 DB에서 현재 role·status를 보충해 토큰을 갱신한다.
       // 이 콜백은 Node 런타임(auth.ts)에서만 도므로 DB 접근이 안전하며,
       // 미들웨어가 쓰는 auth.config.ts는 DB-free로 유지된다.
-      if (token.id && !token.status) {
+      //
+      // update 트리거(클라이언트 useSession().update()) 시에도 DB에서 재조회한다 —
+      // 새 비밀번호 설정 완료 후 mustChangePassword 클레임을 해제하는 경로.
+      // 클라이언트가 보낸 값을 믿지 않고 항상 DB를 기준으로 갱신한다.
+      if (token.id && (!token.status || params.trigger === 'update')) {
         try {
-          const rows = await query<{ role: MemberRole; status: MemberStatus }[]>(
-            'SELECT role, status FROM users WHERE id = ?',
+          const rows = await query<
+            { role: MemberRole; status: MemberStatus; must_change_password: 0 | 1 }[]
+          >(
+            'SELECT role, status, must_change_password FROM users WHERE id = ?',
             [token.id]
           );
           const fresh = rows[0];
           if (fresh) {
             token.role = fresh.role;
             token.status = fresh.status;
+            token.mustChangePassword = fresh.must_change_password === 1;
           }
         } catch (err) {
           // DB 일시 장애 시 토큰을 망가뜨리지 않는다(기존 클레임 유지).
-          console.error('JWT status 백필 실패:', err);
+          console.error('JWT 클레임 갱신 실패:', err);
         }
       }
 

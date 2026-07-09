@@ -49,6 +49,9 @@ export default function MemberTable({
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
+  // 임시 비밀번호 발급 결과 — 평문은 이 모달에서 한 번만 표시된다
+  const [tempResult, setTempResult] = useState<{ name: string; password: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function runAction(memberId: string, body: Record<string, unknown>) {
     setBusyId(memberId);
@@ -69,6 +72,47 @@ export default function MemberTable({
       setError('작업 중 오류가 발생했습니다.');
     } finally {
       setBusyId(null);
+    }
+  }
+
+  // 임시 비밀번호 발급 — 응답의 평문을 모달로 보여주고 다시 조회할 수 없다.
+  async function issueTempPassword(member: Member) {
+    const displayName = member.name || member.email;
+    const ok = window.confirm(
+      `${displayName} 회원에게 임시 비밀번호를 발급할까요?\n기존 비밀번호는 즉시 사용할 수 없게 됩니다.`
+    );
+    if (!ok) return;
+
+    setBusyId(member.id);
+    setError('');
+    try {
+      const res = await fetch(`/api/admin/members/${member.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'issueTempPassword' }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.tempPassword) {
+        setError(data.error || '임시 비밀번호 발급에 실패했습니다.');
+        return;
+      }
+      setCopied(false);
+      setTempResult({ name: displayName, password: data.tempPassword });
+      router.refresh();
+    } catch {
+      setError('작업 중 오류가 발생했습니다.');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function copyTempPassword() {
+    if (!tempResult) return;
+    try {
+      await navigator.clipboard.writeText(tempResult.password);
+      setCopied(true);
+    } catch {
+      // 클립보드 미지원 환경 — 화면의 숫자를 직접 읽어 전달하면 된다
     }
   }
 
@@ -248,6 +292,19 @@ export default function MemberTable({
                         </button>
                       )}
 
+                      {/* 임시 비밀번호 발급 — 로그인 가능한 상태(대기·정회원)만 의미가 있다 */}
+                      {(member.status === 'pending' || member.status === 'active') && (
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-sm admin-btn-outline"
+                          disabled={busy}
+                          onClick={() => issueTempPassword(member)}
+                          title="비밀번호를 잊은 회원에게 임시 비밀번호를 발급합니다"
+                        >
+                          임시 비밀번호
+                        </button>
+                      )}
+
                       {canManageRoles && (
                         <select
                           className="admin-filter-select admin-role-select"
@@ -280,6 +337,43 @@ export default function MemberTable({
           </tbody>
         </table>
       </div>
+
+      {tempResult && (
+        <div
+          className="admin-temp-pw-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="임시 비밀번호 발급 완료"
+          onClick={() => setTempResult(null)}
+        >
+          <div className="admin-temp-pw-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="admin-temp-pw-title">임시 비밀번호 발급 완료</h3>
+            <p className="admin-temp-pw-target">{tempResult.name}</p>
+            <div className="admin-temp-pw-code">{tempResult.password}</div>
+            <p className="admin-temp-pw-guide">
+              이 비밀번호는 지금 한 번만 표시됩니다. 전화·문자 등으로 회원에게 직접
+              전달해 주세요. 회원이 이 비밀번호로 로그인하면 새 비밀번호를 만들도록
+              안내됩니다.
+            </p>
+            <div className="admin-btn-row admin-temp-pw-actions">
+              <button
+                type="button"
+                className="admin-btn admin-btn-sm admin-btn-outline"
+                onClick={copyTempPassword}
+              >
+                {copied ? '복사됨' : '복사'}
+              </button>
+              <button
+                type="button"
+                className="admin-btn admin-btn-sm admin-btn-primary"
+                onClick={() => setTempResult(null)}
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

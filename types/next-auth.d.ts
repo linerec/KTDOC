@@ -8,12 +8,15 @@ declare module 'next-auth' {
       id: string;
       role: MemberRole;
       status: MemberStatus;
+      /** 임시 비밀번호로 로그인한 상태 — 새 비밀번호 설정이 강제된다 */
+      mustChangePassword?: boolean;
     } & DefaultSession['user'];
   }
 
   interface User extends DefaultUser {
     role: MemberRole;
     status: MemberStatus;
+    mustChangePassword?: boolean;
   }
 }
 
@@ -22,5 +25,6 @@ declare module 'next-auth/jwt' {
     id: string;
     role: MemberRole;
     status: MemberStatus;
+    mustChangePassword?: boolean;
   }
 }

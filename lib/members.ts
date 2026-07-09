@@ -316,6 +316,38 @@ export async function setPublicArchiveConsent(
   ]);
 }
 
+/**
+ * 임시 비밀번호 발급 — 해시를 저장하고 다음 로그인에서 새 비밀번호 설정을 강제한다.
+ * 비밀번호를 잊은 회원을 위해 운영진이 발급(신뢰·접근성 Phase Step 1).
+ */
+export async function setTempPassword(
+  userId: string,
+  passwordHash: string,
+  issuedBy: string
+): Promise<void> {
+  await query(
+    `UPDATE users
+        SET password_hash = ?, must_change_password = 1,
+            temp_password_issued_at = NOW(), temp_password_issued_by = ?
+      WHERE id = ?`,
+    [passwordHash, issuedBy, userId]
+  );
+}
+
+/** 새 비밀번호 확정 — 강제 변경 플래그와 임시 발급 이력을 해제한다. */
+export async function completePasswordChange(
+  userId: string,
+  passwordHash: string
+): Promise<void> {
+  await query(
+    `UPDATE users
+        SET password_hash = ?, must_change_password = 0,
+            temp_password_issued_at = NULL, temp_password_issued_by = NULL
+      WHERE id = ?`,
+    [passwordHash, userId]
+  );
+}
+
 /** 프로필 사진 URL 설정/해제 — 본인 프로필에서만 호출(userId는 항상 본인). */
 export async function setProfilePhotoUrl(
   userId: string,

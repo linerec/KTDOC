@@ -21,6 +21,13 @@ export const authConfig: NextAuthConfig = {
       const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register');
       const isAdminRoute = pathname.startsWith('/admin');
       const isProtectedRoute = isAdminRoute || pathname.startsWith('/dashboard');
+      const isForcedPasswordPage = pathname.startsWith('/account/password');
+
+      // 임시 비밀번호로 로그인한 회원은 새 비밀번호 설정을 마칠 때까지
+      // 모든 페이지에서 설정 페이지로 보낸다(로그아웃 API는 matcher 밖이라 가능).
+      if (isLoggedIn && auth.user.mustChangePassword && !isForcedPasswordPage) {
+        return Response.redirect(new URL('/account/password', nextUrl.origin));
+      }
 
       // 로그인 사용자는 인증 페이지 접근 시 콘솔로 — 회원은 열람이 아니라
       // 업무가 목적. 승인 대기(pending)는 콘솔 진입 불가라 홈으로.
@@ -51,6 +58,7 @@ export const authConfig: NextAuthConfig = {
         token.id = user.id as string;
         token.role = user.role;
         token.status = user.status;
+        token.mustChangePassword = user.mustChangePassword ?? false;
       }
       // 프로필에서 이름을 바꾸면 update({ name })로 토큰에 즉시 반영
       if (trigger === 'update' && typeof session?.name === 'string') {
@@ -63,6 +71,7 @@ export const authConfig: NextAuthConfig = {
         session.user.id = token.id as string;
         session.user.role = token.role;
         session.user.status = token.status;
+        session.user.mustChangePassword = token.mustChangePassword ?? false;
       }
       return session;
     },

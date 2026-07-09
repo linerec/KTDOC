@@ -4,6 +4,7 @@
  *
  * 권한:
  *  - approve | reject | suspend | restore | linkStudent : 운영진(선생님·관리자, isStaff)
+ *  - issueTempPassword (임시 비밀번호 발급)             : 운영진. 단, 관리자 계정 대상은 관리자만
  *  - setRole (역할 변경, 선생님 임명 등)               : 관리자(isAdmin)만
  */
 
@@ -16,12 +17,14 @@ import {
   rejectMember,
   setMemberStatus,
   setMemberRole,
+  setTempPassword,
   linkGuardianToStudent,
   getMemberById,
   countActiveAdmins,
   MEMBER_ROLES,
   type MemberRole,
 } from '@/lib/members';
+import { generateTempPassword, hashPassword } from '@/lib/password';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -33,7 +36,8 @@ type Action =
   | 'suspend'
   | 'restore'
   | 'setRole'
-  | 'linkStudent';
+  | 'linkStudent'
+  | 'issueTempPassword';
 
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
@@ -130,6 +134,30 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         }
         await setMemberRole(id, role);
         break;
+      }
+      case 'issueTempPassword': {
+        const target = await getMemberById(id);
+        if (!target) {
+          return NextResponse.json(
+            { success: false, error: '회원을 찾을 수 없습니다.' },
+            { status: 404 }
+          );
+        }
+        // 관리자 계정 탈취 방지: 관리자 대상 발급은 관리자만 가능
+        if (target.role === 'admin' && !isAdmin(session)) {
+          return NextResponse.json(
+            { success: false, error: '관리자 계정의 임시 비밀번호는 관리자만 발급할 수 있습니다.' },
+            { status: 403 }
+          );
+        }
+        const tempPassword = generateTempPassword();
+        await setTempPassword(id, await hashPassword(tempPassword), session.user.id);
+        // 임시 비밀번호 평문은 이 응답에서 한 번만 노출된다(저장은 해시만).
+        return NextResponse.json({
+          success: true,
+          data: await getMemberById(id),
+          tempPassword,
+        });
       }
       case 'linkStudent': {
         const linkId: string = body.linkId;

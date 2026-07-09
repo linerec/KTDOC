@@ -2217,6 +2217,57 @@ ul {
   color: var(--text-color);
 }
 
+/* 폼 상단 설명(새 비밀번호 설정 등) — 취약 사용자 대상이라 본문 크기 유지 */
+.auth-desc {
+  margin: -6px 0 22px;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+/* 비밀번호 분실 안내 — 셀프서비스 재설정 도입 전 운영진 발급 경로 */
+.auth-forgot {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-forgot-title {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.auth-forgot-guide {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.auth-forgot-call {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 10px 16px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  background: var(--accent-color, #d4a017);
+  color: #0a0a0a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.25s;
+}
+
+.auth-forgot-call:hover {
+  background: #b88a12;
+}
+
 /* 가입 유형 선택 토글 (원생 / 학부모) */
 .auth-role-toggle {
   display: grid;
@@ -5659,6 +5710,66 @@ ul {
   border-radius: 6px;
   color: var(--secondary-color);
   font-size: 0.85rem;
+}
+
+/* 회원 관리 — 임시 비밀번호 발급 결과 모달 (평문은 여기서 한 번만 표시) */
+.admin-temp-pw-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(5, 4, 3, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.admin-temp-pw-modal {
+  width: min(420px, 100%);
+  padding: 28px 26px;
+  background: #161412;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.admin-temp-pw-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: var(--text-color);
+}
+
+.admin-temp-pw-target {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* 전화로 불러주기 쉽도록 크게, 숫자 간격을 벌려 표시 */
+.admin-temp-pw-code {
+  padding: 16px 12px;
+  border: 1px dashed rgba(212, 160, 23, 0.5);
+  border-radius: 8px;
+  background: rgba(212, 160, 23, 0.08);
+  font-size: 1.7rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  color: var(--accent-color);
+}
+
+.admin-temp-pw-guide {
+  margin: 16px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  text-align: left;
+  color: var(--text-muted);
+}
+
+.admin-temp-pw-actions {
+  margin-top: 20px;
+  justify-content: center;
 }
 
 /* 회원 관리 — 작업 칼럼 (버튼 세로 정렬) */
