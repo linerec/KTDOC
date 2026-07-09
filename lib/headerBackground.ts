@@ -2,6 +2,7 @@
  * 헤더(Top Bar) 배경 설정 헬퍼
  *
  * 최상단(top)과 스크롤 후(scrolled) 두 상태를 각각 색상/투명도로 제어한다.
+ * 배경은 상단(로고·기능 버튼) 영역과 메뉴 바 영역으로 나뉘어 각각 지정할 수 있다.
  * 설정이 없으면 null → globals.css의 기본값(최상단 투명, 스크롤 시 rgba(10,10,10,0.95))이 그대로 적용된다.
  *
  * 서버(layout)와 클라이언트(Header 편집 UI) 양쪽에서 쓰는 순수 변환 함수만 둔다.
@@ -29,10 +30,12 @@ export interface HeaderStatePair<T> {
 }
 
 export interface HeaderBackground {
-  /** 페이지 최상단(스크롤 전) 배경 */
+  /** 상단(로고·기능 버튼) 영역 — 페이지 최상단(스크롤 전) 배경 */
   top: HeaderBgState;
-  /** 스크롤하여 헤더가 고정된 상태의 배경 */
+  /** 상단(로고·기능 버튼) 영역 — 스크롤하여 헤더가 고정된 상태의 배경 */
   scrolled: HeaderBgState;
+  /** 메뉴 바 영역 배경. 최상단·스크롤 후 각각 지정 */
+  menu: HeaderStatePair<HeaderBgState>;
   /** 상단 로고 변형(흰색/기본). 최상단·스크롤 후 각각 지정 */
   logo: HeaderStatePair<HeaderLogoVariant>;
   /** 메뉴(네비게이션) 글자 색상(#rrggbb). 최상단·스크롤 후 각각 지정 */
@@ -48,6 +51,10 @@ export interface HeaderBackground {
 export const DEFAULT_HEADER_BACKGROUND: HeaderBackground = {
   top: { color: '#0a0a0a', opacity: 0 },
   scrolled: { color: '#0a0a0a', opacity: 0.95 },
+  menu: {
+    top: { color: '#0a0a0a', opacity: 0 },
+    scrolled: { color: '#0a0a0a', opacity: 0.95 },
+  },
   logo: { top: 'white', scrolled: 'white' },
   navColor: { top: '#ffffff', scrolled: '#ffffff' },
   align: 'center',
@@ -114,6 +121,21 @@ function normalizeLogoPair(
   return { ...fallback };
 }
 
+/** 배경 상태 쌍 정규화. 값이 없거나 형식이 어긋나면 fallback을 그대로 승계. */
+function normalizeBgPair(
+  raw: unknown,
+  fallback: HeaderStatePair<HeaderBgState>
+): HeaderStatePair<HeaderBgState> {
+  if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>;
+    return {
+      top: normalizeState(obj.top, fallback.top),
+      scrolled: normalizeState(obj.scrolled, fallback.scrolled),
+    };
+  }
+  return { top: { ...fallback.top }, scrolled: { ...fallback.scrolled } };
+}
+
 /** 메뉴 글자색 쌍 정규화. 구버전(단일 hex 문자열)은 최상단·스크롤 후 양쪽에 동일 적용. */
 function normalizeNavColorPair(
   raw: unknown,
@@ -144,9 +166,13 @@ export function parseHeaderBackground(
   try {
     const obj = JSON.parse(value) as Record<string, unknown>;
     if (!obj || typeof obj !== 'object') return null;
+    const top = normalizeState(obj.top, DEFAULT_HEADER_BACKGROUND.top);
+    const scrolled = normalizeState(obj.scrolled, DEFAULT_HEADER_BACKGROUND.scrolled);
     return {
-      top: normalizeState(obj.top, DEFAULT_HEADER_BACKGROUND.top),
-      scrolled: normalizeState(obj.scrolled, DEFAULT_HEADER_BACKGROUND.scrolled),
+      top,
+      scrolled,
+      // 구버전(분리 전) 데이터: 배경 하나가 메뉴 바까지 칠했으므로 동일 값을 승계해 외관을 유지한다
+      menu: normalizeBgPair(obj.menu, { top, scrolled }),
       logo: normalizeLogoPair(obj.logo, DEFAULT_HEADER_BACKGROUND.logo),
       navColor: normalizeNavColorPair(obj.navColor, DEFAULT_HEADER_BACKGROUND.navColor),
       align: normalizeAlign(obj.align, DEFAULT_HEADER_BACKGROUND.align),
@@ -161,6 +187,7 @@ export function serializeHeaderBackground(bg: HeaderBackground): string {
   return JSON.stringify({
     top: { color: bg.top.color, opacity: clampOpacity(bg.top.opacity) },
     scrolled: { color: bg.scrolled.color, opacity: clampOpacity(bg.scrolled.opacity) },
+    menu: normalizeBgPair(bg.menu, DEFAULT_HEADER_BACKGROUND.menu),
     logo: normalizeLogoPair(bg.logo, DEFAULT_HEADER_BACKGROUND.logo),
     navColor: normalizeNavColorPair(bg.navColor, DEFAULT_HEADER_BACKGROUND.navColor),
     align: normalizeAlign(bg.align, DEFAULT_HEADER_BACKGROUND.align),
@@ -185,6 +212,8 @@ export function toHeaderCssVars(bg: HeaderBackground | null): Record<string, str
   return {
     '--header-bg-top': toRgba(bg.top),
     '--header-bg-scrolled': toRgba(bg.scrolled),
+    '--header-menu-bg-top': toRgba(bg.menu.top),
+    '--header-menu-bg-scrolled': toRgba(bg.menu.scrolled),
     '--header-nav-color-top': bg.navColor.top,
     '--header-nav-color-scrolled': bg.navColor.scrolled,
   };

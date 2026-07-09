@@ -10,6 +10,7 @@ import {
   toRgba,
   type HeaderAlign,
   type HeaderBackground,
+  type HeaderBgState,
   type HeaderLogoVariant,
   type HeaderStatePair,
 } from '@/lib/headerBackground';
@@ -44,6 +45,8 @@ export default function HeaderBackgroundEditor() {
   const backupRef = useRef<{
     top: string;
     scrolled: string;
+    menuTop: string;
+    menuScrolled: string;
     navColorTop: string;
     navColorScrolled: string;
     logo: HeaderStatePair<HeaderLogoVariant>;
@@ -51,6 +54,8 @@ export default function HeaderBackgroundEditor() {
   }>({
     top: '',
     scrolled: '',
+    menuTop: '',
+    menuScrolled: '',
     navColorTop: '',
     navColorScrolled: '',
     logo: DEFAULT_HEADER_BACKGROUND.logo,
@@ -64,6 +69,8 @@ export default function HeaderBackgroundEditor() {
     if (!open) return;
     document.body.style.setProperty('--header-bg-top', toRgba(bg.top));
     document.body.style.setProperty('--header-bg-scrolled', toRgba(bg.scrolled));
+    document.body.style.setProperty('--header-menu-bg-top', toRgba(bg.menu.top));
+    document.body.style.setProperty('--header-menu-bg-scrolled', toRgba(bg.menu.scrolled));
     document.body.style.setProperty('--header-nav-color-top', bg.navColor.top);
     document.body.style.setProperty('--header-nav-color-scrolled', bg.navColor.scrolled);
     setLogo(bg.logo);
@@ -71,11 +78,15 @@ export default function HeaderBackgroundEditor() {
   }, [open, bg, setLogo, setAlign]);
 
   const restoreBackup = useCallback(() => {
-    const { top, scrolled, navColorTop, navColorScrolled, logo: prevLogo, align: prevAlign } = backupRef.current;
+    const { top, scrolled, menuTop, menuScrolled, navColorTop, navColorScrolled, logo: prevLogo, align: prevAlign } = backupRef.current;
     if (top) document.body.style.setProperty('--header-bg-top', top);
     else document.body.style.removeProperty('--header-bg-top');
     if (scrolled) document.body.style.setProperty('--header-bg-scrolled', scrolled);
     else document.body.style.removeProperty('--header-bg-scrolled');
+    if (menuTop) document.body.style.setProperty('--header-menu-bg-top', menuTop);
+    else document.body.style.removeProperty('--header-menu-bg-top');
+    if (menuScrolled) document.body.style.setProperty('--header-menu-bg-scrolled', menuScrolled);
+    else document.body.style.removeProperty('--header-menu-bg-scrolled');
     if (navColorTop) document.body.style.setProperty('--header-nav-color-top', navColorTop);
     else document.body.style.removeProperty('--header-nav-color-top');
     if (navColorScrolled) document.body.style.setProperty('--header-nav-color-scrolled', navColorScrolled);
@@ -88,6 +99,8 @@ export default function HeaderBackgroundEditor() {
     backupRef.current = {
       top: document.body.style.getPropertyValue('--header-bg-top'),
       scrolled: document.body.style.getPropertyValue('--header-bg-scrolled'),
+      menuTop: document.body.style.getPropertyValue('--header-menu-bg-top'),
+      menuScrolled: document.body.style.getPropertyValue('--header-menu-bg-scrolled'),
       navColorTop: document.body.style.getPropertyValue('--header-nav-color-top'),
       navColorScrolled: document.body.style.getPropertyValue('--header-nav-color-scrolled'),
       logo,
@@ -144,6 +157,8 @@ export default function HeaderBackgroundEditor() {
       // 인라인 변수와 data 속성을 제거하여 CSS 기본값으로 되돌린다
       document.body.style.removeProperty('--header-bg-top');
       document.body.style.removeProperty('--header-bg-scrolled');
+      document.body.style.removeProperty('--header-menu-bg-top');
+      document.body.style.removeProperty('--header-menu-bg-scrolled');
       document.body.style.removeProperty('--header-nav-color-top');
       document.body.style.removeProperty('--header-nav-color-scrolled');
       delete document.body.dataset.headerBg;
@@ -152,6 +167,8 @@ export default function HeaderBackgroundEditor() {
       backupRef.current = {
         top: '',
         scrolled: '',
+        menuTop: '',
+        menuScrolled: '',
         navColorTop: '',
         navColorScrolled: '',
         logo: DEFAULT_HEADER_BACKGROUND.logo,
@@ -173,6 +190,18 @@ export default function HeaderBackgroundEditor() {
   const updateOpacity = (key: 'top' | 'scrolled', percent: number) =>
     setBg((prev) => ({ ...prev, [key]: { ...prev[key], opacity: percent / 100 } }));
 
+  const updateMenuColor = (key: 'top' | 'scrolled', color: string) =>
+    setBg((prev) => ({
+      ...prev,
+      menu: { ...prev.menu, [key]: { ...prev.menu[key], color } },
+    }));
+
+  const updateMenuOpacity = (key: 'top' | 'scrolled', percent: number) =>
+    setBg((prev) => ({
+      ...prev,
+      menu: { ...prev.menu, [key]: { ...prev.menu[key], opacity: percent / 100 } },
+    }));
+
   const updateLogo = (key: 'top' | 'scrolled', variant: HeaderLogoVariant) =>
     setBg((prev) => ({ ...prev, logo: { ...prev.logo, [key]: variant } }));
 
@@ -182,10 +211,53 @@ export default function HeaderBackgroundEditor() {
   const updateAlign = (value: HeaderAlign) =>
     setBg((prev) => ({ ...prev, align: value }));
 
-  // 한 상태(최상단 또는 스크롤 후)의 배경/로고/메뉴 글자색을 한 섹션에 묶어 렌더
-  const renderStateSection = (key: 'top' | 'scrolled', title: string, hint: string) => {
-    const state = bg[key];
+  // 배경 한 줄(색상 + 투명도 + 미리보기) 렌더 — 로고 영역/메뉴 영역이 공유
+  const renderBgRow = (
+    label: string,
+    ariaPrefix: string,
+    state: HeaderBgState,
+    onColor: (color: string) => void,
+    onOpacity: (percent: number) => void
+  ) => {
     const percent = Math.round(state.opacity * 100);
+    return (
+      <div className="header-bg-row">
+        <span className="header-bg-row-label">{label}</span>
+        <div className="header-bg-controls">
+          <input
+            type="color"
+            aria-label={`${ariaPrefix} 배경 색상`}
+            value={state.color}
+            onChange={(e) => onColor(e.target.value)}
+            className="header-bg-color"
+          />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            aria-label={`${ariaPrefix} 배경 투명도`}
+            value={percent}
+            onChange={(e) => onOpacity(Number(e.target.value))}
+            className="header-bg-range"
+          />
+          <span className="header-bg-percent">{percent}%</span>
+          <span className="header-bg-swatch" title="미리보기">
+            <span style={{ background: toRgba(state) }} />
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  // 한 상태(최상단 또는 스크롤 후)의 배경(로고·메뉴 영역)/로고/메뉴 글자색을 한 섹션에 묶어 렌더
+  // logoNote: 로고 행 옆에 붙는 보조 안내(예: 스크롤 후 로고는 모바일에서만 보임)
+  const renderStateSection = (
+    key: 'top' | 'scrolled',
+    title: string,
+    hint: string,
+    logoNote?: string
+  ) => {
     const logoVariant = bg.logo[key];
     const navColor = bg.navColor[key];
     return (
@@ -195,32 +267,21 @@ export default function HeaderBackgroundEditor() {
           <span className="header-bg-section-hint">{hint}</span>
         </div>
 
-        <div className="header-bg-row">
-          <span className="header-bg-row-label">배경</span>
-          <div className="header-bg-controls">
-            <input
-              type="color"
-              aria-label={`${title} 배경 색상`}
-              value={state.color}
-              onChange={(e) => updateColor(key, e.target.value)}
-              className="header-bg-color"
-            />
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              aria-label={`${title} 배경 투명도`}
-              value={percent}
-              onChange={(e) => updateOpacity(key, Number(e.target.value))}
-              className="header-bg-range"
-            />
-            <span className="header-bg-percent">{percent}%</span>
-            <span className="header-bg-swatch" title="미리보기">
-              <span style={{ background: toRgba(state) }} />
-            </span>
-          </div>
-        </div>
+        {renderBgRow(
+          '로고 영역 배경',
+          `${title} 로고 영역`,
+          bg[key],
+          (color) => updateColor(key, color),
+          (percent) => updateOpacity(key, percent)
+        )}
+
+        {renderBgRow(
+          '메뉴 영역 배경',
+          `${title} 메뉴 영역`,
+          bg.menu[key],
+          (color) => updateMenuColor(key, color),
+          (percent) => updateMenuOpacity(key, percent)
+        )}
 
         <div className="header-bg-row">
           <span className="header-bg-row-label">로고</span>
@@ -243,6 +304,7 @@ export default function HeaderBackgroundEditor() {
             </button>
           </div>
         </div>
+        {logoNote && <p className="header-bg-row-note">{logoNote}</p>}
 
         <div className="header-bg-row">
           <span className="header-bg-row-label">메뉴 글자색</span>
@@ -286,8 +348,10 @@ export default function HeaderBackgroundEditor() {
 
             <div className="image-object-modal-body">
               <p className="header-bg-modal-hint">
-                상단 바의 배경·로고·메뉴 글자색을 지정합니다. 최상단(스크롤 전)과 스크롤 후 상태를 각각 설정할 수 있습니다.
-                변경 사항은 위 헤더에 바로 미리 보입니다.
+                상단 바의 배경·로고·메뉴 글자색을 지정합니다. 배경은 로고·기능 버튼이 있는 로고 영역과
+                그 아래 메뉴 영역으로 나눠 설정할 수 있고, 최상단(스크롤 전)과 스크롤 후 상태도 각각 지정합니다.
+                변경 사항은 위 헤더에 바로 미리 보입니다. (모바일 화면에서는 메뉴가 서랍으로 열려
+                메뉴 영역 배경 대신 로고 영역 배경이 상단 바 전체에 적용됩니다.)
               </p>
 
               {error && <div className="intl-modal-error">{error}</div>}
@@ -322,7 +386,12 @@ export default function HeaderBackgroundEditor() {
               </div>
 
               {renderStateSection('top', '최상단', '페이지 맨 위 (스크롤 전)')}
-              {renderStateSection('scrolled', '스크롤 후', '아래로 스크롤하여 헤더가 고정된 상태')}
+              {renderStateSection(
+                'scrolled',
+                '스크롤 후',
+                '아래로 스크롤하여 헤더가 고정된 상태',
+                '데스크톱에서는 스크롤 시 로고가 접혀 사라지므로, 이 로고는 모바일 화면에서만 표시됩니다.'
+              )}
 
               <button
                 type="button"

@@ -34,6 +34,7 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const headerRef = useRef<HTMLElement>(null);
     const authRef = useRef<HTMLDivElement>(null);
+    const navRef = useRef<HTMLElement>(null);
 
     // 모든 페이지에서 최상단일 때 로고를 크게 노출하고, 스크롤하면 축소
     const isLogoExpanded = !isScrolled;
@@ -72,6 +73,23 @@ export default function Header() {
             header.style.setProperty('--header-auth-w', `${Math.ceil(width)}px`);
         });
         observer.observe(authEl);
+        return () => observer.disconnect();
+    }, []);
+
+    // 메뉴 바 실측 높이를 CSS 변수(--header-nav-h)로 헤더에 기록.
+    // 헤더 배경 pseudo 레이어(::before/::after)가 상단(로고·버튼) 영역과
+    // 메뉴 바 영역의 경계를 이 값으로 나눈다. 메뉴 높이는 폰트·줄바꿈(flex-wrap)에
+    // 따라 달라지므로 실측이 필요하다. 모바일 드로어에서는 CSS가 이 변수를 쓰지 않는다.
+    useEffect(() => {
+        const header = headerRef.current;
+        const navEl = navRef.current;
+        if (!header || !navEl || typeof ResizeObserver === 'undefined') return;
+
+        const observer = new ResizeObserver(([entry]) => {
+            const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+            header.style.setProperty('--header-nav-h', `${Math.ceil(height)}px`);
+        });
+        observer.observe(navEl);
         return () => observer.disconnect();
     }, []);
 
@@ -228,7 +246,7 @@ export default function Header() {
                     </div>
 
                     {/* Navigation - Below Logo */}
-                    <nav id="main-nav" className={isMenuOpen ? 'active' : ''}>
+                    <nav id="main-nav" className={isMenuOpen ? 'active' : ''} ref={navRef}>
                         <ul>
                             {menuItems.map((item) => (
                                 <li key={item.keycode}>

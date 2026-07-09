@@ -42,6 +42,11 @@
   --header-h-scrolled: calc(80px + var(--safe-top));
   --header-offset: var(--header-h-top);
 
+  /* 데스크톱 메뉴 바 실측 폴백(52px) — 헤더 배경 두 영역(로고/메뉴)의 경계.
+     Header 컴포넌트가 ResizeObserver로 실높이를 재서 덮어쓴다.
+     JS 실행 전 첫 페인트에서도 영역 분리가 유지되도록 하는 안전값. */
+  --header-nav-h: 52px;
+
   /* ── 페이지 상단 표준 시작선 ────────────────────────────────────────
      모든 공개 페이지의 첫 콘텐츠는 이 두 토큰 중 하나로 시작한다.
      - --page-offset:       히어로형(타이틀 화면). 헤더 + 넉넉한 숨통
@@ -212,21 +217,55 @@ ul {
    HEADER
 ======================================== */
 #main-header {
-  /* 관리자 편집 모드에서 지정 가능. 미지정 시 기본값(투명) 유지. */
-  background-color: var(--header-bg-top, transparent);
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: var(--z-header);
-  transition: background-color 0.3s ease, padding 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: padding 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   /* standalone(PWA) + black-translucent 상태바에서 로고가 상태바 밑에 깔리지 않도록 안전영역 보정 */
   padding: calc(15px + env(safe-area-inset-top)) 0 0;
 }
 
-#main-header.scrolled {
+/* 헤더 배경은 두 영역의 pseudo 레이어가 나눠 칠한다(관리자 Top Bar 설정에서 각각 지정).
+   ::before = 상단(로고·기능 버튼) 영역, ::after = 메뉴 바 영역.
+   z-index:-1이라 선 인터랙션(header-waves, z:0)·콘텐츠(header-inner, z:1) 뒤에 깔린다.
+   경계는 메뉴 바 실측 높이(--header-nav-h, Header.tsx가 발행)로 나눈다 — 데스크톱 한정.
+   모바일(≤1100px)은 메뉴가 드로어(헤더 밖)라 상단 영역이 헤더 전체를 덮는다. */
+#main-header::before,
+#main-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: background-color 0.3s ease;
+}
+
+#main-header::before {
+  top: 0;
+  bottom: 0;
+  /* 관리자 편집 모드에서 지정 가능. 미지정 시 기본값(투명) 유지. */
+  background-color: var(--header-bg-top, transparent);
+}
+
+#main-header::after {
+  bottom: 0;
+  height: 0;
+  background-color: var(--header-menu-bg-top, transparent);
+}
+
+#main-header.scrolled::before {
   /* 관리자 편집 모드에서 지정 가능. 미지정 시 기본값(어두운 반투명) 유지. */
   background-color: var(--header-bg-scrolled, rgba(10, 10, 10, 0.95));
+}
+
+#main-header.scrolled::after {
+  background-color: var(--header-menu-bg-scrolled, rgba(10, 10, 10, 0.95));
+}
+
+#main-header.scrolled {
   backdrop-filter: blur(10px);
 }
 
@@ -371,6 +410,17 @@ ul {
    (1100px 이하는 nav가 드로어이므로 제외 — 드로어 브레이크포인트는
     EN 메뉴 폭 + 로그인 툴바 폭이 산술적으로 공존 가능한 하한선) */
 @media (min-width: 1101px) {
+  /* 배경 레이어 경계: 상단(로고·버튼) 영역은 메뉴 바 위에서 끝나고,
+     메뉴 바 영역 레이어가 나머지 아래쪽을 덮는다.
+     경계값은 :root 정적 폴백(52px) 위에 Header의 실측값이 덮어쓴다. */
+  #main-header::before {
+    bottom: var(--header-nav-h);
+  }
+
+  #main-header::after {
+    height: var(--header-nav-h);
+  }
+
   .header-logo {
     max-height: 140px;
     overflow: hidden;
@@ -3143,6 +3193,14 @@ ul {
   align-items: center;
   gap: 12px;
   flex: 1;
+}
+
+/* 행 바로 아래 보조 안내 — 라벨 폭(92px)+간격(12px)만큼 들여 써 컨트롤과 정렬 */
+.header-bg-row-note {
+  margin: -6px 0 12px 104px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-muted);
 }
 
 .header-bg-row .header-logo-options {
