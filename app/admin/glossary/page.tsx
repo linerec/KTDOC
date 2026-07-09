@@ -1,14 +1,15 @@
 /**
- * Admin Glossary List (말모이)
+ * Admin Glossary List (말모이 — 용어 뷰)
  * 한국 전통무용 용어 목록 및 관리
  */
 
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getGlossaryTerms, getGlossaryCategories } from '@/lib/d1';
+import { getGlossaryTerms, getGlossaryCategories, getGlossaryCounts } from '@/lib/d1';
 import GlossaryTable from '@/components/admin/glossary/GlossaryTable';
 import GlossaryCategoryManager from '@/components/admin/glossary/GlossaryCategoryManager';
+import GlossaryViewTabs from '@/components/admin/glossary/GlossaryViewTabs';
 
 export const metadata = {
   title: '말모이 (용어집) | KTDOC Admin',
@@ -25,13 +26,14 @@ export default async function AdminGlossaryPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const categoryId = params.category ? parseInt(params.category) || undefined : undefined;
 
-  const [{ terms, total }, categories] = await Promise.all([
+  const [{ terms, total }, categories, counts] = await Promise.all([
     getGlossaryTerms({
       categoryId,
       search: params.search || undefined,
       published: 'all',
     }),
     getGlossaryCategories(),
+    getGlossaryCounts(),
   ]);
 
   return (
@@ -41,9 +43,9 @@ export default async function AdminGlossaryPage({ searchParams }: PageProps) {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <span>말모이 (용어집)</span>
+            <span>말모이</span>
           </div>
-          <h1 className="admin-title">말모이 (용어집)</h1>
+          <h1 className="admin-title">말모이</h1>
           <p className="admin-subtitle">
             한국 전통무용 용어와 발음을 정리합니다. 공개된 용어는 학생·학부모가 말모이 페이지에서 검색·열람합니다.
           </p>
@@ -52,14 +54,13 @@ export default async function AdminGlossaryPage({ searchParams }: PageProps) {
           <Link href="/glossary" target="_blank" className="admin-btn admin-btn-outline">
             공개 페이지 보기
           </Link>
-          <Link href="/admin/glossary/songs" className="admin-btn admin-btn-outline">
-            ♪ 노래 관리
-          </Link>
           <Link href="/admin/glossary/new" className="admin-btn admin-btn-primary">
             + 새 용어 추가
           </Link>
         </div>
       </div>
+
+      <GlossaryViewTabs active="terms" termCount={counts.terms} songCount={counts.songs} />
 
       <GlossaryCategoryManager categories={categories} />
 

@@ -254,6 +254,16 @@ export async function getGlossaryTermsByIds(ids: number[]): Promise<GlossaryTerm
   );
 }
 
+/** 관리 화면의 뷰 전환 탭용 — 용어·노래 전체 개수(검색 필터 무관). */
+export async function getGlossaryCounts(): Promise<{ terms: number; songs: number }> {
+  const rows = await queryD1<{ terms: number; songs: number }>(
+    `SELECT
+       (SELECT COUNT(*) FROM glossary_terms) as terms,
+       (SELECT COUNT(*) FROM glossary_songs) as songs`
+  );
+  return rows[0] ?? { terms: 0, songs: 0 };
+}
+
 // ============================================
 // Songs (노래 · 노랫말)
 // ============================================
