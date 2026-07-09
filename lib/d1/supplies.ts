@@ -227,6 +227,16 @@ export async function setProgramSupplies(programId: number, links: SupplyLinkInp
   await replaceLinks('program_supplies', 'program_id', programId, links);
 }
 
+/** 카탈로그 화면의 뷰 전환 탭용 — 품목·세트 전체 개수(검색 필터 무관). */
+export async function getSupplyCounts(): Promise<{ items: number; sets: number }> {
+  const rows = await queryD1<{ items: number; sets: number }>(
+    `SELECT
+       (SELECT COUNT(*) FROM supply_items) as items,
+       (SELECT COUNT(*) FROM supply_sets) as sets`
+  );
+  return rows[0] ?? { items: 0, sets: 0 };
+}
+
 /** 폼 선택기용 — 활성 카탈로그 항목 전량(가벼운 필드만). */
 export async function getActiveSupplyItems(): Promise<SupplyItem[]> {
   return queryD1<SupplyItem>(

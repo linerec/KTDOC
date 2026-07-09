@@ -9,6 +9,7 @@
     "lint": "eslint",
     "seed:test": "node scripts/seedTestAccounts.mjs",
     "seed:sample-events": "node scripts/seedSampleEvents.mjs",
+    "seed:supplies": "node scripts/seedSupplies.mjs",
     "cleanup:sample-events": "node scripts/cleanupSampleEvents.mjs",
     "d1:migrate": "node scripts/d1Migrate.mjs",
     "mysql:migrate": "node scripts/mysqlMigrate.mjs"

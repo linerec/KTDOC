@@ -1,12 +1,13 @@
 /**
- * Admin Supplies List (준비물 카탈로그)
+ * Admin Supplies List (준비물 카탈로그 — 개별 항목 뷰)
  */
 
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getSupplyItems } from '@/lib/d1';
+import { getSupplyItems, getSupplyCounts } from '@/lib/d1';
 import SupplyTable from '@/components/admin/supplies/SupplyTable';
+import SuppliesViewTabs from '@/components/admin/supplies/SuppliesViewTabs';
 
 export const metadata = {
   title: '준비물 | KTDOC Admin',
@@ -21,10 +22,13 @@ export default async function AdminSuppliesPage({ searchParams }: PageProps) {
   await requireMenuAccess(session, 'supplies');
 
   const params = await searchParams;
-  const { items, total } = await getSupplyItems({
-    search: params.search || undefined,
-    active: 'all',
-  });
+  const [{ items, total }, counts] = await Promise.all([
+    getSupplyItems({
+      search: params.search || undefined,
+      active: 'all',
+    }),
+    getSupplyCounts(),
+  ]);
 
   return (
     <div className="admin-page">
@@ -41,14 +45,13 @@ export default async function AdminSuppliesPage({ searchParams }: PageProps) {
           </p>
         </div>
         <div className="admin-header-actions">
-          <Link href="/admin/supplies/sets" className="admin-btn admin-btn-outline">
-            세트 관리
-          </Link>
           <Link href="/admin/supplies/new" className="admin-btn admin-btn-primary">
             + 새 준비물 추가
           </Link>
         </div>
       </div>
+
+      <SuppliesViewTabs active="items" itemCount={counts.items} setCount={counts.sets} />
 
       <div className="admin-filters">
         <form className="admin-filter-form" method="get">
