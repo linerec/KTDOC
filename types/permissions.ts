@@ -24,6 +24,8 @@ export type MenuKey =
   | 'gallery'
   | 'gallery.photos'
   | 'news'
+  | 'faq'
+  | 'qna'
   | 'calendar'
   | 'library'
   | 'archive'
@@ -31,6 +33,7 @@ export type MenuKey =
   | 'participation'
   | 'notify'
   | 'profile'
+  | 'settings.seo'
   | 'settings.permissions';
 
 /** 메뉴 정의(코드 = 메뉴 "존재"의 진실의 원천) */

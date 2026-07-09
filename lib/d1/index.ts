@@ -142,6 +142,7 @@ export {
   deleteGlossaryTerm,
   incrementGlossaryViewCount,
   getGlossaryTermsByIds,
+  getGlossaryCounts,
   // Glossary Songs (말모이 노래·노랫말)
   getGlossarySongs,
   getPublishedSongsWithLines,
@@ -160,6 +161,7 @@ export {
   updateSupplyItem,
   deleteSupplyItem,
   getActiveSupplyItems,
+  getSupplyCounts,
   // Supply Links (이벤트/수업 ↔ 준비물)
   getEventSupplies,
   getProgramSupplies,
@@ -195,6 +197,15 @@ export {
   updateNewsPost,
   deleteNewsPost,
 } from './news';
+
+export {
+  // FAQ (Q&A — 공통·이벤트별 질문/답변)
+  getFaqItems,
+  getFaqItemById,
+  createFaqItem,
+  updateFaqItem,
+  deleteFaqItem,
+} from './faq';
 
 export {
   // Site Settings (key-value)

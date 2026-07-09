@@ -37,10 +37,14 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 이벤트 카테고리는 별도 메뉴/페이지 없이 '이벤트 아카이브 관리' 페이지의 모달(버튼)에서 관리한다.
   // 뉴스·미디어: 공개 /media 페이지 게시물(소식·언론 보도·영상) 관리. 관리자와 선생님이 게시한다.
   { key: 'news', href: '/admin/news', label: '뉴스 · 미디어 관리', iconKey: 'news', defaultRoles: ['teacher', 'admin'] },
+  // Q&A 관리: 공연·행사에 대해 자주 묻는 질문/답변을 선생님이 미리 등록. 회원은 'Q&A' 메뉴에서 열람.
+  { key: 'faq', href: '/admin/faq', label: 'Q&A 관리', iconKey: 'question', defaultRoles: ['teacher', 'admin'] },
   // 캘린더 구독 피드: 공개 .ics 피드를 켜고(이름/설명/타임존/포함범위) 구독 주소를 공유한다.
   { key: 'calendar', href: '/admin/calendar', label: '캘린더 구독', iconKey: 'calendar', defaultRoles: ['admin'] },
   // 학생·학부모용 둘러보기(읽기 전용): 공개된 이벤트(공연·행사)를 검색·열람.
   { key: 'library', href: '/admin/library', label: '이벤트 둘러보기', iconKey: 'compass', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
+  // Q&A(읽기 전용): 선생님이 미리 등록한 공통·이벤트별 질문/답변을 열람 — 질문하지 않아도 중요한 정보를 확인.
+  { key: 'qna', href: '/admin/qna', label: 'Q&A', iconKey: 'question', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 내 참여 아카이브(독립): 참여한 수업과 체크인한 이벤트를 연도별로 모아 보여준다(참여 이력·사진).
   { key: 'archive', href: '/admin/archive', label: '내 참여 아카이브', iconKey: 'gallery', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   { key: 'members', href: '/admin/members', label: '회원 관리', iconKey: 'users', defaultRoles: ['teacher', 'admin'] },
@@ -49,6 +53,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 알림 보내기: 운영진이 원생·학부모에게 푸시 알림(전체/역할별/개인)을 발송한다.
   { key: 'notify', href: '/admin/notify', label: '알림 보내기', iconKey: 'bell', defaultRoles: ['teacher', 'admin'] },
   { key: 'profile', href: '/admin/profile', label: '내 프로필', iconKey: 'profile', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
+  // SEO · 사이트 정보: 상호·주소·전화(NAP)·운영시간을 입력하면 푸터와 구조화 데이터(JSON-LD)에 반영된다.
+  { key: 'settings.seo', href: '/admin/seo', label: 'SEO · 사이트 정보', iconKey: 'globe', defaultRoles: ['admin'] },
   // 권한 관리 툴: 관리자 전용 하드플로어(매트릭스로 자기 자신을 잠그는 사고 방지)
   { key: 'settings.permissions', href: '/admin/permissions', label: '권한 관리', iconKey: 'shield', requireRole: 'admin', fixed: true, defaultRoles: ['admin'] },
 ];

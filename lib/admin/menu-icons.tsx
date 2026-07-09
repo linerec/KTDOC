@@ -108,6 +108,24 @@ function IconNews() {
     </svg>
   );
 }
+function IconGlobe() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3a13.5 13.5 0 0 1 0 18a13.5 13.5 0 0 1 0-18" />
+    </svg>
+  );
+}
+function IconQuestion() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.4 9.2a2.7 2.7 0 0 1 5.2 1c0 1.8-2.6 2.2-2.6 3.8" />
+      <circle cx="12" cy="17.2" r="0.3" />
+    </svg>
+  );
+}
 function IconDot() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -129,6 +147,8 @@ const ICONS: Record<string, () => ReactNode> = {
   profile: IconProfile,
   shield: IconShield,
   bell: IconBell,
+  globe: IconGlobe,
+  question: IconQuestion,
 };
 
 export function MenuIcon({ iconKey }: { iconKey: string }) {
