@@ -69,7 +69,7 @@ export interface HeaderLogoAsset {
 
 export function headerLogoAsset(variant: HeaderLogoVariant): HeaderLogoAsset {
   return variant === 'default'
-    ? { src: '/assets/logo/logo_default.png', width: 1536, height: 1024 }
+    ? { src: '/assets/logo/logo_default.png', width: 1066, height: 653 }
     : { src: '/assets/logo/logo_white.png', width: 400, height: 242 };
 }
 
