@@ -5,6 +5,8 @@
  * 타임라인·갤러리 개발/시연용 샘플 이벤트를 원격 D1에 넣는다.
  * D1은 원격 한 곳뿐(dev/prod 공유)이므로, 나중에 한 번에 정리할 수 있도록
  * 모든 샘플의 slug를 'sample-' 접두사로 표시한다.
+ * 화면에서도 실제 데이터와 바로 구분되도록 제목에 '[테스트] '/'[TEST] '
+ * 접두사를 붙여 넣는다(삭제 기준은 어디까지나 slug).
  *   - 정리: npm run cleanup:sample-events  (scripts/cleanupSampleEvents.mjs)
  *   - 멱등: slug UNIQUE + INSERT OR IGNORE — 재실행해도 중복 생성 없음.
  *
@@ -306,7 +308,7 @@ for (const ev of SAMPLE_EVENTS) {
        is_published, is_featured, location
      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
     [
-      ev.slug, year, ev.date, ev.ko, ev.en,
+      ev.slug, year, ev.date, `[테스트] ${ev.ko}`, `[TEST] ${ev.en}`,
       ev.dko, ev.den, catId[ev.cat],
       ev.featured ? 1 : 0, ev.loc || null,
     ]
