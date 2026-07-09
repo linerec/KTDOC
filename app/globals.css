@@ -1564,6 +1564,22 @@ ul {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* 법적 고지 링크 (개인정보처리방침 · 이용약관) */
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-legal a {
+  color: var(--text-muted);
+  transition: color 0.3s;
+}
+
+.footer-legal a:hover {
+  color: var(--text-color);
+}
+
 .footer-cal-link {
   display: inline-flex;
   align-items: center;
@@ -2266,6 +2282,37 @@ ul {
 
 .auth-forgot-call:hover {
   background: #b88a12;
+}
+
+/* 약관·개인정보처리방침 동의 체크박스 (가입 폼) */
+.auth-agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.auth-agree input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+.auth-agree a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-agree a:hover {
+  color: var(--text-color);
 }
 
 /* 가입 유형 선택 토글 (원생 / 학부모) */
@@ -11504,6 +11551,136 @@ ul {
 
 .calendar-subscribe-section {
   padding: 20px 0 100px;
+}
+
+/* ============================================
+   법적 고지 페이지 (/privacy · /terms)
+   장문 열람이 목적이라 본문 대비·행간을 넉넉하게 유지한다.
+   ============================================ */
+.legal-page {
+  background: var(--ink-black);
+  min-height: 100vh;
+}
+
+.legal-hero {
+  /* 본문형 페이지 — 고정 헤더 실측 오프셋(tight) 표준을 따른다 */
+  padding: var(--page-offset-tight) 0 44px;
+  text-align: center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.07), transparent 60%),
+    linear-gradient(180deg, var(--ink-umber), var(--ink-black));
+}
+
+.legal-hero-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.legal-hero-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--soft-gold);
+  margin-bottom: 16px;
+}
+
+.legal-hero-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  line-height: 1.2;
+  color: var(--warm-ivory);
+  word-break: keep-all;
+}
+
+.legal-hero-desc {
+  margin: 20px auto 0;
+  max-width: 640px;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.legal-body-section {
+  padding: 30px 0 110px;
+}
+
+.legal-body {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.legal-section {
+  margin-bottom: 36px;
+}
+
+.legal-section h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--warm-ivory);
+  margin-bottom: 12px;
+}
+
+.legal-section p {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: rgba(240, 234, 224, 0.82);
+  margin-bottom: 10px;
+}
+
+.legal-section ul {
+  margin: 4px 0 10px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legal-section li {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: rgba(240, 234, 224, 0.82);
+  list-style: disc;
+}
+
+/* 문의처 카드 — SEO 패널 연락처 단일 소스 */
+.legal-contact {
+  margin-top: 44px;
+  padding: 20px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legal-contact p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.legal-contact-name {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.legal-contact a {
+  color: var(--accent-color);
+}
+
+.legal-contact a:hover {
+  color: var(--text-color);
+}
+
+.legal-effective {
+  margin-top: 28px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: right;
 }
 
 .cal-sub {

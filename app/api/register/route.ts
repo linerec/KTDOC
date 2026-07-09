@@ -10,6 +10,8 @@ interface RegisterBody {
   password?: string;
   name?: string;
   phone?: string;
+  /** 이용약관·개인정보처리방침 동의 (필수) */
+  agreed?: boolean;
   // 원생
   enrollmentYear?: number | string;
   // 학부모
@@ -66,6 +68,13 @@ export async function POST(request: Request) {
     if (!name) {
       return NextResponse.json(
         { error: '이름을 입력해주세요.' },
+        { status: 400 }
+      );
+    }
+    // 약관·개인정보처리방침 동의 없이는 가입 불가 (동의 시각은 가입 레코드에 남긴다)
+    if (body.agreed !== true) {
+      return NextResponse.json(
+        { error: '이용약관과 개인정보처리방침에 동의해주세요.' },
         { status: 400 }
       );
     }
@@ -136,8 +145,8 @@ export async function POST(request: Request) {
     const passwordHash = await hashPassword(password);
     const newUserId = randomUUID();
     await query(
-      `INSERT INTO users (id, email, password_hash, name, phone, role, status, enrollment_year)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      `INSERT INTO users (id, email, password_hash, name, phone, role, status, enrollment_year, terms_agreed_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, NOW())`,
       [newUserId, email, passwordHash, name, phone, role, enrollmentYear]
     );
 

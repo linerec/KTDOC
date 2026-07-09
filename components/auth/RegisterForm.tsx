@@ -29,6 +29,8 @@ export default function RegisterForm() {
   // 학부모
   const [childName, setChildName] = useState('');
   const [childEnrollmentYear, setChildEnrollmentYear] = useState('');
+  // 이용약관·개인정보처리방침 동의 (필수)
+  const [agreed, setAgreed] = useState(false);
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +50,10 @@ export default function RegisterForm() {
       setError(messages['auth.error.passwordLength']);
       return;
     }
+    if (!agreed) {
+      setError(messages['auth.error.agreeRequired']);
+      return;
+    }
 
     setIsLoading(true);
 
@@ -61,6 +67,7 @@ export default function RegisterForm() {
           email,
           phone,
           password,
+          agreed,
           ...(role === 'student'
             ? { enrollmentYear }
             : { childName, childEnrollmentYear }),
@@ -261,6 +268,24 @@ export default function RegisterForm() {
           disabled={isLoading}
         />
       </div>
+
+      {/* 약관·개인정보처리방침 동의 — 동의 없이는 가입 불가(서버에서도 검증) */}
+      <label className="auth-agree">
+        <input
+          type="checkbox"
+          checked={agreed}
+          onChange={(e) => setAgreed(e.target.checked)}
+          disabled={isLoading}
+          required
+        />
+        <span>
+          {messages['auth.agree.before']}
+          <Link href="/terms" target="_blank">{messages['auth.agree.terms']}</Link>
+          {messages['auth.agree.middle']}
+          <Link href="/privacy" target="_blank">{messages['auth.agree.privacy']}</Link>
+          {messages['auth.agree.after']}
+        </span>
+      </label>
 
       <button type="submit" className="auth-button" disabled={isLoading}>
         {isLoading ? messages['auth.register.loading'] : messages['auth.register']}

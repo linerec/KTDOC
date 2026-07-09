@@ -151,6 +151,12 @@ export default function Footer() {
         <div className="footer-bottom">
           {/* 저작권 줄은 SEO 패널(/admin/seo)의 상호에서 자동 생성 — 별도 편집 대상이 아니다 */}
           <p>© {new Date().getFullYear()} {businessName}. All rights reserved.</p>
+          {/* 법적 고지 — 문안은 lib/legalContent.ts에서 코드로 버전 관리 */}
+          <nav className="footer-legal" aria-label="Legal">
+            <Link href="/privacy"><IntlObject keycode="footer.privacy" /></Link>
+            <span aria-hidden="true">·</span>
+            <Link href="/terms"><IntlObject keycode="footer.terms" /></Link>
+          </nav>
         </div>
       </div>
     </footer>
