@@ -51,7 +51,9 @@
 
   "footer.tagline": "뉴저지를 기반으로 한국 전통예술의 교육, 공연, 문화전승을 이어가는 춤누리 한국전통무용단입니다.",
   "footer.contact": "Performance · Education · Community",
-  "footer.copyright": "© 2026 KTDOC. All rights reserved.",
+  "footer.nav.title": "둘러보기",
+  "footer.contactTitle": "오시는 길 · 문의",
+  "footer.hoursTitle": "운영 시간",
   "footer.calendar": "학원 일정 구독하기",
 
   "auth.login": "로그인",

@@ -51,7 +51,9 @@
 
   "footer.tagline": "Based in New Jersey, KTDOC carries Korean traditional arts forward through education, performance, and cultural preservation.",
   "footer.contact": "Performance · Education · Community",
-  "footer.copyright": "© 2026 KTDOC. All rights reserved.",
+  "footer.nav.title": "Explore",
+  "footer.contactTitle": "Visit & Contact",
+  "footer.hoursTitle": "Hours",
   "footer.calendar": "Subscribe to Academy Calendar",
 
   "auth.login": "Login",

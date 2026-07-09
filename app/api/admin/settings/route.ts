@@ -10,6 +10,7 @@ import {
   SETTING_HEADER_BACKGROUND,
   SETTING_CALENDAR_CONFIG,
 } from '@/lib/d1';
+import { SETTING_SEO_BUSINESS } from '@/lib/seoBusiness';
 
 // 임의 키 쓰기를 막기 위해 허용된 설정 키만 받는다.
 const ALLOWED_KEYS = new Set<string>([
@@ -17,6 +18,7 @@ const ALLOWED_KEYS = new Set<string>([
   SETTING_HERO_OVERLAY,
   SETTING_HEADER_BACKGROUND,
   SETTING_CALENDAR_CONFIG,
+  SETTING_SEO_BUSINESS,
 ]);
 
 // GET - 설정값 조회 (관리자 전용)
@@ -81,8 +83,9 @@ export async function POST(request: Request) {
       revalidatePath('/');
     }
 
-    // 헤더 배경은 모든 페이지 공통(layout) → 레이아웃 전체를 무효화한다.
-    if (key === SETTING_HEADER_BACKGROUND) {
+    // 헤더 배경·SEO 비즈니스 정보(푸터 NAP + head JSON-LD)는 모든 페이지 공통(layout)
+    // → 레이아웃 전체를 무효화한다.
+    if (key === SETTING_HEADER_BACKGROUND || key === SETTING_SEO_BUSINESS) {
       revalidatePath('/', 'layout');
     }
 

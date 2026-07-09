@@ -1385,6 +1385,124 @@ ul {
   transform: scale(1.1);
 }
 
+/* 본문 3컬럼: 소개 · 둘러보기(내부 링크) · 연락처(NAP)/운영시간 */
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr) minmax(0, 1fr);
+  gap: 48px;
+  margin-bottom: 36px;
+}
+
+.footer-col {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* IntlObject 전역 규칙(.intl-object{display:inline})을 푸터 문단에서는 블록으로 복원 */
+.intl-object.footer-tagline,
+.intl-object.footer-contact,
+.intl-object.footer-col-title,
+.intl-object.footer-hours-title {
+  display: block;
+}
+
+.footer-col-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--warm-ivory);
+  margin-bottom: 14px;
+}
+
+.footer-biz-name {
+  font-family: var(--font-noto-serif-kr), serif;
+  font-size: 1.05rem;
+  color: var(--warm-ivory);
+  margin-bottom: 10px;
+}
+
+.footer-tagline {
+  max-width: 420px;
+  margin-bottom: 12px;
+}
+
+.footer-contact {
+  color: var(--accent-color);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.footer-nav-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 18px;
+}
+
+.footer-nav-list a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.3s var(--ease-out-quart);
+}
+
+.footer-nav-list a:hover {
+  color: var(--soft-gold);
+}
+
+/* NAP는 검색엔진이 읽는 일반 텍스트 — 이미지·아이콘 폰트로 대체하지 않는다 */
+.footer-address {
+  font-style: normal;
+  margin-bottom: 8px;
+}
+
+.footer-address a,
+.footer-contact-line a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.3s var(--ease-out-quart);
+}
+
+.footer-address a:hover,
+.footer-contact-line a:hover {
+  color: var(--soft-gold);
+}
+
+.footer-contact-line {
+  margin-bottom: 6px;
+}
+
+.footer-hours {
+  margin: 14px 0 16px;
+}
+
+.footer-hours-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warm-ivory);
+  margin-bottom: 6px;
+}
+
+.footer-hours-list {
+  list-style: none;
+}
+
+.footer-hours-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 280px;
+}
+
+.footer-hours-time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .footer-bottom {
   display: flex;
   justify-content: space-between;
@@ -1392,28 +1510,10 @@ ul {
   text-align: left;
   font-size: 0.85rem;
   color: var(--text-muted);
-}
-
-.footer-copy {
-  max-width: 680px;
-}
-
-.footer-copy p {
-  margin-bottom: 8px;
-  line-height: 1.7;
-}
-
-.footer-contact {
-  color: var(--accent-color);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.footer-links {
-  margin: 18px 0 24px;
-  padding-top: 18px;
+  padding-top: 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .footer-cal-link {
   display: inline-flex;
   align-items: center;
@@ -1636,6 +1736,11 @@ ul {
   .footer-top {
     flex-direction: column;
     gap: 30px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
 
   .footer-bottom {
@@ -5177,6 +5282,47 @@ ul {
 }
 
 /* Admin Filters */
+/* Admin Segmented Tabs (한 화면 안에서 같은 레벨의 뷰 전환) */
+.admin-seg-tabs {
+  display: inline-flex;
+  align-self: flex-start; /* .admin-page(flex column)의 stretch 방지 — 내용 폭만 차지 */
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.admin-seg-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.3s, background 0.3s;
+}
+
+.admin-seg-tab:hover {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-seg-tab.active {
+  color: var(--white);
+  background: var(--secondary-color);
+}
+
+.admin-seg-tab-count {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
 .admin-filters {
   display: flex;
   justify-content: space-between;
@@ -8256,6 +8402,16 @@ ul {
 
   .admin-model-arrow {
     display: none;
+  }
+
+  .admin-seg-tabs {
+    display: flex;
+    width: 100%;
+  }
+
+  .admin-seg-tab {
+    flex: 1;
+    justify-content: center;
   }
 
   .admin-filters {
@@ -11431,6 +11587,118 @@ ul {
 }
 
 /* ============================================
+   Admin SEO — 사이트 정보(NAP) 패널
+   ============================================ */
+.admin-seo-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 860px;
+}
+
+.admin-seo-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-color);
+}
+
+.admin-seo-checklist li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.admin-seo-checklist li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.admin-seo-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.admin-seo-row-4 {
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+}
+
+.admin-seo-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-seo-hours-row {
+  display: grid;
+  grid-template-columns: 110px auto 16px auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-seo-hours-row.is-closed {
+  opacity: 0.55;
+}
+
+.admin-seo-hours-day {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.92rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.admin-seo-hours-day input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+}
+
+.admin-seo-hours-sep {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.admin-seo-jsonld {
+  margin-top: 14px;
+  font-size: 0.88rem;
+}
+
+.admin-seo-jsonld summary {
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.admin-seo-jsonld pre {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 700px) {
+  .admin-seo-row,
+  .admin-seo-row-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-seo-hours-row {
+    grid-template-columns: 90px auto 12px auto 1fr;
+  }
+}
+
+/* ============================================
    Gallery event detail — "내 캘린더에 추가"
    ============================================ */
 .gallery-detail-cal {
@@ -13633,4 +13901,167 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   object-fit: cover;
+}
+
+/* ============================================
+   Q&A (자주 묻는 질문) — /admin/faq 관리 · /admin/qna 열람
+   ============================================ */
+
+/* 관리: 작성/편집 패널 */
+.faq-form-panel {
+  margin-bottom: 28px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.faq-question-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.faq-answer-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 480px;
+}
+
+/* 열람: 검색 + 그룹 아코디언 */
+.qna-search {
+  margin-bottom: 28px;
+}
+
+.qna-search .admin-filter-input {
+  width: 100%;
+  max-width: 420px;
+}
+
+.qna-group {
+  margin-bottom: 36px;
+}
+
+.qna-group-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text-color);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(212, 160, 23, 0.25);
+}
+
+.qna-group-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  color: inherit;
+}
+
+.qna-group-link-hint {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.qna-group-link:hover .qna-group-link-hint {
+  color: var(--accent-color);
+}
+
+.qna-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qna-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.qna-item.is-open {
+  border-color: rgba(212, 160, 23, 0.4);
+}
+
+.qna-question {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  background: none;
+  border: 0;
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.qna-question:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.qna-q-mark,
+.qna-a-mark {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 50%;
+}
+
+.qna-q-mark {
+  color: var(--accent-color);
+  border: 1px solid rgba(212, 160, 23, 0.4);
+}
+
+.qna-a-mark {
+  color: var(--bg-color);
+  background: var(--accent-color);
+}
+
+.qna-question-text {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.qna-toggle {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.qna-answer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 4px 18px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.qna-answer .qna-a-mark {
+  margin-top: 12px;
+}
+
+.qna-answer-text {
+  flex: 1;
+  margin: 12px 0 0;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  white-space: pre-line;
 }

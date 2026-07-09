@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import { Noto_Serif_KR, Outfit } from 'next/font/google';
 import Providers from '@/components/Providers';
 import PWARegister from '@/components/PWARegister';
-import { getSetting, SETTING_HEADER_BACKGROUND } from '@/lib/d1';
+import { getSettings, SETTING_HEADER_BACKGROUND } from '@/lib/d1';
 import { parseHeaderBackground, toHeaderCssVars, DEFAULT_HEADER_BACKGROUND } from '@/lib/headerBackground';
+import { SITE_URL, SETTING_SEO_BUSINESS, parseSeoBusiness, buildBusinessJsonLd } from '@/lib/seoBusiness';
+import { SiteBusinessProvider } from '@/contexts/SiteBusinessContext';
 import './globals.css';
 
 const notoSerifKr = Noto_Serif_KR({
@@ -21,7 +23,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://ktdoc.org'),
+  metadataBase: new URL(SITE_URL),
   applicationName: 'KTDOC',
   title: {
     default: 'KTDOC | Korean Traditional Dance of Choomnoori',
@@ -104,18 +106,24 @@ export default async function RootLayout({
   // 한지에 스며드는 먹: 글로벌 앰비언트 잉크 레이어. NEXT_PUBLIC_INK_AMBIENT=off 로 끌 수 있다.
   const inkAmbient = process.env.NEXT_PUBLIC_INK_AMBIENT !== 'off';
 
-  // 관리자가 지정한 헤더(Top Bar) 배경. 설정이 없으면 globals.css의 기본 동작이 그대로 유지된다.
-  // 실패하더라도 레이아웃 렌더는 막지 않는다.
-  let headerBgRaw: string | null = null;
+  // 관리자가 지정한 헤더(Top Bar) 배경과 SEO 비즈니스 정보(NAP)를 한 번에 읽는다.
+  // 설정이 없으면 각자의 기본 동작이 유지되고, 실패하더라도 레이아웃 렌더는 막지 않는다.
+  let settings: Record<string, string> = {};
   try {
-    headerBgRaw = await getSetting(SETTING_HEADER_BACKGROUND);
+    settings = await getSettings([SETTING_HEADER_BACKGROUND, SETTING_SEO_BUSINESS]);
   } catch {
-    headerBgRaw = null;
+    settings = {};
   }
+  const headerBgRaw = settings[SETTING_HEADER_BACKGROUND] ?? null;
   const headerBg = parseHeaderBackground(headerBgRaw);
   const headerCssVars = toHeaderCssVars(headerBg);
   const headerLogo = headerBg?.logo ?? DEFAULT_HEADER_BACKGROUND.logo;
   const headerAlign = headerBg?.align ?? DEFAULT_HEADER_BACKGROUND.align;
+
+  // 로컬 SEO 구조화 데이터: /admin/seo에서 입력한 NAP로 LocalBusiness JSON-LD를 게시한다.
+  // 주소가 아직 없으면 Organization 수준으로만 게시된다(lib/seoBusiness 참고).
+  const seoBusiness = parseSeoBusiness(settings[SETTING_SEO_BUSINESS] ?? null);
+  const businessJsonLd = JSON.stringify(buildBusinessJsonLd(seoBusiness)).replace(/</g, '\\u003c');
 
   return (
     <html lang="ko" className={`${notoSerifKr.variable} ${outfit.variable}`}>
@@ -124,21 +132,27 @@ export default async function RootLayout({
         <noscript>
           <style>{`.reveal{opacity:1 !important;transform:none !important;filter:none !important;}`}</style>
         </noscript>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: businessJsonLd }}
+        />
       </head>
       <body style={headerCssVars as React.CSSProperties} data-header-bg={headerBgRaw ?? undefined}>
         <Providers initialLogo={headerLogo} initialAlign={headerAlign}>
-          {inkAmbient && (
-            <div className="ink-ambient" aria-hidden="true">
-              <span className="ink-ambient__wash ink-ambient__wash--gold" />
-              <span className="ink-ambient__wash ink-ambient__wash--ivory" />
-              <span className="ink-ambient__wash ink-ambient__wash--ember" />
-              <span className="ink-ambient__grain" />
+          <SiteBusinessProvider info={seoBusiness}>
+            {inkAmbient && (
+              <div className="ink-ambient" aria-hidden="true">
+                <span className="ink-ambient__wash ink-ambient__wash--gold" />
+                <span className="ink-ambient__wash ink-ambient__wash--ivory" />
+                <span className="ink-ambient__wash ink-ambient__wash--ember" />
+                <span className="ink-ambient__grain" />
+              </div>
+            )}
+            <div className="site-wrapper">
+              {children}
             </div>
-          )}
-          <div className="site-wrapper">
-            {children}
-          </div>
-          <PWARegister />
+            <PWARegister />
+          </SiteBusinessProvider>
         </Providers>
       </body>
     </html>

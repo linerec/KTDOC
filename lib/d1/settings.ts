@@ -22,6 +22,9 @@ export const SETTING_HERO_OVERLAY = 'hero.overlay';
  */
 export const SETTING_CALENDAR_CONFIG = 'calendar.config';
 
+// 'seo.business' (SEO 비즈니스 정보/NAP) 키는 클라이언트 안전 모듈인
+// lib/seoBusiness.ts의 SETTING_SEO_BUSINESS에 정의되어 있다(타입·파서·JSON-LD 빌더 동거).
+
 interface SettingRow {
   setting_key: string;
   setting_value: string | null;
