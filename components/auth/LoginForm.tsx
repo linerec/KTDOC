@@ -5,15 +5,10 @@ import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import IntlObject from '@/components/common/IntlObject';
+import ContactChannels from '@/components/common/ContactChannels';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { telHref } from '@/lib/seoBusiness';
 
-interface LoginFormProps {
-  /** 비밀번호 분실 안내의 전화 연결 — SEO 패널 연락처(D1)가 단일 소스 */
-  contactTel?: string;
-}
-
-export default function LoginForm({ contactTel = '' }: LoginFormProps) {
+export default function LoginForm() {
   const router = useRouter();
   const { messages } = useLanguage();
   const [email, setEmail] = useState('');
@@ -99,14 +94,8 @@ export default function LoginForm({ contactTel = '' }: LoginFormProps) {
         <div className="auth-pending-icon" aria-hidden="true">…</div>
         <h1 className="auth-title">{messages['auth.pendingLogin.title']}</h1>
         <p className="auth-pending-desc">{messages['auth.pendingLogin.desc']}</p>
-        {contactTel && (
-          <>
-            <p className="auth-pending-contact">{messages['auth.pending.contact']}</p>
-            <a href={telHref(contactTel)} className="auth-forgot-call auth-pending-call">
-              {messages['auth.forgot.call']} · {contactTel}
-            </a>
-          </>
-        )}
+        <p className="auth-pending-contact">{messages['auth.pending.contact']}</p>
+        <ContactChannels className="contact-channels--pending" />
         <button
           type="button"
           className="auth-button"
@@ -184,11 +173,7 @@ export default function LoginForm({ contactTel = '' }: LoginFormProps) {
       <div className="auth-forgot">
         <strong className="auth-forgot-title"><IntlObject keycode="auth.forgot.question" /></strong>
         <p className="auth-forgot-guide"><IntlObject keycode="auth.forgot.guide" /></p>
-        {contactTel && (
-          <a href={telHref(contactTel)} className="auth-forgot-call">
-            <IntlObject keycode="auth.forgot.call" /> · {contactTel}
-          </a>
-        )}
+        <ContactChannels className="contact-channels--start" />
       </div>
     </form>
   );

@@ -129,6 +129,13 @@ export default function Footer() {
                 <a href={`mailto:${business.email}`}>{business.email}</a>
               </p>
             )}
+            {business.kakao && (
+              <p className="footer-contact-line">
+                <a href={business.kakao} target="_blank" rel="noopener noreferrer">
+                  <IntlObject keycode="contact.kakao" />
+                </a>
+              </p>
+            )}
             {hourGroups.length > 0 && (
               <div className="footer-hours">
                 <IntlObject keycode="footer.hoursTitle" returnType="p" className="footer-hours-title" />

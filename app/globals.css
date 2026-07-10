@@ -2265,23 +2265,61 @@ ul {
   color: var(--text-muted);
 }
 
-.auth-forgot-call {
-  align-self: flex-start;
-  margin-top: 6px;
-  padding: 10px 16px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 6px;
-  background: var(--accent-color, #d4a017);
-  color: #0a0a0a;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: background 0.25s;
+/* ── 공용 문의 채널 버튼(전화·카카오톡) ─────────────────────────────
+   ContactChannels 컴포넌트. 연락처는 SEO 패널(D1) 단일 소스.
+   취약 사용자 대상이라 터치 타깃 44px 이상을 유지한다. */
+.contact-channels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
-.auth-forgot-call:hover {
+/* 왼쪽 정렬 배치(로그인 분실 안내 박스 등) */
+.contact-channels--start {
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+
+/* 승인 대기 패널(가운데 정렬 + 아래 버튼과 간격) */
+.contact-channels--pending {
+  margin-bottom: 24px;
+}
+
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.25s, filter 0.25s;
+}
+
+.contact-btn-detail {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.contact-btn--tel {
+  background: var(--accent-color, #d4a017);
+  color: #0a0a0a;
+}
+
+.contact-btn--tel:hover {
   background: #b88a12;
+}
+
+/* 카카오 브랜드 컬러(옐로 배경 + 진회색 글자) */
+.contact-btn--kakao {
+  background: #fee500;
+  color: #191919;
+}
+
+.contact-btn--kakao:hover {
+  filter: brightness(0.92);
 }
 
 /* 약관·개인정보처리방침 동의 체크박스 (가입 폼) */
@@ -2437,16 +2475,11 @@ ul {
   margin-bottom: 28px;
 }
 
-/* 승인 대기 화면의 문의 안내(문구 + 전화 버튼) */
+/* 승인 대기 화면의 문의 안내 문구 (버튼은 ContactChannels 공용) */
 .auth-pending-contact {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin-bottom: 10px;
-}
-
-.auth-pending-call {
-  align-self: center;
-  margin: 0 auto 24px;
 }
 
 /* 헤더 콤팩트 레이아웃 (≤1100px) — 드로어 브레이크포인트와 짝 */
@@ -5769,6 +5802,30 @@ ul {
   border-radius: 6px;
   color: var(--secondary-color);
   font-size: 0.85rem;
+}
+
+/* Q&A 하단 문의 카드 — 정리된 답으로 해결되지 않을 때 사람에게 연결 */
+.qna-contact {
+  margin-top: 36px;
+  padding: 26px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+
+.qna-contact-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.qna-contact-desc {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-muted);
 }
 
 /* 회원 관리 — 임시 비밀번호 발급 결과 모달 (평문은 여기서 한 번만 표시) */

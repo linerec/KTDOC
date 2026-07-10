@@ -114,6 +114,8 @@
   "auth.agree.privacy": "Privacy Policy",
   "auth.agree.after": ".",
   "auth.error.agreeRequired": "Please agree to the Terms of Service and Privacy Policy.",
+  "contact.call": "Call us",
+  "contact.kakao": "KakaoTalk",
   "footer.privacy": "Privacy Policy",
   "footer.terms": "Terms of Service",
 

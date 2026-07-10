@@ -496,6 +496,24 @@ export default function SeoBusinessManager({ initialInfo }: { initialInfo: SeoBu
             />
           </div>
         </div>
+
+        <div className="admin-form-group">
+          <label className="admin-form-label" htmlFor="seo-kakao">카카오톡 채널 URL</label>
+          <input
+            id="seo-kakao"
+            type="url"
+            className="admin-form-input"
+            value={info.kakao}
+            onChange={(e) => set('kakao', e.target.value)}
+            placeholder="https://pf.kakao.com/_채널ID"
+            maxLength={200}
+            disabled={saving}
+          />
+          <p className="admin-form-help">
+            입력하면 로그인·가입·Q&A·푸터의 문의 버튼에 카카오톡이 함께 노출됩니다.
+            카카오톡 채널 관리자센터에서 채널 홈 URL을 복사해 붙여 주세요.
+          </p>
+        </div>
       </section>
 
       {/* 미리보기 · 저장 */}

@@ -66,6 +66,8 @@ export interface SeoBusinessInfo {
   instagram: string;
   youtube: string;
   googleMaps: string;
+  /** 카카오톡 채널 URL(예: https://pf.kakao.com/_abc) — 사이트 곳곳의 문의 버튼에 노출 */
+  kakao: string;
 }
 
 export const DEFAULT_SEO_BUSINESS: SeoBusinessInfo = {
@@ -88,6 +90,7 @@ export const DEFAULT_SEO_BUSINESS: SeoBusinessInfo = {
   instagram: 'https://www.instagram.com/ktdoc_choomnoori/',
   youtube: 'https://www.youtube.com/@ktdoc1737',
   googleMaps: '',
+  kakao: '',
 };
 
 const DAY_KEYS = new Set<string>(BUSINESS_DAYS.map((d) => d.key));
@@ -143,6 +146,7 @@ export function parseSeoBusiness(raw: string | null | undefined): SeoBusinessInf
       instagram: asString(data.instagram, d.instagram),
       youtube: asString(data.youtube, d.youtube),
       googleMaps: asString(data.googleMaps, d.googleMaps),
+      kakao: asString(data.kakao, d.kakao),
     };
   } catch {
     return DEFAULT_SEO_BUSINESS;
@@ -202,7 +206,7 @@ export function buildBusinessJsonLd(
     ? info.nameKo
     : undefined;
   const description = info.descriptionEn || info.descriptionKo || undefined;
-  const sameAs = [info.instagram, info.youtube].filter(Boolean);
+  const sameAs = [info.instagram, info.youtube, info.kakao].filter(Boolean);
 
   const base: Record<string, unknown> = {
     '@context': 'https://schema.org',

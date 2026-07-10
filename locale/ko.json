@@ -114,6 +114,8 @@
   "auth.agree.privacy": "개인정보처리방침",
   "auth.agree.after": "을 읽었으며 이에 동의합니다.",
   "auth.error.agreeRequired": "이용약관과 개인정보처리방침에 동의해 주세요.",
+  "contact.call": "전화 문의",
+  "contact.kakao": "카카오톡 문의",
   "footer.privacy": "개인정보처리방침",
   "footer.terms": "이용약관",
 

@@ -8,6 +8,7 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getFaqItems } from '@/lib/d1';
 import QnaBrowser from '@/components/admin/faq/QnaBrowser';
+import ContactChannels from '@/components/common/ContactChannels';
 
 export const metadata = {
   title: 'Q&A | KTDOC Admin',
@@ -37,6 +38,15 @@ export default async function AdminQnaPage() {
       </div>
 
       <QnaBrowser items={items} />
+
+      {/* 문의 동선 — 정리된 답으로 해결되지 않으면 바로 사람에게 닿게 한다 */}
+      <div className="qna-contact">
+        <p className="qna-contact-title">찾는 답이 없나요?</p>
+        <p className="qna-contact-desc">
+          전화나 카카오톡으로 문의해 주시면 선생님이 직접 안내해 드립니다.
+        </p>
+        <ContactChannels />
+      </div>
     </div>
   );
 }
