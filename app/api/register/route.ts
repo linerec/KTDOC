@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { query } from '@/lib/db';
 import { hashPassword } from '@/lib/password';
+import { notifyStaffOfRegistration } from '@/lib/push/system';
 import { SIGNUP_ROLES, type SignupRole } from '@/types/members';
 
 interface RegisterBody {
@@ -161,6 +162,11 @@ export async function POST(request: Request) {
         [randomUUID(), newUserId, studentId, childName, childYear]
       );
     }
+
+    // 운영진에게 가입 알림(인앱+푸시) — 실패해도 가입 자체는 성공으로 처리
+    await notifyStaffOfRegistration({ id: newUserId, name, role }).catch((err) =>
+      console.error('가입 알림 발송 실패:', err)
+    );
 
     return NextResponse.json(
       {

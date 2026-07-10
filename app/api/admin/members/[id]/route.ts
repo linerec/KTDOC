@@ -25,6 +25,7 @@ import {
   type MemberRole,
 } from '@/lib/members';
 import { generateTempPassword, hashPassword } from '@/lib/password';
+import { notifyMemberApproved } from '@/lib/push/system';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -85,6 +86,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     switch (action) {
       case 'approve': {
         await approveMember(id, session!.user.id);
+        // 승인 알림(인앱+푸시) — 가입자가 다음 로그인 때 알림함에서 확인한다
+        await notifyMemberApproved(session!.user.id, id).catch((err) =>
+          console.error('승인 알림 발송 실패:', err)
+        );
         break;
       }
       case 'reject': {

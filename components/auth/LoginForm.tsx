@@ -20,6 +20,8 @@ export default function LoginForm({ contactTel = '' }: LoginFormProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  // 승인 대기(pending) 회원 로그인 — 이동 대신 대기 안내 패널을 보여준다
+  const [pendingNotice, setPendingNotice] = useState(false);
 
   const isDev = process.env.NODE_ENV === 'development';
 
@@ -34,11 +36,15 @@ export default function LoginForm({ contactTel = '' }: LoginFormProps) {
 
   // 로그인한 회원(관리자·선생님·원생·학부모)은 열람이 아니라 업무가 목적이므로
   // 곧장 관리 콘솔로 보낸다. 역할별 착지는 admin 레이아웃이 첫 허용 메뉴로 처리.
-  // 승인 대기(pending) 회원은 콘솔 진입이 막혀 있어 홈으로 안내한다.
+  // 승인 대기(pending) 회원은 이동 대신 이 화면에서 대기 상황과 문의처를 안내한다.
   const redirectAfterLogin = async () => {
     const session = await getSession();
-    router.push(session?.user?.status === 'active' ? '/admin' : '/');
-    router.refresh();
+    if (session?.user?.status === 'active') {
+      router.push('/admin');
+      router.refresh();
+    } else {
+      setPendingNotice(true);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,6 +91,35 @@ export default function LoginForm({ contactTel = '' }: LoginFormProps) {
       setIsLoading(false);
     }
   };
+
+  // 승인 대기 회원 로그인 → 상태·예상 소요·문의처 안내
+  if (pendingNotice) {
+    return (
+      <div className="auth-form auth-pending">
+        <div className="auth-pending-icon" aria-hidden="true">…</div>
+        <h1 className="auth-title">{messages['auth.pendingLogin.title']}</h1>
+        <p className="auth-pending-desc">{messages['auth.pendingLogin.desc']}</p>
+        {contactTel && (
+          <>
+            <p className="auth-pending-contact">{messages['auth.pending.contact']}</p>
+            <a href={telHref(contactTel)} className="auth-forgot-call auth-pending-call">
+              {messages['auth.forgot.call']} · {contactTel}
+            </a>
+          </>
+        )}
+        <button
+          type="button"
+          className="auth-button"
+          onClick={() => {
+            router.push('/');
+            router.refresh();
+          }}
+        >
+          {messages['auth.pending.home']}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form className="auth-form" onSubmit={handleSubmit}>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import IntlObject from '@/components/common/IntlObject';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { telHref } from '@/lib/seoBusiness';
 import type { SignupRole } from '@/types/members';
 
 /** 입학년도 선택지: 올해부터 과거 12년치 */
@@ -14,7 +15,12 @@ function enrollmentYears(): number[] {
   return Array.from({ length: 13 }, (_, i) => current - i);
 }
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  /** 승인 대기 안내의 전화 연결 — SEO 패널 연락처(D1)가 단일 소스 */
+  contactTel?: string;
+}
+
+export default function RegisterForm({ contactTel = '' }: RegisterFormProps) {
   const router = useRouter();
   const { messages } = useLanguage();
 
@@ -103,6 +109,14 @@ export default function RegisterForm() {
         <div className="auth-pending-icon" aria-hidden="true">✓</div>
         <h1 className="auth-title">{messages['auth.pending.title']}</h1>
         <p className="auth-pending-desc">{messages['auth.pending.desc']}</p>
+        {contactTel && (
+          <>
+            <p className="auth-pending-contact">{messages['auth.pending.contact']}</p>
+            <a href={telHref(contactTel)} className="auth-forgot-call auth-pending-call">
+              {messages['auth.forgot.call']} · {contactTel}
+            </a>
+          </>
+        )}
         <button
           type="button"
           className="auth-button"

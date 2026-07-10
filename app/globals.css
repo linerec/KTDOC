@@ -2437,6 +2437,18 @@ ul {
   margin-bottom: 28px;
 }
 
+/* 승인 대기 화면의 문의 안내(문구 + 전화 버튼) */
+.auth-pending-contact {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.auth-pending-call {
+  align-self: center;
+  margin: 0 auto 24px;
+}
+
 /* 헤더 콤팩트 레이아웃 (≤1100px) — 드로어 브레이크포인트와 짝 */
 @media (max-width: 1100px) {
   #main-header {
