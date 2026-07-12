@@ -298,33 +298,36 @@ export default function EventForm({
             이 정보가 공개 Gallery의 카드와 공연 상세 페이지에 표시됩니다.
           </p>
 
-          <div className="admin-form-group">
-            <label htmlFor="title_ko" className="admin-form-label">
-              제목 (한글) <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="title_ko"
-              name="title_ko"
-              value={formData.title_ko}
-              onChange={handleChange}
-              required
-              className="admin-form-input"
-            />
-          </div>
+          {/* 한/영 병기 필드는 좌우 2단으로 나란히 — 비교하며 입력 */}
+          <div className="admin-form-bilingual">
+            <div className="admin-form-group">
+              <label htmlFor="title_ko" className="admin-form-label">
+                제목 (한글) <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="title_ko"
+                name="title_ko"
+                value={formData.title_ko}
+                onChange={handleChange}
+                required
+                className="admin-form-input"
+              />
+            </div>
 
-          <div className="admin-form-group">
-            <label htmlFor="title_en" className="admin-form-label">
-              제목 (영문)
-            </label>
-            <input
-              type="text"
-              id="title_en"
-              name="title_en"
-              value={formData.title_en}
-              onChange={handleChange}
-              className="admin-form-input"
-            />
+            <div className="admin-form-group">
+              <label htmlFor="title_en" className="admin-form-label">
+                제목 (영문)
+              </label>
+              <input
+                type="text"
+                id="title_en"
+                name="title_en"
+                value={formData.title_en}
+                onChange={handleChange}
+                className="admin-form-input"
+              />
+            </div>
           </div>
 
           <div className="admin-form-row">
@@ -442,32 +445,35 @@ export default function EventForm({
             </div>
           </div>
 
-          <div className="admin-form-group">
-            <label htmlFor="description_ko" className="admin-form-label">
-              설명 (한글)
-            </label>
-            <textarea
-              id="description_ko"
-              name="description_ko"
-              value={formData.description_ko}
-              onChange={handleChange}
-              rows={4}
-              className="admin-form-textarea"
-            />
-          </div>
+          {/* 한/영 병기 필드는 좌우 2단으로 나란히 — 비교하며 입력 */}
+          <div className="admin-form-bilingual">
+            <div className="admin-form-group">
+              <label htmlFor="description_ko" className="admin-form-label">
+                설명 (한글)
+              </label>
+              <textarea
+                id="description_ko"
+                name="description_ko"
+                value={formData.description_ko}
+                onChange={handleChange}
+                rows={5}
+                className="admin-form-textarea"
+              />
+            </div>
 
-          <div className="admin-form-group">
-            <label htmlFor="description_en" className="admin-form-label">
-              설명 (영문)
-            </label>
-            <textarea
-              id="description_en"
-              name="description_en"
-              value={formData.description_en}
-              onChange={handleChange}
-              rows={4}
-              className="admin-form-textarea"
-            />
+            <div className="admin-form-group">
+              <label htmlFor="description_en" className="admin-form-label">
+                설명 (영문)
+              </label>
+              <textarea
+                id="description_en"
+                name="description_en"
+                value={formData.description_en}
+                onChange={handleChange}
+                rows={5}
+                className="admin-form-textarea"
+              />
+            </div>
           </div>
 
           <div className="admin-form-row">

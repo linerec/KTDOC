@@ -7557,6 +7557,14 @@ ul {
   gap: 20px;
 }
 
+/* 한/영 병기 입력 쌍 — 좌(한글)·우(영문)를 나란히 놓고 비교하며 입력.
+   모바일(≤768px)에서는 세로 스택으로 강복한다. */
+.admin-form-bilingual {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+}
+
 .admin-form-row .admin-form-group {
   flex: 1;
 }
@@ -9124,6 +9132,11 @@ ul {
 
   .admin-form-row {
     flex-direction: column;
+    gap: 0;
+  }
+
+  .admin-form-bilingual {
+    grid-template-columns: 1fr;
     gap: 0;
   }
 
