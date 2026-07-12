@@ -55,6 +55,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'profile', href: '/admin/profile', label: '내 프로필', iconKey: 'profile', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // SEO · 사이트 정보: 상호·주소·전화(NAP)·운영시간을 입력하면 푸터와 구조화 데이터(JSON-LD)에 반영된다.
   { key: 'settings.seo', href: '/admin/seo', label: 'SEO · 사이트 정보', iconKey: 'globe', defaultRoles: ['admin'] },
+  // AI 설정: LLM 제공자 API 키(D1 저장)·모델 목록 최신화·용도별 모델 지정. 사이트 기능들이 askAI(lib/ai)로 사용한다.
+  { key: 'settings.ai', href: '/admin/ai', label: 'AI 설정', iconKey: 'spark', defaultRoles: ['admin'] },
   // 권한 관리 툴: 관리자 전용 하드플로어(매트릭스로 자기 자신을 잠그는 사고 방지)
   { key: 'settings.permissions', href: '/admin/permissions', label: '권한 관리', iconKey: 'shield', requireRole: 'admin', fixed: true, defaultRoles: ['admin'] },
 ];

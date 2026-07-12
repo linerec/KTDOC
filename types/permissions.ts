@@ -34,6 +34,7 @@ export type MenuKey =
   | 'notify'
   | 'profile'
   | 'settings.seo'
+  | 'settings.ai'
   | 'settings.permissions';
 
 /** 메뉴 정의(코드 = 메뉴 "존재"의 진실의 원천) */
