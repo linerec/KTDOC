@@ -272,13 +272,15 @@ export default function AiSettingsManager() {
       {error && <div className="admin-inline-error">{error}</div>}
       {notice && <div className="ai-notice" role="status">{notice}</div>}
 
-      {/* ── 1. 제공자(API 키) ─────────────────────────────────────── */}
-      <section className="admin-form-section admin-account-card">
-        <h2 className="admin-form-section-title">1. 제공자 · API 키</h2>
-        <p className="admin-form-help">
-          API 키는 데이터베이스(D1)에 저장되며, 저장 후에는 마스킹된 앞·뒷자리만 표시됩니다.
-          키를 바꾸려면 새 키를 입력하고 저장하세요(비워 두면 기존 키 유지).
-        </p>
+      {/* ── 1. 제공자(API 키) — 4열 그리드로 한눈에 ─────────────────── */}
+      <section className="admin-form-section ai-section">
+        <div className="ai-section-head">
+          <h2 className="admin-form-section-title">1. 제공자 · API 키</h2>
+          <p className="admin-form-help">
+            API 키는 데이터베이스(D1)에 저장되며, 저장 후에는 마스킹된 앞·뒷자리만 표시됩니다.
+            키를 바꾸려면 새 키를 입력하고 저장하세요(비워 두면 기존 키 유지).
+          </p>
+        </div>
 
         <div className="ai-provider-grid">
           {AI_PROVIDERS.map((p) => {
@@ -287,7 +289,7 @@ export default function AiSettingsManager() {
             const models = catalog.models[p] ?? [];
             const rowBusy = busy === `provider:${p}` || busy === `refresh:${p}`;
             return (
-              <div key={p} className="ai-provider-card">
+              <div key={p} className={`ai-provider-card${cfg.enabled ? ' is-enabled' : ''}`}>
                 <div className="ai-provider-head">
                   <strong>{AI_PROVIDER_LABELS[p]}</strong>
                   <label className="ai-provider-enabled">
@@ -301,49 +303,44 @@ export default function AiSettingsManager() {
                   </label>
                 </div>
 
-                <div className="admin-form-group">
-                  <label className="admin-form-label" htmlFor={`ai-key-${p}`}>
-                    API 키 {p === 'local' && <span className="ai-muted">(로컬 서버는 선택)</span>}
-                  </label>
+                <div className="ai-key-row">
                   <input
                     id={`ai-key-${p}`}
                     type="password"
                     className="admin-form-input"
                     value={keyInputs[p] ?? ''}
                     onChange={(e) => setKeyInputs((prev) => ({ ...prev, [p]: e.target.value }))}
-                    placeholder={cfg.hasKey ? `저장됨 · ${cfg.keyPreview} — 새 키 입력 시 교체` : '키를 입력하세요'}
+                    placeholder={cfg.hasKey ? `저장됨 · ${cfg.keyPreview}` : 'API 키 입력'}
+                    aria-label={`${AI_PROVIDER_LABELS[p]} API 키`}
                     autoComplete="off"
                     disabled={rowBusy}
                   />
-                </div>
-
-                {p === 'local' && (
-                  <div className="admin-form-group">
-                    <label className="admin-form-label" htmlFor="ai-baseurl-local">
-                      베이스 URL (OpenAI 호환)
-                    </label>
-                    <input
-                      id="ai-baseurl-local"
-                      type="url"
-                      className="admin-form-input"
-                      value={baseUrlInputs.local ?? ''}
-                      onChange={(e) => setBaseUrlInputs((prev) => ({ ...prev, local: e.target.value }))}
-                      placeholder="예: http://localhost:1234/v1"
-                      disabled={rowBusy}
-                    />
-                    <p className="admin-form-help">LM Studio · Ollama · vLLM 등의 OpenAI 호환 엔드포인트.</p>
-                  </div>
-                )}
-
-                <div className="admin-btn-row ai-provider-actions">
                   <button
                     type="button"
                     className="admin-btn admin-btn-sm admin-btn-primary"
                     disabled={rowBusy}
                     onClick={() => saveProvider(p, {})}
                   >
-                    {busy === `provider:${p}` ? '저장 중...' : '저장'}
+                    {busy === `provider:${p}` ? '저장 중' : '저장'}
                   </button>
+                </div>
+
+                {p === 'local' && (
+                  <div className="ai-key-row">
+                    <input
+                      id="ai-baseurl-local"
+                      type="url"
+                      className="admin-form-input"
+                      value={baseUrlInputs.local ?? ''}
+                      onChange={(e) => setBaseUrlInputs((prev) => ({ ...prev, local: e.target.value }))}
+                      placeholder="베이스 URL — 예: http://localhost:1234/v1"
+                      aria-label="GPT 호환 서버 베이스 URL"
+                      disabled={rowBusy}
+                    />
+                  </div>
+                )}
+
+                <div className="ai-provider-foot">
                   <button
                     type="button"
                     className="admin-btn admin-btn-sm admin-btn-outline"
@@ -353,10 +350,14 @@ export default function AiSettingsManager() {
                   >
                     {busy === `refresh:${p}` ? '최신화 중...' : '모델 목록 최신화'}
                   </button>
+                  <span className="ai-provider-meta">
+                    모델 <strong>{models.length}</strong>개
+                    <span className="ai-meta-dim"> · {formatFetchedAt(catalog.fetchedAt[p])}</span>
+                  </span>
                   {cfg.hasKey && (
                     <button
                       type="button"
-                      className="admin-btn admin-btn-sm admin-btn-outline"
+                      className="ai-key-clear"
                       disabled={rowBusy}
                       onClick={() => {
                         if (window.confirm(`${AI_PROVIDER_LABELS[p]}의 저장된 키를 삭제할까요?`)) {
@@ -368,24 +369,29 @@ export default function AiSettingsManager() {
                     </button>
                   )}
                 </div>
-
-                <p className="ai-provider-meta">
-                  모델 {models.length}개 · 최신화: {formatFetchedAt(catalog.fetchedAt[p])}
-                </p>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* ── 2. 용도별 모델 지정 ───────────────────────────────────── */}
-      <section className="admin-form-section admin-account-card">
-        <h2 className="admin-form-section-title">2. 용도별 모델 지정</h2>
-        <p className="admin-form-help">
-          사이트의 각 AI 기능(용도)이 어떤 제공자·모델을 쓸지 지정합니다. 용도를 지정하지
-          않으면 &quot;일반 질의 (기본)&quot; 지정으로 폴백합니다. 브랜드·버전별 파라미터 차이는
-          모델 이름으로 자동 판별하며, 예외는 아래 고급 오버라이드로 바로잡을 수 있습니다.
-        </p>
+      {/* ── 2. 용도별 모델 지정 — 테이블형으로 정렬 ─────────────────── */}
+      <section className="admin-form-section ai-section">
+        <div className="ai-section-head">
+          <h2 className="admin-form-section-title">2. 용도별 모델 지정</h2>
+          <p className="admin-form-help">
+            사이트의 각 AI 기능(용도)이 어떤 제공자·모델을 쓸지 지정합니다. 용도를 지정하지
+            않으면 &quot;일반 질의 (기본)&quot; 지정으로 폴백합니다. 브랜드·버전별 파라미터 차이는
+            모델 이름으로 자동 판별하며, 예외는 각 행의 고급 오버라이드로 바로잡을 수 있습니다.
+          </p>
+        </div>
+
+        <div className="ai-purpose-cols" aria-hidden="true">
+          <span>용도</span>
+          <span>제공자</span>
+          <span>모델</span>
+          <span />
+        </div>
 
         {AI_PURPOSES.map((purpose) => {
           const d = drafts[purpose.key] ?? draftFromAssignment();
@@ -399,17 +405,23 @@ export default function AiSettingsManager() {
 
           return (
             <div key={purpose.key} className="ai-purpose">
-              <div className="ai-purpose-head">
-                <strong>{purpose.label}</strong>
-                <code className="ai-purpose-key">{purpose.key}</code>
-                {purpose.needsVision && <span className="ai-badge">이미지 입력</span>}
-                {purpose.needsJson && <span className="ai-badge">JSON 출력</span>}
-              </div>
-              <p className="ai-purpose-desc">{purpose.description}</p>
+              <div className="ai-purpose-grid">
+                {/* 용도 정보 */}
+                <div className="ai-purpose-info">
+                  <div className="ai-purpose-head">
+                    <strong>{purpose.label}</strong>
+                    {purpose.needsVision && <span className="ai-badge">이미지</span>}
+                    {purpose.needsJson && <span className="ai-badge">JSON</span>}
+                  </div>
+                  <p className="ai-purpose-desc" title={purpose.description}>
+                    <code className="ai-purpose-key">{purpose.key}</code> {purpose.description}
+                  </p>
+                </div>
 
-              <div className="ai-purpose-row">
+                {/* 제공자 */}
                 <select
                   className="admin-filter-select"
+                  aria-label={`${purpose.label} 제공자`}
                   value={d.provider}
                   onChange={(e) => {
                     setDraft(purpose.key, {
@@ -419,7 +431,7 @@ export default function AiSettingsManager() {
                     setCustomModel((prev) => ({ ...prev, [purpose.key]: false }));
                   }}
                 >
-                  <option value="">제공자 선택...</option>
+                  <option value="">선택...</option>
                   {AI_PROVIDERS.map((p) => (
                     <option key={p} value={p}>
                       {AI_PROVIDER_LABELS[p]}
@@ -428,9 +440,11 @@ export default function AiSettingsManager() {
                   ))}
                 </select>
 
+                {/* 모델 */}
                 {!useCustom ? (
                   <select
-                    className="admin-filter-select ai-model-select"
+                    className="admin-filter-select"
+                    aria-label={`${purpose.label} 모델`}
                     value={inCatalog ? d.model : ''}
                     disabled={!d.provider}
                     onChange={(e) => {
@@ -442,7 +456,7 @@ export default function AiSettingsManager() {
                     }}
                   >
                     <option value="">
-                      {models.length ? '모델 선택...' : '모델 없음 — 먼저 목록을 최신화하세요'}
+                      {models.length ? '모델 선택...' : '목록 최신화 필요'}
                     </option>
                     {models.map((m) => (
                       <option key={m.id} value={m.id}>{m.label}</option>
@@ -452,7 +466,8 @@ export default function AiSettingsManager() {
                 ) : (
                   <input
                     type="text"
-                    className="admin-form-input ai-model-select"
+                    className="admin-form-input"
+                    aria-label={`${purpose.label} 모델 직접 입력`}
                     value={d.model}
                     placeholder="모델 ID 직접 입력"
                     onChange={(e) => setDraft(purpose.key, { model: e.target.value })}
@@ -462,63 +477,67 @@ export default function AiSettingsManager() {
                   />
                 )}
 
+                {/* 테스트 */}
                 <button
                   type="button"
                   className="admin-btn admin-btn-sm admin-btn-outline"
                   disabled={test?.running}
                   onClick={() => testAssignment(purpose.key)}
                 >
-                  {test?.running ? '테스트 중...' : '테스트'}
+                  {test?.running ? '테스트 중' : '테스트'}
                 </button>
               </div>
 
-              {visionWarn && (
-                <p className="ai-warn">
-                  이 용도는 이미지 입력이 필요한데, 선택한 모델은 비전 미지원으로 판별됩니다.
-                  비전 지원 모델을 선택하거나, 실제로 지원한다면 아래 프로파일 오버라이드에{' '}
-                  <code>{'{"supportsVision": true}'}</code>를 지정하세요.
-                </p>
-              )}
+              {/* 판별·경고·고급·테스트 결과 — 행 아래 보조 영역 */}
+              <div className="ai-purpose-sub">
+                {profile && (
+                  <p className="ai-profile-line">
+                    자동 판별: {profile.maxTokensParam}
+                    {' · '}temperature {profile.supportsTemperature ? '지원' : '미지원'}
+                    {' · '}시스템 {profile.systemStyle}
+                    {' · '}비전 {profile.supportsVision ? '지원' : '미지원'}
+                    {' · '}JSON {profile.supportsJsonMode ? '네이티브' : '지시문 폴백'}
+                  </p>
+                )}
 
-              {profile && (
-                <p className="ai-profile-line">
-                  자동 판별: {profile.maxTokensParam}
-                  {' · '}temperature {profile.supportsTemperature ? '지원' : '미지원'}
-                  {' · '}시스템 {profile.systemStyle}
-                  {' · '}비전 {profile.supportsVision ? '지원' : '미지원'}
-                  {' · '}JSON {profile.supportsJsonMode ? '네이티브' : '지시문 폴백'}
-                </p>
-              )}
+                {visionWarn && (
+                  <p className="ai-warn">
+                    이 용도는 이미지 입력이 필요한데, 선택한 모델은 비전 미지원으로 판별됩니다.
+                    비전 지원 모델을 선택하거나, 실제로 지원한다면 프로파일 오버라이드에{' '}
+                    <code>{'{"supportsVision": true}'}</code>를 지정하세요.
+                  </p>
+                )}
 
-              <details className="ai-advanced">
-                <summary>고급 — 버전별 파라미터 오버라이드</summary>
-                <div className="ai-advanced-grid">
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">프로파일 오버라이드 (JSON)</label>
-                    <textarea
-                      className="admin-form-input ai-json-input"
-                      rows={3}
-                      value={d.profileOverridesText}
-                      onChange={(e) => setDraft(purpose.key, { profileOverridesText: e.target.value })}
-                      placeholder={'예: {"maxTokensParam": "max_completion_tokens", "supportsTemperature": false}'}
-                    />
+                <details className="ai-advanced">
+                  <summary>고급 — 버전별 파라미터 오버라이드</summary>
+                  <div className="ai-advanced-grid">
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">프로파일 오버라이드 (JSON)</label>
+                      <textarea
+                        className="admin-form-input ai-json-input"
+                        rows={3}
+                        value={d.profileOverridesText}
+                        onChange={(e) => setDraft(purpose.key, { profileOverridesText: e.target.value })}
+                        placeholder={'예: {"maxTokensParam": "max_completion_tokens", "supportsTemperature": false}'}
+                      />
+                    </div>
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">요청 파라미터 오버라이드 (JSON)</label>
+                      <textarea
+                        className="admin-form-input ai-json-input"
+                        rows={3}
+                        value={d.paramOverridesText}
+                        onChange={(e) => setDraft(purpose.key, { paramOverridesText: e.target.value })}
+                        placeholder={'예: {"reasoning_effort": "low"} — 요청 본문에 그대로 병합됩니다'}
+                      />
+                    </div>
                   </div>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">요청 파라미터 오버라이드 (JSON)</label>
-                    <textarea
-                      className="admin-form-input ai-json-input"
-                      rows={3}
-                      value={d.paramOverridesText}
-                      onChange={(e) => setDraft(purpose.key, { paramOverridesText: e.target.value })}
-                      placeholder={'예: {"reasoning_effort": "low"} — 요청 본문에 그대로 병합됩니다'}
-                    />
-                  </div>
-                </div>
-              </details>
+                </details>
 
-              {test && !test.running && (
-                <p className={`ai-test-result ${test.ok ? 'is-ok' : 'is-fail'}`}>{test.message}</p>
-              )}
+                {test && !test.running && (
+                  <p className={`ai-test-result ${test.ok ? 'is-ok' : 'is-fail'}`}>{test.message}</p>
+                )}
+              </div>
             </div>
           );
         })}
