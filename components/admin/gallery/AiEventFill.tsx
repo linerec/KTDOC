@@ -1,0 +1,204 @@
+'use client';
+
+/**
+ * AiEventFill — 포스터/텍스트에서 AI로 이벤트 정보를 추출해 폼을 채우는 패널.
+ *
+ * 사진+텍스트, 사진만, 텍스트만 — 어느 조합이든 동작한다. 추출 결과는
+ * onApply로 부모(EventForm)에 전달되어 폼에 채워지고, 관리자가 검토·수정한 뒤
+ * 저장한다(추출값은 초안일 뿐 저장이 아니다).
+ *
+ * 이미지는 전송 전 캔버스로 긴 변 1600px JPEG로 축소한다 — 토큰 비용과
+ * 요청 크기를 줄이고, 포스터 텍스트 인식에는 충분한 해상도다.
+ */
+
+import { useRef, useState } from 'react';
+import type { EventCategory, ExtractedEventInfo } from '@/types/gallery';
+
+interface AiEventFillProps {
+  categories: EventCategory[];
+  onApply: (data: ExtractedEventInfo) => void;
+}
+
+const MAX_EDGE = 1600;
+
+/** 파일 → 축소된 JPEG base64. 디코드 실패(HEIC 등) 시 원본 그대로 시도한다. */
+async function fileToBase64(file: File): Promise<{ dataBase64: string; mimeType: string }> {
+  const readAsBase64 = (blob: Blob) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
+      reader.onerror = () => reject(new Error('파일을 읽지 못했습니다.'));
+      reader.readAsDataURL(blob);
+    });
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('canvas 미지원');
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', 0.85)
+    );
+    if (!blob) throw new Error('이미지 변환 실패');
+    return { dataBase64: await readAsBase64(blob), mimeType: 'image/jpeg' };
+  } catch {
+    // 브라우저가 디코드하지 못하는 형식은 원본을 그대로 보낸다(서버 크기 검사 있음)
+    return { dataBase64: await readAsBase64(file), mimeType: file.type || 'image/jpeg' };
+  }
+}
+
+export default function AiEventFill({ categories, onApply }: AiEventFillProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [text, setText] = useState('');
+  const [extracting, setExtracting] = useState(false);
+  const [error, setError] = useState('');
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [done, setDone] = useState(false);
+
+  const pickFile = (f: File | null) => {
+    setFile(f);
+    setDone(false);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(f ? URL.createObjectURL(f) : '');
+  };
+
+  const handleExtract = async () => {
+    if (!file && !text.trim()) {
+      setError('포스터 이미지 또는 안내 텍스트 중 하나 이상을 입력해 주세요.');
+      return;
+    }
+    setExtracting(true);
+    setError('');
+    setWarnings([]);
+    setDone(false);
+    try {
+      const image = file ? await fileToBase64(file) : null;
+      const res = await fetch('/api/admin/ai/extract-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: image?.dataBase64,
+          mimeType: image?.mimeType,
+          text: text.trim() || undefined,
+          categories: categories.map((c) => ({ id: c.id, name: `${c.name_ko} / ${c.name_en}` })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || '추출에 실패했습니다.');
+      }
+      onApply(data.data as ExtractedEventInfo);
+      setWarnings(Array.isArray(data.warnings) ? data.warnings : []);
+      setDone(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '추출에 실패했습니다.');
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  return (
+    <div className="admin-form-section ai-fill">
+      <h3 className="admin-form-section-title">AI로 정보 채우기</h3>
+      <p className="admin-form-help">
+        공연 포스터 이미지나 안내 텍스트를 넣으면 아래 폼에 제목·날짜·장소·소개(한/영)를
+        자동으로 채웁니다. 이미지와 텍스트 중 하나만 있어도 됩니다. 채워진 값은
+        초안이니 검토 후 수정해서 저장하세요.
+      </p>
+
+      <div className="ai-fill-grid">
+        {/* 포스터 이미지 */}
+        <div
+          className="ai-fill-drop"
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const dropped = e.dataTransfer.files?.[0];
+            if (dropped && dropped.type.startsWith('image/')) pickFile(dropped);
+          }}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+          />
+          {previewUrl ? (
+            <>
+              {/* 로컬 미리보기(objectURL)라 next/image 최적화 대상이 아니다 */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={previewUrl} alt="포스터 미리보기" className="ai-fill-preview" />
+              <button
+                type="button"
+                className="ai-fill-remove"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  pickFile(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+              >
+                이미지 제거
+              </button>
+            </>
+          ) : (
+            <span className="ai-fill-drop-hint">
+              포스터 이미지 선택
+              <small>클릭하거나 파일을 끌어다 놓으세요</small>
+            </span>
+          )}
+        </div>
+
+        {/* 안내 텍스트 */}
+        <textarea
+          className="admin-form-input ai-fill-text"
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            setDone(false);
+          }}
+          placeholder={
+            '안내 텍스트 붙여넣기 (선택)\n\n공지 문자·이메일·웹페이지 등에서 복사한 이벤트 안내문을 그대로 붙여 넣으면 함께 분석합니다.'
+          }
+          rows={8}
+        />
+      </div>
+
+      <div className="ai-fill-actions">
+        <button
+          type="button"
+          className="admin-btn admin-btn-primary"
+          disabled={extracting}
+          onClick={handleExtract}
+        >
+          {extracting ? 'AI 분석 중... (수십 초 걸릴 수 있음)' : 'AI로 정보 추출'}
+        </button>
+        {done && !error && (
+          <span className="ai-fill-done">아래 폼에 채웠습니다 — 검토 후 저장하세요.</span>
+        )}
+      </div>
+
+      {error && <div className="admin-inline-error ai-fill-feedback">{error}</div>}
+      {warnings.length > 0 && (
+        <ul className="ai-fill-warnings">
+          {warnings.map((w) => (
+            <li key={w}>{w}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

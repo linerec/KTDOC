@@ -50,6 +50,13 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
 
   const hasCoords = value.location_lat !== null && value.location_lng !== null;
 
+  // 부모가 주소를 외부에서 바꾸면(AI 채우기 등) 검색창도 따라간다.
+  // 사용자가 타이핑하는 동안에는 value.location_address가 변하지 않으므로 간섭 없음.
+  useEffect(() => {
+    skipSearchRef.current = true;
+    setQuery(value.location_address);
+  }, [value.location_address]);
+
   // 바깥 클릭으로 제안 목록 닫기
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {

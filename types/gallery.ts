@@ -369,3 +369,22 @@ export function formatRelativeTime(dateStr: string, locale: 'ko' | 'en' = 'ko'):
     return rtf.format(-Math.floor(diffDays / 365), 'year');
   }
 }
+
+/**
+ * AI 포스터/텍스트 추출 결과 (신뢰 불가 입력 — 서버가 정규화 후 전달).
+ * 값을 찾지 못한 필드는 null이며, 폼은 null 필드를 건드리지 않는다.
+ */
+export interface ExtractedEventInfo {
+  title_ko: string | null;
+  title_en: string | null;
+  event_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  call_time: string | null;
+  description_ko: string | null;
+  description_en: string | null;
+  location: string | null;
+  location_address: string | null;
+  prep_notes: string | null;
+  category_id: number | null;
+}

@@ -7,8 +7,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { EventDetail, EventCategory, CreateEventInput, UpdateEventInput } from '@/types/gallery';
+import type {
+  EventDetail,
+  EventCategory,
+  CreateEventInput,
+  UpdateEventInput,
+  ExtractedEventInfo,
+} from '@/types/gallery';
 import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
+import AiEventFill from './AiEventFill';
 import ImageUploader from './ImageUploader';
 import ImageSortable from './ImageSortable';
 import VideoManager from './VideoManager';
@@ -79,6 +86,39 @@ export default function EventForm({
   // Images and videos (managed separately)
   const [images, setImages] = useState(event?.images || []);
   const [videos, setVideos] = useState(event?.videos || []);
+
+  // AI 추출값 적용 안내(검토 유도)
+  const [aiNote, setAiNote] = useState('');
+
+  /**
+   * AI 추출 결과를 폼에 채운다 — null 필드는 건드리지 않는다(부분 성공 허용).
+   * 값은 초안일 뿐이며, 관리자가 검토·수정한 뒤 저장 버튼으로 확정한다.
+   */
+  const applyAiExtract = (data: ExtractedEventInfo) => {
+    const textKeys = [
+      'title_ko',
+      'title_en',
+      'event_date',
+      'start_time',
+      'end_time',
+      'call_time',
+      'description_ko',
+      'description_en',
+      'location',
+      'location_address',
+      'prep_notes',
+    ] as const;
+    setFormData((prev) => {
+      const patch: Record<string, string> = {};
+      for (const key of textKeys) {
+        const value = data[key];
+        if (value) patch[key] = value;
+      }
+      if (data.category_id) patch.category_id = String(data.category_id);
+      return { ...prev, ...patch };
+    });
+    setAiNote('AI가 추출한 값을 폼에 채웠습니다. 내용을 검토하고 필요한 곳을 수정한 뒤 저장하세요.');
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -199,6 +239,14 @@ export default function EventForm({
       {error && (
         <div className="admin-alert admin-alert-error">
           {error}
+        </div>
+      )}
+
+      {/* 새 이벤트: 포스터/텍스트로 폼을 자동으로 채우는 AI 패널 */}
+      {isNew && <AiEventFill categories={categories} onApply={applyAiExtract} />}
+      {aiNote && (
+        <div className="admin-alert ai-fill-note" role="status">
+          {aiNote}
         </div>
       )}
 

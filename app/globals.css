@@ -6067,6 +6067,131 @@ ul {
   }
 }
 
+/* ── AI로 정보 채우기 (새 아카이브 이벤트) ── */
+.ai-fill {
+  margin-bottom: 20px;
+  border-color: rgba(212, 160, 23, 0.3);
+}
+
+.ai-fill-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .ai-fill-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ai-fill-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 180px;
+  padding: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ai-fill-drop:hover {
+  border-color: rgba(212, 160, 23, 0.6);
+  background: rgba(212, 160, 23, 0.04);
+}
+
+.ai-fill-drop-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.ai-fill-drop-hint small {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.ai-fill-preview {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.ai-fill-remove {
+  padding: 4px 10px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.ai-fill-remove:hover {
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.ai-fill-text {
+  resize: vertical;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.ai-fill-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.ai-fill-done {
+  font-size: 0.85rem;
+  color: #7ee2a8;
+}
+
+.ai-fill-feedback {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+.ai-fill-warnings {
+  margin: 12px 0 0;
+  padding: 10px 12px 10px 30px;
+  border: 1px solid rgba(212, 160, 23, 0.35);
+  border-radius: 6px;
+  background: rgba(212, 160, 23, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-fill-warnings li {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #f0c674;
+  list-style: disc;
+}
+
+/* AI 추출값 적용 안내 배너 */
+.ai-fill-note {
+  background: rgba(212, 160, 23, 0.1);
+  border: 1px solid rgba(212, 160, 23, 0.4);
+  color: #f0c674;
+}
+
 /* Q&A 하단 문의 카드 — 정리된 답으로 해결되지 않을 때 사람에게 연결 */
 .qna-contact {
   margin-top: 36px;
