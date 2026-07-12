@@ -18,10 +18,10 @@ interface StudentPhotoSubmitProps {
 
 type PhotoStatus = { label: string; tone: 'pending' | 'published' | 'linked' };
 
-/** 학생 본인 사진 한 장의 상태 라벨(검토 중 / 게시됨 / 이벤트 수록) */
+/** 학생 본인 사진 한 장의 상태 라벨(검토 중 / 게시됨 / 공연 수록) */
 function statusOf(photo: GalleryPhoto): PhotoStatus {
   if (photo.is_published === 1) return { label: '게시됨', tone: 'published' };
-  if (photo.event_id) return { label: '이벤트 수록', tone: 'linked' };
+  if (photo.event_id) return { label: '공연 수록', tone: 'linked' };
   return { label: '검토 중', tone: 'pending' };
 }
 

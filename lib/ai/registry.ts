@@ -29,9 +29,9 @@ export const AI_PURPOSES: AiPurpose[] = [
   },
   {
     key: 'poster.extract',
-    label: '포스터에서 이벤트 정보 추출',
+    label: '포스터에서 공연 정보 추출',
     description:
-      '공연 포스터 이미지를 읽어 제목·일시·장소 등 이벤트 정보를 구조화(JSON)해 추출합니다. (새 아카이브 이벤트 만들기에서 사용 예정)',
+      '공연 포스터 이미지를 읽어 제목·일시·장소 등 공연 정보를 구조화(JSON)해 추출합니다. (새 공연 만들기에서 사용 예정)',
     needsVision: true,
     needsJson: true,
   },

@@ -41,7 +41,7 @@ export default async function AdminSupplySetsPage({ searchParams }: PageProps) {
           </div>
           <h1 className="admin-title">준비물 카탈로그</h1>
           <p className="admin-subtitle">
-            자주 함께 챙기는 준비물을 하나로 묶습니다. 이벤트·수업에서는 개별 항목과 세트를 섞어 지정할 수 있습니다.
+            자주 함께 챙기는 준비물을 하나로 묶습니다. 공연·수업에서는 개별 항목과 세트를 섞어 지정할 수 있습니다.
           </p>
         </div>
         <div className="admin-header-actions">

@@ -2,7 +2,7 @@
 
 /**
  * EventTable Component
- * 관리자용 이벤트 목록 테이블
+ * 관리자용 공연 목록 테이블
  */
 
 import { useState } from 'react';
@@ -29,7 +29,7 @@ export default function EventTable({
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (event: EventWithCategory) => {
-    if (!confirm(`"${event.title_ko}" 이벤트를 삭제하시겠습니까?`)) return;
+    if (!confirm(`"${event.title_ko}" 공연을 삭제하시겠습니까?`)) return;
 
     setDeletingId(event.id);
     setError(null);
@@ -82,9 +82,9 @@ export default function EventTable({
   if (events.length === 0) {
     return (
       <div className="admin-empty-state">
-        <p>아직 등록된 아카이브 이벤트가 없습니다.</p>
+        <p>아직 등록된 공연이 없습니다.</p>
         <Link href="/admin/gallery/new" className="admin-btn admin-btn-primary">
-          첫 이벤트 만들기
+          첫 공연 만들기
         </Link>
       </div>
     );
@@ -102,7 +102,7 @@ export default function EventTable({
         <thead>
           <tr>
             <th style={{ width: '80px' }}>썸네일</th>
-            <th>이벤트 제목</th>
+            <th>공연 제목</th>
             <th style={{ width: '80px' }}>연도</th>
             <th style={{ width: '120px' }}>날짜</th>
             <th style={{ width: '100px' }}>카테고리</th>

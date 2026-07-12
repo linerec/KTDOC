@@ -1,8 +1,8 @@
 /**
- * 이벤트 둘러보기 (학생 · 학부모용, 읽기 전용)
+ * 공연 둘러보기 (학생 · 학부모용, 읽기 전용)
  *
- * 공개된 이벤트 아카이브를 검색·필터·열람한다. 콘텐츠 편집 기능은 없으며,
- * 카드를 누르면 공개 갤러리 페이지의 이벤트 상세(사진·영상)로 이동한다.
+ * 공개된 공연을 검색·필터·열람한다. 콘텐츠 편집 기능은 없으며,
+ * 카드를 누르면 공개 갤러리 페이지의 공연 상세(사진·영상)로 이동한다.
  * 본인 사진 업로드/제출(library.my)은 소유자 데이터 모델이 준비된 후 추가된다.
  */
 
@@ -16,7 +16,7 @@ import type { MemberRole } from '@/types/members';
 import CheckinButton from '@/components/admin/library/CheckinButton';
 
 export const metadata: Metadata = {
-  title: '이벤트 둘러보기 | KTDOC Admin',
+  title: '공연 둘러보기 | KTDOC Admin',
 };
 
 interface PageProps {
@@ -24,7 +24,7 @@ interface PageProps {
     year?: string;
     category?: string;
     search?: string;
-    /** '1'이면 학생 본인이 체크인한 이벤트만 모아 보기 */
+    /** '1'이면 학생 본인이 체크인한 공연만 모아 보기 */
     mine?: string;
   }>;
 }
@@ -44,8 +44,8 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   await requireMenuAccess(session, 'library');
 
   // 체크인은 수강생(student) 본인 참여 기록 — 학생에게만 자기 토글을 노출한다.
-  // 학부모는 자녀 대행 체크인을 위해 이벤트 상세로 들어가야 하므로, 멤버(학생·학부모)는
-  // 전체 이벤트를 보고 콘솔 상세로 연결한다.
+  // 학부모는 자녀 대행 체크인을 위해 공연 상세로 들어가야 하므로, 멤버(학생·학부모)는
+  // 전체 공연을 보고 콘솔 상세로 연결한다.
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
   const canCheckIn = role === 'student' && !!userId;
@@ -67,7 +67,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
 
   const { events, total, years } = eventsResult;
 
-  // 다가오는 이벤트 판정용 오늘 날짜(event_date는 'YYYY-MM-DD')
+  // 다가오는 공연 판정용 오늘 날짜(event_date는 'YYYY-MM-DD')
   const today = new Date().toISOString().slice(0, 10);
 
   // 체크인한 것만 모아 보기 (학생 전용)
@@ -75,7 +75,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const checkedInCount = canCheckIn ? events.filter((e) => checkedInIds.has(e.id)).length : 0;
   const displayEvents = mineOnly ? events.filter((e) => checkedInIds.has(e.id)) : events;
 
-  // 학생 기본 보기는 "다가오는 이벤트 먼저" — 응답을 유도하고 실수를 줄인다.
+  // 학생 기본 보기는 "다가오는 공연 먼저" — 응답을 유도하고 실수를 줄인다.
   const showUpcomingFirst = canCheckIn && !mineOnly;
   const upcomingEvents = showUpcomingFirst
     ? displayEvents
@@ -85,7 +85,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const listEvents = showUpcomingFirst
     ? displayEvents.filter((e) => e.event_date < today)
     : displayEvents;
-  // 다가오는 이벤트 중 아직 응답(체크인) 안 한 수 = 할 일
+  // 다가오는 공연 중 아직 응답(체크인) 안 한 수 = 할 일
   const pendingCount = upcomingEvents.filter((e) => !checkedInIds.has(e.id)).length;
 
   const grouped = groupByYear(listEvents);
@@ -93,7 +93,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const hasFilters = !!(params.year || params.category || params.search || mineOnly);
   const displayCount = mineOnly ? displayEvents.length : total;
 
-  // 이벤트 카드 1장(둘러보기 공통). 다가오는 섹션과 연도 목록에서 함께 쓴다.
+  // 공연 카드 1장(둘러보기 공통). 다가오는 섹션과 연도 목록에서 함께 쓴다.
   const eventCard = (event: EventWithCategory) => {
     const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
     const isDraft = event.is_published === 0;
@@ -161,15 +161,15 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <span>이벤트</span>
+            <span>공연</span>
             <span>/</span>
             <span>둘러보기</span>
           </div>
-          <h1 className="admin-title">이벤트 둘러보기</h1>
+          <h1 className="admin-title">공연 둘러보기</h1>
           <p className="admin-subtitle">
             {canCheckIn
-              ? '본인이 참여하는 이벤트에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개) 이벤트에도 체크인할 수 있습니다.'
-              : '공개된 이벤트를 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.'}
+              ? '본인이 참여하는 공연에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개) 공연에도 체크인할 수 있습니다.'
+              : '공개된 공연을 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.'}
           </p>
         </div>
       </div>
@@ -228,14 +228,14 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
         </form>
 
         <div className="admin-filter-info">
-          {mineOnly ? '체크인한 이벤트' : canCheckIn ? '이벤트' : '공개된 이벤트'} {displayCount}개
+          {mineOnly ? '체크인한 공연' : canCheckIn ? '공연' : '공개된 공연'} {displayCount}개
         </div>
       </div>
 
-      {/* 응답 필요 알림 (다가오는 이벤트 중 미응답) */}
+      {/* 응답 필요 알림 (다가오는 공연 중 미응답) */}
       {showUpcomingFirst && pendingCount > 0 && (
         <div className="admin-callout">
-          다가오는 이벤트 중 <strong>{pendingCount}개</strong>에 아직 참여 응답을 하지 않았습니다.
+          다가오는 공연 중 <strong>{pendingCount}개</strong>에 아직 참여 응답을 하지 않았습니다.
           아래에서 참여 여부를 정해 주세요.
         </div>
       )}
@@ -245,27 +245,27 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
         <div className="admin-empty-state">
           <p>
             {mineOnly
-              ? '아직 체크인한 이벤트가 없습니다. 참여한 이벤트에 체크인해 보세요.'
+              ? '아직 체크인한 공연이 없습니다. 참여한 공연에 체크인해 보세요.'
               : hasFilters
-                ? '조건에 맞는 이벤트가 없습니다.'
-                : '아직 공개된 이벤트가 없습니다.'}
+                ? '조건에 맞는 공연이 없습니다.'
+                : '아직 공개된 공연이 없습니다.'}
           </p>
         </div>
       ) : (
         <div className="library-content">
-          {/* 다가오는 이벤트 (학생, 미필터 시) */}
+          {/* 다가오는 공연 (학생, 미필터 시) */}
           {showUpcomingFirst && upcomingEvents.length > 0 && (
             <section className="library-year library-upcoming">
-              <h2 className="library-year-title">다가오는 이벤트</h2>
+              <h2 className="library-year-title">다가오는 공연</h2>
               <div className="library-grid">{upcomingEvents.map(eventCard)}</div>
             </section>
           )}
 
-          {/* 지난 이벤트(연도별) — 학생은 과거만, 그 외는 전체 */}
+          {/* 지난 공연(연도별) — 학생은 과거만, 그 외는 전체 */}
           {sortedYears.map((year) => (
             <section key={year} className="library-year">
               <h2 className="library-year-title">
-                {showUpcomingFirst ? `${year} · 지난 이벤트` : `${year}`}
+                {showUpcomingFirst ? `${year} · 지난 공연` : `${year}`}
               </h2>
               <div className="library-grid">{(grouped.get(year) ?? []).map(eventCard)}</div>
             </section>

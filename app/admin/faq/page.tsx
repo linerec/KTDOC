@@ -1,6 +1,6 @@
 /**
  * Admin FAQ Page
- * Q&A 관리 — 공통·이벤트별 질문/답변 등록 (관리자·선생님)
+ * Q&A 관리 — 공통·공연별 질문/답변 등록 (관리자·선생님)
  */
 
 import Link from 'next/link';

@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { FaqItem } from '@/types/faq';
 
-/** 이벤트 연결 선택지(공통 제외) — 서버 페이지에서 내려주는 최소 메타 */
+/** 공연 연결 선택지(공통 제외) — 서버 페이지에서 내려주는 최소 메타 */
 export interface FaqEventOption {
   id: number;
   title_ko: string;
@@ -22,7 +22,7 @@ interface FaqManagerProps {
 }
 
 interface FormState {
-  event_id: string; // ''=공통, 숫자 문자열=이벤트 id
+  event_id: string; // ''=공통, 숫자 문자열=공연 id
   question: string;
   answer: string;
   sort_order: number;
@@ -39,7 +39,7 @@ const EMPTY_FORM: FormState = {
 
 export default function FaqManager({ items, events }: FaqManagerProps) {
   const router = useRouter();
-  const [filter, setFilter] = useState<string>('all'); // 'all' | 'general' | 이벤트 id
+  const [filter, setFilter] = useState<string>('all'); // 'all' | 'general' | 공연 id
   const [panelOpen, setPanelOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -56,11 +56,11 @@ export default function FaqManager({ items, events }: FaqManagerProps) {
   const targetLabel = (item: FaqItem) =>
     item.event_id === null
       ? '공통'
-      : `${item.event_year} · ${item.event_title_ko ?? `이벤트 #${item.event_id}`}`;
+      : `${item.event_year} · ${item.event_title_ko ?? `공연 #${item.event_id}`}`;
 
   const openCreate = () => {
     setEditingId(null);
-    // 필터로 특정 이벤트를 보고 있으면 그 이벤트를 기본 대상으로
+    // 필터로 특정 공연을 보고 있으면 그 공연을 기본 대상으로
     setForm({ ...EMPTY_FORM, event_id: filter !== 'all' && filter !== 'general' ? filter : '' });
     setPanelOpen(true);
     setError(null);

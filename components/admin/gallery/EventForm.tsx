@@ -2,7 +2,7 @@
 
 /**
  * EventForm Component
- * 이벤트 생성/편집 폼
+ * 공연 생성/편집 폼
  */
 
 import { useRef, useState } from 'react';
@@ -91,7 +91,7 @@ export default function EventForm({
   // AI 추출값 적용 안내(검토 유도)
   const [aiNote, setAiNote] = useState('');
 
-  // AI 패널의 포스터 — 체크(attach) 시 저장 성공 후 이벤트 사진으로 업로드(기본 해제)
+  // AI 패널의 포스터 — 체크(attach) 시 저장 성공 후 공연 사진으로 업로드(기본 해제)
   const [poster, setPoster] = useState<{ file: File | null; attach: boolean }>({
     file: null,
     attach: false,
@@ -198,18 +198,18 @@ export default function EventForm({
         throw new Error(data.error || '저장에 실패했습니다.');
       }
 
-      // 저장 성공 후, 선택 시 회원에게 푸시 알림(공개 이벤트만). 실패해도 저장은 유지.
+      // 저장 성공 후, 선택 시 회원에게 푸시 알림(공개 공연만). 실패해도 저장은 유지.
       const eventId = isNew ? data.data?.id : event?.id;
 
-      // 선택 시: AI 패널의 포스터를 이벤트 사진으로 함께 등록(원본 파일).
-      // 실패해도 이벤트 저장은 유지 — 편집 화면에서 직접 추가할 수 있다.
+      // 선택 시: AI 패널의 포스터를 공연 사진으로 함께 등록(원본 파일).
+      // 실패해도 공연 저장은 유지 — 편집 화면에서 직접 추가할 수 있다.
       if (isNew && eventId && poster.attach && poster.file) {
         try {
           await uploadImageFiles(`/api/admin/gallery/events/${eventId}/images`, [poster.file]);
         } catch (uploadErr) {
           console.warn('포스터 이미지 등록 실패:', uploadErr);
           window.alert(
-            '이벤트는 저장되었지만 포스터 이미지 등록에 실패했습니다. 편집 화면에서 직접 추가해 주세요.'
+            '공연은 저장되었지만 포스터 이미지 등록에 실패했습니다. 편집 화면에서 직접 추가해 주세요.'
           );
         }
       }
@@ -249,7 +249,7 @@ export default function EventForm({
 
       // 저장 완료를 명확히 알린다.
       if (isNew && data.data?.id) {
-        // 신규: 새 이벤트 편집 화면으로 이동(화면 전환 자체가 저장 신호)
+        // 신규: 새 공연 편집 화면으로 이동(화면 전환 자체가 저장 신호)
         router.push(`/admin/gallery/${data.data.id}`);
       } else {
         // 편집: 화면이 그대로이므로 성공 메시지·버튼 상태로 강하게 표시
@@ -276,7 +276,7 @@ export default function EventForm({
         </div>
       )}
 
-      {/* 새 이벤트: 포스터/텍스트로 폼을 자동으로 채우는 AI 패널 */}
+      {/* 새 공연: 포스터/텍스트로 폼을 자동으로 채우는 AI 패널 */}
       {isNew && (
         <AiEventFill
           categories={categories}
@@ -293,9 +293,9 @@ export default function EventForm({
       <div className="admin-form-grid">
         {/* Basic Info Section */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">이벤트 기본 정보</h3>
+          <h3 className="admin-form-section-title">공연 기본 정보</h3>
           <p className="admin-form-help">
-            이 정보가 공개 Gallery의 카드와 이벤트 상세 페이지에 표시됩니다.
+            이 정보가 공개 Gallery의 카드와 공연 상세 페이지에 표시됩니다.
           </p>
 
           <div className="admin-form-group">
@@ -528,7 +528,7 @@ export default function EventForm({
           <h3 className="admin-form-section-title">회원에게 알림</h3>
           <p className="admin-form-help">
             저장할 때 원생·학부모·선생님에게 푸시 알림을 보낼 수 있습니다. 알림을 탭하면 이
-            이벤트로 이동해 각자 캘린더에 추가할 수 있습니다.
+            공연으로 이동해 각자 캘린더에 추가할 수 있습니다.
           </p>
 
           <div className="admin-form-checkbox">
@@ -543,7 +543,7 @@ export default function EventForm({
 
           {!formData.is_published && (
             <p className="admin-form-help" style={{ marginTop: 8, borderBottom: 'none', paddingBottom: 0 }}>
-              알림은 공개 이벤트일 때만 발송됩니다 — 비공개로 저장하면 발송되지 않고,
+              알림은 공개 공연일 때만 발송됩니다 — 비공개로 저장하면 발송되지 않고,
               ‘저장 및 공개’로 저장하면 발송됩니다.
             </p>
           )}
@@ -602,9 +602,9 @@ export default function EventForm({
         {!isNew && event && (
           <>
             <div className="admin-form-section">
-              <h3 className="admin-form-section-title">이 이벤트의 사진</h3>
+              <h3 className="admin-form-section-title">이 공연의 사진</h3>
               <p className="admin-form-help">
-                업로드한 사진은 이 이벤트 상세 페이지의 사진 영역에 표시됩니다.
+                업로드한 사진은 이 공연 상세 페이지의 사진 영역에 표시됩니다.
               </p>
               <ImageUploader
                 eventId={event.id}
@@ -625,9 +625,9 @@ export default function EventForm({
             </div>
 
             <div className="admin-form-section">
-              <h3 className="admin-form-section-title">이 이벤트의 영상</h3>
+              <h3 className="admin-form-section-title">이 공연의 영상</h3>
               <p className="admin-form-help">
-                YouTube 영상 링크를 추가하면 이 이벤트 상세 페이지의 영상 영역에 표시됩니다.
+                YouTube 영상 링크를 추가하면 이 공연 상세 페이지의 영상 영역에 표시됩니다.
               </p>
               <VideoManager
                 eventId={event.id}

@@ -21,7 +21,7 @@ export default function SetTable({ sets }: SetTableProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (set: SupplySetWithItems) => {
-    if (!confirm(`"${set.name_ko}" 세트를 삭제하시겠습니까? 이벤트·수업에 지정된 이 세트도 함께 해제됩니다.`)) return;
+    if (!confirm(`"${set.name_ko}" 세트를 삭제하시겠습니까? 공연·수업에 지정된 이 세트도 함께 해제됩니다.`)) return;
     setDeletingId(set.id);
     setError(null);
     try {

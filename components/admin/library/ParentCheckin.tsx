@@ -12,12 +12,12 @@ interface Child {
 interface ParentCheckinProps {
   eventId: number;
   childrenList: Child[];
-  /** 다가오는 이벤트면 "참여 예정", 지난 이벤트면 "참여함" */
+  /** 다가오는 공연면 "참여 예정", 지난 공연면 "참여함" */
   upcoming?: boolean;
 }
 
 /**
- * 학부모 대행 체크인 — 연결된 자녀별로 이벤트 참여를 토글한다.
+ * 학부모 대행 체크인 — 연결된 자녀별로 공연 참여를 토글한다.
  * API에 forUserId(자녀 id)를 보내며, 서버가 보호자 관계를 검증한다.
  */
 export default function ParentCheckin({ eventId, childrenList, upcoming = false }: ParentCheckinProps) {

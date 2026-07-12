@@ -1,6 +1,6 @@
 /**
  * Admin Gallery Edit Event Page
- * 이벤트 편집
+ * 공연 편집
  */
 
 import { notFound } from 'next/navigation';
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps) {
   const event = await getEventById(parseInt(id));
 
   return {
-    title: event ? `${event.title_ko} 편집 | KTDOC Admin` : '이벤트 편집 | KTDOC Admin',
+    title: event ? `${event.title_ko} 편집 | KTDOC Admin` : '공연 편집 | KTDOC Admin',
   };
 }
 
@@ -73,11 +73,11 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <Link href="/admin/gallery">이벤트 아카이브</Link>
+            <Link href="/admin/gallery">공연 관리</Link>
             <span>/</span>
             <span>{event.title_ko}</span>
           </div>
-          <h1 className="admin-title">아카이브 이벤트 편집</h1>
+          <h1 className="admin-title">공연 편집</h1>
           <p className="admin-subtitle">
             {event.year}년 · {event.is_published ? '공개 갤러리 페이지에 표시 중' : '비공개 저장 중'}
           </p>

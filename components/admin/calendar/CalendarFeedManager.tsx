@@ -211,7 +211,7 @@ export default function CalendarFeedManager({
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          <p className="admin-form-help">이벤트 시작·종료 시각을 해석하는 기준입니다(학원 소재지 기준).</p>
+          <p className="admin-form-help">공연 시작·종료 시각을 해석하는 기준입니다(학원 소재지 기준).</p>
         </div>
 
         <div className="admin-form-group">

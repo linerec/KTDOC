@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * PhotoSubmitModal — 이벤트/수업 상세에서 사진을 제출하는 모달
+ * PhotoSubmitModal — 공연/수업 상세에서 사진을 제출하는 모달
  *
  * 버튼을 누르면 모달이 열리고, 사진을 골라 POST /api/library/photos로 제출한다.
  * eventId 또는 programId 중 하나를 전달하면 해당 항목에 연결되며, 제출 사진은 항상 비공개로

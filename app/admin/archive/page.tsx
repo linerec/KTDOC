@@ -1,9 +1,9 @@
 /**
- * 내 참여 아카이브 (원생·학부모용) — 참여 수업 + 체크인 이벤트 통합
+ * 내 참여 아카이브 (원생·학부모용) — 참여 수업 + 체크인 공연 통합
  *
- * 본인(학부모는 자녀)이 배정된 수업과 체크인한 이벤트를 연도별로 모아 보여준다.
- * 이벤트 카드를 누르면 콘솔 이벤트 상세, 수업 카드를 누르면 '내 수업' 상세로 이동.
- * 데이터: 체크인(D1 event_checkins) JOIN 이벤트 + 수강 배정(program_enrollments) JOIN 수업.
+ * 본인(학부모는 자녀)이 배정된 수업과 체크인한 공연을 연도별로 모아 보여준다.
+ * 공연 카드를 누르면 콘솔 공연 상세, 수업 카드를 누르면 '내 수업' 상세로 이동.
+ * 데이터: 체크인(D1 event_checkins) JOIN 공연 + 수강 배정(program_enrollments) JOIN 수업.
  */
 
 import type { Metadata } from 'next';
@@ -62,7 +62,7 @@ export default async function AdminArchivePage() {
       ? await getPreviewImagesForEvents(checkins.map((e) => e.id), 3)
       : new Map();
 
-  // 연도별로 이벤트·수업을 함께 묶는다.
+  // 연도별로 공연·수업을 함께 묶는다.
   const years = new Map<number, { events: CheckedInEvent[]; classes: MyEnrollment[] }>();
   const ensureYear = (y: number) => {
     let bucket = years.get(y);
@@ -89,25 +89,25 @@ export default async function AdminArchivePage() {
         <div className="admin-header-content">
           <h1 className="admin-title">내 참여 아카이브</h1>
           <p className="admin-subtitle">
-            참여한 수업과 체크인한 이벤트를 연도별로 모았습니다. 카드를 누르면 상세가 열립니다.
+            참여한 수업과 체크인한 공연을 연도별로 모았습니다. 카드를 누르면 상세가 열립니다.
           </p>
         </div>
       </div>
 
       {isEmpty ? (
         <div className="admin-empty-state">
-          <p>아직 참여한 수업이나 체크인한 이벤트가 없습니다.</p>
+          <p>아직 참여한 수업이나 체크인한 공연이 없습니다.</p>
           <p className="admin-empty-sub">
             <Link href="/admin/library" className="admin-callout-link">
-              이벤트 둘러보기 →
+              공연 둘러보기 →
             </Link>
-            에서 참여한 이벤트에 체크인하거나, 운영진이 수업에 배정하면 이곳에 모입니다.
+            에서 참여한 공연에 체크인하거나, 운영진이 수업에 배정하면 이곳에 모입니다.
           </p>
         </div>
       ) : (
         <>
           <div className="admin-filter-info">
-            참여 수업 <strong>{totalClasses}</strong> · 참여 이벤트 <strong>{totalEvents}</strong>
+            참여 수업 <strong>{totalClasses}</strong> · 참여 공연 <strong>{totalEvents}</strong>
             {' '}· 활동 연도 {sortedYears.length}개 ({sortedYears.join(', ')})
           </div>
 

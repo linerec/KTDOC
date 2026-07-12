@@ -1,6 +1,6 @@
 /**
  * Admin Gallery Photo Inbox Page
- * 날짜/이벤트 미정리 사진 보관함
+ * 날짜/공연 미정리 사진 보관함
  */
 
 import Link from 'next/link';
@@ -21,7 +21,7 @@ export default async function AdminGalleryPhotosPage() {
   const session = await auth();
   await requireMenuAccess(session, 'gallery.photos');
 
-  // 이벤트는 더 이상 전체를 미리 로드하지 않는다 — EventPicker가 필요 시 서버 검색한다.
+  // 공연은 더 이상 전체를 미리 로드하지 않는다 — EventPicker가 필요 시 서버 검색한다.
   const photosResult = await getGalleryPhotos({
     published: undefined,
     organized: 'all',
@@ -37,19 +37,19 @@ export default async function AdminGalleryPhotosPage() {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <Link href="/admin/gallery">이벤트 아카이브</Link>
+            <Link href="/admin/gallery">공연 관리</Link>
             <span>/</span>
             <span>사진 보관함</span>
           </div>
           <h1 className="admin-title">사진 보관함</h1>
           <p className="admin-subtitle">
             사진을 올리는 &lsquo;업로드&rsquo; 탭과 올라온 사진을 정리하는 &lsquo;사진 정리&rsquo; 탭으로 나뉩니다.
-            정리 탭에서는 여러 장을 한 번에 선택해 공개·이벤트 연결·삭제하고, 촬영일과 설명을 정리할 수 있습니다.
+            정리 탭에서는 여러 장을 한 번에 선택해 공개·공연 연결·삭제하고, 촬영일과 설명을 정리할 수 있습니다.
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/admin/gallery" className="admin-btn admin-btn-outline">
-            이벤트 아카이브
+            공연 관리
           </Link>
           <Link href="/gallery" className="admin-btn admin-btn-outline" target="_blank">
             공개 갤러리

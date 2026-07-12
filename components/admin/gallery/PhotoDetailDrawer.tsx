@@ -25,7 +25,7 @@ interface PhotoDetailDrawerProps {
   onOpenLightbox: () => void;
 }
 
-/** 사진이 속한 이벤트의 표시 라벨 ("{연도} · {제목}") */
+/** 사진이 속한 공연의 표시 라벨 ("{연도} · {제목}") */
 function eventLabelOf(photo: GalleryPhoto): string | null {
   if (photo.event_id && photo.event_title_ko) {
     return `${photo.event_year ?? ''} · ${photo.event_title_ko}`.trim();
@@ -34,7 +34,7 @@ function eventLabelOf(photo: GalleryPhoto): string | null {
 }
 
 /**
- * 우측 슬라이드 드로어 — 사진 한 장의 상세(캡션 ko/en·촬영일·이벤트·공개/강조)를 편집한다.
+ * 우측 슬라이드 드로어 — 사진 한 장의 상세(캡션 ko/en·촬영일·공연·공개/강조)를 편집한다.
  */
 export default function PhotoDetailDrawer({
   photo,
@@ -127,13 +127,13 @@ export default function PhotoDetailDrawer({
             </label>
 
             <label>
-              속한 이벤트
+              속한 공연
               <EventPicker
                 value={draft.event_id}
                 valueLabel={eventLabel}
                 placeholder="아직 모름"
                 allowClear
-                clearLabel="아직 모름 (이벤트에서 빼기)"
+                clearLabel="아직 모름 (공연에서 빼기)"
                 buttonClassName="photo-drawer-event-picker"
                 onChange={(id, ev) => {
                   setDraft((d) => ({ ...d, event_id: id }));
@@ -163,9 +163,9 @@ export default function PhotoDetailDrawer({
 
             <p className="photo-drawer-meta">
               {photo.event_image_id
-                ? '이벤트에 들어있음'
+                ? '공연에 들어있음'
                 : photo.event_id
-                  ? '이벤트 연결 대기 — 정리 저장을 누르면 이벤트 사진으로 게시됩니다'
+                  ? '공연 연결 대기 — 정리 저장을 누르면 공연 사진으로 게시됩니다'
                   : '미분류'}
             </p>
             {photo.uploaded_by && (

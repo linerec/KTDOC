@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation';
 interface CheckinButtonProps {
   eventId: number;
   initialCheckedIn: boolean;
-  /** 다가오는 이벤트면 "참여 예정", 지난 이벤트면 "참여함"으로 맥락 라벨 */
+  /** 다가오는 공연면 "참여 예정", 지난 공연면 "참여함"으로 맥락 라벨 */
   upcoming?: boolean;
 }
 
 /**
- * 이벤트 참여 체크인/체크아웃 토글 (학생용).
+ * 공연 참여 체크인/체크아웃 토글 (학생용).
  * 둘러보기 카드 하단에서 본인 참여 여부를 표시·전환한다.
  * 체크인 = POST, 체크아웃 = DELETE (/api/library/checkins). 대상은 서버가 본인으로 강제.
  */

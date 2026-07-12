@@ -121,7 +121,7 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
         <div className="admin-form-section">
           <h3 className="admin-form-section-title">준비물 정보</h3>
           <p className="admin-form-help">
-            한 번 등록하면 여러 이벤트·수업에서 재사용합니다. 이벤트별 수량·비고는 각 이벤트 편집에서 정합니다.
+            한 번 등록하면 여러 공연·수업에서 재사용합니다. 공연별 수량·비고는 각 공연 편집에서 정합니다.
           </p>
 
           <div className="admin-form-row">
@@ -241,7 +241,7 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
               checked={formData.is_active}
               onChange={handleChange}
             />
-            <label htmlFor="is_active">활성 (이벤트·수업에서 선택 가능)</label>
+            <label htmlFor="is_active">활성 (공연·수업에서 선택 가능)</label>
           </div>
         </div>
       </div>

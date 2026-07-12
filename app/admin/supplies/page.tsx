@@ -41,7 +41,7 @@ export default async function AdminSuppliesPage({ searchParams }: PageProps) {
           </div>
           <h1 className="admin-title">준비물 카탈로그</h1>
           <p className="admin-subtitle">
-            자주 쓰는 준비물을 등록해 두면, 이벤트·수업을 만들 때 골라 붙일 수 있습니다. 학생·학부모는 각 이벤트·수업에서 무엇을 챙길지 확인합니다.
+            자주 쓰는 준비물을 등록해 두면, 공연·수업을 만들 때 골라 붙일 수 있습니다. 학생·학부모는 각 공연·수업에서 무엇을 챙길지 확인합니다.
           </p>
         </div>
         <div className="admin-header-actions">

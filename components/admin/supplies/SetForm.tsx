@@ -98,7 +98,7 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
         <div className="admin-form-section">
           <h3 className="admin-form-section-title">세트 정보</h3>
           <p className="admin-form-help">
-            자주 함께 챙기는 준비물을 하나의 세트로 묶습니다. 이벤트·수업에서는 개별 항목과 세트를 섞어 지정할 수 있습니다.
+            자주 함께 챙기는 준비물을 하나의 세트로 묶습니다. 공연·수업에서는 개별 항목과 세트를 섞어 지정할 수 있습니다.
           </p>
           <div className="admin-form-row">
             <div className="admin-form-group">
@@ -149,7 +149,7 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
               checked={formData.is_active}
               onChange={handleChange}
             />
-            <label htmlFor="is_active">활성 (이벤트·수업에서 선택 가능)</label>
+            <label htmlFor="is_active">활성 (공연·수업에서 선택 가능)</label>
           </div>
         </div>
 

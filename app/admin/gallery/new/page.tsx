@@ -1,6 +1,6 @@
 /**
  * Admin Gallery New Event Page
- * 새 이벤트 생성
+ * 새 공연 생성
  */
 
 import Link from 'next/link';
@@ -10,7 +10,7 @@ import { getCategories, getActiveSupplyItems, getActiveSupplySets } from '@/lib/
 import EventForm from '@/components/admin/gallery/EventForm';
 
 export const metadata = {
-  title: '새 아카이브 이벤트 | KTDOC Admin',
+  title: '새 공연 | KTDOC Admin',
 };
 
 export default async function AdminGalleryNewPage() {
@@ -30,11 +30,11 @@ export default async function AdminGalleryNewPage() {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <Link href="/admin/gallery">이벤트 아카이브</Link>
+            <Link href="/admin/gallery">공연 관리</Link>
             <span>/</span>
-            <span>새 이벤트</span>
+            <span>새 공연</span>
           </div>
-          <h1 className="admin-title">새 아카이브 이벤트 만들기</h1>
+          <h1 className="admin-title">새 공연 만들기</h1>
           <p className="admin-subtitle">
             먼저 제목, 날짜, 카테고리를 저장한 뒤 사진과 영상을 추가할 수 있습니다.
           </p>

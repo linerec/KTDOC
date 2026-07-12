@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * AiEventFill — 포스터/텍스트에서 AI로 이벤트 정보를 추출해 폼을 채우는 패널.
+ * AiEventFill — 포스터/텍스트에서 AI로 공연 정보를 추출해 폼을 채우는 패널.
  *
  * 사진+텍스트, 사진만, 텍스트만 — 어느 조합이든 동작한다. 추출 결과는
  * onApply로 부모(EventForm)에 전달되어 폼에 채워지고, 관리자가 검토·수정한 뒤
@@ -18,8 +18,8 @@ interface AiEventFillProps {
   categories: EventCategory[];
   onApply: (data: ExtractedEventInfo) => void;
   /**
-   * 포스터 파일·"이벤트 사진으로도 등록" 체크 상태가 바뀔 때마다 부모에 보고.
-   * 체크된 경우 부모(EventForm)가 저장 시 원본 파일을 이벤트 사진으로 업로드한다.
+   * 포스터 파일·"공연 사진으로도 등록" 체크 상태가 바뀔 때마다 부모에 보고.
+   * 체크된 경우 부모(EventForm)가 저장 시 원본 파일을 공연 사진으로 업로드한다.
    */
   onPosterChange?: (file: File | null, attach: boolean) => void;
 }
@@ -66,7 +66,7 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
   const [error, setError] = useState('');
   const [warnings, setWarnings] = useState<string[]>([]);
   const [done, setDone] = useState(false);
-  // 포스터를 이벤트 사진으로도 등록할지 (기본 해제 — 저장 시 부모가 업로드)
+  // 포스터를 공연 사진으로도 등록할지 (기본 해제 — 저장 시 부모가 업로드)
   const [attachAsPhoto, setAttachAsPhoto] = useState(false);
 
   const pickFile = (f: File | null) => {
@@ -186,7 +186,7 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
               checked={attachAsPhoto}
               onChange={(e) => toggleAttach(e.target.checked)}
             />
-            <span>이 포스터를 이벤트 사진으로도 등록 (저장 시 원본이 업로드됩니다)</span>
+            <span>이 포스터를 공연 사진으로도 등록 (저장 시 원본이 업로드됩니다)</span>
           </label>
         )}
         </div>
@@ -200,7 +200,7 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
             setDone(false);
           }}
           placeholder={
-            '안내 텍스트 붙여넣기 (선택)\n\n공지 문자·이메일·웹페이지 등에서 복사한 이벤트 안내문을 그대로 붙여 넣으면 함께 분석합니다.'
+            '안내 텍스트 붙여넣기 (선택)\n\n공지 문자·이메일·웹페이지 등에서 복사한 공연 안내문을 그대로 붙여 넣으면 함께 분석합니다.'
           }
           rows={8}
         />

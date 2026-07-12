@@ -1,8 +1,8 @@
 /**
  * 참여 현황 (운영진·관계자 검증용)
  *
- * 이벤트별로 체크인한 참가자 수와 명단을 보여준다. 학생 본인 체크인 데이터를 바탕으로
- * 운영진·관계 기관이 각 이벤트의 참여도를 확인·검증할 수 있다.
+ * 공연별로 체크인한 참가자 수와 명단을 보여준다. 학생 본인 체크인 데이터를 바탕으로
+ * 운영진·관계 기관이 각 공연의 참여도를 확인·검증할 수 있다.
  * 접근: 운영진(선생님·관리자). 데이터: 참가 = D1(event_checkins), 이름 = MySQL(users).
  */
 
@@ -26,7 +26,7 @@ export default async function AdminParticipationPage() {
   const checkins = await getCheckinsForEvents(events.map((e) => e.event_id));
   const names = await getUserNamesByIds(checkins.map((c) => c.user_id));
 
-  // 이벤트별 참가자 그룹화(checkins는 이미 체크인 시각 오름차순)
+  // 공연별 참가자 그룹화(checkins는 이미 체크인 시각 오름차순)
   const byEvent = new Map<number, typeof checkins>();
   for (const c of checkins) {
     const list = byEvent.get(c.event_id) ?? [];
@@ -47,22 +47,22 @@ export default async function AdminParticipationPage() {
           </div>
           <h1 className="admin-title">참여 현황</h1>
           <p className="admin-subtitle">
-            이벤트별로 체크인한 참가자 수와 명단을 확인합니다. 수강생의 참여 기록을 바탕으로 집계됩니다.
+            공연별로 체크인한 참가자 수와 명단을 확인합니다. 수강생의 참여 기록을 바탕으로 집계됩니다.
           </p>
         </div>
       </div>
 
       {events.length === 0 ? (
         <div className="admin-empty-state">
-          <p>아직 참가 기록이 있는 이벤트가 없습니다.</p>
+          <p>아직 참가 기록이 있는 공연이 없습니다.</p>
           <p className="admin-empty-sub">
-            수강생이 둘러보기에서 본인이 참여한 이벤트에 체크인하면 이곳에 집계됩니다.
+            수강생이 둘러보기에서 본인이 참여한 공연에 체크인하면 이곳에 집계됩니다.
           </p>
         </div>
       ) : (
         <>
           <div className="admin-filter-info">
-            참가 기록 있는 이벤트 <strong>{events.length}</strong>개 · 누적 참가 연인원{' '}
+            참가 기록 있는 공연 <strong>{events.length}</strong>개 · 누적 참가 연인원{' '}
             <strong>{totalAttendance}</strong>명
           </div>
 

@@ -1,9 +1,9 @@
 /**
- * 캘린더 (멤버용) — 이벤트 + 내 수업 통합
+ * 캘린더 (멤버용) — 공연 + 내 수업 통합
  *
- * 공연·행사(이벤트)와 내가 배정된 수업(정규 수업은 요일 반복, 캠프는 기간)을 한 달력에서 본다.
- * 이벤트 칸을 누르면 이벤트 상세, 수업 칸을 누르면 '내 수업' 상세로 이동.
- * 학생은 비공개 이벤트도 포함해 보고 체크인할 수 있어 전체를, 그 외 역할은 공개분만 본다.
+ * 공연·행사와 내가 배정된 수업(정규 수업은 요일 반복, 캠프는 기간)을 한 달력에서 본다.
+ * 공연 칸을 누르면 공연 상세, 수업 칸을 누르면 '내 수업' 상세로 이동.
+ * 학생은 비공개 공연도 포함해 보고 체크인할 수 있어 전체를, 그 외 역할은 공개분만 본다.
  * 수업: 학생=본인 배정, 학부모=연결된 자녀의 배정.
  */
 
@@ -77,7 +77,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
     loadEnrollments(),
   ]);
 
-  // 날짜별 이벤트(이번 달만)
+  // 날짜별 공연(이번 달만)
   const eventsByDate = new Map<string, EventWithCategory[]>();
   for (const e of eventsResult.events) {
     if (e.event_date.startsWith(monthStr)) {
@@ -112,7 +112,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
           <h1 className="admin-title">캘린더</h1>
           <p className="admin-subtitle">
             공연·행사와 내 수업 일정을 월별로 확인합니다. 칸을 누르면 상세가 열립니다.
-            {canCheckIn && ' 내가 참여하는 이벤트는 ✓로 표시됩니다.'}
+            {canCheckIn && ' 내가 참여하는 공연은 ✓로 표시됩니다.'}
           </p>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
           다음 →
         </Link>
         <Link href="/admin/schedule" className="admin-btn admin-btn-sm">오늘</Link>
-        <span className="cal-count">이번 달 이벤트 {monthEventCount} · 수업 {monthClassCount}</span>
+        <span className="cal-count">이번 달 공연 {monthEventCount} · 수업 {monthClassCount}</span>
       </div>
 
       <div className="cal-grid">
@@ -184,7 +184,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
 
       <div className="cal-legend">
         {canCheckIn && <span><i className="cal-swatch is-mine" /> 내가 참여</span>}
-        <span><i className="cal-swatch" /> 이벤트</span>
+        <span><i className="cal-swatch" /> 공연</span>
         {memberView && <span><i className="cal-swatch is-class" /> 내 수업</span>}
         {memberView && <span><i className="cal-swatch is-draft" /> 비공개</span>}
       </div>

@@ -2,7 +2,7 @@
 
 /**
  * QnaBrowser Component
- * Q&A 열람(원생·학부모·선생님) — 공통 안내 + 이벤트별 그룹 아코디언 + 검색
+ * Q&A 열람(원생·학부모·선생님) — 공통 안내 + 공연별 그룹 아코디언 + 검색
  */
 
 import { useMemo, useState } from 'react';
@@ -24,7 +24,7 @@ interface QnaGroup {
 function buildGroups(items: FaqItem[]): QnaGroup[] {
   const groups: QnaGroup[] = [];
   const byKey = new Map<string, QnaGroup>();
-  // getFaqItems가 공통 → 이벤트(행사일 최신순), 그룹 내 sort_order 순으로 이미 정렬해서 내려준다
+  // getFaqItems가 공통 → 공연(행사일 최신순), 그룹 내 sort_order 순으로 이미 정렬해서 내려준다
   for (const item of items) {
     const key = item.event_id === null ? 'general' : `event-${item.event_id}`;
     let group = byKey.get(key);
@@ -35,7 +35,7 @@ function buildGroups(items: FaqItem[]): QnaGroup[] {
         title:
           item.event_id === null
             ? '공통 안내'
-            : `${item.event_title_ko ?? '이벤트'} (${item.event_year ?? ''})`,
+            : `${item.event_title_ko ?? '공연'} (${item.event_year ?? ''})`,
         items: [],
       };
       byKey.set(key, group);
@@ -97,7 +97,7 @@ export default function QnaBrowser({ items }: QnaBrowserProps) {
               ) : (
                 <Link href={`/admin/library/${group.eventId}`} className="qna-group-link">
                   {group.title}
-                  <span className="qna-group-link-hint">이벤트 보기 →</span>
+                  <span className="qna-group-link-hint">공연 보기 →</span>
                 </Link>
               )}
             </h2>

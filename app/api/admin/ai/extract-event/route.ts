@@ -124,12 +124,12 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
-    // 이벤트 아카이브 관리 권한과 동일한 통제(메뉴 매트릭스 'gallery')
+    // 공연 관리 권한과 동일한 통제(메뉴 매트릭스 'gallery')
     const actorRole = (session.user.role ?? 'user') as MemberRole;
     const matrix = await getPermMatrix();
     if (!effectiveAllowedByKey('gallery', actorRole, matrix)) {
       return NextResponse.json(
-        { success: false, error: '이벤트 아카이브 관리 권한이 없습니다.' },
+        { success: false, error: '공연 관리 권한이 없습니다.' },
         { status: 403 }
       );
     }

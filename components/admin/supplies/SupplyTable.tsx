@@ -22,7 +22,7 @@ export default function SupplyTable({ items }: SupplyTableProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (item: SupplyItemWithTerm) => {
-    if (!confirm(`"${item.name_ko}"을(를) 삭제하시겠습니까? 이벤트·수업에 연결된 항목도 함께 해제됩니다.`)) return;
+    if (!confirm(`"${item.name_ko}"을(를) 삭제하시겠습니까? 공연·수업에 연결된 항목도 함께 해제됩니다.`)) return;
     setDeletingId(item.id);
     setError(null);
     try {

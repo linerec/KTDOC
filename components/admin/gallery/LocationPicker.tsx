@@ -2,7 +2,7 @@
 
 /**
  * LocationPicker Component
- * 이벤트 위치 입력 — 장소명 + 주소 자동완성(지오코딩) + 지도 미리보기
+ * 공연 위치 입력 — 장소명 + 주소 자동완성(지오코딩) + 지도 미리보기
  *
  * 주소 검색은 /api/admin/geocode(서버 프록시)를 거치므로 지도 제공자를 교체해도
  * 이 컴포넌트는 그대로다. 지도 미리보기는 lib/maps의 embedUrl(순수 함수)을 쓴다.
@@ -220,7 +220,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
         )}
 
         <p className="admin-form-help location-picker-help">
-          검색 결과를 선택하면 좌표가 저장되고, 이벤트 페이지에 지도가 표시됩니다.
+          검색 결과를 선택하면 좌표가 저장되고, 공연 페이지에 지도가 표시됩니다.
         </p>
       </div>
 

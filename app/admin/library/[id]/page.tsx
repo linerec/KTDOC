@@ -1,8 +1,8 @@
 /**
- * 콘솔 이벤트 상세 (읽기 전용)
+ * 콘솔 공연 상세 (읽기 전용)
  *
- * 둘러보기·아카이브에서 이벤트를 누르면 열리는 상세 화면. 공개 갤러리 상세(`/gallery/...`)와 달리
- * 콘솔 안에서 열리며 **비공개(미공개) 이벤트도** 볼 수 있다(학생이 참여한 이벤트가 아직
+ * 둘러보기·아카이브에서 공연을 누르면 열리는 상세 화면. 공개 갤러리 상세(`/gallery/...`)와 달리
+ * 콘솔 안에서 열리며 **비공개(미공개) 공연도** 볼 수 있다(학생이 참여한 공연이 아직
  * 아카이브에 공개되지 않았어도 내용·사진을 확인). 접근: library 메뉴 권한.
  * 학생에게는 상단에 체크인 토글을 함께 제공한다.
  */
@@ -28,7 +28,7 @@ import ParentCheckin from '@/components/admin/library/ParentCheckin';
 import PhotoSubmitModal from '@/components/admin/library/PhotoSubmitModal';
 
 export const metadata: Metadata = {
-  title: '이벤트 상세 | KTDOC Admin',
+  title: '공연 상세 | KTDOC Admin',
 };
 
 interface PageProps {
@@ -57,7 +57,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   const isParent = role === 'parent' && !!userId;
   const checkedIn = canCheckIn ? await isCheckedIn(eventId, userId) : false;
 
-  // 다가오는 이벤트 여부(event_date는 'YYYY-MM-DD' 문자열이라 사전식 비교로 충분)
+  // 다가오는 공연 여부(event_date는 'YYYY-MM-DD' 문자열이라 사전식 비교로 충분)
   const today = new Date().toISOString().slice(0, 10);
   const isUpcoming = event.event_date >= today;
 
@@ -65,7 +65,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   const checkins = await getEventCheckins(eventId);
   const participantNames = await getUserNamesByIds(checkins.map((c) => c.user_id));
 
-  // 학부모: 연결된 자녀 + 이 이벤트 참여 여부(대행 체크인용)
+  // 학부모: 연결된 자녀 + 이 공연 참여 여부(대행 체크인용)
   const checkedUserIds = new Set(checkins.map((c) => c.user_id));
   const guardianChildren = isParent
     ? (await getGuardianChildren(userId)).map((c) => ({
@@ -95,13 +95,13 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin/library">이벤트 둘러보기</Link>
+            <Link href="/admin/library">공연 둘러보기</Link>
             <span>/</span>
             <span>{event.title_ko}</span>
           </div>
           <h1 className="admin-title">{event.title_ko}</h1>
           <p className="admin-subtitle library-detail-sub">
-            {isUpcoming && <span className="library-upcoming-badge">다가오는 이벤트</span>}
+            {isUpcoming && <span className="library-upcoming-badge">다가오는 공연</span>}
             {event.category_name_ko && <span>{event.category_name_ko}</span>}
             <span>{formatEventDate(event.event_date, 'ko')}</span>
             {isDraft && <span className="library-card-draft">비공개</span>}
@@ -126,7 +126,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* 실행 정보 — 어디서·언제·무엇을 준비 (다가오는 이벤트에서 특히 중요) */}
+      {/* 실행 정보 — 어디서·언제·무엇을 준비 (다가오는 공연에서 특히 중요) */}
       {hasLogistics && (
         <section className="event-logistics">
           {(event.location || event.location_url || event.location_address || hasCoords) && (
@@ -194,9 +194,9 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
         <section className="library-detail-section">
           <h2 className="library-detail-section-title">사진 올리기</h2>
           <p className="admin-form-help">
-            이 이벤트에서 찍은 사진을 올리면 운영진 검토 후 공개 갤러리에 반영됩니다.
+            이 공연에서 찍은 사진을 올리면 운영진 검토 후 공개 갤러리에 반영됩니다.
           </p>
-          <PhotoSubmitModal eventId={eventId} buttonLabel="이 이벤트에 사진 올리기" />
+          <PhotoSubmitModal eventId={eventId} buttonLabel="이 공연에 사진 올리기" />
         </section>
       )}
 

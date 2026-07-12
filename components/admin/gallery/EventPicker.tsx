@@ -22,15 +22,15 @@ interface EventPickerProps {
 }
 
 /**
- * 공용 이벤트 선택기.
- * 네이티브 select 대신 검색형 풀 모달(썸네일 카드)을 띄워, 이벤트가 수천 개여도
+ * 공용 공연 선택기.
+ * 네이티브 select 대신 검색형 풀 모달(썸네일 카드)을 띄워, 공연이 수천 개여도
  * 서버 검색/연도 필터/페이지네이션으로 빠르게 고를 수 있다. 미리 전체를 로드하지 않는다.
  */
 export default function EventPicker({
   value,
   valueLabel,
   onChange,
-  placeholder = '이벤트 선택',
+  placeholder = '공연 선택',
   allowClear = false,
   clearLabel = '선택 안 함',
   disabled = false,
@@ -71,14 +71,14 @@ export default function EventPicker({
 
         const res = await fetch(`/api/admin/gallery/events?${params.toString()}`);
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || '이벤트를 불러오지 못했습니다.');
+        if (!data.success) throw new Error(data.error || '공연을 불러오지 못했습니다.');
 
         setEvents(data.data.events);
         setTotal(data.data.total);
         if (Array.isArray(data.data.years)) setYears(data.data.years);
         setPage(targetPage);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '이벤트를 불러오지 못했습니다.');
+        setError(err instanceof Error ? err.message : '공연을 불러오지 못했습니다.');
       } finally {
         setLoading(false);
       }
@@ -145,7 +145,7 @@ export default function EventPicker({
         <div className="event-picker-overlay" onClick={() => setOpen(false)}>
           <div className="event-picker-modal" onClick={(e) => e.stopPropagation()}>
             <div className="event-picker-header">
-              <h3>이벤트 선택</h3>
+              <h3>공연 선택</h3>
               <button type="button" onClick={() => setOpen(false)} aria-label="닫기">&times;</button>
             </div>
 
@@ -186,7 +186,7 @@ export default function EventPicker({
 
               {events.length === 0 && !loading ? (
                 <div className="admin-empty-state event-picker-empty">
-                  <p>{search || year !== '' ? '조건에 맞는 이벤트가 없습니다.' : '이벤트가 없습니다.'}</p>
+                  <p>{search || year !== '' ? '조건에 맞는 공연이 없습니다.' : '공연이 없습니다.'}</p>
                 </div>
               ) : (
                 events.map((ev) => {

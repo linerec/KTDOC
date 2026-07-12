@@ -85,7 +85,7 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
         <h2 className="admin-panel-title">사진 올리기</h2>
         <p>
           공연명이나 날짜를 아직 몰라도 사진을 먼저 올릴 수 있습니다. 여러 장을 한 번에 올린 뒤
-          &lsquo;사진 정리&rsquo; 탭에서 촬영일과 소속 이벤트를 지정합니다.
+          &lsquo;사진 정리&rsquo; 탭에서 촬영일과 소속 공연을 지정합니다.
         </p>
       </div>
 

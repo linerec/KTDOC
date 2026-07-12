@@ -19,8 +19,8 @@ interface QuickLink {
 const QUICK_LINKS: QuickLink[] = [
   { href: '/admin/schedule', title: '캘린더', desc: '수업·공연 일정 한눈에' },
   { href: '/admin/my-classes', title: '내 수업', desc: '배정된 수업·프로그램 보기' },
-  { href: '/admin/library', title: '이벤트 둘러보기', desc: '공개된 공연·행사' },
-  { href: '/admin/archive', title: '내 참여 아카이브', desc: '참여한 수업·이벤트와 사진' },
+  { href: '/admin/library', title: '공연 둘러보기', desc: '공개된 공연·행사' },
+  { href: '/admin/archive', title: '내 참여 아카이브', desc: '참여한 수업·공연과 사진' },
   { href: '/admin/profile', title: '내 프로필', desc: '이름·비밀번호·공개 설정' },
 ];
 

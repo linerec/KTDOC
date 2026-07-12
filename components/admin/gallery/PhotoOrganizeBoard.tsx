@@ -159,7 +159,7 @@ export default function PhotoOrganizeBoard({
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     if (action === 'assignEvent' && bulkEventId === '') {
-      setError('넣을 이벤트를 선택하세요.');
+      setError('넣을 공연을 선택하세요.');
       return;
     }
     if (action === 'delete' && !confirm(`선택한 ${ids.length}장을 보관함과 R2에서 삭제하시겠습니까?`)) {
@@ -271,7 +271,7 @@ export default function PhotoOrganizeBoard({
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="캡션·이벤트로 검색"
+            placeholder="캡션·공연으로 검색"
             className="admin-filter-input"
           />
           <button type="submit" className="admin-btn admin-btn-sm" disabled={loadingPage}>검색</button>
@@ -286,7 +286,7 @@ export default function PhotoOrganizeBoard({
             aria-label="정리 상태"
           >
             <option value="all">전체 분류상태</option>
-            <option value="assigned">이벤트에 들어있음</option>
+            <option value="assigned">공연에 들어있음</option>
             <option value="unassigned">미분류</option>
           </select>
 
@@ -317,9 +317,9 @@ export default function PhotoOrganizeBoard({
           <EventPicker
             value={filters.eventId === '' ? null : filters.eventId}
             valueLabel={filterEventLabel}
-            placeholder="전체 이벤트"
+            placeholder="전체 공연"
             allowClear
-            clearLabel="전체 이벤트"
+            clearLabel="전체 공연"
             disabled={loadingPage}
             buttonClassName="photo-organize-event-filter"
             onChange={(id, ev) => {
@@ -393,7 +393,7 @@ export default function PhotoOrganizeBoard({
               <EventPicker
                 value={bulkEventId === '' ? null : bulkEventId}
                 valueLabel={bulkEventLabel}
-                placeholder="이벤트 선택…"
+                placeholder="공연 선택…"
                 disabled={bulkRunning}
                 buttonClassName="photo-bulk-event-picker"
                 onChange={(id, ev) => {
@@ -401,7 +401,7 @@ export default function PhotoOrganizeBoard({
                   setBulkEventLabel(ev ? `${ev.year} · ${ev.title_ko}` : null);
                 }}
               />
-              <button type="button" className="admin-btn admin-btn-sm" disabled={bulkRunning || bulkEventId === ''} onClick={() => runBulk('assignEvent')}>이벤트에 넣기</button>
+              <button type="button" className="admin-btn admin-btn-sm" disabled={bulkRunning || bulkEventId === ''} onClick={() => runBulk('assignEvent')}>공연에 넣기</button>
               <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" disabled={bulkRunning} onClick={() => runBulk('unassignEvent')}>빼기</button>
             </span>
 
@@ -453,11 +453,11 @@ export default function PhotoOrganizeBoard({
                     </span>
                   )}
                   {photo.event_image_id ? (
-                    <span className="photo-tile-badge is-linked">이벤트</span>
+                    <span className="photo-tile-badge is-linked">공연</span>
                   ) : photo.event_id ? (
                     <span
                       className="photo-tile-badge is-pending"
-                      title="이벤트가 지정됐지만 아직 이벤트 사진으로 게시되지 않았습니다. 사진을 열어 정리 저장하거나 '이벤트에 넣기'를 실행하세요."
+                      title="공연이 지정됐지만 아직 공연 사진으로 게시되지 않았습니다. 사진을 열어 정리 저장하거나 '공연에 넣기'를 실행하세요."
                     >
                       연결 대기
                     </span>
