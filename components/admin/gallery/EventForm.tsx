@@ -5,7 +5,7 @@
  * 이벤트 생성/편집 폼
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type {
   EventDetail,
@@ -140,11 +140,22 @@ export default function EventForm({
     }));
   };
 
+  // '저장 및 공개' 버튼의 의도 전달 — submit 버튼으로 두어 네이티브 필수값
+  // 검증을 그대로 태우고, 클릭 시 이 ref만 세운다(각 버튼 onClick에서 확정).
+  const publishIntentRef = useRef(false);
+  const [publishSaving, setPublishSaving] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const publish = publishIntentRef.current;
+    publishIntentRef.current = false;
+    // '저장 및 공개'면 체크박스 상태와 무관하게 공개로 저장한다
+    const effectivePublished = publish || formData.is_published;
+
     setError(null);
     setSavedMsg('');
     setSaving(true);
+    setPublishSaving(publish);
 
     try {
       const url = isNew
@@ -159,7 +170,7 @@ export default function EventForm({
         category_id: formData.category_id ? Number(formData.category_id) : undefined,
         description_ko: formData.description_ko || undefined,
         description_en: formData.description_en || undefined,
-        is_published: formData.is_published,
+        is_published: effectivePublished,
         is_featured: formData.is_featured,
         is_signature: formData.is_signature,
         signature_order: Number(formData.signature_order) || 0,
@@ -203,7 +214,7 @@ export default function EventForm({
         }
       }
       let notifyNote = '';
-      if (notify && formData.is_published && eventId) {
+      if (notify && effectivePublished && eventId) {
         try {
           const when = [formData.event_date, formData.start_time].filter(Boolean).join(' ');
           const loc = formData.location ? ` · ${formData.location}` : '';
@@ -242,8 +253,10 @@ export default function EventForm({
         router.push(`/admin/gallery/${data.data.id}`);
       } else {
         // 편집: 화면이 그대로이므로 성공 메시지·버튼 상태로 강하게 표시
+        // '저장 및 공개'로 저장했다면 공개 체크박스에도 반영한다
+        if (publish) setFormData((prev) => ({ ...prev, is_published: true }));
         setSaved(true);
-        setSavedMsg(`저장되었습니다${notifyNote}.`);
+        setSavedMsg(`${publish ? '공개 상태로 ' : ''}저장되었습니다${notifyNote}.`);
         router.refresh();
         window.setTimeout(() => setSaved(false), 3000);
       }
@@ -251,6 +264,7 @@ export default function EventForm({
       setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
     } finally {
       setSaving(false);
+      setPublishSaving(false);
     }
   };
 
@@ -521,20 +535,20 @@ export default function EventForm({
             <input
               type="checkbox"
               id="notify"
-              checked={notify && formData.is_published}
+              checked={notify}
               onChange={(e) => setNotify(e.target.checked)}
-              disabled={!formData.is_published}
             />
             <label htmlFor="notify">저장 시 회원에게 알림 보내기</label>
           </div>
 
           {!formData.is_published && (
             <p className="admin-form-help" style={{ marginTop: 8, borderBottom: 'none', paddingBottom: 0 }}>
-              ‘공개 Gallery에 표시’가 켜진 공개 이벤트일 때만 알림을 보낼 수 있습니다.
+              알림은 공개 이벤트일 때만 발송됩니다 — 비공개로 저장하면 발송되지 않고,
+              ‘저장 및 공개’로 저장하면 발송됩니다.
             </p>
           )}
 
-          {notify && formData.is_published && (
+          {notify && (
             <div className="admin-form-group" style={{ marginTop: 14 }}>
               <span className="admin-form-label">보낼 대상</span>
               <div className="notify-target-tabs">
@@ -645,12 +659,33 @@ export default function EventForm({
         >
           취소
         </button>
+        {/* 비공개(또는 신규) 상태에서만: 공개 전환과 저장을 한 번에 */}
+        {!formData.is_published && (
+          <button
+            type="submit"
+            className="admin-btn admin-btn-gold"
+            disabled={saving}
+            onClick={() => {
+              publishIntentRef.current = true;
+            }}
+            title="공개 상태로 저장합니다 — 공개 Gallery에 바로 표시됩니다"
+          >
+            {saving && publishSaving
+              ? '저장 중...'
+              : isNew
+                ? '생성 및 공개'
+                : '저장 및 공개'}
+          </button>
+        )}
         <button
           type="submit"
           className={`admin-btn ${saved ? 'admin-btn-gold' : 'admin-btn-primary'}`}
           disabled={saving}
+          onClick={() => {
+            publishIntentRef.current = false;
+          }}
         >
-          {saving ? '저장 중...' : saved ? '저장됨 ✓' : isNew ? '생성' : '저장'}
+          {saving && !publishSaving ? '저장 중...' : saved ? '저장됨 ✓' : isNew ? '생성' : '저장'}
         </button>
       </div>
     </form>
