@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import IntlObject from '@/components/common/IntlObject';
 import ContactChannels from '@/components/common/ContactChannels';
@@ -10,7 +10,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { messages } = useLanguage();
+
+  // 로그인 후 복귀 경로(모집 페이지 등). 오픈 리다이렉트 방지를 위해
+  // 사이트 내 상대 경로('/...')만 허용한다.
+  const rawCallback = searchParams.get('callbackUrl');
+  const callbackUrl =
+    rawCallback && rawCallback.startsWith('/') && !rawCallback.startsWith('//')
+      ? rawCallback
+      : null;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -35,7 +44,7 @@ export default function LoginForm() {
   const redirectAfterLogin = async () => {
     const session = await getSession();
     if (session?.user?.status === 'active') {
-      router.push('/admin');
+      router.push(callbackUrl ?? '/admin');
       router.refresh();
     } else {
       setPendingNotice(true);

@@ -12050,6 +12050,291 @@ ul {
 }
 
 /* ============================================
+   공연 모집(회람) 페이지 (/rsvp/[id])
+   카톡 수기 명단을 대체하는 학부모·원생용 응답 화면 —
+   시니어 사용자를 고려해 본문·버튼을 넉넉하게 잡는다.
+   ============================================ */
+.rsvp-page {
+  background: var(--ink-black);
+  min-height: 100vh;
+}
+
+.rsvp-hero {
+  padding: var(--page-offset-tight) 0 36px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
+    linear-gradient(180deg, var(--ink-umber), var(--ink-black));
+}
+
+.rsvp-hero-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.rsvp-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--soft-gold);
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.rsvp-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+  line-height: 1.25;
+  color: var(--warm-ivory);
+  word-break: keep-all;
+  text-wrap: balance;
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+/* 회람 카드 */
+.rsvp-notice {
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rsvp-poster {
+  display: block;
+  max-width: 100%;
+  max-height: 420px;
+  margin: 0 auto 20px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.rsvp-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+
+.rsvp-fact {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.rsvp-fact dt {
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--soft-gold);
+}
+
+.rsvp-fact dd {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+/* 모이는 시간은 실수하면 안 되는 정보 — 살짝 강조 */
+.rsvp-fact--accent dd {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.rsvp-fact-sub {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.rsvp-map-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rsvp-desc {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(240, 234, 224, 0.85);
+  white-space: pre-line;
+}
+
+/* ── 명단·응답 ── */
+.rsvp-body {
+  padding: 12px 0 110px;
+}
+
+.rsvp-body-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rsvp-section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--warm-ivory);
+  margin-bottom: 14px;
+}
+
+.rsvp-gate,
+.rsvp-respond,
+.rsvp-roster {
+  padding: 22px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rsvp-gate {
+  text-align: center;
+}
+
+.rsvp-gate-note {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.rsvp-login-btn {
+  display: inline-block;
+  width: auto;
+  margin-top: 16px;
+  padding: 14px 28px;
+}
+
+.rsvp-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(209, 47, 39, 0.35);
+  border-radius: 6px;
+  background: rgba(209, 47, 39, 0.1);
+  font-size: 0.88rem;
+  color: var(--secondary-color);
+}
+
+.rsvp-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rsvp-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.rsvp-target-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.rsvp-badge {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(46, 160, 67, 0.5);
+  color: #7ee2a8;
+}
+
+.rsvp-toggle {
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, filter 0.2s;
+}
+
+.rsvp-toggle.is-join {
+  background: var(--accent-color);
+  color: #0a0a0a;
+}
+
+.rsvp-toggle.is-join:hover:not(:disabled) {
+  background: #b88a12;
+}
+
+.rsvp-toggle.is-leave {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rsvp-toggle.is-leave:hover:not(:disabled) {
+  color: var(--secondary-color);
+  border-color: rgba(209, 47, 39, 0.4);
+}
+
+.rsvp-toggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.rsvp-roster-count {
+  margin-left: 6px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* 카톡 명단처럼 읽히는 번호 목록 */
+.rsvp-roster-list {
+  margin: 0;
+  padding-left: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rsvp-roster-list li {
+  list-style: decimal;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.rsvp-roster-list li.is-mine {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .rsvp-fact {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .rsvp-target {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}
+
+/* ============================================
    법적 고지 페이지 (/privacy · /terms)
    장문 열람이 목적이라 본문 대비·행간을 넉넉하게 유지한다.
    ============================================ */

@@ -181,6 +181,15 @@ export default function EventTable({
                       공개 페이지
                     </Link>
                   ) : null}
+                  {/* 모집(회람) 페이지 — 학부모·원생에게 링크를 공유해 참여 응답을 받는다 */}
+                  <Link
+                    href={`/rsvp/${event.id}`}
+                    target="_blank"
+                    className="admin-btn admin-btn-sm admin-btn-outline"
+                    title="참여 모집 페이지 열기 — 링크를 카톡 등으로 공유하세요"
+                  >
+                    모집
+                  </Link>
                   <button
                     type="button"
                     className="admin-btn admin-btn-sm admin-btn-danger"

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginForm />;
+  return (
+    // LoginForm이 useSearchParams(callbackUrl)를 쓰므로 Suspense 경계 필요
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
 }
