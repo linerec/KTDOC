@@ -23,6 +23,7 @@ import LocationPicker from './LocationPicker';
 import SupplyPicker, { type PickerRow } from '@/components/admin/supplies/SupplyPicker';
 import SetPicker, { type SetPickerRow } from '@/components/admin/supplies/SetPicker';
 import type { SupplyItem, SupplySetWithItems } from '@/types/supplies';
+import { uploadImageFiles } from '@/lib/uploadClient';
 
 interface EventFormProps {
   event?: EventDetail | null;
@@ -89,6 +90,12 @@ export default function EventForm({
 
   // AI 추출값 적용 안내(검토 유도)
   const [aiNote, setAiNote] = useState('');
+
+  // AI 패널의 포스터 — 체크(attach) 시 저장 성공 후 이벤트 사진으로 업로드(기본 해제)
+  const [poster, setPoster] = useState<{ file: File | null; attach: boolean }>({
+    file: null,
+    attach: false,
+  });
 
   /**
    * AI 추출 결과를 폼에 채운다 — null 필드는 건드리지 않는다(부분 성공 허용).
@@ -182,6 +189,19 @@ export default function EventForm({
 
       // 저장 성공 후, 선택 시 회원에게 푸시 알림(공개 이벤트만). 실패해도 저장은 유지.
       const eventId = isNew ? data.data?.id : event?.id;
+
+      // 선택 시: AI 패널의 포스터를 이벤트 사진으로 함께 등록(원본 파일).
+      // 실패해도 이벤트 저장은 유지 — 편집 화면에서 직접 추가할 수 있다.
+      if (isNew && eventId && poster.attach && poster.file) {
+        try {
+          await uploadImageFiles(`/api/admin/gallery/events/${eventId}/images`, [poster.file]);
+        } catch (uploadErr) {
+          console.warn('포스터 이미지 등록 실패:', uploadErr);
+          window.alert(
+            '이벤트는 저장되었지만 포스터 이미지 등록에 실패했습니다. 편집 화면에서 직접 추가해 주세요.'
+          );
+        }
+      }
       let notifyNote = '';
       if (notify && formData.is_published && eventId) {
         try {
@@ -243,7 +263,13 @@ export default function EventForm({
       )}
 
       {/* 새 이벤트: 포스터/텍스트로 폼을 자동으로 채우는 AI 패널 */}
-      {isNew && <AiEventFill categories={categories} onApply={applyAiExtract} />}
+      {isNew && (
+        <AiEventFill
+          categories={categories}
+          onApply={applyAiExtract}
+          onPosterChange={(file, attach) => setPoster({ file, attach })}
+        />
+      )}
       {aiNote && (
         <div className="admin-alert ai-fill-note" role="status">
           {aiNote}

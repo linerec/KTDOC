@@ -6086,6 +6086,32 @@ ul {
   }
 }
 
+.ai-fill-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 포스터를 이벤트 사진으로도 등록 (기본 해제) */
+.ai-fill-attach {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.ai-fill-attach input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
 .ai-fill-drop {
   display: flex;
   flex-direction: column;

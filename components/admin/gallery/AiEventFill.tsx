@@ -17,6 +17,11 @@ import type { EventCategory, ExtractedEventInfo } from '@/types/gallery';
 interface AiEventFillProps {
   categories: EventCategory[];
   onApply: (data: ExtractedEventInfo) => void;
+  /**
+   * 포스터 파일·"이벤트 사진으로도 등록" 체크 상태가 바뀔 때마다 부모에 보고.
+   * 체크된 경우 부모(EventForm)가 저장 시 원본 파일을 이벤트 사진으로 업로드한다.
+   */
+  onPosterChange?: (file: File | null, attach: boolean) => void;
 }
 
 const MAX_EDGE = 1600;
@@ -52,7 +57,7 @@ async function fileToBase64(file: File): Promise<{ dataBase64: string; mimeType:
   }
 }
 
-export default function AiEventFill({ categories, onApply }: AiEventFillProps) {
+export default function AiEventFill({ categories, onApply, onPosterChange }: AiEventFillProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -61,12 +66,23 @@ export default function AiEventFill({ categories, onApply }: AiEventFillProps) {
   const [error, setError] = useState('');
   const [warnings, setWarnings] = useState<string[]>([]);
   const [done, setDone] = useState(false);
+  // 포스터를 이벤트 사진으로도 등록할지 (기본 해제 — 저장 시 부모가 업로드)
+  const [attachAsPhoto, setAttachAsPhoto] = useState(false);
 
   const pickFile = (f: File | null) => {
     setFile(f);
     setDone(false);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(f ? URL.createObjectURL(f) : '');
+    // 파일이 없어지면 등록 체크도 무의미 — 해제하고 부모에 보고
+    const nextAttach = f ? attachAsPhoto : false;
+    if (!f) setAttachAsPhoto(false);
+    onPosterChange?.(f, nextAttach);
+  };
+
+  const toggleAttach = (checked: boolean) => {
+    setAttachAsPhoto(checked);
+    onPosterChange?.(file, checked);
   };
 
   const handleExtract = async () => {
@@ -114,7 +130,8 @@ export default function AiEventFill({ categories, onApply }: AiEventFillProps) {
       </p>
 
       <div className="ai-fill-grid">
-        {/* 포스터 이미지 */}
+        {/* 포스터 이미지 + 사진 등록 옵션 */}
+        <div className="ai-fill-left">
         <div
           className="ai-fill-drop"
           role="button"
@@ -160,6 +177,18 @@ export default function AiEventFill({ categories, onApply }: AiEventFillProps) {
               <small>클릭하거나 파일을 끌어다 놓으세요</small>
             </span>
           )}
+        </div>
+
+        {file && (
+          <label className="ai-fill-attach">
+            <input
+              type="checkbox"
+              checked={attachAsPhoto}
+              onChange={(e) => toggleAttach(e.target.checked)}
+            />
+            <span>이 포스터를 이벤트 사진으로도 등록 (저장 시 원본이 업로드됩니다)</span>
+          </label>
+        )}
         </div>
 
         {/* 안내 텍스트 */}
