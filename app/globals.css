@@ -4700,8 +4700,9 @@ ul {
     /* 홈 인디케이터(iOS) 영역만큼 아래 패딩을 더한다 */
     height: calc(var(--admin-bottomnav-h) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
-    background: rgba(12, 12, 12, 0.94);
-    backdrop-filter: blur(12px);
+    /* iOS WebKit: position:fixed + backdrop-filter는 스크롤 시 고정이 깨져
+       바가 화면 중앙으로 딸려 올라온다. 블러 대신 불투명 배경으로 고정을 보장한다. */
+    background: var(--bg-dark);
     border-top: 1px solid rgba(246, 239, 226, 0.1);
   }
   .admin-bottomnav-item {
