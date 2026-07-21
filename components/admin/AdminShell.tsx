@@ -127,6 +127,11 @@ export default function AdminShell({
       {/* 본문 */}
       <div className="admin-shell-main">
         <header className="admin-topbar">
+          {/* 모바일 상단바의 붓질 선 — 사이드바가 숨는 ≤900px에서만 보인다(CSS).
+              데스크톱은 사이드바 브랜드의 선이 같은 역할을 한다. */}
+          {process.env.NEXT_PUBLIC_HEADER_WAVES !== 'off' && (
+            <HeaderWaves className="admin-topbar-waves" />
+          )}
           <Link href="/admin" className="admin-topbar-title">
             KTDOC <span>{consoleLabelText}</span>
           </Link>

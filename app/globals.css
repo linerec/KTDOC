@@ -15812,3 +15812,29 @@ html[data-admin-theme='light'] .admin-sheet {
   position: relative;
   z-index: 1;
 }
+
+/* ── 모바일 상단바의 붓질 선 — 사이드바가 숨는 ≤900px에서 브랜드 뒤에 흐른다.
+   데스크톱은 사이드바 브랜드(.admin-brand-waves)가 같은 역할이므로 숨긴다. ── */
+.admin-topbar-waves {
+  display: none;
+}
+
+/* 상단바 콘텐츠는 선 캔버스(absolute) 위에 오도록 */
+.admin-topbar-title,
+.admin-topbar-lang,
+.admin-topbar .admin-theme-toggle {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .admin-topbar-waves {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
