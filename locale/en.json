@@ -346,6 +346,9 @@
   "admin.a2hs.inappStep2": "In Safari, tap Share → 'Add to Home Screen'",
   "admin.a2hs.installBtn": "Add to Home Screen",
   "admin.a2hs.later": "Later",
+  "admin.library.view": "View",
+  "admin.library.viewCard": "Cards",
+  "admin.library.viewList": "List",
   "admin.shell.menu": "All Menu",
 
   "admin.navGroup.notify": "Notifications",

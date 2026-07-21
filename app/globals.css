@@ -6795,7 +6795,7 @@ ul {
 .library-year-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--soft-gold, #d4a017);
+  color: var(--soft-gold-text);
   margin: 0 0 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(var(--fg-rgb), 0.1);
@@ -6853,7 +6853,7 @@ ul {
 }
 .library-card-category {
   font-size: 0.72rem;
-  color: var(--soft-gold, #d4a017);
+  color: var(--soft-gold-text);
   letter-spacing: 0.04em;
 }
 .library-card-title {
@@ -6957,7 +6957,7 @@ ul {
 }
 .library-detail-section-title {
   font-size: 1.05rem;
-  color: var(--soft-gold, #e0b84f);
+  color: var(--soft-gold-text);
   margin: 0 0 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(var(--fg-rgb), 0.1);
@@ -6989,7 +6989,7 @@ ul {
 .event-logistics-label {
   flex-shrink: 0;
   width: 92px;
-  color: var(--soft-gold, #e0b84f);
+  color: var(--soft-gold-text);
   font-weight: 600;
 }
 .event-logistics-value {
@@ -6997,7 +6997,7 @@ ul {
 }
 .event-logistics-map {
   margin-left: 8px;
-  color: var(--soft-gold, #e0b84f);
+  color: var(--soft-gold-text);
   white-space: nowrap;
 }
 .event-logistics-prep {
@@ -7009,7 +7009,7 @@ ul {
   margin: 0 0 32px;
 }
 .event-participants-count {
-  color: var(--soft-gold, #e0b84f);
+  color: var(--soft-gold-text);
 }
 .event-participants-empty {
   color: var(--text-muted);
@@ -7184,7 +7184,7 @@ ul {
   border-radius: 6px;
   border: 1px solid rgba(212, 160, 23, 0.45);
   background: transparent;
-  color: var(--soft-gold, #d4a017);
+  color: var(--soft-gold-text);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -7242,7 +7242,7 @@ ul {
 .archive-card-checkin {
   margin: 2px 0 0;
   font-size: 0.72rem;
-  color: var(--soft-gold, #d4a017);
+  color: var(--soft-gold-text);
 }
 .archive-strip {
   display: flex;
@@ -7288,7 +7288,7 @@ ul {
 .admin-avatar-initial {
   font-family: var(--font-heading);
   font-size: 1.6rem;
-  color: var(--accent-color, #d4a017);
+  color: var(--accent-text);
 }
 .admin-avatar-actions {
   display: flex;
@@ -7386,7 +7386,7 @@ ul {
 }
 .participation-count strong {
   font-size: 1.2rem;
-  color: var(--soft-gold, #e0b84f);
+  color: var(--soft-gold-text);
   margin: 0 2px;
 }
 .participation-people {
@@ -15637,5 +15637,158 @@ html[data-admin-theme='light'] .admin-sheet {
 @media (max-width: 560px) {
   .a2hs-card {
     padding: 16px;
+  }
+}
+
+/* ── 공연 둘러보기: 보기 전환(카드/목록) + 게시판형 목록 뷰 ─────────────
+   목록(list)은 공연이 수백 개일 때 빠르게 훑는 압축 뷰. 채널 토큰 사용(두 테마 대응). */
+.admin-filter-side {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.library-view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.library-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid rgba(var(--fg-rgb), 0.18);
+  color: var(--text-muted);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.library-view-btn:hover {
+  color: var(--text-color);
+  border-color: rgba(var(--fg-rgb), 0.4);
+}
+
+.library-view-btn.active {
+  background: rgba(var(--fg-rgb), 0.08);
+  border-color: rgba(var(--fg-rgb), 0.35);
+  color: var(--text-color);
+}
+
+.library-rows {
+  display: flex;
+  flex-direction: column;
+  background: rgba(var(--fg-rgb), 0.02);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.library-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(var(--fg-rgb), 0.07);
+  transition: background 0.16s;
+}
+
+.library-row:last-child {
+  border-bottom: none;
+}
+
+.library-row:hover {
+  background: rgba(var(--fg-rgb), 0.05);
+}
+
+.library-row.is-checked {
+  box-shadow: inset 2px 0 0 rgba(212, 160, 23, 0.55);
+}
+
+.library-row-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+}
+
+.library-row-date {
+  flex: 0 0 auto;
+  width: 86px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.library-row-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.library-row-title {
+  font-size: 0.88rem;
+  color: var(--text-color);
+}
+
+.library-row-category {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 160, 23, 0.35);
+  color: var(--accent-text);
+}
+
+.library-row-checked {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--soft-gold-text);
+}
+
+.library-row-upcoming {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(212, 160, 23, 0.16);
+  color: var(--accent-text);
+}
+
+/* 목록 줄 안의 체크인 버튼은 카드용(width:100%)을 압축형으로 */
+.library-row .library-checkin {
+  flex: 0 0 auto;
+}
+
+.library-row .library-checkin-btn {
+  width: auto;
+  padding: 5px 10px;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .admin-filter-side {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .library-row {
+    padding: 0 10px;
+  }
+
+  .library-row-date {
+    width: 74px;
+    font-size: 0.7rem;
   }
 }

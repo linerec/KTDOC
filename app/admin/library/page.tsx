@@ -8,12 +8,14 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEvents, getCategories, getUserCheckedInEventIds } from '@/lib/d1';
 import type { EventWithCategory } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import CheckinButton from '@/components/admin/library/CheckinButton';
+import LibraryViewToggle, { type LibraryView } from '@/components/admin/library/LibraryViewToggle';
 
 export const metadata: Metadata = {
   title: '공연 둘러보기 | KTDOC Admin',
@@ -26,6 +28,8 @@ interface PageProps {
     search?: string;
     /** '1'이면 학생 본인이 체크인한 공연만 모아 보기 */
     mine?: string;
+    /** 보기 방식: card(기본, 썸네일 카드) | list(게시판형 압축 목록) */
+    view?: string;
   }>;
 }
 
@@ -93,6 +97,25 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const hasFilters = !!(params.year || params.category || params.search || mineOnly);
   const displayCount = mineOnly ? displayEvents.length : total;
 
+  // 보기 방식: URL 파라미터가 우선, 없으면 지난 선택(쿠키), 기본은 카드.
+  // 목록(list)은 공연이 수백 개로 늘어도 빠르게 훑을 수 있는 게시판형 압축 뷰.
+  const savedView = (await cookies()).get('library-view')?.value;
+  const view: LibraryView =
+    params.view === 'list' || params.view === 'card'
+      ? params.view
+      : savedView === 'list'
+        ? 'list'
+        : 'card';
+  const viewHref = (v: LibraryView) => {
+    const q = new URLSearchParams();
+    if (params.year) q.set('year', params.year);
+    if (params.category) q.set('category', params.category);
+    if (params.search) q.set('search', params.search);
+    if (mineOnly) q.set('mine', '1');
+    q.set('view', v);
+    return `/admin/library?${q.toString()}`;
+  };
+
   // 공연 카드 1장(둘러보기 공통). 다가오는 섹션과 연도 목록에서 함께 쓴다.
   const eventCard = (event: EventWithCategory) => {
     const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
@@ -155,6 +178,64 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       </div>
     );
   };
+
+  // 게시판형 목록 한 줄(list 뷰). 카드와 같은 링크 대상·배지·체크인을 압축해 담는다.
+  const eventRow = (event: EventWithCategory) => {
+    const isDraft = event.is_published === 0;
+    const isChecked = canCheckIn && checkedInIds.has(event.id);
+    const isUpcoming = event.event_date >= today;
+    const inner = (
+      <>
+        <span className="library-row-date">{event.event_date}</span>
+        <span className="library-row-main">
+          <span className="library-row-title">{event.title_ko}</span>
+          {event.category_name_ko && (
+            <span className="library-row-category">{event.category_name_ko}</span>
+          )}
+          {isDraft && <span className="library-card-draft">비공개</span>}
+          {isChecked && (
+            <span className="library-row-checked">✓ {isUpcoming ? '참여 예정' : '참여함'}</span>
+          )}
+          {!isChecked && isUpcoming && (
+            <span className="library-row-upcoming">다가오는</span>
+          )}
+        </span>
+      </>
+    );
+    return (
+      <div key={event.id} className={`library-row${isChecked ? ' is-checked' : ''}`}>
+        {memberView ? (
+          <Link href={`/admin/library/${event.id}`} className="library-row-link">
+            {inner}
+          </Link>
+        ) : (
+          <a
+            href={`/gallery/${event.year}/${event.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="library-row-link"
+          >
+            {inner}
+          </a>
+        )}
+        {canCheckIn && (
+          <CheckinButton
+            eventId={event.id}
+            initialCheckedIn={checkedInIds.has(event.id)}
+            upcoming={isUpcoming}
+          />
+        )}
+      </div>
+    );
+  };
+
+  // 보기 방식에 따라 섹션 본문 렌더러를 고른다(다가오는·연도별 공통)
+  const renderEvents = (list: EventWithCategory[]) =>
+    view === 'list' ? (
+      <div className="library-rows">{list.map(eventRow)}</div>
+    ) : (
+      <div className="library-grid">{list.map(eventCard)}</div>
+    );
 
   return (
     <div className="admin-page">
@@ -227,8 +308,11 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           )}
         </form>
 
-        <div className="admin-filter-info">
-          {mineOnly ? '체크인한 공연' : canCheckIn ? '공연' : '공개된 공연'} {displayCount}개
+        <div className="admin-filter-side">
+          <LibraryViewToggle view={view} cardHref={viewHref('card')} listHref={viewHref('list')} />
+          <div className="admin-filter-info">
+            {mineOnly ? '체크인한 공연' : canCheckIn ? '공연' : '공개된 공연'} {displayCount}개
+          </div>
         </div>
       </div>
 
@@ -257,7 +341,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           {showUpcomingFirst && upcomingEvents.length > 0 && (
             <section className="library-year library-upcoming">
               <h2 className="library-year-title">다가오는 공연</h2>
-              <div className="library-grid">{upcomingEvents.map(eventCard)}</div>
+              {renderEvents(upcomingEvents)}
             </section>
           )}
 
@@ -267,7 +351,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
               <h2 className="library-year-title">
                 {showUpcomingFirst ? `${year} · 지난 공연` : `${year}`}
               </h2>
-              <div className="library-grid">{(grouped.get(year) ?? []).map(eventCard)}</div>
+              {renderEvents(grouped.get(year) ?? [])}
             </section>
           ))}
         </div>

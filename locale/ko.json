@@ -346,6 +346,9 @@
   "admin.a2hs.inappStep2": "Safari에서 공유 버튼 → '홈 화면에 추가'를 누르세요",
   "admin.a2hs.installBtn": "홈 화면에 추가",
   "admin.a2hs.later": "나중에",
+  "admin.library.view": "보기 방식",
+  "admin.library.viewCard": "카드",
+  "admin.library.viewList": "목록",
   "admin.shell.menu": "전체 메뉴",
 
   "admin.navGroup.notify": "알림",
