@@ -5406,45 +5406,6 @@ ul {
   max-width: 64ch;
   word-break: keep-all;
 }
-.admin-onboard-progress {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 26px;
-  flex-wrap: wrap;
-}
-.admin-rail {
-  position: relative;
-  flex: 1;
-  min-width: 160px;
-  height: 3px;
-  border-radius: 999px;
-  background: rgba(224, 184, 79, 0.14);
-  overflow: hidden;
-}
-.admin-rail::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  width: calc(var(--p, 0) * 100%);
-  background-image: var(--spine-gold);
-  box-shadow: 0 0 10px rgba(212, 160, 23, 0.4);
-  transition: width 0.9s var(--ease-out-expo);
-}
-.admin-rail-count {
-  font-family: var(--font-heading);
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
-.admin-rail-count b {
-  color: var(--warm-ivory);
-  font-size: 1.3rem;
-}
-.admin-rail-micro {
-  color: var(--soft-gold-text);
-  font-size: 0.85rem;
-}
 
 /* 긴급 콜아웃 (신규 신청) */
 .admin-urgent-callout {
@@ -5464,180 +5425,6 @@ ul {
   font-weight: 500;
 }
 
-/* 가이드 저니 (두루마리) */
-.admin-scroll {
-  list-style: none;
-  margin: 0 0 44px;
-  padding: 0;
-}
-.admin-step {
-  position: relative;
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 20px;
-  padding-bottom: 24px;
-}
-.admin-step::before {
-  content: '';
-  position: absolute;
-  left: 26px;
-  top: 54px;
-  bottom: -2px;
-  width: 2px;
-  transform: translateX(-50%);
-  background: rgba(224, 184, 79, 0.16);
-}
-.admin-step:last-child::before {
-  display: none;
-}
-.admin-step.is-done::before {
-  background-image: var(--spine-gold);
-  opacity: 0.7;
-}
-
-/* 메달리온 */
-.admin-step-medallion {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  font-family: var(--font-heading);
-  font-size: 1.2rem;
-  border: 1px solid rgba(212, 160, 23, 0.4);
-  background: rgba(212, 160, 23, 0.08);
-  color: var(--soft-gold-text);
-  flex-shrink: 0;
-}
-.admin-step-medallion svg {
-  width: 22px;
-  height: 22px;
-}
-.admin-step.is-current .admin-step-medallion {
-  background-image: var(--medallion-gold);
-  border-color: var(--soft-gold-text);
-  color: var(--ink-black);
-  box-shadow: var(--glow-gold);
-  animation: medallionPulse 3.4s var(--ease-out-expo) infinite;
-}
-.admin-step.is-current.is-attention .admin-step-medallion {
-  background: radial-gradient(circle at 35% 30%, #e8857f, var(--secondary-color));
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 0 4px rgba(196, 48, 43, 0.12), 0 0 24px rgba(196, 48, 43, 0.25);
-  color: var(--warm-ivory);
-  animation: none;
-}
-.admin-step.is-done .admin-step-medallion {
-  background: transparent;
-  border-color: rgba(224, 184, 79, 0.5);
-  color: var(--done-green);
-}
-@keyframes medallionPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0.25), 0 0 18px rgba(212, 160, 23, 0.2); }
-  50% { box-shadow: 0 0 0 6px rgba(212, 160, 23, 0), 0 0 26px rgba(212, 160, 23, 0.32); }
-}
-
-/* 단계 본문 */
-.admin-step-body {
-  padding-top: 6px;
-  min-width: 0;
-}
-.admin-step.is-current .admin-step-body {
-  position: relative;
-  background: linear-gradient(180deg, var(--ink-umber), var(--deep-umber));
-  border: 1px solid rgba(212, 160, 23, 0.3);
-  border-radius: 12px;
-  padding: 22px 24px;
-  box-shadow: 0 0 32px rgba(212, 160, 23, 0.06);
-}
-.admin-step.is-current.is-attention .admin-step-body {
-  border-color: rgba(196, 48, 43, 0.4);
-}
-.admin-step.is-current .admin-step-body::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background-image: var(--hairline-gold);
-  border-radius: 12px 12px 0 0;
-}
-.admin-step.is-done .admin-step-body {
-  opacity: 0.6;
-  transition: opacity 0.3s;
-}
-.admin-step.is-done:hover .admin-step-body {
-  opacity: 0.85;
-}
-.admin-step-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--soft-gold-text);
-  margin-bottom: 8px;
-}
-.admin-step-title {
-  font-family: var(--font-heading);
-  font-weight: 400;
-  font-size: 1.5rem;
-  color: var(--warm-ivory);
-  line-height: 1.25;
-}
-.admin-step.is-done .admin-step-title {
-  font-size: 1.15rem;
-  color: rgba(var(--ivory-rgb), 0.7);
-}
-.admin-step-desc {
-  margin-top: 10px;
-  color: rgba(var(--ivory-rgb), 0.74);
-  line-height: 1.7;
-  max-width: 60ch;
-  word-break: keep-all;
-}
-.admin-step-status {
-  margin-top: 8px;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-.admin-step.is-current .admin-step-status {
-  color: var(--soft-gold-text);
-}
-.admin-step-tip {
-  margin-top: 8px;
-  font-size: 0.85rem;
-  font-style: italic;
-  color: rgba(224, 184, 79, 0.8);
-}
-.admin-step-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-.admin-step-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 12px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
-  background: rgba(212, 160, 23, 0.16);
-  border: 1px solid rgba(212, 160, 23, 0.5);
-  color: var(--soft-gold-text);
-}
-.admin-step-pill.is-attention {
-  background: rgba(196, 48, 43, 0.18);
-  border-color: rgba(196, 48, 43, 0.55);
-  color: #f0b6b2;
-}
 
 /* 관리실 */
 .admin-workshop {
@@ -5684,33 +5471,9 @@ ul {
   line-height: 1.6;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .admin-step.is-current .admin-step-medallion {
-    animation: none;
-  }
-  .admin-rail::after {
-    transition: none;
-  }
-}
-
 @media (max-width: 768px) {
   .admin-onboard-head {
     padding: 24px 20px;
-  }
-  .admin-step {
-    grid-template-columns: 44px 1fr;
-    gap: 14px;
-  }
-  .admin-step-medallion {
-    width: 44px;
-    height: 44px;
-  }
-  .admin-step::before {
-    left: 22px;
-    top: 50px;
-  }
-  .admin-step.is-current .admin-step-body {
-    padding: 18px 18px;
   }
 }
 
@@ -15456,7 +15219,6 @@ html[data-admin-theme='light'] {
    쓰여 전역 플립이 불가능하므로 표면만 셀렉터로 보정한다) */
 html[data-admin-theme='light'] .admin-domain,
 html[data-admin-theme='light'] .admin-onboard-head,
-html[data-admin-theme='light'] .admin-step.is-current .admin-step-body,
 html[data-admin-theme='light'] .photo-modal {
   background: linear-gradient(180deg, #f9f4e9, #f1e9d9);
 }
@@ -15501,9 +15263,7 @@ html[data-admin-theme='light'] .ai-fill-note {
 
 html[data-admin-theme='light'] .push-card-feedback--err,
 html[data-admin-theme='light'] .inbox-del:hover,
-html[data-admin-theme='light'] .gallery-load-more-error,
-html[data-admin-theme='light'] .admin-step-pill.is-attention,
-html[data-admin-theme='light'] .admin-step.is-current.is-attention .admin-step-medallion {
+html[data-admin-theme='light'] .gallery-load-more-error {
   color: #a02520;
 }
 
