@@ -8,6 +8,7 @@
  */
 
 import Link from 'next/link';
+import AddToHomeCard from '@/components/admin/AddToHomeCard';
 import PushOptInCard from '@/components/push/PushOptInCard';
 
 interface QuickLink {
@@ -53,6 +54,10 @@ export default function StudentDashboard({
           </Link>
         </div>
       </header>
+
+      {/* 0) 홈 화면에 추가 — 아이폰은 설치해야 알림 수신이 가능하므로 알림 카드보다 앞에.
+          설치(standalone) 상태·'나중에'로 닫은 상태에서는 스스로 렌더하지 않는다. */}
+      <AddToHomeCard />
 
       {/* 1) 알림 받기 — 온보딩 핵심 */}
       <PushOptInCard />
