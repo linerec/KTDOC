@@ -4420,6 +4420,7 @@ ul {
 .admin-shell {
   --admin-sidebar-w: 264px;
   --admin-topbar-h: 56px;
+  --admin-bottomnav-h: 62px;
   display: flex;
   align-items: flex-start;
   min-height: 100vh;
@@ -4639,7 +4640,9 @@ ul {
   padding: 5px 10px;
   font-weight: 600;
 }
-.admin-shell-backdrop {
+/* 하단 탭바 / 전체 메뉴 시트 — 데스크톱은 사이드바를 쓰므로 숨긴다(모바일 전용). */
+.admin-bottomnav,
+.admin-sheet-root {
   display: none;
 }
 
@@ -4648,37 +4651,9 @@ ul {
     display: block;
   }
 
+  /* 모바일에서는 사이드바 대신 하단 탭바를 쓴다 */
   .admin-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: min(82vw, var(--admin-sidebar-w, 264px));
-    z-index: 1001;
-    transform: translateX(-100%);
-    transition: transform 0.26s var(--ease-out-quart);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-    /* 드로어 열렸을 때 브랜드/메뉴가 상태바 밑에 깔리지 않도록 */
-    padding-top: calc(22px + env(safe-area-inset-top));
-  }
-  .admin-shell.is-open .admin-sidebar {
-    transform: none;
-  }
-
-  .admin-shell-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.26s ease;
-    border: none;
-  }
-  .admin-shell.is-open .admin-shell-backdrop {
-    opacity: 1;
-    pointer-events: auto;
+    display: none;
   }
 
   .admin-topbar {
@@ -4695,25 +4670,6 @@ ul {
     backdrop-filter: blur(8px);
     border-bottom: 1px solid rgba(246, 239, 226, 0.08);
   }
-  .admin-topbar-burger {
-    display: inline-flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 40px;
-    height: 40px;
-    padding: 9px;
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-  .admin-topbar-burger span {
-    display: block;
-    height: 2px;
-    width: 100%;
-    background: var(--warm-ivory);
-    border-radius: 2px;
-  }
   .admin-topbar-title {
     display: block;
     font-family: var(--font-heading);
@@ -4727,8 +4683,165 @@ ul {
     letter-spacing: 0.14em;
   }
 
+  /* 본문 하단에 탭바 높이만큼 여백을 확보(콘텐츠가 바에 가리지 않도록) */
   .admin-shell .admin-page {
-    padding: 22px 16px 48px;
+    padding: 22px 16px
+      calc(48px + var(--admin-bottomnav-h) + env(safe-area-inset-bottom));
+  }
+
+  /* ── 하단 탭바 */
+  .admin-bottomnav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 950;
+    /* 홈 인디케이터(iOS) 영역만큼 아래 패딩을 더한다 */
+    height: calc(var(--admin-bottomnav-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(12, 12, 12, 0.94);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(246, 239, 226, 0.1);
+  }
+  .admin-bottomnav-item {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 2px 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease;
+  }
+  .admin-bottomnav-item.is-active {
+    color: var(--accent-color);
+  }
+  .admin-bottomnav-icon {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+  }
+  .admin-bottomnav-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+  .admin-bottomnav-label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ── 전체 메뉴 시트('더보기') — 데스크톱 기본 숨김(.admin-sheet-root{display:none})
+   위에 모바일에서만 고정 바텀시트로 펼친다. */
+@media (max-width: 900px) {
+  .admin-sheet-root {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    pointer-events: none;
+  }
+  .admin-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    border: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.26s ease;
+  }
+  .admin-sheet-root.is-open .admin-sheet-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .admin-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: min(82vh, 720px);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-dark);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    border-top: 1px solid rgba(246, 239, 226, 0.1);
+    box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.5);
+    padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
+    transform: translateY(100%);
+    transition: transform 0.28s var(--ease-out-quart, ease);
+    pointer-events: auto;
+  }
+  .admin-sheet-root.is-open .admin-sheet {
+    transform: none;
+  }
+  .admin-sheet-grip {
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(246, 239, 226, 0.22);
+    margin: 4px auto 8px;
+    flex-shrink: 0;
+  }
+  .admin-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(246, 239, 226, 0.08);
+    flex-shrink: 0;
+  }
+  .admin-sheet-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    text-decoration: none;
+  }
+  .admin-sheet-close {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .admin-sheet-nav {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 0;
+  }
+  .admin-sheet-foot {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(246, 239, 226, 0.08);
+    flex-shrink: 0;
+  }
+  .admin-sheet-foot .admin-sidebar-foot-btn {
+    flex: 1;
   }
 }
 

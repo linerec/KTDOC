@@ -141,6 +141,17 @@ function IconDot() {
     </svg>
   );
 }
+function IconMore() {
+  // 2×2 그리드 — 하단 탭바의 '더보기'(전체 메뉴)용
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.6" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" />
+    </svg>
+  );
+}
 
 const ICONS: Record<string, () => ReactNode> = {
   home: IconHome,
@@ -158,6 +169,7 @@ const ICONS: Record<string, () => ReactNode> = {
   globe: IconGlobe,
   question: IconQuestion,
   spark: IconSpark,
+  more: IconMore,
 };
 
 export function MenuIcon({ iconKey }: { iconKey: string }) {

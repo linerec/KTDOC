@@ -332,6 +332,8 @@
   "admin.shell.logout": "로그아웃",
   "admin.shell.menuOpen": "메뉴 열기",
   "admin.shell.menuClose": "메뉴 닫기",
+  "admin.shell.more": "더보기",
+  "admin.shell.menu": "전체 메뉴",
 
   "admin.navGroup.notify": "알림",
   "admin.navGroup.lesson": "수업 · 일정",

@@ -332,6 +332,8 @@
   "admin.shell.logout": "Log Out",
   "admin.shell.menuOpen": "Open menu",
   "admin.shell.menuClose": "Close menu",
+  "admin.shell.more": "More",
+  "admin.shell.menu": "All Menu",
 
   "admin.navGroup.notify": "Notifications",
   "admin.navGroup.lesson": "Classes & Schedule",

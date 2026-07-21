@@ -4,19 +4,23 @@
  * AdminShell
  * 관리자 콘솔 레이아웃 셸. 모든 /admin 페이지를 감싼다.
  * - 데스크톱: 좌측 고정 사이드바 + 본문
- * - 모바일: 상단바(햄버거) + 슬라이드 드로어(사이드바)
+ * - 모바일: 상단 브랜드 바 + 하단 탭바(웹앱 톤). '더보기' 탭이 전체 메뉴 시트를 연다.
  *
  * 표시할 메뉴(menus)는 서버(app/admin/layout.tsx)가 권한 매트릭스로 계산해 전달한다.
  * 메뉴 정의는 lib/admin/menu-registry.ts에서 관리한다(여기서 하드코딩하지 않는다).
+ * 그룹형 네비 렌더는 AdminNavLinks(사이드바·시트 공유), 하단 바는 AdminBottomNav,
+ * 전체 메뉴 시트는 AdminMoreSheet가 담당한다.
  */
 
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { MenuIcon } from '@/lib/admin/menu-icons';
 import { useT } from '@/lib/i18n/useT';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
+import AdminNavLinks from '@/components/admin/AdminNavLinks';
+import AdminBottomNav from '@/components/admin/AdminBottomNav';
+import AdminMoreSheet from '@/components/admin/AdminMoreSheet';
 import type { NavMenu } from '@/types/permissions';
 
 interface AdminShellProps {
@@ -41,25 +45,23 @@ export default function AdminShell({
 }: AdminShellProps) {
   const pathname = usePathname();
   const t = useT();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   // 셸 크롬(부제목·하단 액션·aria)은 useT로 번역하고 한국어로 폴백한다.
   const consoleLabelText = consoleLabelKey
     ? t(consoleLabelKey, consoleLabel)
     : consoleLabel;
 
-  const closeDrawer = () => setMobileOpen(false);
-
-  // 드로어가 열린 동안 본문 스크롤 잠금
+  // 시트가 열린 동안 본문 스크롤 잠금
   useEffect(() => {
-    if (mobileOpen) {
+    if (moreOpen) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prev;
       };
     }
-  }, [mobileOpen]);
+  }, [moreOpen]);
 
   // 현재 경로에 가장 길게 일치하는 메뉴 하나만 활성화 (상·하위 메뉴 중복 방지)
   const activeHref = useMemo(() => {
@@ -75,62 +77,26 @@ export default function AdminShell({
   }, [pathname, menus]);
 
   return (
-    <div className={`admin-shell${mobileOpen ? ' is-open' : ''}`}>
-      {/* 사이드바 / 드로어 */}
+    <div className="admin-shell">
+      {/* 사이드바 (데스크톱) */}
       <aside className="admin-sidebar" aria-label={t('admin.shell.navAria', '관리자 메뉴')}>
         <div className="admin-sidebar-brand">
-          <Link href="/admin" className="admin-sidebar-wordmark" onClick={closeDrawer}>
+          <Link href="/admin" className="admin-sidebar-wordmark">
             <span className="admin-sidebar-mark">KTDOC</span>
             <span className="admin-sidebar-sub">{consoleLabelText}</span>
           </Link>
         </div>
 
         <nav className="admin-nav">
-          {menus.map((item, i) => {
-            // 그룹이 바뀌는 첫 항목에서 섹션 헤더(라벨 있음) 또는 간격(단독 항목)을 삽입한다.
-            const groupStart = item.group !== menus[i - 1]?.group;
-            return (
-              <Fragment key={item.key}>
-                {groupStart &&
-                  (item.groupLabel ? (
-                    <div className="admin-nav-group">
-                      {t(item.groupLabelKey, item.groupLabel)}
-                    </div>
-                  ) : i > 0 ? (
-                    <div className="admin-nav-gap" aria-hidden="true" />
-                  ) : null)}
-                <Link
-                  href={item.href}
-                  onClick={closeDrawer}
-                  className={`admin-nav-link${item.sub ? ' is-sub' : ''}${
-                    item.href === activeHref ? ' is-active' : ''
-                  }`}
-                  aria-current={item.href === activeHref ? 'page' : undefined}
-                >
-                  <span className="admin-nav-icon" aria-hidden="true">
-                    <MenuIcon iconKey={item.iconKey} />
-                  </span>
-                  <span className="admin-nav-label">
-                    {t(item.labelKey, item.label)}
-                  </span>
-                  {showStaffMarks && item.staffOnly && (
-                    <span
-                      className="admin-nav-dot"
-                      title={t(
-                        'admin.shell.staffOnlyTitle',
-                        '운영진 전용 · 원생·학부모에게는 보이지 않는 메뉴'
-                      )}
-                      aria-label={t('admin.shell.staffOnlyAria', '운영진 전용 메뉴')}
-                    />
-                  )}
-                </Link>
-              </Fragment>
-            );
-          })}
+          <AdminNavLinks
+            menus={menus}
+            activeHref={activeHref}
+            showStaffMarks={showStaffMarks}
+          />
         </nav>
 
         <div className="admin-sidebar-foot">
-          <Link href="/admin/profile" className="admin-sidebar-user" onClick={closeDrawer}>
+          <Link href="/admin/profile" className="admin-sidebar-user">
             <span className="admin-sidebar-user-avatar" aria-hidden="true">
               {userName.charAt(0).toUpperCase()}
             </span>
@@ -151,29 +117,9 @@ export default function AdminShell({
         </div>
       </aside>
 
-      {/* 모바일 드로어 백드롭 */}
-      <button
-        type="button"
-        className="admin-shell-backdrop"
-        aria-label={t('admin.shell.menuClose', '메뉴 닫기')}
-        tabIndex={mobileOpen ? 0 : -1}
-        onClick={() => setMobileOpen(false)}
-      />
-
       {/* 본문 */}
       <div className="admin-shell-main">
         <header className="admin-topbar">
-          <button
-            type="button"
-            className="admin-topbar-burger"
-            aria-label={t('admin.shell.menuOpen', '메뉴 열기')}
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen((v) => !v)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
           <Link href="/admin" className="admin-topbar-title">
             KTDOC <span>{consoleLabelText}</span>
           </Link>
@@ -182,6 +128,22 @@ export default function AdminShell({
 
         {children}
       </div>
+
+      {/* 모바일 하단 탭바 + 전체 메뉴 시트 */}
+      <AdminBottomNav
+        menus={menus}
+        activeHref={activeHref}
+        moreOpen={moreOpen}
+        onMore={() => setMoreOpen((v) => !v)}
+      />
+      <AdminMoreSheet
+        open={moreOpen}
+        menus={menus}
+        activeHref={activeHref}
+        showStaffMarks={showStaffMarks}
+        userName={userName}
+        onClose={() => setMoreOpen(false)}
+      />
     </div>
   );
 }
