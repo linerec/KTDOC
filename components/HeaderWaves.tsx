@@ -17,6 +17,9 @@ import { useEffect, useRef } from 'react';
  *
  * pointer-events:none이며 header-inner 뒤(z-index:0)에 깔린다. 크기는 부모(#main-header)를
  * ResizeObserver로 추종하므로 로고 확대/축소(스크롤)에도 자동 대응한다.
+ *
+ * 부모 크기를 따라가는 범용 캔버스라 다른 호스트에서도 재사용할 수 있다 —
+ * className으로 배치 스타일만 바꾼다(예: 관리 콘솔 사이드바 브랜드 .admin-brand-waves).
  */
 
 interface Stroke {
@@ -44,7 +47,7 @@ const STROKES: Stroke[] = [
 const BUMP_RADIUS = 220; // 마우스 붓압이 미치는 가로 범위(px)
 const BUMP_STRENGTH = 12; // 마우스 근처 추가 진폭(px)
 
-export default function HeaderWaves() {
+export default function HeaderWaves({ className = 'header-waves' }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -176,5 +179,5 @@ export default function HeaderWaves() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="header-waves" aria-hidden="true" />;
+  return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
 }

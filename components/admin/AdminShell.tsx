@@ -22,6 +22,7 @@ import AdminNavLinks from '@/components/admin/AdminNavLinks';
 import AdminBottomNav from '@/components/admin/AdminBottomNav';
 import AdminMoreSheet from '@/components/admin/AdminMoreSheet';
 import AdminThemeToggle from '@/components/admin/AdminThemeToggle';
+import HeaderWaves from '@/components/HeaderWaves';
 import type { NavMenu } from '@/types/permissions';
 
 interface AdminShellProps {
@@ -82,6 +83,11 @@ export default function AdminShell({
       {/* 사이드바 (데스크톱) */}
       <aside className="admin-sidebar" aria-label={t('admin.shell.navAria', '관리자 메뉴')}>
         <div className="admin-sidebar-brand">
+          {/* 공개 헤더 Top Bar와 같은 붓질 선 애니메이션 — 워드마크 뒤에 깔린다.
+              헤더와 동일한 환경변수로 끌 수 있다. */}
+          {process.env.NEXT_PUBLIC_HEADER_WAVES !== 'off' && (
+            <HeaderWaves className="admin-brand-waves" />
+          )}
           <Link href="/admin" className="admin-sidebar-wordmark">
             <span className="admin-sidebar-mark">KTDOC</span>
             <span className="admin-sidebar-sub">{consoleLabelText}</span>

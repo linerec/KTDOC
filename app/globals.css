@@ -15792,3 +15792,23 @@ html[data-admin-theme='light'] .admin-sheet {
     font-size: 0.7rem;
   }
 }
+
+/* ── 사이드바 브랜드의 붓질 선 애니메이션 — 공개 헤더 Top Bar(HeaderWaves)와
+   같은 캔버스를 재사용한다. 워드마크 뒤(z:0)에 깔리고 클릭을 막지 않는다. ── */
+.admin-sidebar-brand {
+  position: relative;
+}
+
+.admin-brand-waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.admin-sidebar-wordmark {
+  position: relative;
+  z-index: 1;
+}
