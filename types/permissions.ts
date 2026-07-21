@@ -37,6 +37,25 @@ export type MenuKey =
   | 'settings.ai'
   | 'settings.permissions';
 
+/**
+ * 메뉴 섹션(계층 그룹) 식별자 — 비슷한 기능끼리 묶어 사이드바에 소제목으로 표시한다.
+ * 'home'·'account'는 단독 항목이라 라벨 없이(헤더 미표시) 최상단·최하단에 둔다.
+ */
+export type MenuGroupKey =
+  | 'home'
+  | 'notify'
+  | 'lesson'
+  | 'show'
+  | 'resource'
+  | 'ops'
+  | 'account';
+
+/** 메뉴 그룹 메타(표시 순서 = 배열 순서, label '' = 헤더 미표시) */
+export interface MenuGroup {
+  key: MenuGroupKey;
+  label: string;
+}
+
 /** 메뉴 정의(코드 = 메뉴 "존재"의 진실의 원천) */
 export interface MenuNode {
   key: MenuKey;
@@ -45,6 +64,8 @@ export interface MenuNode {
   label: string;
   /** 아이콘 식별자 → lib/admin/menu-icons.tsx에서 컴포넌트로 매핑 */
   iconKey: string;
+  /** 소속 섹션(계층 그룹). 같은 그룹은 레지스트리에서 연속 배치한다. */
+  group: MenuGroupKey;
   /** 서브메뉴 그룹핑(상위 메뉴 key) */
   parentKey?: MenuKey;
   /** /admin 처럼 정확히 일치할 때만 활성화 */
@@ -63,8 +84,21 @@ export interface NavMenu {
   href: string;
   label: string;
   iconKey: string;
+  /**
+   * 네비 라벨 번역 키코드(`admin.nav.<menuKey>`). AdminShell이 useT로 번역하고
+   * 키가 없으면 label(한국어)로 폴백한다. label은 항상 폴백으로 남긴다.
+   */
+  labelKey: string;
   /** 서브메뉴 들여쓰기 여부 */
   sub: boolean;
+  /** 소속 섹션 키(헤더 삽입 판정용) */
+  group: MenuGroupKey;
+  /** 섹션 소제목('' = 헤더 미표시) */
+  groupLabel: string;
+  /** 섹션 소제목 번역 키코드(`admin.navGroup.<groupKey>`, '' = 헤더 미표시) */
+  groupLabelKey: string;
+  /** 운영진 전용(원생·학부모에게는 보이지 않는) 메뉴 여부 — 사이드바 점 표시용 */
+  staffOnly: boolean;
 }
 
 /** 권한 매트릭스: menu_key → (role → allowed) */

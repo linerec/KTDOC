@@ -70,11 +70,23 @@ export default async function AdminLayout({
     session.user?.name || session.user?.email?.split('@')[0] || '관리자';
 
   // 멤버(원생·학부모)에게는 "관리 콘솔" 대신 친근한 "마이페이지" 톤으로.
-  const consoleLabel =
-    role === 'student' || role === 'parent' ? '마이페이지' : '관리 콘솔';
+  // 라벨은 클라이언트(AdminShell)에서 useT로 번역하고, 키가 없으면 이 한국어로 폴백한다.
+  const isMember = role === 'student' || role === 'parent';
+  const consoleLabel = isMember ? '마이페이지' : '관리 콘솔';
+  const consoleLabelKey = isMember ? 'admin.shell.consoleMember' : 'admin.shell.console';
+
+  // 운영진(선생님·관리자)에게만 '운영진 전용' 점을 노출한다.
+  // 원생·학부모는 보이는 게 곧 본인 메뉴라 점이 의미 없고 혼란만 준다.
+  const showStaffMarks = role === 'teacher' || role === 'admin';
 
   return (
-    <AdminShell userName={userName} menus={menus} consoleLabel={consoleLabel}>
+    <AdminShell
+      userName={userName}
+      menus={menus}
+      consoleLabel={consoleLabel}
+      consoleLabelKey={consoleLabelKey}
+      showStaffMarks={showStaffMarks}
+    >
       {children}
     </AdminShell>
   );

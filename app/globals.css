@@ -4469,6 +4469,23 @@ ul {
   flex-direction: column;
   gap: 2px;
 }
+/* 섹션 소제목(계층 그룹 헤더) */
+.admin-nav-group {
+  margin: 14px 12px 3px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+.admin-nav > .admin-nav-group:first-child {
+  margin-top: 2px;
+}
+/* 라벨 없는 단독 그룹(계정 등) 앞의 간격 */
+.admin-nav-gap {
+  height: 12px;
+}
 .admin-nav-link {
   display: flex;
   align-items: center;
@@ -4512,6 +4529,18 @@ ul {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* 운영진 전용(원생·학부모 미노출) 메뉴 표식 — 라벨 우측의 작은 점 */
+.admin-nav-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  opacity: 0.72;
+}
+.admin-nav-link.is-active .admin-nav-dot {
+  opacity: 0.95;
 }
 
 /* 사이드바 하단: 사용자 / 액션 */
@@ -4581,9 +4610,34 @@ ul {
   padding: 34px clamp(20px, 4vw, 48px) 64px;
 }
 
-/* 모바일 상단바 / 백드롭 (기본 숨김) */
+/* 상단바 — 데스크톱에서는 언어 전환만 담은 슬림 스트립(우측 정렬).
+   햄버거·타이틀은 모바일 전용이라 여기선 숨긴다. */
 .admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  padding: 9px clamp(20px, 4vw, 48px);
+  background: rgba(10, 10, 10, 0.82);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(246, 239, 226, 0.06);
+}
+.admin-topbar-burger,
+.admin-topbar-title {
   display: none;
+}
+/* 언어 전환(한/영) — 상단바 우측 끝, 작지만 또렷하게 */
+.admin-topbar-lang {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.admin-topbar-lang .lang-btn {
+  min-width: 40px;
+  padding: 5px 10px;
+  font-weight: 600;
 }
 .admin-shell-backdrop {
   display: none;
@@ -4661,6 +4715,7 @@ ul {
     border-radius: 2px;
   }
   .admin-topbar-title {
+    display: block;
     font-family: var(--font-heading);
     letter-spacing: 0.1em;
     font-size: 1.05rem;

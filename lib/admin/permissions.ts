@@ -17,7 +17,11 @@ import { query } from '@/lib/db';
 import {
   MENU_REGISTRY,
   getMenuNode,
+  getGroupLabel,
+  getGroupLabelKey,
+  getMenuLabelKey,
   isKnownMenuKey,
+  isStaffOnlyMenu,
 } from '@/lib/admin/menu-registry';
 import { MEMBER_ROLES, type MemberRole } from '@/types/members';
 import type {
@@ -114,8 +118,13 @@ export function getAllowedMenus(role: MemberRole, matrix: PermMatrix): NavMenu[]
       key: node.key,
       href: node.href,
       label: node.label,
+      labelKey: getMenuLabelKey(node.key),
       iconKey: node.iconKey,
       sub: !!node.parentKey,
+      group: node.group,
+      groupLabel: getGroupLabel(node.group),
+      groupLabelKey: getGroupLabelKey(node.group),
+      staffOnly: isStaffOnlyMenu(node),
     })
   );
 }

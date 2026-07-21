@@ -10,11 +10,13 @@
  * 메뉴 정의는 lib/admin/menu-registry.ts에서 관리한다(여기서 하드코딩하지 않는다).
  */
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { MenuIcon } from '@/lib/admin/menu-icons';
+import { useT } from '@/lib/i18n/useT';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import type { NavMenu } from '@/types/permissions';
 
 interface AdminShellProps {
@@ -23,6 +25,10 @@ interface AdminShellProps {
   children: ReactNode;
   /** 사이드바/모바일 헤더의 부제목. 멤버는 "마이페이지", 운영진은 "관리 콘솔". */
   consoleLabel?: string;
+  /** 부제목 번역 키코드. 없으면 consoleLabel(한국어)로 폴백. */
+  consoleLabelKey?: string;
+  /** true면 운영진 전용(원생·학부모 미노출) 메뉴에 점을 표시(운영진 뷰 전용). */
+  showStaffMarks?: boolean;
 }
 
 export default function AdminShell({
@@ -30,9 +36,17 @@ export default function AdminShell({
   menus,
   children,
   consoleLabel = '관리 콘솔',
+  consoleLabelKey,
+  showStaffMarks = false,
 }: AdminShellProps) {
   const pathname = usePathname();
+  const t = useT();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // 셸 크롬(부제목·하단 액션·aria)은 useT로 번역하고 한국어로 폴백한다.
+  const consoleLabelText = consoleLabelKey
+    ? t(consoleLabelKey, consoleLabel)
+    : consoleLabel;
 
   const closeDrawer = () => setMobileOpen(false);
 
@@ -63,31 +77,56 @@ export default function AdminShell({
   return (
     <div className={`admin-shell${mobileOpen ? ' is-open' : ''}`}>
       {/* 사이드바 / 드로어 */}
-      <aside className="admin-sidebar" aria-label="관리자 메뉴">
+      <aside className="admin-sidebar" aria-label={t('admin.shell.navAria', '관리자 메뉴')}>
         <div className="admin-sidebar-brand">
           <Link href="/admin" className="admin-sidebar-wordmark" onClick={closeDrawer}>
             <span className="admin-sidebar-mark">KTDOC</span>
-            <span className="admin-sidebar-sub">{consoleLabel}</span>
+            <span className="admin-sidebar-sub">{consoleLabelText}</span>
           </Link>
         </div>
 
         <nav className="admin-nav">
-          {menus.map((item) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              onClick={closeDrawer}
-              className={`admin-nav-link${item.sub ? ' is-sub' : ''}${
-                item.href === activeHref ? ' is-active' : ''
-              }`}
-              aria-current={item.href === activeHref ? 'page' : undefined}
-            >
-              <span className="admin-nav-icon" aria-hidden="true">
-                <MenuIcon iconKey={item.iconKey} />
-              </span>
-              <span className="admin-nav-label">{item.label}</span>
-            </Link>
-          ))}
+          {menus.map((item, i) => {
+            // 그룹이 바뀌는 첫 항목에서 섹션 헤더(라벨 있음) 또는 간격(단독 항목)을 삽입한다.
+            const groupStart = item.group !== menus[i - 1]?.group;
+            return (
+              <Fragment key={item.key}>
+                {groupStart &&
+                  (item.groupLabel ? (
+                    <div className="admin-nav-group">
+                      {t(item.groupLabelKey, item.groupLabel)}
+                    </div>
+                  ) : i > 0 ? (
+                    <div className="admin-nav-gap" aria-hidden="true" />
+                  ) : null)}
+                <Link
+                  href={item.href}
+                  onClick={closeDrawer}
+                  className={`admin-nav-link${item.sub ? ' is-sub' : ''}${
+                    item.href === activeHref ? ' is-active' : ''
+                  }`}
+                  aria-current={item.href === activeHref ? 'page' : undefined}
+                >
+                  <span className="admin-nav-icon" aria-hidden="true">
+                    <MenuIcon iconKey={item.iconKey} />
+                  </span>
+                  <span className="admin-nav-label">
+                    {t(item.labelKey, item.label)}
+                  </span>
+                  {showStaffMarks && item.staffOnly && (
+                    <span
+                      className="admin-nav-dot"
+                      title={t(
+                        'admin.shell.staffOnlyTitle',
+                        '운영진 전용 · 원생·학부모에게는 보이지 않는 메뉴'
+                      )}
+                      aria-label={t('admin.shell.staffOnlyAria', '운영진 전용 메뉴')}
+                    />
+                  )}
+                </Link>
+              </Fragment>
+            );
+          })}
         </nav>
 
         <div className="admin-sidebar-foot">
@@ -100,14 +139,14 @@ export default function AdminShell({
             </span>
           </Link>
           <Link href="/" target="_blank" className="admin-sidebar-foot-btn">
-            사이트 보기 ↗
+            {t('admin.shell.viewSite', '사이트 보기')} ↗
           </Link>
           <button
             type="button"
             className="admin-sidebar-foot-btn admin-sidebar-foot-btn--logout"
             onClick={() => signOut({ callbackUrl: '/' })}
           >
-            로그아웃
+            {t('admin.shell.logout', '로그아웃')}
           </button>
         </div>
       </aside>
@@ -116,7 +155,7 @@ export default function AdminShell({
       <button
         type="button"
         className="admin-shell-backdrop"
-        aria-label="메뉴 닫기"
+        aria-label={t('admin.shell.menuClose', '메뉴 닫기')}
         tabIndex={mobileOpen ? 0 : -1}
         onClick={() => setMobileOpen(false)}
       />
@@ -127,7 +166,7 @@ export default function AdminShell({
           <button
             type="button"
             className="admin-topbar-burger"
-            aria-label="메뉴 열기"
+            aria-label={t('admin.shell.menuOpen', '메뉴 열기')}
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((v) => !v)}
           >
@@ -136,8 +175,9 @@ export default function AdminShell({
             <span />
           </button>
           <Link href="/admin" className="admin-topbar-title">
-            KTDOC <span>{consoleLabel}</span>
+            KTDOC <span>{consoleLabelText}</span>
           </Link>
+          <LanguageSwitcher className="admin-topbar-lang" />
         </header>
 
         {children}

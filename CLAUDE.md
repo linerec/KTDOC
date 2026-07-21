@@ -88,6 +88,36 @@ ResizeObserver로 실높이를 재서 문서 루트에 발행한다:
 4. **히어로 골격**: eyebrow(라벨) → h1 타이틀 → 설명 순서. gallery-hero
    (label/title/subtitle/description)가 캐노니컬 참조.
 
+## i18n (다국어) — 관리 콘솔 포함 전역
+
+앱 전체가 **클라이언트 사이드 번역** 방식이다(서버 로케일 감지 없음). SSR은 항상
+한국어(기본)로 렌더되고, 하이드레이션 후 사용자 언어(`localStorage['lang']`, ko/en)로
+바뀐다. 메시지는 `locale/ko.json`·`locale/en.json`(번들 기본값) 위에 D1 오버라이드
+(`/api/locale`)를 얹은 플랫 key→string 맵이다. 전역 소스는 `contexts/LanguageContext`.
+
+번역 텍스트를 쓰는 두 가지 방법:
+- **서버 컴포넌트**: `<IntlObject keycode="..." />` (편집 모달 내장, 마크업 래퍼 생성)
+- **클라이언트 컴포넌트**: `const t = useT()` (`lib/i18n/useT.ts`) →
+  `t(keycode, fallback?, params?)`. 순수 문자열 반환이라 라벨·aria-label 등
+  래퍼를 붙이면 안 되는 자리에 적합.
+
+키코드 네임스페이스(도메인별):
+- 관리 콘솔은 `admin.*` — 네비 `admin.nav.<menuKey>`, 섹션 헤더
+  `admin.navGroup.<groupKey>`, 셸 크롬 `admin.shell.*`.
+
+규칙:
+1. **항상 fallback을 넘긴다.** `t('admin.x.y', '한국어 기본값')`. 키가 아직 locale
+   파일에 없어도 화면이 키코드로 깨지지 않는다(페이지별 점진 이관의 안전망).
+2. **ko/en 키 세트를 맞춘다.** locale 파일에 키를 추가할 땐 두 파일 모두에.
+   한국어 값은 코드의 fallback과 동일하게 두어 한국어 화면이 변하지 않게 한다.
+3. **메뉴 라벨은 레지스트리(`lib/admin/menu-registry.ts`)의 `label`이 폴백**이고,
+   키코드는 `getMenuLabelKey`/`getGroupLabelKey`로 파생된다. 새 메뉴 추가 시 라벨은
+   레지스트리에만 쓰고, 번역은 `admin.nav.<key>`를 두 locale 파일에 추가하면 된다.
+4. **콘솔 내 언어 전환**은 사이드바 하단 `<LanguageSwitcher/>`. public 사이트와
+   같은 `lang` 선호를 공유한다(콘솔에서 바꾸면 공개 사이트도 함께 바뀜).
+
+세부 페이지 본문 텍스트의 다국어화는 필요 시 페이지별로 위 규칙에 따라 진행한다.
+
 ## Reference Files
 
 - **legacy_backup/**: Original static HTML/CSS/JS before migration
