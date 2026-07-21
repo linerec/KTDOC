@@ -1,0 +1,15 @@
+{
+  "name": "KTDOC 마이페이지",
+  "short_name": "KTDOC",
+  "description": "KTDOC 콘솔 — 공연 참여·일정·알림",
+  "id": "/admin",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f1e6",
+  "theme_color": "#f6f1e6",
+  "lang": "ko",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

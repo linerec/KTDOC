@@ -89,6 +89,10 @@ export const metadata: Metadata = {
     title: 'KTDOC',
     statusBarStyle: 'black-translucent',
   },
+  // 홈 화면 추가 시 열리는 주소는 매니페스트 start_url이 정한다.
+  // 공개 사이트는 '/', 관리 콘솔은 admin layout이 start_url '/admin'인
+  // manifest-admin.webmanifest로 오버라이드한다(콘솔에서 추가한 아이콘은 대시보드로 열림).
+  manifest: '/manifest.webmanifest',
 };
 
 export const viewport: Viewport = {

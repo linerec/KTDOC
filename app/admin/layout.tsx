@@ -28,6 +28,10 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  // 콘솔에서 홈 화면에 추가하면 공개 메인이 아니라 대시보드(/admin)가 열리도록
+  // start_url '/admin'인 별도 매니페스트를 물려준다(루트 layout 값을 오버라이드).
+  // 파일명이 /admin으로 시작하면 인증 미들웨어에 걸리므로 manifest-admin으로 둔다.
+  manifest: '/manifest-admin.webmanifest',
 };
 
 export default async function AdminLayout({

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
-import { sendToUsers, type PushPayload } from '@/lib/push/webpush';
+import { sendToUsers, type PushPayload, type SendResult } from '@/lib/push/webpush';
 import {
   logNotification,
   addRecipients,
@@ -76,8 +76,15 @@ export async function POST(request: Request) {
 
     const payload: PushPayload = { title, body, url, tag: `ktdoc-notify-${Date.now()}` };
 
-    // 1) 푸시 발송(구독한 기기에만 도착)
-    const result = await sendToUsers(userIds, payload);
+    // 1) 푸시 발송(구독한 기기에만 도착).
+    // 푸시는 best-effort다 — VAPID 미설정 등으로 실패해도 아래 인박스 기록은 남겨
+    // 회원이 '내 알림'에서 확인할 수 있게 한다(전체 요청을 500으로 죽이지 않는다).
+    let result: SendResult = { sent: 0, failed: 0 };
+    try {
+      result = await sendToUsers(userIds, payload);
+    } catch (pushErr) {
+      console.error('푸시 발송 실패(인박스 기록은 계속):', pushErr);
+    }
 
     // 2) 발송 로그 + 회원별 인박스 기록(푸시 미설정 회원도 포함)
     const notificationId = await logNotification({
