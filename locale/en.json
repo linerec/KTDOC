@@ -333,6 +333,9 @@
   "admin.shell.menuOpen": "Open menu",
   "admin.shell.menuClose": "Close menu",
   "admin.shell.more": "More",
+  "admin.shell.theme": "Theme",
+  "admin.shell.themeLight": "Light",
+  "admin.shell.themeDark": "Dark",
   "admin.shell.menu": "All Menu",
 
   "admin.navGroup.notify": "Notifications",

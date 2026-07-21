@@ -21,6 +21,7 @@ import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import AdminNavLinks from '@/components/admin/AdminNavLinks';
 import AdminBottomNav from '@/components/admin/AdminBottomNav';
 import AdminMoreSheet from '@/components/admin/AdminMoreSheet';
+import AdminThemeToggle from '@/components/admin/AdminThemeToggle';
 import type { NavMenu } from '@/types/permissions';
 
 interface AdminShellProps {
@@ -124,6 +125,7 @@ export default function AdminShell({
             KTDOC <span>{consoleLabelText}</span>
           </Link>
           <LanguageSwitcher className="admin-topbar-lang" />
+          <AdminThemeToggle />
         </header>
 
         {children}

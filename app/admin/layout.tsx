@@ -21,6 +21,7 @@ import {
 } from '@/lib/admin/permissions';
 import type { MemberRole } from '@/types/members';
 import AdminShell from '@/components/admin/AdminShell';
+import { AdminThemeProvider } from '@/contexts/AdminThemeContext';
 
 export const metadata: Metadata = {
   robots: {
@@ -80,14 +81,16 @@ export default async function AdminLayout({
   const showStaffMarks = role === 'teacher' || role === 'admin';
 
   return (
-    <AdminShell
-      userName={userName}
-      menus={menus}
-      consoleLabel={consoleLabel}
-      consoleLabelKey={consoleLabelKey}
-      showStaffMarks={showStaffMarks}
-    >
-      {children}
-    </AdminShell>
+    <AdminThemeProvider>
+      <AdminShell
+        userName={userName}
+        menus={menus}
+        consoleLabel={consoleLabel}
+        consoleLabelKey={consoleLabelKey}
+        showStaffMarks={showStaffMarks}
+      >
+        {children}
+      </AdminShell>
+    </AdminThemeProvider>
   );
 }

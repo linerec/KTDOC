@@ -118,6 +118,31 @@ ResizeObserver로 실높이를 재서 문서 루트에 발행한다:
 
 세부 페이지 본문 텍스트의 다국어화는 필요 시 페이지별로 위 규칙에 따라 진행한다.
 
+## 관리 콘솔 테마 (라이트 기본 / 다크 전환) — 콘솔 한정
+
+공개 사이트는 항상 다크다. 관리 콘솔은 **라이트가 기본값**이고, 상단바
+세그먼트 토글(`AdminThemeToggle`)로 다크 전환이 가능하며, 선호는
+`localStorage['admin-theme']`에 저장된다(저장값이 'dark'일 때만 다크).
+전역 소스는 `contexts/AdminThemeContext`(콘솔 레이아웃에서만 마운트, 이탈 시
+`<html data-admin-theme>` 제거). FOUC 방지 부트 스크립트는 루트 layout의
+`<head>`에 있고 `/admin` 경로 가드가 걸려 있다.
+
+CSS 구조: `:root`는 다크 값, `globals.css` 하단 `html[data-admin-theme='light']`
+블록이 토큰을 뒤집는다. **관리 콘솔 화면의 새 CSS를 쓸 때 규칙**:
+
+1. 어두운 배경 위 흰/아이보리 전경은 `rgba(255,255,255,α)`를 직접 쓰지 말고
+   `rgba(var(--fg-rgb), α)`·`rgba(var(--ivory-rgb), α)`로. 표면은 `var(--surface-2)`,
+   반투명 스크림은 `rgba(var(--bg-rgb), α)`.
+2. **금색은 역할로 구분**: 텍스트는 `var(--soft-gold-text)`/`var(--accent-text)`
+   (라이트에서 어두운 금으로 뒤집혀 대비 확보), 배경·보더는 기존
+   `var(--soft-gold)`/`var(--accent-color)` 그대로(두 테마 모두 선명 유지 —
+   금 배경 + 먹 글자 칩이 그대로 성립).
+3. **사진·영상 위 오버레이(라이트박스, 썸네일 배지 등)는 테마와 무관하게
+   리터럴 색**(흰 글자·검정 스크림)을 유지한다 — 채널 토큰을 쓰면 라이트에서
+   이미지 위 대비가 깨진다.
+4. 다크 전용으로 튜닝된 고정색(파스텔 상태색, 어두운 hex 표면)을 쓰면
+   라이트 블록에 셀렉터별 보정을 함께 추가할 것.
+
 ## Reference Files
 
 - **legacy_backup/**: Original static HTML/CSS/JS before migration

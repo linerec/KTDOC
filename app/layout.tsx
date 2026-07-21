@@ -125,8 +125,22 @@ export default async function RootLayout({
   const seoBusiness = parseSeoBusiness(settings[SETTING_SEO_BUSINESS] ?? null);
   const businessJsonLd = JSON.stringify(buildBusinessJsonLd(seoBusiness)).replace(/</g, '\\u003c');
 
+  // 관리 콘솔 테마 부트 스크립트 — /admin SSR 진입 시 첫 페인트 전에 테마를 결정해
+  // 깜빡임(FOUC)을 막는다. 콘솔 기본값은 라이트: 저장 선호가 'dark'일 때만 다크.
+  // 경로 가드로 공개 페이지에는 절대 속성이 붙지 않으며(공개 사이트는 항상 다크),
+  // 콘솔 이탈 시 제거는 AdminThemeProvider가 한다.
+  // 저장 키는 AdminThemeContext의 STORAGE_KEY('admin-theme')와 짝 — 함께 바꿀 것.
+  const adminThemeBootScript =
+    "(function(){var t=null;try{t=localStorage.getItem('admin-theme')}catch(e){}if(location.pathname.startsWith('/admin')&&t!=='dark'){document.documentElement.dataset.adminTheme='light'}})()";
+
   return (
-    <html lang="ko" className={`${notoSerifKr.variable} ${outfit.variable}`}>
+    // suppressHydrationWarning: 관리 콘솔 테마 부트 스크립트가 하이드레이션 전에
+    // <html data-admin-theme>를 설정하므로 이 요소의 속성 비교 경고만 억제한다(1뎁스 한정)
+    <html
+      lang="ko"
+      className={`${notoSerifKr.variable} ${outfit.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* JS 비활성 시 스크롤 리빌 요소가 숨겨진 채 남지 않도록 폴백 */}
         <noscript>
@@ -136,6 +150,7 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: businessJsonLd }}
         />
+        <script dangerouslySetInnerHTML={{ __html: adminThemeBootScript }} />
       </head>
       <body style={headerCssVars as React.CSSProperties} data-header-bg={headerBgRaw ?? undefined}>
         <Providers initialLogo={headerLogo} initialAlign={headerAlign}>

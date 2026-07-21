@@ -333,6 +333,9 @@
   "admin.shell.menuOpen": "메뉴 열기",
   "admin.shell.menuClose": "메뉴 닫기",
   "admin.shell.more": "더보기",
+  "admin.shell.theme": "화면 테마",
+  "admin.shell.themeLight": "라이트",
+  "admin.shell.themeDark": "다크",
   "admin.shell.menu": "전체 메뉴",
 
   "admin.navGroup.notify": "알림",
