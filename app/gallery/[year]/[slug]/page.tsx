@@ -7,7 +7,12 @@ import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import Image from 'next/image';
 import type { Metadata } from 'next';
-import { getEventBySlug, getAdjacentEvents, incrementViewCount } from '@/lib/d1';
+import {
+  getEventBySlug,
+  getAdjacentEvents,
+  incrementViewCount,
+  getCheckinCountsByEvent,
+} from '@/lib/d1';
 import { getCalendarConfig, buildAddToCalendarLinks } from '@/lib/calendar';
 import { formatEventDate } from '@/types/gallery';
 import IntlObject from '@/components/common/IntlObject';
@@ -106,6 +111,14 @@ export default async function EventDetailPage({ params }: PageProps) {
   const calTz = (await getCalendarConfig()).timezone;
   const calLinks = buildAddToCalendarLinks(event, `${proto}://${host}`, calTz);
 
+  // 학내 행사에 한해 참여 인원을 집계한다 — 이름은 노출하지 않는다(미성년자 개인정보).
+  // "우리는 제대로 합니다"라는 주장 대신 실제 참여 규모라는 사실만 남긴다.
+  let participantCount = 0;
+  if (event.kind === 'school') {
+    const counts = await getCheckinCountsByEvent([event.id]);
+    participantCount = counts.get(event.id) ?? 0;
+  }
+
   return (
     <main className="gallery-detail-page">
       {/* Back Navigation */}
@@ -116,6 +129,9 @@ export default async function EventDetailPage({ params }: PageProps) {
         <div className="container">
           <div className="gallery-detail-meta">
             <span className="gallery-detail-year">{event.year}</span>
+            {event.kind === 'school' && (
+              <span className="gallery-detail-kind">학내 행사</span>
+            )}
             {event.category && (
               <span className="gallery-detail-category">
                 {event.category.name_ko}
@@ -127,6 +143,10 @@ export default async function EventDetailPage({ params }: PageProps) {
             <p className="gallery-detail-title-en">{event.title_en}</p>
           )}
           <p className="gallery-detail-date">{formattedDate}</p>
+          {/* 참여 기록이 없으면 표시하지 않는다 — '참여 0명'은 역효과 */}
+          {event.kind === 'school' && participantCount > 0 && (
+            <p className="gallery-detail-participants">참여 {participantCount}명</p>
+          )}
 
           {/* 내 캘린더에 추가 (ko/en) */}
           <div className="gallery-detail-cal">

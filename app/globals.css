@@ -4147,6 +4147,22 @@ ul {
   border-radius: 4px;
 }
 
+/* 학내 행사 표시 — 카테고리 칩과 같은 골격에 금색 테두리만 얹는다 */
+.gallery-detail-kind {
+  font-size: 0.85rem;
+  color: var(--soft-gold);
+  padding: 4px 12px;
+  border: 1px solid rgba(224, 184, 79, 0.42);
+  border-radius: 4px;
+}
+
+/* 참여 인원 — 이름 없이 규모만. 기록이 스스로 말하게 하는 자리 */
+.gallery-detail-participants {
+  margin-top: 6px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
 .gallery-detail-title {
   font-family: var(--font-heading);
   font-size: 2.5rem;
