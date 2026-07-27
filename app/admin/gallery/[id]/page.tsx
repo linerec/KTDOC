@@ -73,7 +73,7 @@ export default async function AdminGalleryEditPage({ params }: PageProps) {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <Link href="/admin/gallery">공연 관리</Link>
+            <Link href="/admin/gallery">공연 · 행사 관리</Link>
             <span>/</span>
             <span>{event.title_ko}</span>
           </div>

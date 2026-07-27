@@ -50,11 +50,12 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
           <div className="admin-breadcrumb">
             <Link href="/admin">관리 홈</Link>
             <span>/</span>
-            <span>공연 관리</span>
+            <span>공연 · 행사 관리</span>
           </div>
-          <h1 className="admin-title">공연 관리</h1>
+          <h1 className="admin-title">공연 · 행사 관리</h1>
           <p className="admin-subtitle">
-            공개 갤러리 페이지에 표시될 공연을 관리합니다. 사진과 영상은 각 공연 편집 화면에서 추가합니다.
+            공개 갤러리 페이지에 표시될 공연과 학내 행사(수료식·발표회)를 관리합니다.
+            종류는 만들기 화면 맨 위에서 고릅니다. 사진과 영상은 각 편집 화면에서 추가합니다.
           </p>
         </div>
         <div className="admin-header-actions">
@@ -69,7 +70,7 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
             href="/admin/gallery/new"
             className="admin-btn admin-btn-primary"
           >
-            + 새 공연 만들기
+            + 새로 만들기
           </Link>
         </div>
       </div>
