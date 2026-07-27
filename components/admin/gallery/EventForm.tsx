@@ -649,6 +649,7 @@ export default function EventForm({
               <h3 className="admin-form-section-title">이 공연의 사진</h3>
               <p className="admin-form-help">
                 업로드한 사진은 이 공연 상세 페이지의 사진 영역에 표시됩니다.
+                공연 목록·홈 카드에 쓰이는 대표 사진은 아래에서 지정할 수 있습니다.
               </p>
               <ImageUploader
                 eventId={event.id}

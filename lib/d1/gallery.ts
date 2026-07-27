@@ -178,7 +178,7 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
             c.name_ko as category_name_ko,
             c.name_en as category_name_en,
             c.slug as category_slug,
-            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC LIMIT 1) as first_image_url
+            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) as first_image_url
      FROM events e
      LEFT JOIN event_categories c ON e.category_id = c.id
      ${whereClause}
@@ -209,7 +209,7 @@ export async function getRecentPastEvents(limit = 3): Promise<EventWithCategory[
             c.name_ko AS category_name_ko,
             c.name_en AS category_name_en,
             c.slug AS category_slug,
-            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC LIMIT 1) AS first_image_url
+            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS first_image_url
      FROM events e
      LEFT JOIN event_categories c ON e.category_id = c.id
      WHERE e.is_published = 1 AND e.event_date <= date('now')
@@ -528,8 +528,10 @@ export async function incrementViewCount(id: number): Promise<void> {
 // ============================================
 
 export async function getEventImages(eventId: number): Promise<EventImage[]> {
+  // sort_order가 같은 레거시 행이 있어도 순서가 흔들리지 않게 id로 동점 처리 —
+  // 관리 화면에서 보이는 첫 사진과 목록 카드의 대표 사진이 어긋나면 안 된다.
   return queryD1<EventImage>(
-    'SELECT * FROM event_images WHERE event_id = ? ORDER BY sort_order ASC',
+    'SELECT * FROM event_images WHERE event_id = ? ORDER BY sort_order ASC, id ASC',
     [eventId]
   );
 }
