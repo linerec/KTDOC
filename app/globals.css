@@ -6330,6 +6330,37 @@ ul {
   margin-bottom: 0;
 }
 
+/* 실패 원인 원문 — 기본 접힘. 평소엔 방해하지 않고, 디버깅할 때만 펼친다 */
+.ai-fill-detail {
+  margin-top: 8px;
+}
+
+.ai-fill-detail summary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  opacity: 0.75;
+  user-select: none;
+}
+
+.ai-fill-detail summary:hover {
+  opacity: 1;
+}
+
+.ai-fill-detail pre {
+  margin-top: 8px;
+  padding: 10px 12px;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 6px;
+  background: rgba(var(--bg-rgb), 0.35);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .ai-fill-warnings {
   margin: 12px 0 0;
   padding: 10px 12px 10px 30px;

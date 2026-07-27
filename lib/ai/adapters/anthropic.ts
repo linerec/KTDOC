@@ -94,6 +94,7 @@ export async function chatAnthropic(
   }
   const data = (await res.json()) as {
     content?: { type: string; text?: string }[];
+    stop_reason?: string;
     usage?: { input_tokens?: number; output_tokens?: number };
   };
   const text = (data.content ?? [])
@@ -104,6 +105,7 @@ export async function chatAnthropic(
     text,
     provider: 'anthropic',
     model,
+    finishReason: data.stop_reason,
     usage: {
       inputTokens: data.usage?.input_tokens,
       outputTokens: data.usage?.output_tokens,

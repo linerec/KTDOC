@@ -163,6 +163,8 @@ export async function POST(request: Request) {
 
     // JSON 해석 실패 시 지시를 강화해 1회 재시도 (LLM 출력 형태 방어)
     let raw: Record<string, unknown> | null = null;
+    let lastResult: Awaited<ReturnType<typeof askAI>> | null = null;
+    let lastParseError = '';
     for (let attempt = 0; attempt < 2 && !raw; attempt++) {
       const result = await askAI('poster.extract', {
         system: SYSTEM_PROMPT,
@@ -172,21 +174,39 @@ export async function POST(request: Request) {
             : `${basePrompt}\n\n중요: 직전 응답이 JSON 형식이 아니었습니다. 반드시 유효한 JSON 객체 하나만, 코드펜스 없이 출력하세요.`,
         images,
         json: true,
-        maxTokens: 1500,
+        // 추론(thinking) 모델은 사고 토큰도 이 예산에서 차감된다. 1500으로는 사고에만
+        // 1400여 토큰을 쓰고 JSON이 중간에 잘렸다(gemini-2.5-flash 실측).
+        // 상한만 올리는 것이므로 과금은 실제 사용 토큰 기준 그대로다.
+        maxTokens: 8000,
         temperature: 0.2,
       });
+      lastResult = result;
       try {
         raw = extractJson<Record<string, unknown>>(result.text);
-      } catch {
+      } catch (e) {
         raw = null;
+        lastParseError = e instanceof Error ? e.message : String(e);
       }
     }
     if (!raw) {
+      // 잘림(MAX_TOKENS/length)은 원인이 뚜렷하므로 안내를 따로 준다
+      const truncated = /max_tokens|length/i.test(lastResult?.finishReason ?? '');
       return NextResponse.json(
         {
           success: false,
-          error:
-            'AI 응답을 해석하지 못했습니다. 다시 시도하거나, AI 설정에서 다른 모델을 지정해 주세요.',
+          error: truncated
+            ? 'AI 응답이 최대 길이에 걸려 잘렸습니다. 안내 텍스트를 줄이거나, AI 설정에서 다른 모델을 지정해 주세요.'
+            : 'AI 응답을 해석하지 못했습니다. 다시 시도하거나, AI 설정에서 다른 모델을 지정해 주세요.',
+          // 진단용 상세 — 화면에서는 기본으로 접혀 있다(운영진만 접근하는 API)
+          detail: {
+            reason: lastParseError || '알 수 없음',
+            provider: lastResult?.provider,
+            model: lastResult?.model,
+            finishReason: lastResult?.finishReason,
+            usage: lastResult?.usage,
+            responseLength: lastResult?.text.length ?? 0,
+            responsePreview: (lastResult?.text ?? '').slice(0, 600),
+          },
         },
         { status: 422 }
       );
@@ -231,6 +251,16 @@ export async function POST(request: Request) {
     const message =
       error instanceof Error ? error.message : '이벤트 정보 추출에 실패했습니다.';
     console.error('AI extract-event error:', error);
-    return NextResponse.json({ success: false, error: message }, { status: 502 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: message,
+        detail: {
+          reason: message,
+          stack: error instanceof Error ? error.stack?.split('\n').slice(0, 4).join('\n') : undefined,
+        },
+      },
+      { status: 502 }
+    );
   }
 }

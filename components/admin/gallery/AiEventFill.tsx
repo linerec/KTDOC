@@ -64,6 +64,8 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
   const [text, setText] = useState('');
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState('');
+  // 실패 원인 원문(모델·종료 사유·토큰·응답 앞부분). 기본은 접혀 있고 '자세히'로 펼친다.
+  const [errorDetail, setErrorDetail] = useState('');
   const [warnings, setWarnings] = useState<string[]>([]);
   const [done, setDone] = useState(false);
   // 포스터를 공연 사진으로도 등록할지 (기본 해제 — 저장 시 부모가 업로드)
@@ -92,6 +94,7 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
     }
     setExtracting(true);
     setError('');
+    setErrorDetail('');
     setWarnings([]);
     setDone(false);
     try {
@@ -108,6 +111,12 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
+        // 서버가 진단 정보를 보냈으면 접이식으로 보여줄 수 있게 보관한다
+        if (data.detail) {
+          setErrorDetail(
+            typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail, null, 2)
+          );
+        }
         throw new Error(data.error || '추출에 실패했습니다.');
       }
       onApply(data.data as ExtractedEventInfo);
@@ -220,7 +229,18 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
         )}
       </div>
 
-      {error && <div className="admin-inline-error ai-fill-feedback">{error}</div>}
+      {error && (
+        <div className="admin-inline-error ai-fill-feedback">
+          <span>{error}</span>
+          {/* 원인 원문은 기본으로 감춘다 — 필요할 때만 펼쳐서 디버깅에 쓴다 */}
+          {errorDetail && (
+            <details className="ai-fill-detail">
+              <summary>자세히 (기술 정보)</summary>
+              <pre>{errorDetail}</pre>
+            </details>
+          )}
+        </div>
+      )}
       {warnings.length > 0 && (
         <ul className="ai-fill-warnings">
           {warnings.map((w) => (

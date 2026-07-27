@@ -97,8 +97,12 @@ export async function chatGoogle(
     throw new Error(`AI 질의 실패 (HTTP ${res.status}): ${(await res.text()).slice(0, 300)}`);
   }
   const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-    usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
+    candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      thoughtsTokenCount?: number;
+    };
   };
   const text = (data.candidates?.[0]?.content?.parts ?? [])
     .map((p) => p.text ?? '')
@@ -107,9 +111,12 @@ export async function chatGoogle(
     text,
     provider: 'google',
     model,
+    finishReason: data.candidates?.[0]?.finishReason,
     usage: {
       inputTokens: data.usageMetadata?.promptTokenCount,
       outputTokens: data.usageMetadata?.candidatesTokenCount,
+      // Gemini 2.5+는 사고 토큰도 maxOutputTokens 예산에서 차감된다 — 응답이 잘리는 주원인
+      thinkingTokens: data.usageMetadata?.thoughtsTokenCount,
     },
   };
 }

@@ -100,5 +100,14 @@ export interface AiChatResult {
   text: string;
   provider: AiProviderKey;
   model: string;
-  usage?: { inputTokens?: number; outputTokens?: number };
+  /**
+   * 제공자가 알려준 종료 사유(있을 때만). 'length'/'MAX_TOKENS'면 출력이 잘린 것이라
+   * JSON 파싱 실패의 원인 진단에 쓴다.
+   */
+  finishReason?: string;
+  /**
+   * thinkingTokens: 추론(thinking) 모델이 사고에 쓴 토큰. Gemini 2.5+처럼 사고 토큰이
+   * 출력 예산(maxTokens)을 함께 소비하는 모델에서 "왜 응답이 잘렸는지"를 설명한다.
+   */
+  usage?: { inputTokens?: number; outputTokens?: number; thinkingTokens?: number };
 }

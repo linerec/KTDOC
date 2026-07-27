@@ -113,17 +113,24 @@ export async function chatOpenAi(
     throw new Error(`AI 질의 실패 (HTTP ${res.status}): ${(await res.text()).slice(0, 300)}`);
   }
   const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-    usage?: { prompt_tokens?: number; completion_tokens?: number };
+    choices?: { message?: { content?: string }; finish_reason?: string }[];
+    usage?: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      completion_tokens_details?: { reasoning_tokens?: number };
+    };
   };
   const text = data.choices?.[0]?.message?.content ?? '';
   return {
     text,
     provider,
     model,
+    finishReason: data.choices?.[0]?.finish_reason,
     usage: {
       inputTokens: data.usage?.prompt_tokens,
       outputTokens: data.usage?.completion_tokens,
+      // 추론 모델(o시리즈 등)은 사고 토큰도 출력 예산에서 차감된다
+      thinkingTokens: data.usage?.completion_tokens_details?.reasoning_tokens,
     },
   };
 }
