@@ -3,7 +3,6 @@ import Hero from '@/components/Hero';
 import Mission from '@/components/Mission';
 import RecentJourney from '@/components/home/RecentJourney';
 import Categories from '@/components/Categories';
-import InstagramStrip from '@/components/home/InstagramStrip';
 import Traditional from '@/components/Traditional';
 import Footer from '@/components/Footer';
 
@@ -25,7 +24,6 @@ export default function Home() {
         <Mission />
         <RecentJourney />
         <Categories />
-        <InstagramStrip />
         <Traditional />
       </main>
       <Footer />
