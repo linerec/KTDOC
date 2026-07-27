@@ -7,7 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { isAdmin, isStaff } from '@/lib/isAdmin';
 import {
   getEventById,
   updateEvent,
@@ -30,9 +30,9 @@ interface RouteParams {
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
@@ -73,9 +73,9 @@ export async function GET(request: Request, { params }: RouteParams) {
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
@@ -108,6 +108,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.description_ko !== undefined) input.description_ko = body.description_ko;
     if (body.description_en !== undefined) input.description_en = body.description_en;
     if (body.category_id !== undefined) input.category_id = body.category_id;
+    if (body.kind !== undefined) input.kind = body.kind;
     if (body.slug !== undefined) input.slug = body.slug;
     if (body.poster_url !== undefined) input.poster_url = body.poster_url;
     if (body.poster_r2_key !== undefined) input.poster_r2_key = body.poster_r2_key;
@@ -120,6 +121,14 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (input.event_date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(input.event_date)) {
       return NextResponse.json(
         { success: false, error: '행사 날짜 형식이 올바르지 않습니다. (예: 2026-07-01)' },
+        { status: 400 }
+      );
+    }
+
+    // 종류는 정해진 값만 — DB에 CHECK 제약이 없으므로 API가 검증한다
+    if (input.kind !== undefined && input.kind !== 'performance' && input.kind !== 'school') {
+      return NextResponse.json(
+        { success: false, error: '행사 종류 값이 올바르지 않습니다.' },
         { status: 400 }
       );
     }

@@ -6,7 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { isStaff } from '@/lib/isAdmin';
 import { getEvents, createEvent, setEventSupplies, setEventSupplySets } from '@/lib/d1';
 import { isValidLatLng } from '@/lib/maps';
 import type { CreateEventInput } from '@/types/gallery';
@@ -16,9 +16,9 @@ import { normalizeSupplyLinks, normalizeSupplySetLinks } from '@/types/supplies'
 export async function GET(request: Request) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
@@ -50,15 +50,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
 
     const body = await request.json();
-    const { title_ko, event_date, title_en, category_id, description_ko, description_en, is_published, is_featured, is_signature, signature_order, slug, location, location_url, location_address, location_lat, location_lng, call_time, start_time, end_time, prep_notes } = body;
+    const { title_ko, event_date, title_en, category_id, kind, description_ko, description_en, is_published, is_featured, is_signature, signature_order, slug, location, location_url, location_address, location_lat, location_lng, call_time, start_time, end_time, prep_notes } = body;
 
     if (!title_ko || !event_date) {
       return NextResponse.json(
@@ -70,6 +70,14 @@ export async function POST(request: Request) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
       return NextResponse.json(
         { success: false, error: '행사 날짜 형식이 올바르지 않습니다. (예: 2026-07-01)' },
+        { status: 400 }
+      );
+    }
+
+    // 종류는 정해진 값만 — DB에 CHECK 제약이 없으므로 API가 검증한다
+    if (kind !== undefined && kind !== 'performance' && kind !== 'school') {
+      return NextResponse.json(
+        { success: false, error: '행사 종류 값이 올바르지 않습니다.' },
         { status: 400 }
       );
     }
@@ -89,6 +97,7 @@ export async function POST(request: Request) {
       event_date,
       title_en,
       category_id,
+      kind: kind ?? 'performance',
       description_ko,
       description_en,
       is_published: is_published ?? false,

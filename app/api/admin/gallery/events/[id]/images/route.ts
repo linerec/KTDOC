@@ -6,7 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { isAdmin, isStaff } from '@/lib/isAdmin';
 import {
   getEventById,
   createEventImage,
@@ -28,9 +28,10 @@ interface RouteParams {
 export async function POST(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
-    if (!isAdmin(session)) {
+    // 업로드는 운영진(선생님 포함)까지 — 삭제는 아래 DELETE에서 admin 전용을 유지한다
+    if (!isStaff(session)) {
       return NextResponse.json(
-        { success: false, error: '관리자 권한이 필요합니다.' },
+        { success: false, error: '운영진 권한이 필요합니다.' },
         { status: 403 }
       );
     }
