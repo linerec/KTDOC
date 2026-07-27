@@ -11,6 +11,7 @@ import {
   SETTING_CALENDAR_CONFIG,
 } from '@/lib/d1';
 import { SETTING_SEO_BUSINESS } from '@/lib/seoBusiness';
+import { SETTING_SOCIAL_INSTAGRAM } from '@/lib/socialHighlights';
 
 // 임의 키 쓰기를 막기 위해 허용된 설정 키만 받는다.
 const ALLOWED_KEYS = new Set<string>([
@@ -19,6 +20,7 @@ const ALLOWED_KEYS = new Set<string>([
   SETTING_HEADER_BACKGROUND,
   SETTING_CALENDAR_CONFIG,
   SETTING_SEO_BUSINESS,
+  SETTING_SOCIAL_INSTAGRAM,
 ]);
 
 // GET - 설정값 조회 (관리자 전용)
@@ -79,7 +81,11 @@ export async function POST(request: Request) {
     await setSetting(key, normalized);
 
     // 홈(정적 ISR 페이지)을 즉시 무효화하여 변경이 방문자에게 바로 반영되게 한다.
-    if (key === SETTING_HERO_FEATURED_VIDEO || key === SETTING_HERO_OVERLAY) {
+    if (
+      key === SETTING_HERO_FEATURED_VIDEO ||
+      key === SETTING_HERO_OVERLAY ||
+      key === SETTING_SOCIAL_INSTAGRAM
+    ) {
       revalidatePath('/');
     }
 

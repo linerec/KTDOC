@@ -18,6 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSiteBusiness } from '@/contexts/SiteBusinessContext';
 import {
   BUSINESS_DAYS,
+  DEFAULT_SEO_BUSINESS,
   formatAddressLine,
   groupBusinessHours,
   hasFullAddress,
@@ -62,7 +63,7 @@ export default function Footer() {
             />
           </div>
           <div className="social-links">
-            <Link href={business.instagram || 'https://www.instagram.com/ktdoc_choomnoori/'} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <Link href={business.instagram || DEFAULT_SEO_BUSINESS.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <Image
                 src="/assets/images/icon-instagram.png"
                 alt="Instagram"

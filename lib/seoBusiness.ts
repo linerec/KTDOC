@@ -87,7 +87,7 @@ export const DEFAULT_SEO_BUSINESS: SeoBusinessInfo = {
   priceRange: '',
   areaServed: '',
   hours: [],
-  instagram: 'https://www.instagram.com/ktdoc_choomnoori/',
+  instagram: 'https://www.instagram.com/ktdoc_eunhee_ahn/',
   youtube: 'https://www.youtube.com/@ktdoc1737',
   googleMaps: '',
   kakao: '',

@@ -1401,6 +1401,175 @@ ul {
 }
 
 /* ========================================
+   INSTAGRAM STRIP (홈 — 인스타 하이라이트)
+   유도가 목적인 섹션이므로 캡션 없이 정사각 3장만 깔고 팔로우 링크로 잇는다.
+   모바일에서도 3열을 유지한다 — 1열로 펴면 세로로 길어져 목적에 어긋난다.
+======================================== */
+.insta-section {
+  position: relative;
+  padding: clamp(40px, 6vw, 72px) 0;
+  background: var(--ink-umber);
+  color: var(--warm-ivory);
+}
+
+.insta-head {
+  margin-bottom: clamp(16px, 2.5vw, 26px);
+}
+
+.insta-eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: var(--soft-gold);
+  margin-bottom: 8px;
+}
+
+.insta-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.25rem, 2.6vw, 1.7rem);
+  font-weight: 400;
+}
+
+.insta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(6px, 1.2vw, 14px);
+}
+
+.insta-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(246, 239, 226, 0.05);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.insta-card:hover {
+  opacity: 0.86;
+  transform: translateY(-2px);
+}
+
+.insta-card-img {
+  object-fit: cover;
+}
+
+.insta-empty {
+  padding: 18px;
+  border: 1px dashed rgba(246, 239, 226, 0.2);
+  border-radius: 4px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.insta-follow {
+  display: inline-block;
+  margin-top: clamp(14px, 2vw, 22px);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: rgba(246, 239, 226, 0.72);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(246, 239, 226, 0.25);
+  padding-bottom: 3px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.insta-follow:hover {
+  color: var(--soft-gold);
+  border-color: var(--soft-gold);
+}
+
+/* 편집 모달 */
+.insta-modal {
+  max-width: 640px;
+}
+
+.insta-modal-empty {
+  margin: 12px 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.insta-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0;
+  list-style: none;
+  padding: 0;
+}
+
+.insta-modal-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 6px;
+}
+
+/* 실제로 홈에 노출되는 앞 3장을 표시해 순서 조정의 결과를 바로 알 수 있게 한다 */
+.insta-modal-row.is-visible {
+  border-color: rgba(224, 184, 79, 0.45);
+}
+
+.insta-modal-thumb {
+  position: relative;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(var(--fg-rgb), 0.06);
+}
+
+.insta-modal-thumb img {
+  object-fit: cover;
+}
+
+.insta-modal-fields {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.insta-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.insta-modal-actions button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(var(--fg-rgb), 0.18);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.insta-modal-actions button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.insta-modal-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.12);
+}
+
+.insta-modal-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ========================================
    CATEGORIES SECTION
 ======================================== */
 #categories {
@@ -10111,6 +10280,13 @@ ul {
 .section-edit-btn--topbar {
   position: absolute;
   bottom: 12px;
+  left: 24px;
+}
+
+/* 인스타 섹션 설정: .insta-section(relative)의 좌하단 안쪽. */
+.section-edit-btn--insta {
+  position: absolute;
+  bottom: 16px;
   left: 24px;
 }
 
