@@ -260,6 +260,10 @@
   "pages.timeline.sort.label": "정렬 순서",
   "pages.timeline.sort.asc": "과거 → 현재",
   "pages.timeline.sort.desc": "현재 → 과거",
+  "timeline.kind.label": "종류",
+  "timeline.kind.all": "전체",
+  "timeline.kind.performance": "공연",
+  "timeline.kind.school": "학내 행사",
 
   "pages.calendar.eyebrow": "CALENDAR · 일정 구독",
   "pages.calendar.title": "학원 일정을 내 기기에서 받아보세요",

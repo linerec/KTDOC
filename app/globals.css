@@ -13294,6 +13294,16 @@ ul {
   white-space: nowrap;
 }
 
+/* 학내 행사 표시 — 카테고리 칩과 같은 골격에 금색 강조만 얹는다 */
+.timeline-event-card-kind {
+  font-size: 0.72rem;
+  color: var(--soft-gold);
+  padding: 3px 10px;
+  border: 1px solid rgba(224, 184, 79, 0.42);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
 .timeline-event-card-title {
   font-family: var(--font-heading);
   font-size: 1.15rem;
@@ -14349,10 +14359,12 @@ ul {
   font-size: 0.78rem;
 }
 
-/* ── 타임라인 정렬 순서 전환 ── */
+/* ── 타임라인 정렬 순서 · 종류 필터 전환 ── */
 .timeline-controls {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 28px;
 }
 .timeline-sort {

@@ -54,12 +54,13 @@ function groupByCategory(events: EventWithCategory[]): CategoryGroup[] {
 }
 
 export default async function PerformancesPage() {
-  // 큐레이션된 대표 공연 우선, 없으면 최근 공개 공연으로 폴백
-  const showcase = await getEvents({ showcase: true, published: true, limit: 50 });
+  // 큐레이션된 대표 공연 우선, 없으면 최근 공개 공연으로 폴백.
+  // 학내 행사(kind='school')는 레퍼토리가 아니므로 두 경로 모두에서 제외한다.
+  const showcase = await getEvents({ showcase: true, published: true, limit: 50, kind: 'performance' });
   const curated = showcase.events.length > 0;
   let events = showcase.events;
   if (!curated) {
-    const fallback = await getEvents({ published: true, limit: 12 });
+    const fallback = await getEvents({ published: true, limit: 12, kind: 'performance' });
     events = fallback.events;
   }
 

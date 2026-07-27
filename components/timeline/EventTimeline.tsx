@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { EventWithCategory } from '@/types/gallery';
+import type { EventWithCategory, EventKind } from '@/types/gallery';
 import { formatEventDateIntl } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
@@ -62,6 +62,12 @@ function TimelineEventCard({ event, index }: { event: EventWithCategory; index: 
           <span className="timeline-event-card-date">
             {formatEventDateIntl(event.event_date, locale)}
           </span>
+          {/* 학내 행사만 표시한다 — 대다수인 공연에까지 붙이면 소음이 된다 */}
+          {event.kind === 'school' && (
+            <span className="timeline-event-card-kind">
+              {messages['timeline.kind.school'] || '학내 행사'}
+            </span>
+          )}
           {categoryName && (
             <span className="timeline-event-card-category">{categoryName}</span>
           )}
@@ -86,11 +92,19 @@ export default function EventTimeline({ events }: EventTimelineProps) {
   // 정렬 방향: desc = 현재→과거(기본), asc = 과거→현재
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+  // 종류 필터: all = 전체(기본), performance = 공연, school = 학내 행사
+  const [kindFilter, setKindFilter] = useState<'all' | EventKind>('all');
+
+  const visibleEvents = useMemo(
+    () => (kindFilter === 'all' ? events : events.filter((e) => e.kind === kindFilter)),
+    [events, kindFilter]
+  );
+
   // 선택 방향으로 연도·연도 내 날짜를 함께 정렬한다
   const yearGroups = useMemo(() => {
     const dir = sortOrder === 'asc' ? 1 : -1;
     const map = new Map<number, EventWithCategory[]>();
-    for (const event of events) {
+    for (const event of visibleEvents) {
       const list = map.get(event.year) || [];
       list.push(event);
       map.set(event.year, list);
@@ -101,7 +115,7 @@ export default function EventTimeline({ events }: EventTimelineProps) {
         ([year, list]) =>
           [year, [...list].sort((a, b) => a.event_date.localeCompare(b.event_date) * dir)] as const
       );
-  }, [events, sortOrder]);
+  }, [visibleEvents, sortOrder]);
 
   // 스크롤 진행 빔: 빔 선단(뷰포트 60% 지점)이 트랙을 통과한 비율을 CSS 변수로
   useEffect(() => {
@@ -172,7 +186,36 @@ export default function EventTimeline({ events }: EventTimelineProps) {
             {sortDescLabel}
           </button>
         </div>
+
+        <div
+          className="timeline-sort timeline-kind-filter"
+          role="group"
+          aria-label={messages['timeline.kind.label'] || '종류'}
+        >
+          {(['all', 'performance', 'school'] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              className={`timeline-sort-btn${kindFilter === k ? ' is-active' : ''}`}
+              onClick={() => setKindFilter(k)}
+              aria-pressed={kindFilter === k}
+            >
+              {k === 'all'
+                ? messages['timeline.kind.all'] || '전체'
+                : k === 'performance'
+                  ? messages['timeline.kind.performance'] || '공연'
+                  : messages['timeline.kind.school'] || '학내 행사'}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* 필터로 결과가 0건이 된 경우 — 컨트롤은 남겨 되돌릴 수 있게 한다 */}
+      {yearGroups.length === 0 && (
+        <p className="timeline-empty">
+          {messages['pages.timeline.empty'] || '아직 등록된 기록이 없습니다.'}
+        </p>
+      )}
 
       <div className="timeline-track" ref={trackRef}>
         <ScrollReveal />

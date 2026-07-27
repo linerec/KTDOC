@@ -260,6 +260,10 @@
   "pages.timeline.sort.label": "Sort order",
   "pages.timeline.sort.asc": "Oldest first",
   "pages.timeline.sort.desc": "Newest first",
+  "timeline.kind.label": "Type",
+  "timeline.kind.all": "All",
+  "timeline.kind.performance": "Performances",
+  "timeline.kind.school": "School Events",
 
   "pages.calendar.eyebrow": "CALENDAR · SUBSCRIBE",
   "pages.calendar.title": "Get academy events on your own device",
