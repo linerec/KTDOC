@@ -196,6 +196,29 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
   return { events, total, years };
 }
 
+/**
+ * 홈 "최근 발자취" — 이미 지난 공개 행사 최근 N건(공연·학내 행사 혼합).
+ *
+ * 예정된 행사를 섞으면 '발자취'라는 이름과 어긋나므로 오늘 이전만 가져온다.
+ * 날짜가 지나면 자동으로 목록에 들어오므로 별도 큐레이션이 필요 없다.
+ * (date('now')는 UTC 기준 — 당일 경계에서 하루 차이가 날 수 있으나 발자취 목록에서는 무해하다)
+ */
+export async function getRecentPastEvents(limit = 3): Promise<EventWithCategory[]> {
+  return queryD1<EventWithCategory>(
+    `SELECT e.*,
+            c.name_ko AS category_name_ko,
+            c.name_en AS category_name_en,
+            c.slug AS category_slug,
+            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC LIMIT 1) AS first_image_url
+     FROM events e
+     LEFT JOIN event_categories c ON e.category_id = c.id
+     WHERE e.is_published = 1 AND e.event_date <= date('now')
+     ORDER BY e.event_date DESC, e.id DESC
+     LIMIT ?`,
+    [limit]
+  );
+}
+
 /** 특정 날짜('YYYY-MM-DD')의 이벤트 — D-1 리마인더 등 일정 기준 조회. */
 export async function getEventsOnDate(dateStr: string): Promise<EventWithCategory[]> {
   return queryD1<EventWithCategory>(

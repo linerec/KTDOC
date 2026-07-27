@@ -1275,6 +1275,132 @@ ul {
 }
 
 /* ========================================
+   RECENT JOURNEY SECTION (홈 — 최근 발자취)
+   지난 공연·학내 행사 3건. 광고가 아니라 기록이므로
+   카드에는 날짜·종류·제목만 두고 설명이나 CTA를 붙이지 않는다.
+======================================== */
+.journey-section {
+  padding: clamp(48px, 7vw, 88px) 0;
+  background: linear-gradient(180deg, var(--ink-umber) 0%, #1a0f0c 100%);
+  color: var(--warm-ivory);
+}
+
+.journey-head {
+  margin-bottom: clamp(22px, 3vw, 36px);
+}
+
+.journey-eyebrow {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  color: var(--soft-gold);
+  margin-bottom: 10px;
+}
+
+.journey-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3.4vw, 2.2rem);
+  font-weight: 400;
+  color: var(--warm-ivory);
+}
+
+.journey-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 2vw, 24px);
+}
+
+.journey-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid rgba(246, 239, 226, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(246, 239, 226, 0.02);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.journey-card:hover {
+  border-color: rgba(224, 184, 79, 0.45);
+  transform: translateY(-3px);
+}
+
+.journey-card-image {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: rgba(246, 239, 226, 0.04);
+}
+
+.journey-card-img {
+  object-fit: cover;
+}
+
+.journey-card-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(246, 239, 226, 0.06), rgba(246, 239, 226, 0.02));
+}
+
+.journey-card-body {
+  padding: 16px 18px 20px;
+}
+
+.journey-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.journey-card-date {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.journey-card-kind {
+  font-size: 0.7rem;
+  color: var(--soft-gold);
+  padding: 3px 10px;
+  border: 1px solid rgba(224, 184, 79, 0.42);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.journey-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--warm-ivory);
+  word-break: keep-all;
+}
+
+.journey-more {
+  display: inline-block;
+  margin-top: clamp(20px, 3vw, 32px);
+  font-size: 0.92rem;
+  color: rgba(246, 239, 226, 0.72);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(246, 239, 226, 0.25);
+  padding-bottom: 3px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.journey-more:hover {
+  color: var(--soft-gold);
+  border-color: var(--soft-gold);
+}
+
+@media (max-width: 900px) {
+  .journey-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
    CATEGORIES SECTION
 ======================================== */
 #categories {

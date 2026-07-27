@@ -32,6 +32,7 @@ export {
   deleteCategory,
   // Events
   getEvents,
+  getRecentPastEvents,
   getEventsOnDate,
   getEventById,
   getEventBySlug,
