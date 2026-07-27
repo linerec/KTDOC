@@ -236,6 +236,7 @@
   "gallery.hero.description": "한국 전통 예술과 문화 공연의 아름다운 순간들",
   "gallery.filter.year": "연도",
   "gallery.filter.category": "카테고리",
+  "gallery.filter.kind": "종류",
   "gallery.filter.search": "검색",
   "gallery.filter.searchPlaceholder": "이벤트 검색...",
   "gallery.filter.clear": "필터 초기화",

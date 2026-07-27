@@ -236,6 +236,7 @@
   "gallery.hero.description": "Celebrating years of Korean traditional arts and cultural performances",
   "gallery.filter.year": "Year",
   "gallery.filter.category": "Category",
+  "gallery.filter.kind": "Type",
   "gallery.filter.search": "Search",
   "gallery.filter.searchPlaceholder": "Search events...",
   "gallery.filter.clear": "Clear Filters",

@@ -40,6 +40,7 @@ interface PageProps {
     category?: string;
     search?: string;
     page?: string;
+    kind?: string;
   }>;
 }
 
@@ -61,13 +62,15 @@ async function GalleryContent({
   category,
   search,
   page,
+  kind,
 }: {
   year?: string;
   category?: string;
   search?: string;
   page?: string;
+  kind?: string;
 }) {
-  const shouldShowPhotoStream = !year && !category && !search;
+  const shouldShowPhotoStream = !year && !category && !search && !kind;
   const [eventsResult, categories, photoStream] = await Promise.all([
     getEvents({
       year: year ? parseInt(year) : undefined,
@@ -76,6 +79,8 @@ async function GalleryContent({
       page: page ? parseInt(page) : 1,
       limit: 100, // Get more events for year grouping
       published: true,
+      // 알 수 없는 값은 무시하고 전체를 보여준다
+      kind: kind === 'performance' || kind === 'school' ? kind : undefined,
     }),
     getCategories(),
     shouldShowPhotoStream
@@ -135,6 +140,7 @@ export default async function GalleryPage({ searchParams }: PageProps) {
               category={params.category}
               search={params.search}
               page={params.page}
+              kind={params.kind}
             />
           </Suspense>
         </div>

@@ -28,6 +28,7 @@ export default function GalleryFilter({
   const currentYear = searchParams.get('year') || '';
   const currentCategory = searchParams.get('category') || '';
   const currentSearch = searchParams.get('search') || '';
+  const currentKind = searchParams.get('kind') || '';
 
   const updateFilters = useCallback(
     (key: string, value: string) => {
@@ -55,7 +56,7 @@ export default function GalleryFilter({
     });
   }, [router]);
 
-  const hasActiveFilters = currentYear || currentCategory || currentSearch;
+  const hasActiveFilters = currentYear || currentCategory || currentSearch || currentKind;
 
   return (
     <div className={`gallery-filter ${isPending ? 'gallery-filter-pending' : ''}`}>
@@ -93,6 +94,25 @@ export default function GalleryFilter({
                 {locale === 'ko' ? cat.name_ko : cat.name_en}
               </option>
             ))}
+          </select>
+        </div>
+
+        {/* Kind Filter — 공연/학내 행사 */}
+        <div className="gallery-filter-group">
+          <IntlObject keycode="gallery.filter.kind" returnType="label" className="gallery-filter-label" />
+          <select
+            id="kind-filter"
+            className="gallery-filter-select"
+            value={currentKind}
+            onChange={(e) => updateFilters('kind', e.target.value)}
+          >
+            <option value="">{messages['common.all'] || 'All'}</option>
+            <option value="performance">
+              {messages['timeline.kind.performance'] || '공연'}
+            </option>
+            <option value="school">
+              {messages['timeline.kind.school'] || '학내 행사'}
+            </option>
           </select>
         </div>
 
