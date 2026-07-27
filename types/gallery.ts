@@ -1,6 +1,22 @@
 // types/gallery.ts
 // Gallery 아카이브 시스템 타입 정의
 
+/**
+ * 이벤트 종류 — category_id('어떤 공연인가')와 직교하는 축.
+ * 'performance' = 대외 공연, 'school' = 수료식·발표회 등 학내 행사.
+ */
+export type EventKind = 'performance' | 'school';
+
+export const EVENT_KIND_LABELS: Record<EventKind, string> = {
+  performance: '공연',
+  school: '학내 행사',
+};
+
+export const EVENT_KIND_LABELS_EN: Record<EventKind, string> = {
+  performance: 'Performance',
+  school: 'School Event',
+};
+
 export interface EventCategory {
   id: number;
   slug: string;
@@ -20,6 +36,7 @@ export interface Event {
   description_ko: string | null;
   description_en: string | null;
   category_id: number | null;
+  kind: EventKind;
   poster_url: string | null;
   poster_r2_key: string | null;
   thumbnail_url: string | null;
@@ -164,6 +181,8 @@ export interface EventFilters {
   featured?: boolean;
   published?: boolean | 'all';
   showcase?: boolean;
+  /** 종류 필터 — 미지정이거나 'all'이면 전체 */
+  kind?: EventKind | 'all';
 }
 
 export interface GalleryPhotoFilters {
@@ -202,6 +221,7 @@ export interface CreateEventInput {
   title_en?: string;
   event_date: string;
   category_id?: number;
+  kind?: EventKind;
   description_ko?: string;
   description_en?: string;
   is_published?: boolean;

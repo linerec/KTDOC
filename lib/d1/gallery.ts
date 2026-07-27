@@ -113,6 +113,7 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
     featured,
     published = true,
     showcase,
+    kind,
   } = filters;
 
   // Build WHERE clause
@@ -148,6 +149,11 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
 
   if (showcase) {
     conditions.push('e.is_signature = 1');
+  }
+
+  if (kind && kind !== 'all') {
+    conditions.push('e.kind = ?');
+    params.push(kind);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -308,11 +314,11 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
   const { lastRowId } = await executeD1(
     `INSERT INTO events (
       slug, year, event_date, title_ko, title_en,
-      description_ko, description_en, category_id,
+      description_ko, description_en, category_id, kind,
       is_published, is_featured, is_signature, signature_order,
       location, location_url, location_address, location_lat, location_lng,
       call_time, start_time, end_time, prep_notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       year,
@@ -322,6 +328,7 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       input.description_ko || null,
       input.description_en || null,
       input.category_id || null,
+      input.kind || 'performance',
       input.is_published ? 1 : 0,
       input.is_featured ? 1 : 0,
       input.is_signature ? 1 : 0,
@@ -373,6 +380,10 @@ export async function updateEvent(
   if (input.category_id !== undefined) {
     updates.push('category_id = ?');
     params.push(input.category_id);
+  }
+  if (input.kind !== undefined) {
+    updates.push('kind = ?');
+    params.push(input.kind);
   }
   if (input.slug !== undefined) {
     updates.push('slug = ?');

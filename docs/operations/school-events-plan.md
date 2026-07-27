@@ -72,9 +72,11 @@ CREATE INDEX IF NOT EXISTS idx_events_kind ON events(kind);
 
 - [ ] **Step 2: 원격 D1에 적용**
 
-Run: `npm run d1:migrate`
+Run: `node scripts/d1Migrate.mjs migrations/0032_event_kind.sql`
 
-Expected: `0032_event_kind.sql` 적용 성공 메시지. 이미 적용된 마이그레이션은 건너뛴다.
+> 러너는 **파일 경로를 인자로 받는다.** `npm run d1:migrate`만 실행하면 사용법만 출력하고 끝난다.
+
+Expected: 문장 2개가 `OK`. 재실행 시 `ALTER ADD COLUMN`은 `duplicate column name`으로 `SKIP` 처리되어 멱등하다.
 
 > 롤백이 필요하면 `ALTER TABLE events DROP COLUMN kind;` (D1의 SQLite는 DROP COLUMN을 지원한다). 단 원격 운영 DB이므로 실행 전 반드시 확인할 것.
 
