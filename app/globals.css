@@ -15188,6 +15188,44 @@ ul {
   white-space: pre-line;
 }
 
+/* ------------------------------------------------------------
+   공연/학내 행사 종류 선택 라디오 (관리 콘솔 · EventForm)
+   토큰만 사용하므로 라이트/다크 양쪽에서 그대로 성립한다.
+------------------------------------------------------------ */
+.event-kind-radios {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.event-kind-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid rgba(var(--fg-rgb), 0.18);
+  border-radius: 999px;
+  background: var(--surface-2);
+  cursor: pointer;
+  font-size: 0.92rem;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.event-kind-radio:hover {
+  border-color: rgba(var(--fg-rgb), 0.35);
+}
+
+.event-kind-radio:has(input:checked) {
+  border-color: var(--accent-color);
+  background: rgba(var(--fg-rgb), 0.06);
+}
+
+.event-kind-radio:has(input:focus-visible) {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
 /* ============================================================
    ADMIN LIGHT THEME — 관리 콘솔 한정 라이트 모드
    AdminThemeProvider(관리 콘솔에서만 마운트)가 <html data-admin-theme>를

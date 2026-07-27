@@ -13,6 +13,7 @@ import type {
   CreateEventInput,
   UpdateEventInput,
   ExtractedEventInfo,
+  EventKind,
 } from '@/types/gallery';
 import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
 import AiEventFill from './AiEventFill';
@@ -66,6 +67,7 @@ export default function EventForm({
     title_en: event?.title_en || '',
     event_date: event?.event_date?.split('T')[0] || '',
     category_id: event?.category_id || '',
+    kind: (event?.kind || 'performance') as EventKind,
     description_ko: event?.description_ko || '',
     description_en: event?.description_en || '',
     is_published: event?.is_published === 1,
@@ -168,12 +170,14 @@ export default function EventForm({
         title_en: formData.title_en || undefined,
         event_date: formData.event_date,
         category_id: formData.category_id ? Number(formData.category_id) : undefined,
+        kind: formData.kind,
         description_ko: formData.description_ko || undefined,
         description_en: formData.description_en || undefined,
         is_published: effectivePublished,
         is_featured: formData.is_featured,
-        is_signature: formData.is_signature,
-        signature_order: Number(formData.signature_order) || 0,
+        // 학내 행사는 공연 쇼케이스 대상이 아니다 — 폼에서 숨긴 값이 남아 있어도 강제로 끈다
+        is_signature: formData.kind === 'school' ? false : formData.is_signature,
+        signature_order: formData.kind === 'school' ? 0 : Number(formData.signature_order) || 0,
         // 빈 문자열을 보내면 서버가 null로 저장(값 지우기 지원)
         location: formData.location,
         location_url: formData.location_url,
@@ -293,10 +297,41 @@ export default function EventForm({
       <div className="admin-form-grid">
         {/* Basic Info Section */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">공연 기본 정보</h3>
+          <h3 className="admin-form-section-title">기본 정보</h3>
           <p className="admin-form-help">
-            이 정보가 공개 Gallery의 카드와 공연 상세 페이지에 표시됩니다.
+            이 정보가 공개 Gallery의 카드와 상세 페이지에 표시됩니다.
           </p>
+
+          {/* 종류 — 공연인지 학내 행사인지에 따라 공개 사이트에서의 취급이 달라진다 */}
+          <div className="admin-form-group">
+            <span className="admin-form-label">종류</span>
+            <div className="event-kind-radios" role="radiogroup" aria-label="행사 종류">
+              <label className="event-kind-radio">
+                <input
+                  type="radio"
+                  name="kind"
+                  value="performance"
+                  checked={formData.kind === 'performance'}
+                  onChange={handleChange}
+                />
+                <span>공연</span>
+              </label>
+              <label className="event-kind-radio">
+                <input
+                  type="radio"
+                  name="kind"
+                  value="school"
+                  checked={formData.kind === 'school'}
+                  onChange={handleChange}
+                />
+                <span>학내 행사</span>
+              </label>
+            </div>
+            <p className="admin-form-help">
+              수료식·발표회처럼 학원에서 여는 행사는 &lsquo;학내 행사&rsquo;를 선택합니다.
+              공연 페이지에는 표시되지 않고, 발자취·갤러리에 기록으로 남습니다.
+            </p>
+          </div>
 
           {/* 한/영 병기 필드는 좌우 2단으로 나란히 — 비교하며 입력 */}
           <div className="admin-form-bilingual">
@@ -500,33 +535,36 @@ export default function EventForm({
             </div>
           </div>
 
-          <div className="admin-form-row">
-            <div className="admin-form-checkbox">
-              <input
-                type="checkbox"
-                id="is_signature"
-                name="is_signature"
-                checked={formData.is_signature}
-                onChange={handleChange}
-              />
-              <label htmlFor="is_signature">공연(/performances) 쇼케이스에 표시</label>
-            </div>
+          {/* 쇼케이스는 공연 전용 — 학내 행사에는 해당하지 않으므로 감춘다 */}
+          {formData.kind !== 'school' && (
+            <div className="admin-form-row">
+              <div className="admin-form-checkbox">
+                <input
+                  type="checkbox"
+                  id="is_signature"
+                  name="is_signature"
+                  checked={formData.is_signature}
+                  onChange={handleChange}
+                />
+                <label htmlFor="is_signature">공연(/performances) 쇼케이스에 표시</label>
+              </div>
 
-            <div className="admin-form-group">
-              <label htmlFor="signature_order" className="admin-form-label">
-                쇼케이스 순서 (작을수록 먼저)
-              </label>
-              <input
-                type="number"
-                id="signature_order"
-                name="signature_order"
-                value={formData.signature_order}
-                onChange={handleChange}
-                className="admin-form-input"
-                min={0}
-              />
+              <div className="admin-form-group">
+                <label htmlFor="signature_order" className="admin-form-label">
+                  쇼케이스 순서 (작을수록 먼저)
+                </label>
+                <input
+                  type="number"
+                  id="signature_order"
+                  name="signature_order"
+                  value={formData.signature_order}
+                  onChange={handleChange}
+                  className="admin-form-input"
+                  min={0}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* 회원에게 알림 */}

@@ -94,7 +94,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'library', href: '/admin/library', label: '공연 둘러보기', iconKey: 'compass', group: 'show', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 내 참여 아카이브(독립): 참여한 수업과 체크인한 공연을 연도별로 모아 보여준다(참여 이력·사진).
   { key: 'archive', href: '/admin/archive', label: '내 참여 아카이브', iconKey: 'gallery', group: 'show', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
-  { key: 'gallery', href: '/admin/gallery', label: '공연 관리', iconKey: 'gallery', group: 'show', defaultRoles: ['admin'] },
+  // 공연과 학내 행사(수료식·발표회)를 함께 관리한다 — 구분은 events.kind 축.
+  { key: 'gallery', href: '/admin/gallery', label: '공연 · 행사 관리', iconKey: 'gallery', group: 'show', defaultRoles: ['teacher', 'admin'] },
   { key: 'gallery.photos', href: '/admin/gallery/photos', label: '사진 보관함', iconKey: 'photo', parentKey: 'gallery', group: 'show', defaultRoles: ['admin'] },
   // 공연 카테고리는 별도 메뉴/페이지 없이 '공연 관리' 페이지의 모달(버튼)에서 관리한다.
   // 참여 현황: 공연별 참가자 수·명단(체크인 집계). 운영진·관계자 검증용.
