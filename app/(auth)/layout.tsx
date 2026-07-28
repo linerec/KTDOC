@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
+import IntlObject from '@/components/common/IntlObject';
 
 export const metadata: Metadata = {
   robots: {
@@ -31,6 +32,11 @@ export default function AuthLayout({
         </Link>
       </div>
       <div className="auth-content">{children}</div>
+      {/* 앱(홈 화면 아이콘)으로 열었는데 세션이 풀려 여기 착지했을 때, 로그인하지 않고도
+          공개 사이트로 나갈 수 있는 길. 매니페스트 scope가 '/'라 앱 안에서 열린다. */}
+      <Link href="/" className="auth-browse">
+        <IntlObject keycode="auth.browseSite" />
+      </Link>
     </div>
   );
 }

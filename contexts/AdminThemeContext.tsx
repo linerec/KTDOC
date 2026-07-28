@@ -26,8 +26,15 @@ import React, {
 
 export type AdminTheme = 'dark' | 'light';
 
-// app/layout.tsx의 부트 스크립트가 같은 키를 인라인으로 읽는다 — 함께 바꿀 것
+// app/layout.tsx의 부트 스크립트가 같은 키·색값을 인라인으로 읽는다 — 함께 바꿀 것
 const STORAGE_KEY = 'admin-theme';
+
+// 상태바(iOS standalone)·브라우저 크롬 색. 공개 사이트는 항상 먹빛.
+const THEME_COLOR: Record<AdminTheme, string> = {
+  light: '#f6f1e6',
+  dark: '#0a0a0a',
+};
+const PUBLIC_THEME_COLOR = '#0a0a0a';
 
 const listeners = new Set<() => void>();
 // 프라이빗 모드 등 localStorage 쓰기 실패 시에도 세션 내 전환이 동작하도록 하는 폴백
@@ -49,10 +56,22 @@ function subscribe(onChange: () => void) {
   };
 }
 
+// 태그는 루트 레이아웃의 부트 스크립트가 만들어 둔다. 없으면(스크립트 차단 등) 여기서 만든다.
+function applyThemeColor(color: string) {
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', 'theme-color');
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute('content', color);
+}
+
 function applyThemeAttr(theme: AdminTheme) {
   const root = document.documentElement;
   if (theme === 'light') root.dataset.adminTheme = 'light';
   else delete root.dataset.adminTheme;
+  applyThemeColor(THEME_COLOR[theme]);
 }
 
 interface AdminThemeContextType {
@@ -83,6 +102,7 @@ export const AdminThemeProvider = ({ children }: { children: React.ReactNode }) 
     applyThemeAttr(readTheme());
     return () => {
       delete document.documentElement.dataset.adminTheme;
+      applyThemeColor(PUBLIC_THEME_COLOR);
     };
   }, []);
 

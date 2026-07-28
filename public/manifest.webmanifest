@@ -1,15 +1,17 @@
 {
   "name": "KTDOC 춤누리",
   "short_name": "KTDOC",
-  "description": "춤누리 한국전통무용단 — 이벤트 참여·일정 관리",
+  "description": "춤누리 한국전통무용단 — 공연 참여·일정·알림",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#f6f1e6",
+  "theme_color": "#f6f1e6",
   "lang": "ko",
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

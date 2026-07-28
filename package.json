@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "icons": "node scripts/generateIcons.mjs",
     "seed:test": "node scripts/seedTestAccounts.mjs",
     "seed:sample-events": "node scripts/seedSampleEvents.mjs",
     "seed:supplies": "node scripts/seedSupplies.mjs",

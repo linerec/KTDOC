@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import SiteViewLink from '@/components/common/SiteViewLink';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getCategories, getEvents, getGalleryPhotos, getPrograms, getApplicationCounts } from '@/lib/d1';
@@ -116,9 +117,9 @@ export default async function AdminDashboardPage() {
                 : `오늘의 현황 — 공개 수업 ${programsPublished} · 새 신청 ${appsNew} · 공개 공연 ${eventsPublished}`}
             </p>
           </div>
-          <Link href="/" target="_blank" className="admin-btn admin-btn-outline">
-            사이트 보기 ↗
-          </Link>
+          <SiteViewLink href="/" className="admin-btn admin-btn-outline" arrow>
+            사이트 보기
+          </SiteViewLink>
         </div>
       </header>
 

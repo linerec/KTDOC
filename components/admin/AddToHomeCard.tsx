@@ -16,8 +16,11 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 import { useT } from '@/lib/i18n/useT';
+import { useStandalone } from '@/lib/pwa/useStandalone';
 
-const DISMISS_KEY = 'a2hs-dismissed';
+// v2: 진입 주소가 대시보드로 바뀌어 이전에 추가한 아이콘은 지우고 다시 추가해야 한다.
+// 키를 올려 '나중에'로 닫았던 회원에게도 카드를 다시 보여준다.
+const DISMISS_KEY = 'a2hs-dismissed-v2';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -62,14 +65,6 @@ function isDismissed(): boolean {
   }
 }
 
-function isStandalone(): boolean {
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    // iOS Safari 전용 속성
-    (navigator as { standalone?: boolean }).standalone === true
-  );
-}
-
 function isIos(): boolean {
   const ua = navigator.userAgent;
   // iPadOS 13+는 데스크톱 Mac UA를 쓰므로 터치 지점으로 함께 판별
@@ -85,8 +80,9 @@ function isInAppBrowser(): boolean {
 
 type Mode = 'hidden' | 'ios-safari' | 'ios-inapp' | 'installable';
 
+// standalone 여부는 useStandalone 훅이 따로 구독한다(컴포넌트에서 합친다)
 function getMode(): Mode {
-  if (isDismissed() || installed || isStandalone()) return 'hidden';
+  if (isDismissed() || installed) return 'hidden';
   if (isIos()) return isInAppBrowser() ? 'ios-inapp' : 'ios-safari';
   return deferredPrompt ? 'installable' : 'hidden';
 }
@@ -117,6 +113,7 @@ export default function AddToHomeCard() {
   const t = useT();
   // SSR·하이드레이션 스냅샷은 hidden — 마운트 후 실제 환경으로 재렌더된다
   const mode = useSyncExternalStore(subscribe, getMode, () => 'hidden' as Mode);
+  const standalone = useStandalone();
 
   const handleInstall = useCallback(async () => {
     const evt = deferredPrompt;
@@ -139,7 +136,8 @@ export default function AddToHomeCard() {
     notify();
   }, []);
 
-  if (mode === 'hidden') return null;
+  // 이미 앱으로 실행 중이면 권할 이유가 없다
+  if (standalone || mode === 'hidden') return null;
 
   const desc =
     mode === 'ios-inapp'
@@ -195,6 +193,15 @@ export default function AddToHomeCard() {
             {t('admin.a2hs.installBtn', '홈 화면에 추가')}
           </button>
         </div>
+      )}
+
+      {mode !== 'ios-inapp' && (
+        <p className="a2hs-note">
+          {t(
+            'admin.a2hs.readd',
+            '전에 추가해 두신 아이콘이 있다면 한 번 지우고 다시 추가해 주세요. 새로 추가한 아이콘부터 이 화면이 바로 열립니다.'
+          )}
+        </p>
       )}
     </section>
   );

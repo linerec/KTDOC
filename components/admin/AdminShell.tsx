@@ -18,6 +18,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { useT } from '@/lib/i18n/useT';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
+import SiteViewLink from '@/components/common/SiteViewLink';
 import AdminNavLinks from '@/components/admin/AdminNavLinks';
 import AdminBottomNav from '@/components/admin/AdminBottomNav';
 import AdminMoreSheet from '@/components/admin/AdminMoreSheet';
@@ -111,9 +112,9 @@ export default function AdminShell({
               {userName}
             </span>
           </Link>
-          <Link href="/" target="_blank" className="admin-sidebar-foot-btn">
-            {t('admin.shell.viewSite', '사이트 보기')} ↗
-          </Link>
+          <SiteViewLink href="/" className="admin-sidebar-foot-btn" arrow>
+            {t('admin.shell.viewSite', '사이트 보기')}
+          </SiteViewLink>
           <button
             type="button"
             className="admin-sidebar-foot-btn admin-sidebar-foot-btn--logout"

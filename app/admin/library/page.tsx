@@ -8,6 +8,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import SiteViewLink from '@/components/common/SiteViewLink';
 import { cookies } from 'next/headers';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
@@ -159,14 +160,12 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
             {inner}
           </Link>
         ) : (
-          <a
+          <SiteViewLink
             href={`/gallery/${event.year}/${event.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="library-card-link"
           >
             {inner}
-          </a>
+          </SiteViewLink>
         )}
         {canCheckIn && (
           <CheckinButton
@@ -209,14 +208,12 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
             {inner}
           </Link>
         ) : (
-          <a
+          <SiteViewLink
             href={`/gallery/${event.year}/${event.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="library-row-link"
           >
             {inner}
-          </a>
+          </SiteViewLink>
         )}
         {canCheckIn && (
           <CheckinButton

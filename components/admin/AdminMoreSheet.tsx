@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useT } from '@/lib/i18n/useT';
 import AdminNavLinks from '@/components/admin/AdminNavLinks';
+import SiteViewLink from '@/components/common/SiteViewLink';
 import type { NavMenu } from '@/types/permissions';
 
 interface AdminMoreSheetProps {
@@ -97,14 +98,14 @@ export default function AdminMoreSheet({
         </nav>
 
         <div className="admin-sheet-foot">
-          <Link
+          <SiteViewLink
             href="/"
-            target="_blank"
             className="admin-sidebar-foot-btn"
             tabIndex={open ? 0 : -1}
+            arrow
           >
-            {t('admin.shell.viewSite', '사이트 보기')} ↗
-          </Link>
+            {t('admin.shell.viewSite', '사이트 보기')}
+          </SiteViewLink>
           <button
             type="button"
             className="admin-sidebar-foot-btn admin-sidebar-foot-btn--logout"

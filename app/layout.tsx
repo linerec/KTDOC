@@ -87,16 +87,22 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: 'KTDOC',
-    statusBarStyle: 'black-translucent',
+    // 'default' = 상태바 글자 어두움 + 콘텐츠는 상태바 아래에서 시작.
+    // 앱의 착지면인 관리 콘솔이 라이트(아이보리 상단바)가 기본이라, 흰 글자로 고정되는
+    // 'black-translucent'에서는 시간·배터리가 보이지 않았다. 상태바 배경은 아래
+    // theme-color가 정하고, 콘솔 테마에 따라 AdminThemeContext가 갱신한다.
+    statusBarStyle: 'default',
   },
-  // 홈 화면 추가 시 열리는 주소는 매니페스트 start_url이 정한다.
-  // 공개 사이트는 '/', 관리 콘솔은 admin layout이 start_url '/admin'인
-  // manifest-admin.webmanifest로 오버라이드한다(콘솔에서 추가한 아이콘은 대시보드로 열림).
+  // 홈 화면 추가 시 열리는 주소는 매니페스트 start_url('/app')이 정한다.
+  // 매니페스트는 사이트 전체가 하나를 쓴다 — 페이지별로 갈아끼우면 "문서를 처음 연 주소"에
+  // 좌우돼 대시보드에서 추가해도 공개 메인이 등록되는 문제가 생긴다.
   manifest: '/manifest.webmanifest',
 };
 
+// themeColor는 여기서 내보내지 않는다 — 상태바 색이 경로·콘솔 테마에 따라 달라져야 하는데,
+// Next가 렌더한 meta를 스크립트로 고치면 React가 하이드레이션에서 값 불일치를 보고 사본을
+// 하나 더 만든다(태그 2개). 아래 부트 스크립트가 태그를 직접 만들어 단독으로 소유한다.
 export const viewport: Viewport = {
-  themeColor: '#0a0a0a',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -133,9 +139,17 @@ export default async function RootLayout({
   // 깜빡임(FOUC)을 막는다. 콘솔 기본값은 라이트: 저장 선호가 'dark'일 때만 다크.
   // 경로 가드로 공개 페이지에는 절대 속성이 붙지 않으며(공개 사이트는 항상 다크),
   // 콘솔 이탈 시 제거는 AdminThemeProvider가 한다.
-  // 저장 키는 AdminThemeContext의 STORAGE_KEY('admin-theme')와 짝 — 함께 바꿀 것.
+  // 상태바 색(theme-color) meta도 여기서 만들어 붙인다 — 첫 페인트 전에 값이 정해져야
+  // 앱으로 열었을 때 어두운 띠가 번쩍였다가 아이보리로 바뀌지 않는다. React가 렌더하지
+  // 않는 태그라야 하이드레이션 때 사본이 생기지 않는다(그래서 viewport export에 두지 않음).
+  // 저장 키·색값은 AdminThemeContext(STORAGE_KEY, THEME_COLOR)와 짝 — 함께 바꿀 것.
   const adminThemeBootScript =
-    "(function(){var t=null;try{t=localStorage.getItem('admin-theme')}catch(e){}if(location.pathname.startsWith('/admin')&&t!=='dark'){document.documentElement.dataset.adminTheme='light'}})()";
+    "(function(){var t=null;try{t=localStorage.getItem('admin-theme')}catch(e){}" +
+    "var a=location.pathname.startsWith('/admin');" +
+    "if(a&&t!=='dark'){document.documentElement.dataset.adminTheme='light'}" +
+    "var m=document.createElement('meta');m.setAttribute('name','theme-color');" +
+    "m.setAttribute('content',a&&t!=='dark'?'#f6f1e6':'#0a0a0a');" +
+    "document.head.appendChild(m)})()";
 
   return (
     // suppressHydrationWarning: 관리 콘솔 테마 부트 스크립트가 하이드레이션 전에

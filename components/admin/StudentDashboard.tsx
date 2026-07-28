@@ -8,6 +8,7 @@
  */
 
 import Link from 'next/link';
+import SiteViewLink from '@/components/common/SiteViewLink';
 import AddToHomeCard from '@/components/admin/AddToHomeCard';
 import PushOptInCard from '@/components/push/PushOptInCard';
 
@@ -49,9 +50,9 @@ export default function StudentDashboard({
                 : '나의 공연·수업 소식을 한곳에서 확인할 수 있어요.'}
             </p>
           </div>
-          <Link href="/" target="_blank" className="admin-btn admin-btn-outline">
-            사이트 보기 ↗
-          </Link>
+          <SiteViewLink href="/" className="admin-btn admin-btn-outline" arrow>
+            사이트 보기
+          </SiteViewLink>
         </div>
       </header>
 
