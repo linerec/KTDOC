@@ -33,6 +33,17 @@
   --soft-gold-text: var(--soft-gold);
   --accent-text: var(--accent-color);
 
+  /* ── 역할 토큰 — '테마를 따라가면 안 되는' 전경색 ─────────────────────
+     테마 토큰(--text-color·--warm-ivory 등)은 페이지 지면 위에서만 뒤집혀야
+     한다. 아래 두 색은 지면이 아니라 **고정된 바탕** 위에 놓이므로 두 테마에서
+     같은 값을 유지한다. 뒤집으면 글자가 그대로 사라진다.
+     - --on-accent: 금색 배경 위 글자(칩·활성 버튼). 금 배경은 라이트에서도
+       선명하게 유지되므로 그 위 글자도 먹빛 그대로여야 한다.
+     - --on-media : 사진·영상 위 전경(캡션·배지·컨트롤). 운영자가 어떤 사진을
+       올릴지 알 수 없으므로 항상 밝은 아이보리 + 어두운 스크림 조합을 쓴다. */
+  --on-accent: #14100b;
+  --on-media: #f6efe2;
+
   /* 금 헤어라인(구분선)과 들어올린 먹 패널. 수업·프로그램·캠프 구간이 의존한다.
      테마 오버라이드 블록이 최상단 :root만 뒤집으므로 반드시 여기 있어야 한다.
      --ink-panel은 채널 토큰으로 정의해 테마를 따라 자동으로 뒤집힌다. */
@@ -2194,10 +2205,9 @@ ul {
 }
 
 /* auth 페이지 우측 상단 언어 전환 */
+/* 위치는 .auth-utils가 잡는다(테마 토글과 나란히 서야 하므로) */
 .auth-lang {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  position: static;
 }
 
 .auth-header {
@@ -2664,7 +2674,9 @@ ul {
   }
 
   .mobile-language-float {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     position: fixed;
     right: calc(14px + env(safe-area-inset-right));
     bottom: calc(16px + env(safe-area-inset-bottom));
@@ -4848,14 +4860,15 @@ ul {
   font-weight: 600;
 }
 
-/* 관리 콘솔 테마(라이트/다크) 세그먼트 토글 — lang-btn과 같은 시각 언어.
-   현재 테마 쪽이 금색으로 점등되어 어디서 바꾸는지 한눈에 보인다. */
-.admin-theme-toggle {
+/* 테마(라이트/다크) 세그먼트 토글 — lang-btn과 같은 시각 언어.
+   현재 테마 쪽이 금색으로 점등되어 어디서 바꾸는지 한눈에 보인다.
+   공개 사이트 헤더와 관리 콘솔 상단바가 같은 컴포넌트·같은 클래스를 쓴다. */
+.theme-toggle {
   display: flex;
   gap: 4px;
 }
 
-.admin-theme-btn {
+.theme-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -4871,26 +4884,66 @@ ul {
   transition: all 0.3s ease;
 }
 
-.admin-theme-btn:hover {
+.theme-toggle-btn:hover {
   color: var(--text-color);
   border-color: rgba(var(--fg-rgb), 0.4);
 }
 
-.admin-theme-btn.active {
+/* 금 배경 위 먹 글자 — 두 테마 모두 성립한다(배경용 금색은 뒤집지 않으므로). */
+.theme-toggle-btn.active {
   background: var(--accent-color);
   border-color: var(--accent-color);
-  color: #14100b;
+  color: var(--on-accent);
 }
 
-/* 좁은 상단바(모바일): 아이콘만 남겨 자리를 아낀다 */
+/* 좁은 화면: 아이콘만 남겨 자리를 아낀다 */
 @media (max-width: 560px) {
-  .admin-theme-btn {
+  .theme-toggle-btn {
     padding: 5px 8px;
   }
 
-  .admin-theme-btn .admin-theme-btn-label {
+  .theme-toggle-btn .theme-toggle-btn-label {
     display: none;
   }
+}
+
+/* 공개 헤더 우측 툴바 — 라벨을 항상 숨겨 아이콘만 쓴다. 이 자리는 언어 스위처와
+   로그인 버튼이 이미 다투는 곳이라, 툴바 실측 폭(--header-auth-w)이 늘어나면
+   ≤1100px에서 메뉴가 줄바꿈된다. 아이콘만으로도 해/달은 충분히 읽힌다. */
+.header-theme-toggle .theme-toggle-btn-label {
+  display: none;
+}
+
+.header-theme-toggle .theme-toggle-btn {
+  padding: 5px 8px;
+}
+
+/* 모바일 플로팅 칩 안에서는 언어 스위처와 나란히 선다 */
+.mobile-theme-toggle .theme-toggle-btn-label {
+  display: none;
+}
+
+.mobile-theme-toggle .theme-toggle-btn {
+  padding: 4px 8px;
+  border-color: transparent;
+}
+
+/* 로그인·가입 화면(헤더 없음)의 우상단 유틸 묶음 */
+.auth-utils {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-theme-toggle .theme-toggle-btn-label {
+  display: none;
+}
+
+.auth-theme-toggle .theme-toggle-btn {
+  padding: 5px 8px;
 }
 /* 하단 탭바 / 전체 메뉴 시트 — 데스크톱은 사이드바를 쓰므로 숨긴다(모바일 전용). */
 .admin-bottomnav,
@@ -16296,7 +16349,7 @@ html[data-admin-theme='light'] .admin-sheet {
 /* 상단바 콘텐츠는 선 캔버스(absolute) 위에 오도록 */
 .admin-topbar-title,
 .admin-topbar-lang,
-.admin-topbar .admin-theme-toggle {
+.admin-topbar .theme-toggle {
   position: relative;
   z-index: 1;
 }

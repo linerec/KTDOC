@@ -6,6 +6,7 @@ import { getSettings, SETTING_HEADER_BACKGROUND } from '@/lib/d1';
 import { parseHeaderBackground, toHeaderCssVars, DEFAULT_HEADER_BACKGROUND } from '@/lib/headerBackground';
 import { SITE_URL, SETTING_SEO_BUSINESS, parseSeoBusiness, buildBusinessJsonLd } from '@/lib/seoBusiness';
 import { SiteBusinessProvider } from '@/contexts/SiteBusinessContext';
+import { buildThemeBootScript } from '@/lib/theme';
 import './globals.css';
 
 const notoSerifKr = Noto_Serif_KR({
@@ -135,25 +136,19 @@ export default async function RootLayout({
   const seoBusiness = parseSeoBusiness(settings[SETTING_SEO_BUSINESS] ?? null);
   const businessJsonLd = JSON.stringify(buildBusinessJsonLd(seoBusiness)).replace(/</g, '\\u003c');
 
-  // 관리 콘솔 테마 부트 스크립트 — /admin SSR 진입 시 첫 페인트 전에 테마를 결정해
-  // 깜빡임(FOUC)을 막는다. 콘솔 기본값은 라이트: 저장 선호가 'dark'일 때만 다크.
-  // 경로 가드로 공개 페이지에는 절대 속성이 붙지 않으며(공개 사이트는 항상 다크),
-  // 콘솔 이탈 시 제거는 AdminThemeProvider가 한다.
-  // 상태바 색(theme-color) meta도 여기서 만들어 붙인다 — 첫 페인트 전에 값이 정해져야
-  // 앱으로 열었을 때 어두운 띠가 번쩍였다가 아이보리로 바뀌지 않는다. React가 렌더하지
-  // 않는 태그라야 하이드레이션 때 사본이 생기지 않는다(그래서 viewport export에 두지 않음).
-  // 저장 키·색값은 AdminThemeContext(STORAGE_KEY, THEME_COLOR)와 짝 — 함께 바꿀 것.
-  const adminThemeBootScript =
-    "(function(){var t=null;try{t=localStorage.getItem('admin-theme')}catch(e){}" +
-    "var a=location.pathname.startsWith('/admin');" +
-    "if(a&&t!=='dark'){document.documentElement.dataset.adminTheme='light'}" +
-    "var m=document.createElement('meta');m.setAttribute('name','theme-color');" +
-    "m.setAttribute('content',a&&t!=='dark'?'#f6f1e6':'#0a0a0a');" +
-    "document.head.appendChild(m)})()";
+  // 테마 부트 스크립트 — 첫 페인트 전에 테마를 결정해 깜빡임(FOUC)을 막는다.
+  // 공개 사이트와 관리 콘솔이 각자의 선호를 갖고, 둘 다 기본값은 라이트다
+  // (저장값이 정확히 'dark'일 때만 다크). 규칙·상수·생성은 lib/theme.ts가 갖는다.
+  //
+  // 반드시 <head> 안 **동기** 스크립트여야 한다(defer/async 금지). 공개 HTML은
+  // ISR·서비스워커 캐시로 모든 방문자가 공유하므로 서버는 테마를 알 수 없고,
+  // 알아서도 안 된다 — 첫 사용자의 테마가 캐시에 굳어 남에게 서빙된다.
+  const themeBootScript = buildThemeBootScript();
 
   return (
-    // suppressHydrationWarning: 관리 콘솔 테마 부트 스크립트가 하이드레이션 전에
-    // <html data-admin-theme>를 설정하므로 이 요소의 속성 비교 경고만 억제한다(1뎁스 한정)
+    // suppressHydrationWarning: 테마 부트 스크립트가 하이드레이션 전에
+    // <html data-site-theme|data-admin-theme>를 설정하므로 이 요소의 속성 비교 경고만
+    // 억제한다(1뎁스 한정)
     <html
       lang="ko"
       className={`${notoSerifKr.variable} ${outfit.variable}`}
@@ -168,7 +163,7 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: businessJsonLd }}
         />
-        <script dangerouslySetInnerHTML={{ __html: adminThemeBootScript }} />
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body style={headerCssVars as React.CSSProperties} data-header-bg={headerBgRaw ?? undefined}>
         <Providers initialLogo={headerLogo} initialAlign={headerAlign}>

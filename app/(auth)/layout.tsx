@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
+import SiteThemeToggle from '@/components/common/SiteThemeToggle';
 import IntlObject from '@/components/common/IntlObject';
 
 export const metadata: Metadata = {
@@ -18,7 +19,12 @@ export default function AuthLayout({
 }) {
   return (
     <div className="auth-container">
-      <LanguageSwitcher className="language-switcher auth-lang" />
+      {/* 이 화면들은 헤더가 없다 — 테마 토글을 여기 따로 두지 않으면
+          로그인·가입 중에 테마를 바꿀 방법이 사라진다. */}
+      <div className="auth-utils">
+        <SiteThemeToggle className="theme-toggle auth-theme-toggle" />
+        <LanguageSwitcher className="language-switcher auth-lang" />
+      </div>
       <div className="auth-header">
         <Link href="/">
           <Image

@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { useHeaderSettings } from '@/contexts/HeaderSettingsContext';
 import IntlObject from '@/components/common/IntlObject';
+import SiteThemeToggle from '@/components/common/SiteThemeToggle';
 import HeaderBackgroundEditor from '@/components/HeaderBackgroundEditor';
 import HeaderWaves from '@/components/HeaderWaves';
 import { isAdmin, canEnterAdmin } from '@/lib/isAdmin';
@@ -264,6 +265,7 @@ export default function Header() {
 
                     {/* Auth Section */}
                     <div className={`header-auth ${session ? 'is-signed-in' : 'is-signed-out'}`} ref={authRef}>
+                        <SiteThemeToggle className="theme-toggle header-theme-toggle" />
                         {renderLanguageSwitcher()}
                         {renderAuthActions()}
                     </div>
@@ -282,6 +284,7 @@ export default function Header() {
                 </div>
             </header>
             <div className="mobile-language-float">
+                <SiteThemeToggle className="theme-toggle mobile-theme-toggle" />
                 {renderLanguageSwitcher('language-switcher mobile-language-switcher')}
             </div>
         </>
