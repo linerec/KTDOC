@@ -3366,8 +3366,11 @@ ul {
   object-fit: contain;
 }
 
+/* 사진이 들어갈 자리(고정 어두운 슬롯) 안에 뜨는 안내라 지면 토큰을 쓰면 안 된다 —
+   대비 스캔에서 한지 지면 기준 2.97:1로 걸렸다. */
 .image-object-no-image {
-  color: var(--text-muted);
+  /* theme-exempt: 사진 슬롯 위 — 두 테마 모두 밝은 전경이 정답 */
+  color: rgba(246, 239, 226, 0.7);
   font-size: 0.9rem;
 }
 
@@ -3714,8 +3717,7 @@ ul {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 20px;
   padding: 8px 20px;
   border: 1px solid rgba(212, 160, 23, 0.3);
@@ -3733,8 +3735,7 @@ ul {
 
 .gallery-hero-subtitle {
   font-size: 1.2rem;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 15px;
 }
 
@@ -7926,8 +7927,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 20px;
   padding: 8px 20px;
   border: 1px solid rgba(212, 160, 23, 0.3);
@@ -7946,8 +7946,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .students-hero-subtitle {
   font-size: 1.2rem;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 15px;
 }
 .students-hero-description {
@@ -13874,8 +13873,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 20px;
   padding: 8px 20px;
   border: 1px solid rgba(212, 160, 23, 0.3);
@@ -14383,8 +14381,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 20px;
   padding: 8px 20px;
   border: 1px solid rgba(212, 160, 23, 0.3);
@@ -14400,8 +14397,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .glossary-hero-subtitle {
   font-size: 1.2rem;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 15px;
 }
 .glossary-hero-description {
@@ -15386,8 +15382,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 20px;
   padding: 8px 20px;
   border: 1px solid rgba(212, 160, 23, 0.3);
@@ -15405,8 +15400,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .media-hero-subtitle {
   font-size: 1.2rem;
-  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 15px;
 }
 
@@ -16073,9 +16067,10 @@ html:not([data-site-theme]):not([data-admin-theme]) {
   --surface-2: #e9e0cc;
 
   /* 텍스트로 쓰인 금색만 대비 확보를 위해 어둡게. 배경·보더용 금색
-     (--soft-gold/--accent-color)은 라이트에서도 선명하게 유지된다. */
+     (--soft-gold/--accent-color)은 라이트에서도 선명하게 유지된다.
+     값은 lib/contrast.test.ts가 한지 지면 위 4.5:1을 단언한다 — 함께 바꿀 것. */
   --soft-gold-text: #7d5f0b;
-  --accent-text: #8a6a10;
+  --accent-text: #7f5f0e;
   --soft-gold-rgb: 125, 95, 11;
   --accent-gold-rgb: 138, 106, 16;
 
@@ -16099,6 +16094,20 @@ html:not([data-site-theme]):not([data-admin-theme]) {
   --ink-texture-opacity: 0.05;
   /* 얇은 금선은 밝은 바탕에서 사라지므로 양끝 알파를 올려 존재감을 유지한다. */
   --hairline-edge-alpha: 0.22;
+}
+
+/* ── 라이트 알파 보정 — 다크용으로 튜닝된 '흐린 글자' ────────────────────
+   먹 위 아이보리 α와 한지 위 먹 α는 같은 값에서 같은 대비를 주지 않는다.
+   브라우저 대비 스캔(Playwright)이 4.5:1을 넘지 못한 자리만 올린다.
+   새 미달이 나오면 여기 추가하고 이유(측정값)를 함께 적을 것. */
+html[data-site-theme='light'] .timeline-year,
+html:not([data-site-theme]):not([data-admin-theme]) .timeline-year {
+  color: rgba(var(--ivory-rgb), 0.55); /* 0.35 → 2.09:1 이었다 */
+}
+
+html[data-site-theme='light'] .timeline-event-card-description,
+html:not([data-site-theme]):not([data-admin-theme]) .timeline-event-card-description {
+  color: rgba(var(--ivory-rgb), 0.72); /* 0.62 → 4.32:1 이었다 */
 }
 
 /* ── 헤더 — 라이트에서는 관리자 지정색 대신 지면 토큰을 쓴다 ─────────────

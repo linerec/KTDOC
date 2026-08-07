@@ -56,14 +56,46 @@ ResizeObserver로 실높이를 재서 문서 루트에 발행한다:
 
 세부 페이지 본문 텍스트의 다국어화는 필요 시 페이지별로 위 규칙에 따라 진행한다.
 
+## 공개 사이트 테마 (라이트 기본 / 다크 전환)
+
+공개 사이트는 **한지(라이트)가 기본**이고 헤더·모바일 칩·로그인 화면의 토글로 다크 전환이
+가능하다. 선호는 `localStorage['site-theme']`에 저장되며 **저장값이 정확히 'dark'일 때만**
+다크다. 관리 콘솔 선호(`admin-theme`)와는 **완전히 별개**다.
+
+규칙·상수·DOM 반영의 단일 소스는 `lib/theme.ts`다. 부트 스크립트도 여기서 생성되므로
+손으로 쓴 값과 어긋날 수 없다. 두 영역의 속성(`data-site-theme`/`data-admin-theme`)은
+**절대 공존하지 않는다** — 특이도가 같고 같은 토큰을 뒤집기 때문에 공존하면 CSS 작성
+순서가 승자를 정한다. `applyThemeToDocument()`가 한쪽을 찍을 때 반대쪽을 지운다.
+
+**공개 사이트 CSS를 쓸 때 규칙**:
+
+1. **색은 역할로 부른다.** 지면은 `var(--ground)`~`var(--ground-4)`(5단계), 표면은
+   `var(--surface-2)`, 전경은 `var(--text-color)`/`var(--text-muted)`. 흰색·아이보리
+   리터럴 대신 `rgba(var(--fg-rgb), α)`·`rgba(var(--ivory-rgb), α)`.
+2. **뒤집히면 안 되는 전경에는 이름이 있다.** 금 배경 위 글자는 `var(--on-accent)`,
+   사진·영상 위 전경은 `var(--on-media)`. 둘 다 두 테마에서 같은 값이다.
+3. **금색은 역할로 구분**한다(콘솔과 동일). 텍스트는 `--soft-gold-text`/`--accent-text`,
+   배경·보더는 `--soft-gold`/`--accent-color`.
+4. **새 히어로를 만들면 반드시 등록한다.** 배경이 사진이면 다크 섬(라이트에서도 어두운
+   캔버스 유지), 먹 그라디언트뿐이면 지면 히어로(한지로 뒤집힘). 등록처는
+   `scripts/lintTheme.mjs`의 `DARK_ISLANDS`/`GROUND_HEROES`와 globals.css의 다크 섬
+   블록이다. 어디에도 없으면 `npm run lint:theme`가 실패한다.
+   지면 히어로는 `var(--hero-veil), var(--hero-glow)` 또는
+   `var(--hero-wash), var(--hero-ground)` 두 관용구 중 하나를 쓴다.
+5. **리터럴이 정답인 자리에는 이유를 남긴다** — `/* theme-exempt: 사유 */`.
+6. 완료 전 `npm run lint:theme`(0건)와 `npm test`(대비 단언)를 돌리고,
+   **두 테마 모두 눈으로 확인**한다. 판정 근거는
+   `docs/operations/theme-token-ledger.json`과 `public-theme-decisions.md`에 있다.
+
 ## 관리 콘솔 테마 (라이트 기본 / 다크 전환) — 콘솔 한정
 
-공개 사이트는 항상 다크다. 관리 콘솔은 **라이트가 기본값**이고, 상단바
+관리 콘솔도 **라이트가 기본값**이고, 상단바
 세그먼트 토글(`AdminThemeToggle`)로 다크 전환이 가능하며, 선호는
 `localStorage['admin-theme']`에 저장된다(저장값이 'dark'일 때만 다크).
-전역 소스는 `contexts/AdminThemeContext`(콘솔 레이아웃에서만 마운트, 이탈 시
-`<html data-admin-theme>` 제거). FOUC 방지 부트 스크립트는 루트 layout의
-`<head>`에 있고 `/admin` 경로 가드가 걸려 있다.
+전역 소스는 `contexts/AdminThemeContext`(콘솔 레이아웃에서만 마운트). 콘솔을 벗어나면
+루트에 상주하는 `SiteThemeProvider`가 주인이 되어 `data-admin-theme`를 지우고 공개
+선호와 상태바 색을 복원한다. FOUC 방지 부트 스크립트는 루트 layout의 `<head>`에 있는
+**동기** 인라인 스크립트이며(`lib/theme.ts`가 생성), 경로로 두 영역을 가른다.
 
 CSS 구조: `:root`는 다크 값, `globals.css` 하단 `html[data-admin-theme='light']`
 블록이 토큰을 뒤집는다. **관리 콘솔 화면의 새 CSS를 쓸 때 규칙**:
