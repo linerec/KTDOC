@@ -1454,8 +1454,8 @@ ul {
 ======================================== */
 #categories {
   background:
-    radial-gradient(circle at 50% 0%, rgba(224, 184, 79, 0.07), transparent 34%),
-    linear-gradient(180deg, #1a0f0c 0%, var(--ink-umber) 100%);
+    radial-gradient(circle at 50% 0%, rgba(var(--soft-gold-rgb), 0.07), transparent 34%),
+    linear-gradient(180deg, var(--ground-1) 0%, var(--ground-2) 100%);
   padding: clamp(28px, 4vw, 54px) 0;
   color: var(--warm-ivory);
 }
@@ -10579,7 +10579,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .feature-preview-section {
-  background: #090705;
+  background: var(--ground);
   padding: 70px 0 110px;
 }
 
@@ -11372,7 +11372,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .program-card {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, var(--ink-umber), var(--deep-umber));
+  /* 카드는 지면 위 '표면'이다 — 지면과 함께 뒤집혀야 안의 글자가 산다. */
+  background: linear-gradient(180deg, var(--ground-2), var(--ground-3));
   border: 1px solid rgba(224, 184, 79, 0.14);
   border-radius: 8px;
   overflow: hidden;
@@ -11795,7 +11796,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .classes-loading-hero {
   height: 60vh;
-  background: linear-gradient(110deg, var(--ink-umber), var(--soft-umber), var(--ink-umber));
+  background: linear-gradient(110deg, var(--ground-2), var(--ground-4), var(--ground-2));
   background-size: 200% 100%;
   animation: skeletonShimmer 1.4s ease-in-out infinite;
 }
@@ -11808,7 +11809,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .classes-loading-card {
   aspect-ratio: 3 / 4;
   border-radius: 8px;
-  background: linear-gradient(110deg, var(--ink-umber), var(--soft-umber), var(--ink-umber));
+  background: linear-gradient(110deg, var(--ground-2), var(--ground-4), var(--ground-2));
   background-size: 200% 100%;
   animation: skeletonShimmer 1.4s ease-in-out infinite;
 }
@@ -12118,8 +12119,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   justify-content: center;
   font-family: var(--font-heading);
   letter-spacing: 0.2em;
-  color: rgba(224, 184, 79, 0.35);
-  background: linear-gradient(160deg, var(--soft-umber), var(--ink-black));
+  /* 사진이 없을 때만 나타나는 '표면'이다(사진 위 오버레이가 아니다) — 지면과 함께 뒤집는다 */
+  color: rgba(var(--soft-gold-rgb), 0.55);
+  background: linear-gradient(160deg, var(--ground-4), var(--ground));
 }
 .performance-card-scrim {
   position: absolute;
@@ -16097,6 +16099,85 @@ html:not([data-site-theme]):not([data-admin-theme]) {
   --ink-texture-opacity: 0.05;
   /* 얇은 금선은 밝은 바탕에서 사라지므로 양끝 알파를 올려 존재감을 유지한다. */
   --hairline-edge-alpha: 0.22;
+}
+
+/* ============================================================
+   DARK ISLANDS — 라이트에서도 어두운 캔버스를 유지하는 영역
+   ------------------------------------------------------------
+   사진이 주인공인 영역이다. 운영자가 어떤 사진을 올릴지 알 수 없으므로
+   '어두운 스크림 + 밝은 글자'가 유일하게 안전한 조합이고, 그래서 테마와
+   무관하게 이 조합을 유지한다.
+
+   구현은 **섬 루트에서 토큰을 로컬 재선언**하는 것뿐이다. 하위 선언은 한 줄도
+   고치지 않는다 — 스크림·텍스트·금색이 상속을 통해 통째로 다크로 돌아간다.
+   이 한 블록이 전환 난제의 4분의 1을 소멸시킨다.
+
+   새 사진 히어로를 추가하면 여기와 scripts/lintTheme.mjs의 DARK_ISLANDS
+   **양쪽**에 등록해야 한다. 린트가 미등록 히어로를 실패 처리한다.
+============================================================ */
+html[data-site-theme='light'] #hero,
+html[data-site-theme='light'] .hero-art-bg,
+html[data-site-theme='light'] .about-hero,
+html[data-site-theme='light'] .feature-hero,
+html[data-site-theme='light'] .performance-hero,
+html[data-site-theme='light'] .program-detail-hero,
+html[data-site-theme='light'] .camp-spotlight,
+html[data-site-theme='light'] .gallery-lightbox,
+html:not([data-site-theme]):not([data-admin-theme]) #hero,
+html:not([data-site-theme]):not([data-admin-theme]) .hero-art-bg,
+html:not([data-site-theme]):not([data-admin-theme]) .about-hero,
+html:not([data-site-theme]):not([data-admin-theme]) .feature-hero,
+html:not([data-site-theme]):not([data-admin-theme]) .performance-hero,
+html:not([data-site-theme]):not([data-admin-theme]) .program-detail-hero,
+html:not([data-site-theme]):not([data-admin-theme]) .camp-spotlight,
+html:not([data-site-theme]):not([data-admin-theme]) .gallery-lightbox {
+  color-scheme: dark;
+
+  --bg-color: #0a0a0a;
+  --bg-dark: #050505;
+  --text-color: #ffffff;
+  --text-muted: #9a9a9a;
+  --warm-ivory: #f6efe2;
+  --white: #ffffff;
+  --fg-rgb: 255, 255, 255;
+  --ivory-rgb: 246, 239, 226;
+  --bg-rgb: 10, 10, 10;
+  --surface-2: #1a1a1a;
+
+  /* 어두운 캔버스 위에서는 밝은 금이 정답이다 — 텍스트용 금을 되돌린다. */
+  --soft-gold-text: var(--soft-gold);
+  --accent-text: var(--accent-color);
+  --soft-gold-rgb: 224, 184, 79;
+  --accent-gold-rgb: 212, 160, 23;
+
+  --ground: #090705;
+  --ground-1: #120c09;
+  --ground-2: #15100d;
+  --ground-3: #21130f;
+  --ground-4: #2a1a14;
+
+  --ink-texture-opacity: 0.28;
+  --hairline-edge-alpha: 0.08;
+}
+
+/* ============================================================
+   LIGHT ISLAND — 다크에서도 종이로 남는 영역
+   ------------------------------------------------------------
+   .register-panel은 원래부터 '유일한 아이보리 순간'으로 의도된 반전 카드다
+   (배경 아이보리 + 먹 글자). 토큰만 뒤집으면 라이트에서 배경은 먹이 되는데
+   글자는 고정 먹이라 카드가 통째로 사라진다 — 다크 섬의 정확한 거울상이므로
+   같은 방법으로 푼다: 두 테마에서 같은 값을 갖는 로컬 토큰.
+============================================================ */
+.register-panel {
+  --warm-ivory: #f6efe2;
+  --ink-black: #241b12;
+  --text-color: #241b12;
+  --text-muted: #5a4a3a;
+  --fg-rgb: 36, 27, 18;
+  --ivory-rgb: 246, 239, 226;
+  --soft-gold-text: #7d5f0b;
+  --accent-text: #8a6a10;
+  color-scheme: light;
 }
 
 /* ============================================================
