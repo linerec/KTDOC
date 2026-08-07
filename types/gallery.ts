@@ -367,6 +367,47 @@ export function formatEventDateIntl(dateStr: string, locale: 'ko' | 'en' = 'ko')
 }
 
 /**
+ * 공연 시각을 공개 화면용 문구로 만든다. 시각이 없으면 빈 문자열.
+ *
+ * `HH:MM`(24시간)으로 저장된 값을 읽는 사람 기준으로 옮긴다 —
+ *   ko: "오후 7:30", "오후 7:30 – 9:00"
+ *   en: "7:30 PM", "7:30 PM – 9:00 PM"
+ *
+ * ── 집합 시간(call_time)은 여기 오지 않는다 ────────────────────────────────
+ * 집합 시각은 **출연자용 내부 정보**다. 관객이 보는 자리에 "집합 6시"가 있으면
+ * 입장 시각으로 읽혀 한 시간 일찍 오는 사람이 생긴다. 관리 콘솔과 출연자 안내에만
+ * 남긴다(호출부에서 아예 넘기지 않는다).
+ */
+export function formatEventTimeRange(
+  startTime: string | null | undefined,
+  endTime: string | null | undefined,
+  locale: 'ko' | 'en' = 'ko'
+): string {
+  const fmt = (hhmm: string | null | undefined): string | null => {
+    if (!hhmm) return null;
+    const m = hhmm.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return null;
+    const hour = Number(m[1]);
+    const minute = m[2];
+    if (hour > 23) return null;
+    if (locale === 'en') {
+      const h12 = hour % 12 === 0 ? 12 : hour % 12;
+      return `${h12}:${minute} ${hour < 12 ? 'AM' : 'PM'}`;
+    }
+    const h12 = hour % 12 === 0 ? 12 : hour % 12;
+    return `${hour < 12 ? '오전' : '오후'} ${h12}:${minute}`;
+  };
+
+  const start = fmt(startTime);
+  const end = fmt(endTime);
+  if (!start) return end ?? '';
+  if (!end) return start;
+  // 하이픈(-)이 아니라 en dash(–)다. 시각 범위의 관례 표기이고, 폰트에서 숫자와
+  // 붙었을 때 마이너스로 읽히지 않는다.
+  return `${start} – ${end}`;
+}
+
+/**
  * Intl.RelativeTimeFormat을 활용한 상대 시간 표시
  * 예: "3일 전", "2주 전", "1년 전"
  */

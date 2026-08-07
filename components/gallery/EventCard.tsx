@@ -9,7 +9,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { EventWithCategory } from '@/types/gallery';
-import { formatEventDateIntl } from '@/types/gallery';
+import { formatEventDateIntl, formatEventTimeRange } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EventCardProps {
@@ -32,6 +32,10 @@ export default function EventCard({
 
   // Intl.DateTimeFormat을 활용한 날짜 포맷팅
   const formattedDate = formatEventDateIntl(event.event_date, locale);
+  // 시작 시각만 쓴다. 카드는 훑는 자리라 "언제 시작하나"까지가 필요한 전부이고,
+  // 종료까지 붙이면 한 줄이 길어져 제목과 경쟁한다. 집합 시각은 출연자용이라
+  // 공개 화면에 넣지 않는다(formatEventTimeRange 주석).
+  const formattedTime = formatEventTimeRange(event.start_time, null, locale);
 
   // Thumbnail priority: thumbnail_url > poster_url > first_image_url
   const imageUrl = event.thumbnail_url || event.poster_url || event.first_image_url;
@@ -63,8 +67,16 @@ export default function EventCard({
         )}
       </div>
       <div className="gallery-event-card-content">
-        <span className="gallery-event-card-date">{formattedDate}</span>
+        <span className="gallery-event-card-date">
+          {formattedDate}
+          {formattedTime && <span className="gallery-event-card-time">{formattedTime}</span>}
+        </span>
         <h3 className="gallery-event-card-title">{title}</h3>
+        {/* 장소 — 목록에서 "언제·어디서"가 함께 읽혀야 한다. 예전에는 날짜만 있어
+            어디서 하는지 알려면 상세로 들어가야 했다. 주소가 아니라 장소명만 둔다. */}
+        {event.location && (
+          <span className="gallery-event-card-venue">{event.location}</span>
+        )}
         {showCategory && categoryName && (
           <span className="gallery-event-card-category">{categoryName}</span>
         )}

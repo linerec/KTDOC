@@ -14,7 +14,7 @@ import {
   getCheckinCountsByEvent,
 } from '@/lib/d1';
 import { getCalendarConfig, buildAddToCalendarLinks } from '@/lib/calendar';
-import { formatEventDate } from '@/types/gallery';
+import { formatEventDate, formatEventTimeRange } from '@/types/gallery';
 import IntlObject from '@/components/common/IntlObject';
 import EventLocationMap from '@/components/events/EventLocationMap';
 import EventDescription from '@/components/gallery/EventDescription';
@@ -104,6 +104,8 @@ export default async function EventDetailPage({ params }: PageProps) {
   const adjacent = await getAdjacentEvents(event.id, event.year);
 
   const formattedDate = formatEventDate(event.event_date, 'ko');
+  // 집합 시간은 넘기지 않는다 — 출연자용 내부 정보다(formatEventTimeRange 주석).
+  const formattedTime = formatEventTimeRange(event.start_time, event.end_time, 'ko');
 
   // "내 캘린더에 추가" 링크(기기 .ics / 구글). 요청 host 기준 절대 URL.
   const hdrs = await headers();
@@ -143,7 +145,19 @@ export default async function EventDetailPage({ params }: PageProps) {
           {event.title_en && (
             <p className="gallery-detail-title-en">{event.title_en}</p>
           )}
-          <p className="gallery-detail-date">{formattedDate}</p>
+          <p className="gallery-detail-date">
+            {formattedDate}
+            {formattedTime && (
+              <span className="gallery-detail-time">{formattedTime}</span>
+            )}
+          </p>
+          {/* 장소를 헤더에서 바로 보여 준다. 아래 "오시는 길" 절이 지도·주소를
+              담고 있지만 화면 한참 아래에 있어, 목록에서 들어온 사람이 "언제·어디서"를
+              한 번에 확인하지 못했다. 주소까지 여기 적으면 제목 블록이 무거워지므로
+              장소명까지만 둔다. */}
+          {event.location && (
+            <p className="gallery-detail-venue">{event.location}</p>
+          )}
           {/* 참여 기록이 없으면 표시하지 않는다 — '참여 0명'은 역효과 */}
           {event.kind === 'school' && participantCount > 0 && (
             <p className="gallery-detail-participants">참여 {participantCount}명</p>
