@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { useHeaderSettings } from '@/contexts/HeaderSettingsContext';
+import { useSiteTheme } from '@/contexts/SiteThemeContext';
 import IntlObject from '@/components/common/IntlObject';
 import SiteThemeToggle from '@/components/common/SiteThemeToggle';
 import HeaderBackgroundEditor from '@/components/HeaderBackgroundEditor';
@@ -31,6 +32,7 @@ export default function Header() {
     const { locale, changeLanguage, availableLangs } = useLanguage();
     const { isEditMode, toggleEditMode } = useBuilder();
     const { logo, align } = useHeaderSettings();
+    const { theme } = useSiteTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const headerRef = useRef<HTMLElement>(null);
@@ -39,8 +41,12 @@ export default function Header() {
 
     // 모든 페이지에서 최상단일 때 로고를 크게 노출하고, 스크롤하면 축소
     const isLogoExpanded = !isScrolled;
-    // 로고 변형도 배경과 동일하게 최상단/스크롤 후 상태별로 적용
-    const logoAsset = headerLogoAsset(isScrolled ? logo.scrolled : logo.top);
+    // 로고 변형도 배경과 동일하게 최상단/스크롤 후 상태별로 적용.
+    // 다만 라이트(한지) 테마에서는 헤더가 지면색으로 칠해지므로 흰 로고가 사라진다 —
+    // 저장된 변형과 무관하게 검은 워드마크를 쓴다(헤더 배경 정책과 같은 이유).
+    const logoAsset = headerLogoAsset(
+        theme === 'light' ? 'default' : isScrolled ? logo.scrolled : logo.top
+    );
     const headerClassName = [
         isScrolled && 'scrolled',
         isLogoExpanded && 'logo-expanded',

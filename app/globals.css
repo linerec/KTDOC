@@ -16101,6 +16101,24 @@ html:not([data-site-theme]):not([data-admin-theme]) {
   --hairline-edge-alpha: 0.22;
 }
 
+/* ── 헤더 — 라이트에서는 관리자 지정색 대신 지면 토큰을 쓴다 ─────────────
+   관리자가 D1에 저장한 Top Bar 색(--header-bg-* 등)은 layout이 <body>에 인라인
+   style로 심는다. 인라인은 셀렉터보다 우선하지만, 커스텀 프로퍼티는 **후손이 다시
+   선언하면** 그 서브트리에서 이긴다. 그래서 #main-header에 재선언한다.
+
+   정책: 저장된 색은 '다크 사이트 기준'으로 고른 값이라 한지 위에서는 성립하지
+   않는다. 라이트에서는 헤더를 지면색으로 칠하고 메뉴 글자를 먹으로 둔다.
+   (관리자 패널에도 이 사실을 안내할 것 — 라이트에서는 지정색이 무시된다.) */
+html[data-site-theme='light'] #main-header,
+html:not([data-site-theme]):not([data-admin-theme]) #main-header {
+  --header-bg-top: rgba(var(--bg-rgb), 0.92);
+  --header-menu-bg-top: rgba(var(--bg-rgb), 0.92);
+  --header-bg-scrolled: rgba(var(--bg-rgb), 0.95);
+  --header-menu-bg-scrolled: rgba(var(--bg-rgb), 0.95);
+  --header-nav-color-top: var(--text-color);
+  --header-nav-color-scrolled: var(--text-color);
+}
+
 /* ============================================================
    DARK ISLANDS — 라이트에서도 어두운 캔버스를 유지하는 영역
    ------------------------------------------------------------

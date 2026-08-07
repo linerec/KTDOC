@@ -16,6 +16,8 @@ import IntlObject from '@/components/common/IntlObject';
 import ImageObject from '@/components/common/ImageObject';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSiteBusiness } from '@/contexts/SiteBusinessContext';
+import { useSiteTheme } from '@/contexts/SiteThemeContext';
+import { headerLogoAsset } from '@/lib/headerBackground';
 import {
   BUSINESS_DAYS,
   DEFAULT_SEO_BUSINESS,
@@ -40,6 +42,7 @@ const NAV_LINKS: { href: string; keycode: string }[] = [
 export default function Footer() {
   const { locale } = useLanguage();
   const business = useSiteBusiness();
+  const { theme } = useSiteTheme();
 
   const businessName = locale === 'ko' ? business.nameKo : business.nameEn;
   const addressLine = formatAddressLine(business);
@@ -59,7 +62,7 @@ export default function Footer() {
               width={160}
               height={40}
               className="footer-logo-img"
-              fallbackSrc="/assets/logo/logo_white.png"
+              fallbackSrc={headerLogoAsset(theme === 'light' ? 'default' : 'white').src}
             />
           </div>
           <div className="social-links">

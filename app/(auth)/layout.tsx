@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import type { Metadata } from 'next';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import SiteThemeToggle from '@/components/common/SiteThemeToggle';
+import SiteLogo from '@/components/common/SiteLogo';
 import IntlObject from '@/components/common/IntlObject';
 
 export const metadata: Metadata = {
@@ -27,14 +27,7 @@ export default function AuthLayout({
       </div>
       <div className="auth-header">
         <Link href="/">
-          <Image
-            src="/assets/logo/logo_white.png"
-            alt="KTDOC Logo"
-            width={120}
-            height={42}
-            style={{ height: '50px', width: 'auto' }}
-            priority
-          />
+          <SiteLogo height={50} priority />
         </Link>
       </div>
       <div className="auth-content">{children}</div>
