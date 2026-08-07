@@ -44,10 +44,55 @@
   --on-accent: #14100b;
   --on-media: #f6efe2;
 
+  /* ── 지면(ground) — '브랜드 먹'이 아니라 '지면'이라는 역할 ─────────────
+     페이지 셸·섹션 배경은 --ink-black/--ink-umber 같은 브랜드 먹으로 칠해져
+     있었다. 그 토큰들은 금 배경 위 먹 글자로도 쓰여서 전역으로 뒤집을 수 없고,
+     그대로 두면 라이트에서 전경만 뒤집혀 섹션이 통째로 사라진다.
+     그래서 '지면으로 쓰인 자리'만 역할 토큰으로 다시 부른다. --ink-* 자체는
+     손대지 않는다(금 배경 위 먹 글자 자리가 남아 있어야 하므로).
+
+     지면은 5단계 스케일이다. 다크에서는 먹이 깊은 쪽(0)에서 따뜻한 쪽(4)으로,
+     라이트에서는 한지가 밝은 쪽(0)에서 깊은 쪽(4)으로 간다 — 순서를 거울처럼
+     뒤집으므로 그라디언트의 방향감(위가 밝고 아래가 깊다 등)이 그대로 보존된다. */
+  --ground: #090705; /* = --ink-black. 페이지 셸 기본 지면 */
+  --ground-1: #120c09;
+  --ground-2: #15100d; /* = --ink-umber */
+  --ground-3: #21130f; /* = --deep-umber */
+  --ground-4: #2a1a14; /* = --soft-umber */
+  /* 지면 위로 살짝 들린 표면(카드·패널). 채널 토큰이라 테마를 따라간다. */
+  --surface: rgba(var(--ivory-rgb), 0.045);
+  --surface-border: rgba(var(--ivory-rgb), 0.1);
+
+  /* ── 히어로 두 관용구 ───────────────────────────────────────────────
+     사진 없는 '지면 히어로' 10개가 아래 두 조합만 쓴다. 개별 대응이 아니라
+     토큰으로 묶어 두면 라이트 전환이 한 곳에서 끝난다.
+       관용구 A: background: var(--hero-veil), var(--hero-glow);
+       관용구 B: background: var(--hero-wash), var(--hero-ground); */
+  --hero-veil: linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18));
+  --hero-glow: radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+  --hero-wash: radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%);
+  --hero-ground: linear-gradient(180deg, var(--ground-2), var(--ground));
+
+  /* 금색 채널 — 알파를 실은 금색 텍스트/장식용. 단색 --soft-gold-text로는
+     알파를 못 준다(hex라서). 라이트에서 함께 어두운 금으로 뒤집힌다. */
+  --soft-gold-rgb: 224, 184, 79;
+  --accent-gold-rgb: 212, 160, 23;
+
+  /* 먹 텍스처(black_stroke.png) multiply 강도. 밝은 바탕에서는 이진 알파의
+     계단 경계가 드러나므로 라이트에서 크게 낮춘다. */
+  --ink-texture-opacity: 0.28;
+  /* 금 헤어라인 양끝 알파 — 얇은 금선은 밝은 바탕에서 사라지므로 라이트에서 올린다. */
+  --hairline-edge-alpha: 0.08;
+
   /* 금 헤어라인(구분선)과 들어올린 먹 패널. 수업·프로그램·캠프 구간이 의존한다.
      테마 오버라이드 블록이 최상단 :root만 뒤집으므로 반드시 여기 있어야 한다.
      --ink-panel은 채널 토큰으로 정의해 테마를 따라 자동으로 뒤집힌다. */
-  --hairline-gold: linear-gradient(90deg, rgba(224, 184, 79, 0.08), var(--soft-gold), rgba(224, 184, 79, 0.08));
+  --hairline-gold: linear-gradient(
+    90deg,
+    rgba(var(--soft-gold-rgb), var(--hairline-edge-alpha)),
+    var(--soft-gold),
+    rgba(var(--soft-gold-rgb), var(--hairline-edge-alpha))
+  );
   --ink-panel: rgba(var(--ivory-rgb), 0.055);
 
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -197,8 +242,8 @@ footer {
   height: 56vmax;
   --ink-peak: 0.075;
   background: radial-gradient(closest-side,
-    rgba(246, 239, 226, 0.42),
-    rgba(246, 239, 226, 0.13) 42%,
+    rgba(var(--ivory-rgb),  0.42),
+    rgba(var(--ivory-rgb),  0.13) 42%,
     rgba(33, 19, 15, 0) 70%);
   animation: inkBreath 17s var(--ease-out-expo) -11s infinite;
 }
@@ -355,8 +400,8 @@ ul {
 /* Navigation - Below Logo */
 #main-nav {
   width: 100vw;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.15);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.15);
   padding: 12px 0;
   margin-top: 0;
 }
@@ -819,6 +864,7 @@ ul {
   font-size: 0.78rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
   margin-bottom: clamp(18px, 2vw, 28px);
   font-weight: 400;
@@ -836,6 +882,7 @@ ul {
   font-size: clamp(3.1rem, 5.6vw, 6.25rem);
   font-weight: 400;
   line-height: 1.04;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--warm-ivory);
   text-wrap: balance;
   text-shadow: 0 24px 64px rgba(0, 0, 0, 0.58);
@@ -874,7 +921,7 @@ ul {
   align-items: center;
   gap: 10px;
   background: linear-gradient(135deg, var(--deep-red), var(--secondary-color));
-  color: var(--warm-ivory);
+  color: var(--on-media);
   padding: 13px 22px;
   border-radius: 4px;
   border: 1px solid rgba(246, 239, 226, 0.18);
@@ -961,7 +1008,7 @@ ul {
 .play-icon {
   width: 60px;
   height: 60px;
-  color: var(--white);
+  color: var(--on-media);
   background: rgba(196, 48, 43, 0.9);
   border-radius: 50%;
   padding: 15px;
@@ -985,7 +1032,7 @@ ul {
 
 .video-card-title {
   font-size: 0.85rem;
-  color: var(--white);
+  color: var(--on-media);
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1029,6 +1076,7 @@ ul {
   border: 1px solid rgba(224, 184, 79, 0.5);
   border-radius: 999px;
   background: rgba(10, 10, 10, 0.78);
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
   font-size: 0.78rem;
   font-weight: 600;
@@ -1116,7 +1164,7 @@ ul {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border: 1px dashed rgba(var(--fg-rgb),  0.25);
   background: #151515;
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -1126,6 +1174,7 @@ ul {
 
 .hero-video-pick-item--auto.selected .hero-video-pick-auto-box {
   border-color: var(--accent-color);
+  /* theme-exempt: 고정 어두운 표면 위 — 밝은 금이 두 테마 모두 정답 */
   color: var(--soft-gold);
 }
 
@@ -1148,7 +1197,7 @@ ul {
   overflow: hidden;
   background:
     radial-gradient(circle at 82% 12%, rgba(143, 33, 29, 0.16), transparent 36%),
-    linear-gradient(180deg, var(--ink-umber) 0%, var(--deep-umber) 52%, #1a0f0c 100%);
+    linear-gradient(180deg, var(--ground-2) 0%, var(--ground-3) 52%, var(--ground-1) 100%);
   padding: clamp(84px, 10vw, 150px) 40px;
 }
 
@@ -1212,7 +1261,7 @@ ul {
   display: flex;
   align-items: center;
   gap: 14px;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   font-size: 0.82rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -1242,7 +1291,7 @@ ul {
 
 .mission-title::before,
 .mission-title::after {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 
 .mission-title::before {
@@ -1258,18 +1307,18 @@ ul {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px clamp(24px, 4vw, 48px);
   padding-top: 34px;
-  border-top: 1px solid rgba(246, 239, 226, 0.14);
+  border-top: 1px solid rgba(var(--ivory-rgb),  0.14);
 }
 
 .mission-body p {
   font-size: clamp(0.94rem, 1vw, 1.05rem);
   line-height: 1.92;
-  color: rgba(246, 239, 226, 0.68);
+  color: rgba(var(--ivory-rgb),  0.68);
   word-break: keep-all;
 }
 
 .mission-body p:first-child {
-  color: rgba(246, 239, 226, 0.86);
+  color: rgba(var(--ivory-rgb),  0.86);
 }
 
 /* ========================================
@@ -1279,7 +1328,7 @@ ul {
 ======================================== */
 .journey-section {
   padding: clamp(48px, 7vw, 88px) 0;
-  background: linear-gradient(180deg, var(--ink-umber) 0%, #1a0f0c 100%);
+  background: linear-gradient(180deg, var(--ground-2) 0%, var(--ground-1) 100%);
   color: var(--warm-ivory);
 }
 
@@ -1291,7 +1340,7 @@ ul {
   display: block;
   font-size: 0.78rem;
   letter-spacing: 0.2em;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin-bottom: 10px;
 }
 
@@ -1313,10 +1362,10 @@ ul {
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-  border: 1px solid rgba(246, 239, 226, 0.1);
+  border: 1px solid rgba(var(--ivory-rgb),  0.1);
   border-radius: 4px;
   overflow: hidden;
-  background: rgba(246, 239, 226, 0.02);
+  background: rgba(var(--ivory-rgb),  0.02);
   transition: border-color 0.25s ease, transform 0.25s ease;
 }
 
@@ -1328,7 +1377,7 @@ ul {
 .journey-card-image {
   position: relative;
   aspect-ratio: 4 / 3;
-  background: rgba(246, 239, 226, 0.04);
+  background: rgba(var(--ivory-rgb),  0.04);
 }
 
 .journey-card-img {
@@ -1338,7 +1387,7 @@ ul {
 .journey-card-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(246, 239, 226, 0.06), rgba(246, 239, 226, 0.02));
+  background: linear-gradient(135deg, rgba(var(--ivory-rgb),  0.06), rgba(var(--ivory-rgb),  0.02));
 }
 
 .journey-card-body {
@@ -1360,7 +1409,7 @@ ul {
 
 .journey-card-kind {
   font-size: 0.7rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   padding: 3px 10px;
   border: 1px solid rgba(224, 184, 79, 0.42);
   border-radius: 12px;
@@ -1380,15 +1429,17 @@ ul {
   display: inline-block;
   margin-top: clamp(20px, 3vw, 32px);
   font-size: 0.92rem;
-  color: rgba(246, 239, 226, 0.72);
+  color: rgba(var(--ivory-rgb),  0.72);
   text-decoration: none;
-  border-bottom: 1px solid rgba(246, 239, 226, 0.25);
+  border-bottom: 1px solid rgba(var(--ivory-rgb),  0.25);
   padding-bottom: 3px;
   transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .journey-more:hover {
-  color: var(--soft-gold);
+  /* 글자는 텍스트용 금(라이트에서 어두운 금), 밑줄은 배경용 금 그대로 —
+     같은 규칙 안에서 역할이 다르므로 한 번에 치환하면 안 되는 자리다. */
+  color: var(--soft-gold-text);
   border-color: var(--soft-gold);
 }
 
@@ -1477,7 +1528,7 @@ ul {
 #traditional {
   background:
     radial-gradient(circle at 50% 0%, rgba(224, 184, 79, 0.08), transparent 34%),
-    linear-gradient(180deg, var(--ink-umber) 0%, #1d110d 42%, var(--ink-black) 100%);
+    linear-gradient(180deg, var(--ground-2) 0%, var(--ground-3) 42%, var(--ground) 100%);
   position: relative;
   padding: 0;
   overflow: hidden;
@@ -1536,7 +1587,7 @@ ul {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.1);
   padding-bottom: 40px;
   margin-bottom: 30px;
 }
@@ -1621,7 +1672,7 @@ ul {
 }
 
 .footer-contact {
-  color: var(--accent-color);
+  color: var(--accent-text);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: 0.8rem;
@@ -1641,7 +1692,7 @@ ul {
 }
 
 .footer-nav-list a:hover {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 
 /* NAP는 검색엔진이 읽는 일반 텍스트 — 이미지·아이콘 폰트로 대체하지 않는다 */
@@ -1659,7 +1710,7 @@ ul {
 
 .footer-address a:hover,
 .footer-contact-line a:hover {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 
 .footer-contact-line {
@@ -1703,7 +1754,7 @@ ul {
   font-size: 0.85rem;
   color: var(--text-muted);
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.08);
 }
 
 /* 법적 고지 링크 (개인정보처리방침 · 이용약관) */
@@ -1733,7 +1784,7 @@ ul {
   transition: color 0.3s var(--ease-out-quart);
 }
 .footer-cal-link:hover {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 
 /* ========================================
@@ -1797,7 +1848,7 @@ ul {
     width: 44px;
     height: 44px;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(var(--fg-rgb),  0.14);
     border-radius: 999px;
     background: rgba(9, 7, 5, 0.38);
     backdrop-filter: blur(10px);
@@ -1852,7 +1903,7 @@ ul {
     width: min(100%, 280px);
     margin-top: 34px;
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-top: 1px solid rgba(var(--fg-rgb),  0.14);
   }
 
   .mobile-nav-auth .header-auth-actions {
@@ -2066,7 +2117,7 @@ ul {
   letter-spacing: 1px;
   color: var(--text-color);
   padding: 8px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(var(--fg-rgb),  0.3);
   border-radius: 4px;
   background: transparent;
   cursor: pointer;
@@ -2075,7 +2126,7 @@ ul {
 
 .auth-btn:hover {
   border-color: var(--text-color);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg-rgb),  0.1);
 }
 
 .auth-btn-primary {
@@ -2089,7 +2140,7 @@ ul {
 }
 
 .auth-btn-logout {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(var(--fg-rgb),  0.2);
 }
 
 .auth-btn-logout:hover {
@@ -2225,19 +2276,19 @@ ul {
   font-size: 0.84rem;
   letter-spacing: 0.04em;
   color: var(--text-muted);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.16);
   padding-bottom: 2px;
   transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .auth-browse:hover {
   color: var(--warm-ivory);
-  border-bottom-color: rgba(255, 255, 255, 0.4);
+  border-bottom-color: rgba(var(--fg-rgb),  0.4);
 }
 
 .auth-form {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg-rgb),  0.03);
+  border: 1px solid rgba(var(--fg-rgb),  0.1);
   border-radius: 12px;
   padding: 40px;
 }
@@ -2278,8 +2329,8 @@ ul {
   padding: 12px 16px;
   font-size: 0.95rem;
   color: var(--text-color);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(var(--fg-rgb),  0.05);
+  border: 1px solid rgba(var(--fg-rgb),  0.15);
   border-radius: 6px;
   transition: border-color 0.3s, background 0.3s;
 }
@@ -2287,7 +2338,7 @@ ul {
 .auth-field input:focus {
   outline: none;
   border-color: var(--accent-color);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.08);
 }
 
 .auth-field input::placeholder {
@@ -2306,7 +2357,7 @@ ul {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--white);
+  color: var(--on-media);
   background: var(--secondary-color);
   border: none;
   border-radius: 6px;
@@ -2365,7 +2416,7 @@ ul {
 }
 
 .auth-link a {
-  color: var(--accent-color);
+  color: var(--accent-text);
   transition: color 0.3s;
 }
 
@@ -2385,9 +2436,9 @@ ul {
 .auth-forgot {
   margin-top: 22px;
   padding: 16px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(var(--fg-rgb),  0.12);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--fg-rgb),  0.04);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -2484,7 +2535,7 @@ ul {
 }
 
 .auth-agree a {
-  color: var(--accent-color);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -2507,15 +2558,15 @@ ul {
   gap: 4px;
   text-align: left;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(var(--fg-rgb),  0.04);
+  border: 1px solid rgba(var(--fg-rgb),  0.15);
   border-radius: 8px;
   cursor: pointer;
   transition: border-color 0.25s, background 0.25s;
 }
 
 .auth-role-option:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(var(--fg-rgb),  0.3);
 }
 
 .auth-role-option.is-active {
@@ -2566,8 +2617,8 @@ ul {
   padding: 12px 16px;
   font-size: 0.95rem;
   color: var(--text-color);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(var(--fg-rgb),  0.05);
+  border: 1px solid rgba(var(--fg-rgb),  0.15);
   border-radius: 6px;
   transition: border-color 0.3s, background 0.3s;
   cursor: pointer;
@@ -2576,7 +2627,7 @@ ul {
 .auth-field select:focus {
   outline: none;
   border-color: var(--accent-color);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.08);
 }
 
 .auth-field select:disabled {
@@ -2603,7 +2654,7 @@ ul {
   align-items: center;
   justify-content: center;
   font-size: 1.6rem;
-  color: var(--white);
+  color: var(--on-media);
   background: var(--secondary-color);
   border-radius: 50%;
 }
@@ -2682,10 +2733,10 @@ ul {
     bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: calc(var(--z-header) + 2);
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(var(--fg-rgb),  0.16);
     border-radius: 999px;
     background:
-      linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03)),
+      linear-gradient(135deg, rgba(var(--fg-rgb),  0.12), rgba(var(--fg-rgb),  0.03)),
       rgba(9, 7, 5, 0.78);
     box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
     backdrop-filter: blur(16px);
@@ -2782,7 +2833,7 @@ ul {
   transition: all 0.3s ease;
   background: rgba(10, 10, 10, 0.6);
   border: 1px solid color-mix(in srgb, var(--accent-color) 62%, transparent);
-  color: var(--accent-color);
+  color: var(--on-media);
 }
 
 .edit-mode-toggle:hover {
@@ -2792,7 +2843,7 @@ ul {
 
 .edit-mode-toggle.active {
   background: var(--accent-color);
-  color: var(--bg-color);
+  color: var(--on-accent);
   border-color: var(--accent-text);
 }
 
@@ -2814,7 +2865,7 @@ ul {
 
 .intl-modal {
   background: var(--bg-color);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(var(--fg-rgb),  0.15);
   border-radius: 12px;
   width: 100%;
   max-width: 500px;
@@ -2829,7 +2880,7 @@ ul {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .intl-modal-header h3 {
@@ -2887,8 +2938,8 @@ ul {
   font-size: 0.9rem;
   font-family: var(--font-body);
   color: var(--text-color);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(var(--fg-rgb),  0.05);
+  border: 1px solid rgba(var(--fg-rgb),  0.15);
   border-radius: 6px;
   transition: border-color 0.3s, background 0.3s;
   resize: vertical;
@@ -2898,7 +2949,7 @@ ul {
 .intl-modal-field textarea:focus {
   outline: none;
   border-color: var(--accent-color);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.08);
 }
 
 .intl-modal-field input:disabled,
@@ -2912,7 +2963,7 @@ ul {
   justify-content: flex-end;
   gap: 10px;
   padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .intl-btn-cancel,
@@ -2927,19 +2978,19 @@ ul {
 
 .intl-btn-cancel {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(var(--fg-rgb),  0.3);
   color: var(--text-color);
 }
 
 .intl-btn-cancel:hover:not(:disabled) {
   border-color: var(--text-color);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg-rgb),  0.1);
 }
 
 .intl-btn-save {
   background: var(--accent-color);
   border: none;
-  color: var(--bg-color);
+  color: var(--on-accent);
 }
 
 .intl-btn-save:hover:not(:disabled) {
@@ -3001,9 +3052,13 @@ ul {
   color: var(--text-color);
 }
 
+/* 선택된 언어 칩은 지면을 반전시켜 표시한다. 배경(--text-color)과 글자(--bg-color)가
+   함께 뒤집히므로 두 테마 모두 성립한다 — 다크에서는 흰 칩에 먹 글자, 라이트에서는
+   먹 칩에 한지 글자. */
 .lang-btn.active {
   background: var(--text-color);
   border-color: var(--text-color);
+  /* theme-exempt: 배경도 같은 테마 토큰이라 함께 뒤집힌다(의도된 반전) */
   color: var(--bg-color);
 }
 
@@ -3052,7 +3107,7 @@ ul {
   width: 36px;
   height: 36px;
   background: rgba(196, 48, 43, 0.9);
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(var(--fg-rgb),  0.5);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -3101,6 +3156,7 @@ ul {
 
 .keycode-label--image {
   background: rgba(196, 48, 43, 0.85);
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   border-color: rgba(255, 255, 255, 0.4);
 }
 
@@ -3110,7 +3166,7 @@ ul {
   left: 0;
   display: inline-block;
   background: rgba(212, 160, 23, 0.9);
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(var(--fg-rgb),  0.4);
   color: #000;
   font-size: 9px;
   padding: 2px 6px;
@@ -3253,7 +3309,7 @@ ul {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--fg-rgb),  0.1);
   z-index: var(--z-modal);
 }
 
@@ -3262,7 +3318,7 @@ ul {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .image-object-modal-header h3 {
@@ -3300,6 +3356,7 @@ ul {
   justify-content: center;
   margin-bottom: 20px;
   overflow: hidden;
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -3330,7 +3387,7 @@ ul {
 .image-object-form input[type="file"] {
   width: 100%;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--fg-rgb),  0.2);
   border-radius: 6px;
   font-size: 0.9rem;
   background: #0a0a0a;
@@ -3374,7 +3431,7 @@ ul {
   justify-content: flex-end;
   gap: 10px;
   padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .image-object-modal-footer button {
@@ -3387,7 +3444,7 @@ ul {
 
 .image-object-modal-footer button:first-child {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--fg-rgb),  0.2);
   color: var(--text-muted);
 }
 
@@ -3428,7 +3485,7 @@ ul {
 /* 상태별(최상단/스크롤 후) 설정 묶음 */
 .header-bg-section {
   padding: 16px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.08);
 }
 
 .header-bg-section:first-of-type {
@@ -3496,7 +3553,7 @@ ul {
   width: 44px;
   height: 34px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--fg-rgb),  0.2);
   border-radius: 6px;
   background: #0a0a0a;
   cursor: pointer;
@@ -3534,7 +3591,7 @@ ul {
   height: 34px;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--fg-rgb),  0.2);
   flex-shrink: 0;
   background-color: #fff;
   background-image:
@@ -3555,7 +3612,7 @@ ul {
   margin-top: 18px;
   width: 100%;
   padding: 10px;
-  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border: 1px dashed rgba(var(--fg-rgb),  0.25);
   border-radius: 6px;
   background: transparent;
   color: var(--text-muted);
@@ -3583,7 +3640,7 @@ ul {
 .header-logo-option {
   flex: 1;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--fg-rgb),  0.2);
   border-radius: 6px;
   background: #0a0a0a;
   color: var(--text-muted);
@@ -3640,7 +3697,7 @@ ul {
   display: flex;
   flex-direction: column;
   background:
-    linear-gradient(180deg, #120c09 0%, var(--deep-umber) 34%, var(--soft-umber) 100%);
+    linear-gradient(180deg, var(--ground-1) 0%, var(--ground-3) 34%, var(--ground-4) 100%);
 }
 
 /* Gallery Hero — 상단 오프셋은 히어로가 소유(표준 패턴) */
@@ -3648,8 +3705,8 @@ ul {
   padding: var(--page-offset) 0 60px;
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
-    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+    var(--hero-veil),
+    var(--hero-glow);
 }
 
 .gallery-hero-label {
@@ -3657,6 +3714,7 @@ ul {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 20px;
   padding: 8px 20px;
@@ -3675,6 +3733,7 @@ ul {
 
 .gallery-hero-subtitle {
   font-size: 1.2rem;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 15px;
 }
@@ -3703,7 +3762,7 @@ ul {
 .gallery-filter {
   margin-bottom: 40px;
   padding: 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .gallery-filter-pending {
@@ -3727,7 +3786,7 @@ ul {
 
 .gallery-filter-label {
   font-size: 0.75rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
@@ -3738,8 +3797,8 @@ ul {
   padding: 10px 14px;
   font-size: 0.9rem;
   color: var(--white);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(var(--fg-rgb),  0.1);
+  border: 1px solid rgba(var(--fg-rgb),  0.3);
   border-radius: 6px;
   min-width: 150px;
 }
@@ -3773,7 +3832,7 @@ ul {
 
 .gallery-filter-clear:hover {
   background: var(--secondary-color);
-  color: var(--white);
+  color: var(--on-media);
 }
 
 /* Year Quick Links */
@@ -3788,7 +3847,7 @@ ul {
   font-size: 0.85rem;
   color: var(--text-muted);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(var(--fg-rgb),  0.15);
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s;
@@ -3802,7 +3861,7 @@ ul {
 .gallery-year-link.active {
   background: var(--accent-color);
   border-color: var(--accent-text);
-  color: var(--bg-color);
+  color: var(--on-accent);
 }
 
 .gallery-year-more {
@@ -3834,7 +3893,7 @@ ul {
 .gallery-loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(var(--fg-rgb),  0.1);
   border-top-color: var(--accent-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -3881,8 +3940,8 @@ ul {
 /* Event Card */
 .gallery-event-card {
   display: block;
-  background: rgba(246, 239, 226, 0.055);
-  border: 1px solid rgba(246, 239, 226, 0.13);
+  background: rgba(var(--ivory-rgb),  0.055);
+  border: 1px solid rgba(var(--ivory-rgb),  0.13);
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s, border-color 0.3s;
@@ -3922,7 +3981,7 @@ ul {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--bg-color);
+  color: var(--on-accent);
   background: var(--accent-color);
   border-radius: 4px;
 }
@@ -3934,7 +3993,7 @@ ul {
 .gallery-event-card-date {
   display: block;
   font-size: 0.8rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 8px;
 }
 
@@ -3972,7 +4031,7 @@ ul {
   font-size: 0.75rem;
   color: var(--text-muted);
   padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--fg-rgb),  0.05);
   border-radius: 4px;
 }
 
@@ -3997,7 +4056,7 @@ ul {
   margin-top: 16px;
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--accent-color);
+  color: var(--accent-text);
   transition: color 0.2s ease, gap 0.2s ease;
 }
 
@@ -4032,6 +4091,7 @@ ul {
   display: block;
   position: relative;
   overflow: hidden;
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   border: 1px solid rgba(246, 239, 226, 0.12);
   border-radius: 8px;
   background: rgba(5, 5, 5, 0.34);
@@ -4086,11 +4146,12 @@ ul {
 }
 
 .gallery-photo-stream-meta span {
-  color: var(--accent-color);
+  color: var(--on-media);
   font-size: 0.75rem;
 }
 
 .gallery-photo-stream-meta strong {
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   color: rgba(246, 239, 226, 0.86);
   font-size: 0.9rem;
   font-weight: 500;
@@ -4098,6 +4159,7 @@ ul {
 }
 
 .gallery-photo-stream-meta em {
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   color: rgba(246, 239, 226, 0.56);
   font-size: 0.78rem;
   font-style: normal;
@@ -4110,13 +4172,13 @@ ul {
   display: flex;
   flex-direction: column;
   background:
-    linear-gradient(180deg, #120c09 0%, var(--deep-umber) 45%, #120c09 100%);
+    linear-gradient(180deg, var(--ground-1) 0%, var(--ground-3) 45%, var(--ground-1) 100%);
   padding-top: var(--page-offset);
 }
 
 .gallery-detail-nav {
   padding: 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .gallery-back-link {
@@ -4151,7 +4213,7 @@ ul {
 
 .gallery-detail-year {
   font-size: 0.85rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   padding: 4px 12px;
   border: 1px solid var(--accent-color);
   border-radius: 4px;
@@ -4161,14 +4223,14 @@ ul {
   font-size: 0.85rem;
   color: var(--text-muted);
   padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--fg-rgb),  0.05);
   border-radius: 4px;
 }
 
 /* 학내 행사 표시 — 카테고리 칩과 같은 골격에 금색 테두리만 얹는다 */
 .gallery-detail-kind {
   font-size: 0.85rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   padding: 4px 12px;
   border: 1px solid rgba(224, 184, 79, 0.42);
   border-radius: 4px;
@@ -4232,7 +4294,7 @@ ul {
 /* Description */
 .gallery-detail-description {
   padding: 40px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .gallery-description-ko,
@@ -4542,7 +4604,7 @@ ul {
 /* Adjacent Navigation */
 .gallery-detail-adjacent {
   padding: 60px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .gallery-adjacent-nav {
@@ -4553,8 +4615,8 @@ ul {
 
 .gallery-adjacent-link {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg-rgb),  0.03);
+  border: 1px solid rgba(var(--fg-rgb),  0.1);
   border-radius: 8px;
   transition: border-color 0.3s;
 }
@@ -7839,7 +7901,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(180deg, #120c09 0%, var(--deep-umber) 42%, #0a0a0a 100%);
+  background: linear-gradient(180deg, var(--ground-1) 0%, var(--ground-3) 42%, var(--bg-color) 100%);
 }
 .students-container {
   width: 100%;
@@ -7853,8 +7915,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: var(--page-offset) 0 56px;
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
-    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+    var(--hero-veil),
+    var(--hero-glow);
 }
 .students-hero .intl-object {
   display: block;
@@ -7864,6 +7926,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 20px;
   padding: 8px 20px;
@@ -7883,6 +7946,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .students-hero-subtitle {
   font-size: 1.2rem;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 15px;
 }
@@ -7903,6 +7967,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   color: var(--text-muted);
 }
 .students-stats strong {
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
   font-size: 1.15rem;
   margin-right: 4px;
@@ -7924,7 +7989,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .students-year-title {
   font-family: var(--font-heading);
   font-size: 1.5rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin: 0;
 }
 .students-year-count {
@@ -7945,8 +8010,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.03);
+  border: 1px solid rgba(var(--fg-rgb),  0.08);
   border-radius: 10px;
   transition: border-color 0.25s ease, background 0.25s ease;
 }
@@ -7974,7 +8039,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .student-card-initial {
   font-family: var(--font-heading);
   font-size: 1.3rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 .student-card-body {
   display: flex;
@@ -7994,7 +8059,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .student-card-count {
   font-size: 0.72rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   background: rgba(224, 184, 79, 0.12);
   border-radius: 999px;
   padding: 2px 8px;
@@ -8007,13 +8072,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .students-note {
   margin-top: 32px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.08);
   font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.7;
 }
 .students-note-link {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 
 /* 내 사진 · 제출 (학생용) */
@@ -8854,6 +8919,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.68rem;
   font-weight: 600;
   background: rgba(5, 5, 5, 0.76);
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   color: rgba(255, 255, 255, 0.82);
 }
 
@@ -8869,6 +8935,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .photo-tile-badge.is-loose {
   background: rgba(5, 5, 5, 0.72);
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   color: rgba(255, 255, 255, 0.62);
 }
 
@@ -9047,6 +9114,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   color: rgba(255, 255, 255, 0.78);
   font-size: 0.85rem;
 }
@@ -9062,6 +9130,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   right: 22px;
   border: none;
   background: none;
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   color: rgba(255, 255, 255, 0.8);
   font-size: 2.4rem;
   line-height: 1;
@@ -9076,6 +9145,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   height: 52px;
   border: none;
   border-radius: 50%;
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   background: rgba(255, 255, 255, 0.12);
   color: var(--white);
   font-size: 2rem;
@@ -9085,6 +9155,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .photo-lightbox-nav:hover {
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   background: rgba(255, 255, 255, 0.24);
 }
 
@@ -10032,6 +10103,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-family: var(--font-heading);
   font-size: clamp(1.55rem, 2.8vw, 2.35rem);
   font-weight: 500;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);     /* #d4a017 — umber 레일 위 약 5.4:1 (AA) */
   margin-bottom: 12px;
   letter-spacing: 0.04em;
@@ -10076,7 +10148,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   border-top: 2px solid rgba(212, 160, 23, 0.35);
   background:
     radial-gradient(circle at 18% 0%, rgba(224, 184, 79, 0.08), transparent 32%),
-    linear-gradient(180deg, var(--ink-umber) 0%, #1e130f 100%);
+    linear-gradient(180deg, var(--ground-2) 0%, var(--ground-3) 100%);
   color: var(--warm-ivory);
   padding: clamp(40px, 6vw, 80px) 0;
 }
@@ -10108,14 +10180,14 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 400;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin-bottom: 8px;
 }
 
 .about-director-title-en {
   font-family: var(--font-body);
   font-size: 1.1rem;
-  color: rgba(246, 239, 226, 0.78);
+  color: rgba(var(--ivory-rgb),  0.78);
   font-style: italic;
   margin-bottom: 0;
 }
@@ -10125,8 +10197,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   max-width: 280px;
   margin-bottom: 30px;
   padding: 10px;
-  background: rgba(246, 239, 226, 0.06);
-  border: 1px solid rgba(246, 239, 226, 0.14);
+  background: rgba(var(--ivory-rgb),  0.06);
+  border: 1px solid rgba(var(--ivory-rgb),  0.14);
   border-radius: 8px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
 }
@@ -10144,7 +10216,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-family: var(--font-body);
   font-size: 0.85rem;
   line-height: 1.9;
-  color: rgba(246, 239, 226, 0.82);
+  color: rgba(var(--ivory-rgb),  0.82);
   margin-bottom: 20px;
 }
 
@@ -10426,6 +10498,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   align-items: center;
   gap: 14px;
   margin-bottom: 24px;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
   font-size: 0.82rem;
   letter-spacing: 0.18em;
@@ -10446,6 +10519,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: clamp(3.25rem, 6.8vw, 6.35rem);
   font-weight: 300;
   line-height: 1.08;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--warm-ivory);
   margin-bottom: 28px;
   word-break: keep-all;
@@ -10458,7 +10532,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-family: var(--font-heading);
   font-size: clamp(1.05rem, 1.7vw, 1.55rem);
   line-height: 1.85;
-  color: rgba(246, 239, 226, 0.75);
+  color: rgba(var(--ivory-rgb),  0.75);
   word-break: keep-all;
   text-wrap: pretty;
 }
@@ -10492,15 +10566,16 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .feature-action-primary {
-  color: var(--warm-ivory);
+  color: var(--on-media);
   background: linear-gradient(135deg, var(--deep-red), var(--secondary-color));
-  border: 1px solid rgba(246, 239, 226, 0.18);
+  border: 1px solid rgba(var(--ivory-rgb),  0.18);
 }
 
 .feature-action-secondary {
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--warm-ivory);
-  border: 1px solid rgba(246, 239, 226, 0.24);
-  background: rgba(246, 239, 226, 0.04);
+  border: 1px solid rgba(var(--ivory-rgb),  0.24);
+  background: rgba(var(--ivory-rgb),  0.04);
 }
 
 .feature-preview-section {
@@ -10517,20 +10592,20 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .feature-preview-card {
   min-height: 190px;
   padding: 28px;
-  border: 1px solid rgba(246, 239, 226, 0.12);
+  border: 1px solid rgba(var(--ivory-rgb),  0.12);
   border-radius: 8px;
-  background: linear-gradient(180deg, rgba(246, 239, 226, 0.055), rgba(246, 239, 226, 0.018));
+  background: linear-gradient(180deg, rgba(var(--ivory-rgb),  0.055), rgba(var(--ivory-rgb),  0.018));
 }
 
 .feature-preview-index {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   font-size: 0.78rem;
   letter-spacing: 0.18em;
   margin-bottom: 18px;
 }
 
 .feature-preview-body {
-  color: rgba(246, 239, 226, 0.74);
+  color: rgba(var(--ivory-rgb),  0.74);
   line-height: 1.85;
   word-break: keep-all;
 }
@@ -10544,7 +10619,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .feature-status-text {
   max-width: 940px;
-  color: rgba(246, 239, 226, 0.78);
+  color: rgba(var(--ivory-rgb),  0.78);
   line-height: 1.8;
   word-break: keep-all;
 }
@@ -10630,7 +10705,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .section-edit-btn:hover {
   background: rgba(196, 48, 43, 0.92);
-  border-color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(var(--fg-rgb),  0.5);
   transform: translateY(-1px);
 }
 
@@ -10691,7 +10766,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .hero-bg-manager-modal {
   background: #1a1a1a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--fg-rgb),  0.1);
   border-radius: 12px;
   width: 100%;
   max-width: 880px;
@@ -10717,7 +10792,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   justify-content: space-between;
   gap: 16px;
   padding: 22px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.1);
 }
 
 .hero-bg-manager-title h3 {
@@ -10795,9 +10870,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .hero-tone-section {
   margin: 0 24px 20px;
   padding: 18px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--fg-rgb),  0.1);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--fg-rgb),  0.03);
 }
 
 .hero-tone-head {
@@ -10820,7 +10895,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.78rem;
   color: var(--text-muted);
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(var(--fg-rgb),  0.18);
   border-radius: 14px;
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
@@ -10873,7 +10948,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(var(--fg-rgb),  0.18);
   cursor: pointer;
   padding: 0;
   transition: border-color 0.2s, transform 0.2s;
@@ -10891,7 +10966,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   width: 30px;
   height: 26px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(var(--fg-rgb),  0.18);
   border-radius: 6px;
   background: none;
   cursor: pointer;
@@ -10904,7 +10979,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.84rem;
   color: var(--text-color);
   background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(var(--fg-rgb),  0.18);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -10916,7 +10991,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   gap: 10px;
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.08);
 }
 
 .hero-tone-feedback {
@@ -10934,14 +11009,14 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.84rem;
   color: var(--text-color);
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--fg-rgb),  0.2);
   border-radius: 6px;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
 
 .hero-tone-btn:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(var(--fg-rgb),  0.4);
 }
 
 .hero-tone-btn--primary {
@@ -11024,7 +11099,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .btn-ink-primary {
   background: linear-gradient(135deg, var(--deep-red), var(--secondary-color));
-  color: var(--warm-ivory);
+  color: var(--on-media);
   box-shadow: 0 12px 30px rgba(143, 33, 29, 0.32);
 }
 .btn-ink-primary:hover {
@@ -11055,15 +11130,15 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 /* --- Page shell --- */
 .classes-page {
-  background: var(--ink-black);
+  background: var(--ground);
   min-height: 100vh;
 }
 
 .classes-hero {
   padding: var(--page-offset) 0 60px;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
-    linear-gradient(180deg, var(--ink-umber), var(--ink-black));
+    var(--hero-wash),
+    var(--hero-ground);
   text-align: center;
 }
 .classes-hero-eyebrow {
@@ -11071,7 +11146,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   text-transform: uppercase;
   letter-spacing: 0.28em;
   font-size: 0.78rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin-bottom: 18px;
 }
 .classes-hero-title {
@@ -11126,7 +11201,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-size: 0.82rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin-bottom: 12px;
 }
 .classes-trust-body {
@@ -11188,6 +11263,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   text-transform: uppercase;
   letter-spacing: 0.26em;
   font-size: 0.8rem;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
   margin-bottom: 20px;
 }
@@ -11196,6 +11272,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-weight: 400;
   font-size: clamp(2.6rem, 5.6vw, 5rem);
   line-height: 1.08;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--warm-ivory);
   word-break: keep-all;
   text-wrap: balance;
@@ -11222,11 +11299,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
 }
 .camp-fact-value {
   font-family: var(--font-heading);
   font-size: 1.25rem;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--warm-ivory);
 }
 .camp-spotlight-actions {
@@ -11320,7 +11399,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   position: relative;
   aspect-ratio: 3 / 2;
   overflow: hidden;
-  background: var(--ink-black);
+  /* 사진이 뜨기 전 비치는 바닥 — 지면이 아니라 표면이다.
+     고정 먹으로 두면 라이트 카드 안에서 검은 사각형이 번쩍인다. */
+  background: var(--surface-2);
 }
 .program-card-img {
   object-fit: cover;
@@ -11354,7 +11435,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-weight: 600;
   background: rgba(9, 7, 5, 0.6);
   border: 1px solid rgba(224, 184, 79, 0.5);
-  color: var(--soft-gold);
+  color: var(--on-media);
   backdrop-filter: blur(4px);
 }
 .program-card-type-camp {
@@ -11372,7 +11453,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-family: var(--font-heading);
   font-weight: 400;
   font-size: 1.35rem;
-  color: var(--warm-ivory);
+  color: var(--on-media);
   line-height: 1.3;
   word-break: keep-all;
 }
@@ -11397,12 +11478,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.85rem;
 }
 .program-card-meta-row dt {
+  /* theme-exempt: 고정 어두운 표면 위 — 밝은 금이 두 테마 모두 정답 */
   color: var(--soft-gold);
   min-width: 42px;
   letter-spacing: 0.04em;
 }
 .program-card-meta-row dd {
-  color: rgba(246, 239, 226, 0.78);
+  color: rgba(var(--ivory-rgb),  0.78);
 }
 .program-card-footer {
   display: flex;
@@ -11415,6 +11497,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .program-card-price {
   font-family: var(--font-heading);
   font-size: 1.2rem;
+  /* theme-exempt: 고정 어두운 표면 위 — 밝은 금이 두 테마 모두 정답 */
   color: var(--soft-gold);
 }
 .program-card-cta {
@@ -11422,7 +11505,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   align-items: center;
   gap: 6px;
   font-size: 0.85rem;
-  color: var(--warm-ivory);
+  color: var(--on-media);
   opacity: 0.75;
   transition: opacity 0.3s, gap 0.3s var(--ease-out-quart);
 }
@@ -11437,7 +11520,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 /* --- Program detail --- */
 .program-detail {
-  background: var(--ink-black);
+  background: var(--ground);
 }
 .program-detail-hero {
   position: relative;
@@ -11471,12 +11554,14 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-family: var(--font-heading);
   font-weight: 400;
   font-size: clamp(2.2rem, 4.6vw, 3.8rem);
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--warm-ivory);
   line-height: 1.12;
   word-break: keep-all;
 }
 .program-detail-title-en {
   margin-top: 8px;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
   letter-spacing: 0.04em;
   font-size: 1.05rem;
@@ -11484,7 +11569,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .program-detail-lede {
   margin-top: 18px;
   max-width: 600px;
-  color: rgba(246, 239, 226, 0.82);
+  color: rgba(var(--ivory-rgb),  0.82);
   font-size: 1.1rem;
   line-height: 1.7;
 }
@@ -11501,7 +11586,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   align-items: start;
 }
 .program-detail-description {
-  color: rgba(246, 239, 226, 0.85);
+  color: rgba(var(--ivory-rgb),  0.85);
   font-size: 1.05rem;
   line-height: 1.95;
   display: flex;
@@ -11545,7 +11630,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.72rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 .program-facts-row dd {
   color: var(--warm-ivory);
@@ -11704,7 +11789,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 /* --- Loading skeleton --- */
 .classes-loading {
-  background: var(--ink-black);
+  background: var(--ground);
   min-height: 100vh;
   padding-top: var(--header-offset);
 }
@@ -11852,7 +11937,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 ======================================== */
 
 .performances-page {
-  background: var(--ink-black);
+  background: var(--ground);
   min-height: 100vh;
 }
 
@@ -11861,8 +11946,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: var(--page-offset) 0 60px;
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
-    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+    var(--hero-veil),
+    var(--hero-glow);
 }
 
 .performances-hero-label {
@@ -11870,7 +11955,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 20px;
   padding: 8px 20px;
   border: 1px solid rgba(212, 160, 23, 0.3);
@@ -11888,7 +11973,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .performances-hero-subtitle {
   font-size: 1.2rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 15px;
 }
 
@@ -11949,6 +12034,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   text-transform: uppercase;
   letter-spacing: 0.28em;
   font-size: 0.8rem;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--soft-gold);
   margin-bottom: 20px;
 }
@@ -11957,6 +12043,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-weight: 400;
   font-size: clamp(2.4rem, 5vw, 4.6rem);
   line-height: 1.06;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--warm-ivory);
   max-width: 16ch;
   word-break: keep-all;
@@ -12056,7 +12143,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.74rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--soft-gold);
+  color: var(--on-media);
   margin-bottom: 8px;
 }
 .performance-card-title {
@@ -12064,7 +12151,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-weight: 400;
   font-size: 1.4rem;
   line-height: 1.25;
-  color: var(--warm-ivory);
+  color: var(--on-media);
   word-break: keep-all;
 }
 
@@ -12163,7 +12250,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .notfound-code b {
   font-weight: 700;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 
 .notfound-eyebrow {
@@ -12187,7 +12274,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-weight: 300;
   font-size: 1rem;
   line-height: 1.85;
-  color: rgba(246, 239, 226, 0.74);
+  color: rgba(var(--ivory-rgb),  0.74);
 }
 
 .notfound-actions {
@@ -12699,7 +12786,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
    Calendar Subscribe (/calendar)
    ============================================ */
 .calendar-page {
-  background: var(--ink-black);
+  background: var(--ground);
   min-height: 100vh;
 }
 
@@ -12708,8 +12795,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: var(--page-offset) 0 50px;
   text-align: center;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
-    linear-gradient(180deg, var(--ink-umber), var(--ink-black));
+    var(--hero-wash),
+    var(--hero-ground);
 }
 .calendar-hero-inner {
   max-width: 720px;
@@ -12720,7 +12807,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.78rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin-bottom: 18px;
 }
 .calendar-hero-title {
@@ -12757,15 +12844,15 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
    시니어 사용자를 고려해 본문·버튼을 넉넉하게 잡는다.
    ============================================ */
 .rsvp-page {
-  background: var(--ink-black);
+  background: var(--ground);
   min-height: 100vh;
 }
 
 .rsvp-hero {
   padding: var(--page-offset-tight) 0 36px;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
-    linear-gradient(180deg, var(--ink-umber), var(--ink-black));
+    var(--hero-wash),
+    var(--hero-ground);
 }
 
 .rsvp-hero-inner {
@@ -12778,7 +12865,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.78rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin-bottom: 14px;
   text-align: center;
 }
@@ -12798,9 +12885,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 /* 회람 카드 */
 .rsvp-notice {
   padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(var(--fg-rgb),  0.12);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--fg-rgb),  0.03);
 }
 
 .rsvp-poster {
@@ -12829,7 +12916,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .rsvp-fact dt {
   font-size: 0.85rem;
   letter-spacing: 0.04em;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 
 .rsvp-fact dd {
@@ -12842,7 +12929,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 /* 모이는 시간은 실수하면 안 되는 정보 — 살짝 강조 */
 .rsvp-fact--accent dd {
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .rsvp-fact-sub {
@@ -12855,7 +12942,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   display: inline-block;
   margin-top: 4px;
   font-size: 0.85rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -12863,7 +12950,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .rsvp-desc {
   margin: 18px 0 0;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--fg-rgb),  0.08);
   font-size: 1rem;
   line-height: 1.8;
   color: rgba(240, 234, 224, 0.85);
@@ -12894,9 +12981,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .rsvp-respond,
 .rsvp-roster {
   padding: 22px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(var(--fg-rgb),  0.12);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--fg-rgb),  0.03);
 }
 
 .rsvp-gate {
@@ -12939,9 +13026,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--fg-rgb),  0.1);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--fg-rgb),  0.02);
 }
 
 .rsvp-target-name {
@@ -12981,9 +13068,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .rsvp-toggle.is-leave {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.08);
   color: var(--text-muted);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--fg-rgb),  0.2);
 }
 
 .rsvp-toggle.is-leave:hover:not(:disabled) {
@@ -13041,7 +13128,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
    장문 열람이 목적이라 본문 대비·행간을 넉넉하게 유지한다.
    ============================================ */
 .legal-page {
-  background: var(--ink-black);
+  background: var(--ground);
   min-height: 100vh;
 }
 
@@ -13050,8 +13137,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: var(--page-offset-tight) 0 44px;
   text-align: center;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.07), transparent 60%),
-    linear-gradient(180deg, var(--ink-umber), var(--ink-black));
+    var(--hero-wash),
+    var(--hero-ground);
 }
 
 .legal-hero-inner {
@@ -13064,7 +13151,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.78rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   margin-bottom: 16px;
 }
 
@@ -13132,9 +13219,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .legal-contact {
   margin-top: 44px;
   padding: 20px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(var(--fg-rgb),  0.12);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--fg-rgb),  0.03);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -13152,7 +13239,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .legal-contact a {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .legal-contact a:hover {
@@ -13768,7 +13855,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
    ========================================================================== */
 .timeline-page {
   background:
-    linear-gradient(180deg, #120c09 0%, var(--deep-umber) 34%, var(--soft-umber) 100%);
+    linear-gradient(180deg, var(--ground-1) 0%, var(--ground-3) 34%, var(--ground-4) 100%);
 }
 
 /* Hero — gallery-hero와 같은 결. 상단 오프셋은 히어로가 소유(표준 패턴) */
@@ -13776,8 +13863,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: var(--page-offset) 0 40px;
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
-    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+    var(--hero-veil),
+    var(--hero-glow);
 }
 
 .timeline-hero-label {
@@ -13785,6 +13872,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 20px;
   padding: 8px 20px;
@@ -13841,8 +13929,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(246, 239, 226, 0.14) 8%,
-    rgba(246, 239, 226, 0.14) 92%,
+    rgba(var(--ivory-rgb),  0.14) 8%,
+    rgba(var(--ivory-rgb),  0.14) 92%,
     transparent
   );
 }
@@ -13894,7 +13982,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin-left: 6px;
   border-radius: 50%;
   background: var(--bg-color);
-  border: 1px solid rgba(246, 239, 226, 0.13);
+  border: 1px solid rgba(var(--ivory-rgb),  0.13);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13920,7 +14008,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 3.2rem;
   font-weight: 300;
   line-height: 1;
-  color: rgba(246, 239, 226, 0.35);
+  color: rgba(var(--ivory-rgb),  0.35);
 }
 
 .timeline-year-count {
@@ -13948,8 +14036,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .timeline-event-card {
   display: flex;
   flex-direction: column;
-  background: rgba(246, 239, 226, 0.055);
-  border: 1px solid rgba(246, 239, 226, 0.13);
+  background: rgba(var(--ivory-rgb),  0.055);
+  border: 1px solid rgba(var(--ivory-rgb),  0.13);
   border-radius: 10px;
   overflow: hidden;
   transition: transform 0.3s, border-color 0.3s;
@@ -13989,14 +14077,14 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.78rem;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .timeline-event-card-category {
   font-size: 0.72rem;
   color: var(--text-muted);
   padding: 3px 10px;
-  border: 1px solid rgba(246, 239, 226, 0.18);
+  border: 1px solid rgba(var(--ivory-rgb),  0.18);
   border-radius: 12px;
   white-space: nowrap;
 }
@@ -14004,7 +14092,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 /* 학내 행사 표시 — 카테고리 칩과 같은 골격에 금색 강조만 얹는다 */
 .timeline-event-card-kind {
   font-size: 0.72rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   padding: 3px 10px;
   border: 1px solid rgba(224, 184, 79, 0.42);
   border-radius: 12px;
@@ -14026,7 +14114,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .timeline-event-card-description {
   font-size: 0.88rem;
-  color: rgba(246, 239, 226, 0.62);
+  color: rgba(var(--ivory-rgb),  0.62);
   line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -14043,7 +14131,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .timeline-event-card:hover .timeline-event-card-more {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 /* 모바일: 사이드는 노드만 남기고 연도는 본문 위로 */
@@ -14132,6 +14220,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 2px 8px;
   font-size: 0.68rem;
   color: rgba(20, 20, 20, 0.75);
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   background: rgba(255, 255, 255, 0.82);
   border-radius: 4px;
   text-decoration: none;
@@ -14268,7 +14357,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(180deg, #120c09 0%, var(--deep-umber) 42%, #0a0a0a 100%);
+  background: linear-gradient(180deg, var(--ground-1) 0%, var(--ground-3) 42%, var(--bg-color) 100%);
 }
 .glossary-container {
   width: 100%;
@@ -14281,8 +14370,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: var(--page-offset) 0 48px;
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
-    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+    var(--hero-veil),
+    var(--hero-glow);
 }
 .glossary-hero .intl-object {
   display: block;
@@ -14292,6 +14381,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 20px;
   padding: 8px 20px;
@@ -14308,6 +14398,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .glossary-hero-subtitle {
   font-size: 1.2rem;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 15px;
 }
@@ -14335,7 +14426,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 14px 18px;
   font-size: 1rem;
   color: var(--warm-ivory);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--fg-rgb),  0.05);
   border: 1px solid rgba(224, 184, 79, 0.3);
   border-radius: 12px;
   outline: none;
@@ -14363,8 +14454,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 7px 14px;
   font-size: 0.85rem;
   color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg-rgb),  0.03);
+  border: 1px solid rgba(var(--fg-rgb),  0.1);
   border-radius: 999px;
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
@@ -14403,8 +14494,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .glossary-item {
   padding: 18px 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.03);
+  border: 1px solid rgba(var(--fg-rgb),  0.08);
   border-radius: 12px;
   transition: border-color 0.25s ease, background 0.25s ease;
 }
@@ -14444,7 +14535,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.5px;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 .glossary-pron-roman {
   font-size: 0.8rem;
@@ -14465,7 +14556,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin: 0 0 8px;
 }
 .glossary-example-mark {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   opacity: 0.7;
 }
 .glossary-item-cat {
@@ -14473,7 +14564,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.7rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
   background: rgba(212, 160, 23, 0.1);
   border-radius: 999px;
   padding: 3px 10px;
@@ -14499,8 +14590,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   gap: 4px;
   padding: 4px;
   margin: 4px 0 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.04);
+  border: 1px solid rgba(var(--fg-rgb),  0.08);
   border-radius: 999px;
 }
 .glossary-tab {
@@ -14553,7 +14644,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   color: var(--warm-ivory);
 }
 .glossary-section-note {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 .glossary-section-count {
   font-size: 0.85rem;
@@ -14572,7 +14663,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-weight: 600;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin: 0 0 12px;
 }
 
@@ -14601,8 +14692,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   gap: 12px;
 }
 .song-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.03);
+  border: 1px solid rgba(var(--fg-rgb),  0.08);
   border-radius: 12px;
   overflow: hidden;
   transition: border-color 0.25s ease;
@@ -14649,7 +14740,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .song-card-pron {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 .song-card-toggle {
   font-size: 1.3rem;
@@ -14688,7 +14779,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin: 0 0 16px;
   padding: 8px 16px;
   font-size: 0.85rem;
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   border: 1px solid rgba(224, 184, 79, 0.4);
   border-radius: 999px;
   text-decoration: none;
@@ -14701,7 +14792,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .song-lyrics {
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(var(--fg-rgb),  0.08);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -14716,12 +14807,12 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.7rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
   background: rgba(224, 184, 79, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.08);
 }
 .song-lyrics-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(var(--fg-rgb),  0.05);
   font-size: 0.95rem;
   align-items: baseline;
 }
@@ -14736,7 +14827,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-weight: 500;
 }
 .song-ly-say {
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
   font-size: 0.9rem;
 }
 .song-ly-en {
@@ -14781,8 +14872,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   display: flex;
   gap: 12px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg-rgb),  0.02);
+  border: 1px solid rgba(var(--fg-rgb),  0.08);
   border-radius: 8px;
 }
 .song-line-row.is-refrain {
@@ -15284,8 +15375,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: var(--page-offset) 0 60px;
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)),
-    radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%);
+    var(--hero-veil),
+    var(--hero-glow);
 }
 
 .media-hero-label {
@@ -15293,6 +15384,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 20px;
   padding: 8px 20px;
@@ -15311,6 +15403,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .media-hero-subtitle {
   font-size: 1.2rem;
+  /* theme-exempt: 다크 섬 내부 — 섬 루트가 토큰을 재선언한다 */
   color: var(--accent-color);
   margin-bottom: 15px;
 }
@@ -15350,7 +15443,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 8px 20px;
   font-size: 0.85rem;
   color: var(--text-muted);
-  border: 1px solid rgba(246, 239, 226, 0.15);
+  border: 1px solid rgba(var(--ivory-rgb),  0.15);
   border-radius: 20px;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
@@ -15361,7 +15454,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .media-filter-tab.is-active {
-  color: var(--bg-color);
+  color: var(--on-accent);
   background: var(--accent-color);
   border-color: var(--accent-text);
 }
@@ -15375,8 +15468,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .news-card {
   display: block;
-  background: rgba(246, 239, 226, 0.055);
-  border: 1px solid rgba(246, 239, 226, 0.13);
+  background: rgba(var(--ivory-rgb),  0.055);
+  border: 1px solid rgba(var(--ivory-rgb),  0.13);
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s, border-color 0.3s;
@@ -15418,7 +15511,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 4px 10px;
   font-size: 0.7rem;
   letter-spacing: 1px;
-  color: var(--accent-color);
+  color: var(--on-media);
   background: rgba(8, 5, 4, 0.72);
   border: 1px solid rgba(212, 160, 23, 0.35);
   border-radius: 4px;
@@ -15436,6 +15529,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   height: 52px;
   color: #fff;
   background: rgba(8, 5, 4, 0.62);
+  /* theme-exempt: 사진·영상 위 오버레이 — 두 테마 모두 밝은 전경이 정답 */
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 50%;
   transition: background 0.2s, border-color 0.2s;
@@ -15459,7 +15553,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .news-card-date {
   display: block;
   font-size: 0.8rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 8px;
 }
 
@@ -15477,7 +15571,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.75rem;
   color: var(--text-muted);
   padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--fg-rgb),  0.05);
   border-radius: 4px;
 }
 
@@ -15500,7 +15594,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin-top: 16px;
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--accent-color);
+  color: var(--accent-text);
   transition: color 0.2s ease, gap 0.2s ease;
 }
 
@@ -15535,7 +15629,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 12px 40px;
   font-size: 0.9rem;
   letter-spacing: 1px;
-  color: var(--accent-color);
+  color: var(--accent-text);
   background: transparent;
   border: 1px solid rgba(212, 160, 23, 0.4);
   border-radius: 24px;
@@ -15544,7 +15638,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .media-load-more-btn:hover:not(:disabled) {
-  color: var(--bg-color);
+  color: var(--on-accent);
   background: var(--accent-color);
   border-color: var(--accent-color);
 }
@@ -15579,7 +15673,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .news-detail-back:hover {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .news-detail-meta {
@@ -15594,7 +15688,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 4px 12px;
   font-size: 0.75rem;
   letter-spacing: 1px;
-  color: var(--accent-color);
+  color: var(--accent-text);
   border: 1px solid rgba(212, 160, 23, 0.35);
   border-radius: 12px;
 }
@@ -15665,7 +15759,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   gap: 8px;
   padding: 12px 24px;
   font-size: 0.9rem;
-  color: var(--bg-color);
+  color: var(--on-accent);
   background: var(--accent-color);
   border-radius: 4px;
   transition: opacity 0.2s;
@@ -15683,7 +15777,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .news-detail-link-btn-outline {
   color: var(--text-color);
   background: transparent;
-  border: 1px solid rgba(246, 239, 226, 0.25);
+  border: 1px solid rgba(var(--ivory-rgb),  0.25);
 }
 
 .news-detail-link-btn-outline:hover {
@@ -15943,6 +16037,66 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .event-kind-radio:has(input:focus-visible) {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
+}
+
+/* ============================================================
+   SITE LIGHT THEME — 공개 사이트 라이트(한지) 모드 · 기본값
+   ------------------------------------------------------------
+   라이트는 흰 페이지가 아니라 한지(韓紙)다. 사이트 정체성인 '먹빛 + 금색'을
+   墨 ↔ 韓紙의 반전으로 번역한다 — 같은 세계를 뒤집은 것이지 다른 사이트가 아니다.
+   팔레트는 관리 콘솔 라이트와 같은 값을 쓴다(아래 ADMIN LIGHT THEME 참고).
+   방문자가 공개↔콘솔을 오가도 색이 이어지고, 대비도 이미 검증돼 있다.
+
+   두 번째 셀렉터는 **JS 비활성 폴백**이다. 부트 스크립트가 두 속성 중 하나에
+   'light'|'dark'를 반드시 찍으므로, 둘 다 없다 = 스크립트가 돌지 않았다는 뜻이고
+   그때는 기본값인 라이트로 그린다.
+
+   사진 위는 이 플립을 따르지 않는다 — 아래 DARK ISLANDS 블록이 사진·영상 영역의
+   토큰을 로컬 재선언해 어두운 캔버스를 유지한다.
+============================================================ */
+html[data-site-theme='light'],
+html:not([data-site-theme]):not([data-admin-theme]) {
+  color-scheme: light;
+
+  /* 한지 지면 위 먹 글자 */
+  --bg-color: #f6f1e6;
+  --bg-dark: #efe7d6;
+  --text-color: #241b12;
+  --text-muted: #6e6355;
+  --warm-ivory: #2c2114;
+  --white: #241b12;
+  --fg-rgb: 36, 27, 18;
+  --ivory-rgb: 44, 33, 20;
+  --bg-rgb: 246, 241, 230;
+  --surface-2: #e9e0cc;
+
+  /* 텍스트로 쓰인 금색만 대비 확보를 위해 어둡게. 배경·보더용 금색
+     (--soft-gold/--accent-color)은 라이트에서도 선명하게 유지된다. */
+  --soft-gold-text: #7d5f0b;
+  --accent-text: #8a6a10;
+  --soft-gold-rgb: 125, 95, 11;
+  --accent-gold-rgb: 138, 106, 16;
+
+  /* 지면 — 먹 5단계를 한지 5단계로. 순서를 거울처럼 뒤집어 그라디언트의
+     방향감(위가 밝고 아래가 깊다)이 그대로 보존되게 한다. */
+  --ground: #f6f1e6;
+  --ground-1: #f3ecdd;
+  --ground-2: #efe7d6;
+  --ground-3: #eae0cb;
+  --ground-4: #e4d8bf;
+
+  /* 히어로 두 관용구. 베일은 '어둡게 누르는' 것에서 '밝게 띄우는' 것으로
+     방향이 뒤집히고, 금색 글로우·워시는 밝은 바탕에서 묻히지 않도록 알파를 올린다. */
+  --hero-veil: linear-gradient(180deg, rgba(246, 241, 230, 0.78), rgba(246, 241, 230, 0.14));
+  --hero-glow: radial-gradient(circle at 50% 20%, rgba(212, 160, 23, 0.2), transparent 40%);
+  --hero-wash: radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.16), transparent 60%);
+  --hero-ground: linear-gradient(180deg, #faf7f0, #f1e9d9);
+
+  /* 먹 텍스처는 종이 위에서 multiply가 오히려 올바른 블렌드다. 색은 그대로 두고
+     강도만 낮춘다 — 이 수준이면 이진 알파의 계단 경계도 보이지 않는다. */
+  --ink-texture-opacity: 0.05;
+  /* 얇은 금선은 밝은 바탕에서 사라지므로 양끝 알파를 올려 존재감을 유지한다. */
+  --hairline-edge-alpha: 0.22;
 }
 
 /* ============================================================

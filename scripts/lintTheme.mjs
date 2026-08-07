@@ -73,13 +73,34 @@ const ADMIN_PREFIXES = [
   'admin', 'cal-', 'library-', 'photo-drawer', 'photo-modal', 'event-picker',
   'location-picker', 'push-card', 'inbox', 'ai-', 'seo-', 'supply-', 'supplies-',
   'enroll', 'dash-', 'notify', 'perm-', 'qna-', 'faq-', 'member-', 'onboard',
+  'myclass-', 'photo-inbox', 'push-', 'comment-', 'a2hs-',
 ];
 
+/** 상태 클래스는 소속을 말해 주지 않으므로 판정에서 제외한다(.is-active, .active, .selected …) */
+const STATE_CLASSES = /^\.(is-|has-)|^\.(active|selected|open|on|current|disabled|error|loading)$/;
+
 const isAdminSelector = (sel) => {
-  const classes = sel.match(/\.[a-zA-Z0-9_-]+/g) ?? [];
+  const classes = (sel.match(/\.[a-zA-Z0-9_-]+/g) ?? []).filter((c) => !STATE_CLASSES.test(c));
   if (!classes.length) return false;
   return classes.every((c) => ADMIN_PREFIXES.some((p) => c.slice(1).startsWith(p)));
 };
+
+/**
+ * 다크 섬의 **후손** 셀렉터. CSS 셀렉터가 `.hero-lede`처럼 섬 루트를 포함하지 않아도
+ * 마크업상 섬 안이면 리터럴이 정답이다(섬 루트가 토큰을 로컬 재선언하므로).
+ * 접두사가 겹치는 편집기 모달(.hero-tone-*, .hero-bg-*, .hero-video-pick-*)은
+ * portal로 body에 붙어 섬 밖이므로 여기 넣으면 안 된다.
+ */
+const ISLAND_DESCENDANTS = [
+  '.hero-title', '.hero-lede', '.hero-since', '.hero-kicker', '.hero-ink-wash',
+  '.hero-art-', '.hero-container', '.hero-content', '.hero-left', '.hero-right',
+  '.hero-videos', '.btn-youtube', '.video-card', '.play-icon',
+  '.about-hero-', '.feature-hero-', '.performance-hero-', '.program-detail-hero-',
+  '.gallery-lightbox-', '.camp-spotlight-', '.camp-fact-',
+];
+
+const inDarkIsland = (sel) =>
+  DARK_ISLANDS.some((d) => sel.includes(d)) || ISLAND_DESCENDANTS.some((d) => sel.includes(d));
 
 /** 선언 줄 또는 바로 윗줄의 theme-exempt 주석 */
 function isExempt(idx) {
@@ -95,6 +116,9 @@ function selectorsByLine() {
   const stack = [];
   let pending = [];
   let inComment = false;
+  // 여러 줄에 걸친 '값'(background: linear-gradient(\n …\n );)을 셀렉터로 오인하지 않도록
+  // 선언이 아직 끝나지 않았는지 추적한다.
+  let inDeclaration = false;
 
   lines.forEach((raw, i) => {
     // 여러 줄 주석을 셀렉터로 오인하지 않도록 주석을 먼저 걷어낸다.
@@ -126,11 +150,19 @@ function selectorsByLine() {
       pending = [];
     } else if (!closes) {
       const t = stripped.trim();
-      // 쉼표로 이어지는 여러 줄 셀렉터
-      if (t && !t.includes(':')) pending.push(stripped);
+      // 쉼표로 이어지는 여러 줄 셀렉터. 선언 중이면 그건 값의 연장이지 셀렉터가 아니다.
+      if (t && !t.includes(':') && !inDeclaration) pending.push(stripped);
     }
 
     map[i] = stack.filter((s) => !s.startsWith('@')).join(' ');
+
+    // 선언 상태 갱신: ';'로 끝나면 닫힌 것, ':'가 있는데 ';'가 없으면 이어지는 중.
+    {
+      const t = stripped.trim();
+      if (t.includes(';')) inDeclaration = false;
+      else if (t.includes(':') && !t.endsWith('{')) inDeclaration = true;
+      if (opens || closes) inDeclaration = false;
+    }
 
     if (closes) for (let c = 0; c < closes; c++) stack.pop();
   });
@@ -184,7 +216,7 @@ const add = (rule, line, message, selector) =>
 lines.forEach((raw, i) => {
   if (!/^\s*(color|-webkit-text-fill-color)\s*:\s*var\(--(soft-gold|accent-color)\)/.test(raw)) return;
   const sel = selOf[i];
-  if (isAdminSelector(sel) || isExempt(i)) return;
+  if (isAdminSelector(sel) || isExempt(i) || inDarkIsland(sel)) return;
   add(
     'gold-as-text',
     i,
@@ -199,7 +231,7 @@ lines.forEach((raw, i) => {
 lines.forEach((raw, i) => {
   if (!/^\s*color\s*:\s*var\(--bg-color\)/.test(raw)) return;
   const sel = selOf[i];
-  if (isAdminSelector(sel) || isExempt(i)) return;
+  if (isAdminSelector(sel) || isExempt(i) || inDarkIsland(sel)) return;
   add(
     'bg-color-as-fg',
     i,
@@ -216,7 +248,7 @@ lines.forEach((raw, i) => {
 lines.forEach((raw, i) => {
   if (!/^\s*color\s*:\s*var\(--warm-ivory\)/.test(raw)) return;
   const sel = selOf[i];
-  if (isAdminSelector(sel) || isExempt(i)) return;
+  if (isAdminSelector(sel) || isExempt(i) || inDarkIsland(sel)) return;
   if (!ledger) {
     add('ivory-unledgered', i, '분류 대장(docs/operations/theme-token-ledger.json)이 없다.', sel);
     return;
@@ -246,7 +278,7 @@ lines.forEach((raw, i) => {
   if (!/rgba\(\s*255,\s*255,\s*255/.test(raw) && !/rgba\(\s*246,\s*239,\s*226/.test(raw)) return;
   const sel = selOf[i];
   if (isAdminSelector(sel) || isExempt(i)) return;
-  if (DARK_ISLANDS.some((d) => sel.includes(d))) return; // 다크 섬 내부는 리터럴이 정답
+  if (inDarkIsland(sel)) return; // 다크 섬 내부는 리터럴이 정답
   add(
     'literal-light-color',
     i,
@@ -317,11 +349,11 @@ console.log(`\n테마 린트: ${problems.length}건\n`);
 for (const [rule, items] of Object.entries(byRule)) {
   console.log(`■ ${RULE_TITLES[rule] ?? rule} — ${items.length}건`);
   if (!summaryOnly) {
-    for (const p of items.slice(0, 40)) {
+    for (const p of items.slice(0, 500)) {
       console.log(`  globals.css:${p.line}  ${p.selector}`);
       console.log(`    ${p.message}`);
     }
-    if (items.length > 40) console.log(`  … 외 ${items.length - 40}건`);
+    if (items.length > 40) console.log(`  … 외 ${items.length - 500}건`);
   }
   console.log('');
 }
