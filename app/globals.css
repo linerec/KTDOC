@@ -4240,6 +4240,34 @@ ul {
   color: var(--text-muted);
 }
 
+/* 작성자가 넣은 줄바꿈을 그대로 살린다 (관리 콘솔 상세와 동일한 모양) */
+.gallery-description-ko p,
+.gallery-description-en p {
+  white-space: pre-line;
+}
+
+/* 여러 줄로 나뉜 안내문은 가운데 정렬 대신 왼쪽 정렬 — 항목이 세로로 맞아 읽힌다 */
+.gallery-description-ko.is-document,
+.gallery-description-en.is-document {
+  text-align: left;
+}
+
+.gallery-description-ko.is-document p,
+.gallery-description-en.is-document p {
+  text-wrap: pretty;
+}
+
+/* 여러 줄이면 줄 간격과 문단 간격이 비슷해져 한/영 경계가 묻힌다 → 사이를 더 벌린다 */
+.gallery-description-ko.is-document p {
+  margin-bottom: 34px;
+}
+
+.gallery-description-ko strong,
+.gallery-description-en strong {
+  font-weight: 600;
+  color: var(--soft-gold-text, var(--text-color));
+}
+
 /* Section Title */
 .gallery-section-title {
   font-family: var(--font-heading);

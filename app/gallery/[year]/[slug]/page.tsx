@@ -17,6 +17,7 @@ import { getCalendarConfig, buildAddToCalendarLinks } from '@/lib/calendar';
 import { formatEventDate } from '@/types/gallery';
 import IntlObject from '@/components/common/IntlObject';
 import EventLocationMap from '@/components/events/EventLocationMap';
+import EventDescription from '@/components/gallery/EventDescription';
 import ImageGallery from '@/components/gallery/ImageGallery';
 import { VideoList } from '@/components/gallery/VideoEmbed';
 import GalleryBackLink from '@/components/gallery/GalleryBackLink';
@@ -189,14 +190,10 @@ export default async function EventDetailPage({ params }: PageProps) {
         <section className="gallery-detail-description">
           <div className="container">
             {event.description_ko && (
-              <div className="gallery-description-ko">
-                <p>{event.description_ko}</p>
-              </div>
+              <EventDescription text={event.description_ko} className="gallery-description-ko" />
             )}
             {event.description_en && (
-              <div className="gallery-description-en">
-                <p>{event.description_en}</p>
-              </div>
+              <EventDescription text={event.description_en} className="gallery-description-en" />
             )}
           </div>
         </section>
