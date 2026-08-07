@@ -32,6 +32,13 @@
   --surface-2: #1a1a1a;
   --soft-gold-text: var(--soft-gold);
   --accent-text: var(--accent-color);
+
+  /* 금 헤어라인(구분선)과 들어올린 먹 패널. 수업·프로그램·캠프 구간이 의존한다.
+     테마 오버라이드 블록이 최상단 :root만 뒤집으므로 반드시 여기 있어야 한다.
+     --ink-panel은 채널 토큰으로 정의해 테마를 따라 자동으로 뒤집힌다. */
+  --hairline-gold: linear-gradient(90deg, rgba(224, 184, 79, 0.08), var(--soft-gold), rgba(224, 184, 79, 0.08));
+  --ink-panel: rgba(var(--ivory-rgb), 0.055);
+
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -770,26 +777,6 @@ ul {
   padding: 32px 40px clamp(72px, 8vw, 120px);
   position: relative;
   z-index: 2;
-}
-
-/* Hero Logo Section - Positioned above videos */
-.hero-logo-section {
-  display: flex;
-  justify-content: center;
-  padding-right: 0;
-  margin-bottom: clamp(28px, 5vw, 70px);
-  opacity: 0;
-  animation: heroReveal 800ms var(--ease-out-expo) 80ms forwards;
-}
-
-.hero-logo-image {
-  width: 100%;
-  max-width: clamp(180px, 22vw, 300px);
-  height: auto;
-  filter: invert(1);
-  margin-top: clamp(42px, 8vw, 96px);
-  margin-bottom: 0;
-  opacity: 0.86;
 }
 
 /* Hero Content Grid - Bottom */
@@ -1749,10 +1736,6 @@ ul {
   .hero-title {
     font-size: clamp(3rem, 6.4vw, 5.6rem);
   }
-
-  .hero-logo-image {
-    max-width: 260px;
-  }
 }
 
 @media (max-width: 992px) {
@@ -1770,10 +1753,6 @@ ul {
 
   .hero-videos {
     height: 400px;
-  }
-
-  .hero-logo-image {
-    max-width: 230px;
   }
 
   .mission-shell {
@@ -1904,11 +1883,6 @@ ul {
     font-size: clamp(2.35rem, 9.6vw, 4.2rem);
   }
 
-  .hero-logo-image {
-    max-width: 210px;
-    margin-top: 68px;
-  }
-
   .hero-videos {
     height: 350px;
   }
@@ -1986,10 +1960,6 @@ ul {
     max-width: 330px;
     font-size: 0.68rem;
     line-height: 1.8;
-  }
-
-  .hero-logo-image {
-    max-width: 180px;
   }
 
   .hero-videos {
@@ -5548,12 +5518,6 @@ ul {
 /* ========================================
    ADMIN ONBOARDING WALKTHROUGH (관리 홈 튜토리얼)
 ======================================== */
-:root {
-  --medallion-gold: radial-gradient(circle at 35% 30%, var(--soft-gold), var(--accent-color));
-  --glow-gold: 0 0 0 4px rgba(212, 160, 23, 0.1), 0 0 24px rgba(212, 160, 23, 0.22);
-  --spine-gold: linear-gradient(180deg, var(--soft-gold), rgba(224, 184, 79, 0.25));
-  --done-green: #9ed99e;
-}
 
 .admin-sr-only {
   position: absolute;
@@ -10982,12 +10946,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 /* ========================================
    CLASSES · PROGRAMS · CAMPS  (수업·프로그램·캠프)
    Ink-and-gold extension of the existing system.
+   토큰(--hairline-gold·--ink-panel)은 최상단 :root에 있다 — 테마 오버라이드가
+   상단 블록만 뒤집으므로 여기 따로 두면 라이트에서 영영 다크 값으로 남는다.
 ======================================== */
-
-:root {
-  --hairline-gold: linear-gradient(90deg, rgba(224, 184, 79, 0.08), var(--soft-gold), rgba(224, 184, 79, 0.08));
-  --ink-panel: rgba(246, 239, 226, 0.055);
-}
 
 /* --- Shared ink buttons --- */
 .btn-ink-primary,
