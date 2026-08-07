@@ -1,0 +1,2057 @@
+{
+ "생성": "2026-08-07",
+ "기준커밋": "579ecad",
+ "설명": "globals.css 공개 구간의 색 선언 판정. lintTheme.mjs가 이 파일을 읽어 --warm-ivory 미등재를 실패 처리한다.",
+ "판정어휘": {
+  "flip": "페이지 지면 위 — 토큰이 뒤집히는 게 정답. 변경 없음",
+  "on-accent": "금색 배경 위 — var(--on-accent)",
+  "on-media": "사진·영상·고정 어두운 바탕 위 — var(--on-media)",
+  "gold-text": "금색을 텍스트로 — var(--soft-gold-text)/var(--accent-text)",
+  "dark-surface-gold": "고정 어두운 표면 위 금색 텍스트 — 밝은 금(--soft-gold) 유지",
+  "dark-island": "다크 섬 내부 — 섬 루트가 처리, 하위 무변경",
+  "out-of-scope": "관리 콘솔 전용 — 이번 범위 밖"
+ },
+ "items": [
+  {
+   "line": 134,
+   "selector": "body",
+   "token": "bg-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "body는 페이지 지면 그 자체다. 라이트 블록이 --bg-color를 한지(#f6f1e6)로 뒤집는 것이 정확히 이 선언을 위한 것이고, 같은 블록의 color: var(--text-color)와 짝이 맞아 함께 뒤집힌다.",
+   "confidence": "high"
+  },
+  {
+   "line": 822,
+   "selector": ".hero-kicker",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "components/HeroContent.tsx의 .hero-kicker는 Hero.tsx의 <section id=\"hero\"> 안(hero-container > hero-content-grid > HeroText)에 있다. #hero가 다크 섬이므로 섬 루트에서 --soft-gold-text 등이 다크로 재선언되고, --soft-gold 자체는 원래 뒤집히지 않아 어두운 히어로 위에서 그대로 선명하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 839,
+   "selector": ".hero-title",
+   "token": "warm-ivory",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "HeroContent.tsx:13의 h1로 #hero 내부다. 섬 루트가 --warm-ivory: #f6efe2를 로컬 재선언하므로 히어로 배경 사진 위 아이보리 제목이 라이트에서도 유지된다. text-shadow(검정 58%)도 사진 위 전제라 함께 유지.",
+   "confidence": "high"
+  },
+  {
+   "line": 877,
+   "selector": ".btn-youtube",
+   "token": "warm-ivory",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "자기 블록에 background: linear-gradient(135deg, var(--deep-red), var(--secondary-color)) — 두 토큰 모두 고정 브랜드색이라 라이트에서도 붉게 남는다. 프롬프트가 든 .btn-ink-primary 함정과 동형. #hero(다크 섬) 안이라 오늘 당장은 시각 변화 0이지만, 배경이 자기 것이므로 --on-media로 못 박는 편이 안전하다. 난제 대장 L895도 이 버튼을 '두 테마 모두 흰 전경이 맞다(리터럴 고정)'로 판정.",
+   "confidence": "high"
+  },
+  {
+   "line": 964,
+   "selector": ".play-icon",
+   "token": "white-token",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "자기 블록 background: rgba(196,48,43,0.9) 붉은 원 + 그 아래는 유튜브 썸네일(.video-card-thumbnail의 next/image)이다. 사진 위 컨트롤이라 리터럴 계열 전경이 정답. 난제 대장 L978이 같은 묶음을 다루며 'var(--white)는 리터럴로 바꿔 토큰 반전 사고를 원천 차단'이라고 명시(대장은 #fff, 이 대장 체계에서는 --on-media #f6efe2).",
+   "confidence": "high"
+  },
+  {
+   "line": 988,
+   "selector": ".video-card-title",
+   "token": "white-token",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "자기 블록에 배경이 없지만 부모 .video-card-info가 background: linear-gradient(to top, rgba(0,0,0,0.8), transparent) — 썸네일 위 캡션 스크림이다. 운영자가 어떤 썸네일을 올릴지 알 수 없으므로 두 테마 모두 밝은 전경 고정. 난제 대장 L978이 명시한 '카드 껍데기는 뒤집고 썸네일 위 레이어는 고정' 케이스.",
+   "confidence": "high"
+  },
+  {
+   "line": 1032,
+   "selector": ".hero-video-pick-btn",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "HeroVideos.tsx:112 — VideoCard의 children으로 렌더돼 .video-card(썸네일) 위에 절대배치되고, 그 전체가 #hero 안이다. 게다가 자기 배경이 rgba(10,10,10,0.78) 고정 스크림이라 섬 여부와 무관하게 밝은 금색이 정답. --soft-gold는 원래 안 뒤집힌다.",
+   "confidence": "high"
+  },
+  {
+   "line": 1042,
+   "selector": ".hero-video-pick-btn:hover",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음",
+   "reason": "같은 버튼의 hover. --accent-color는 '배경·보더용 금색'이라 두 테마에서 유지되고, 이 블록은 background도 var(--accent-color)라 보더=배경 동색 처리다. 같은 블록의 color: #1a1a1a는 금 배경 위 먹 글자로 이미 --on-accent와 같은 역할 — 정규화한다면 var(--on-accent)가 맞다(별건).",
+   "confidence": "high"
+  },
+  {
+   "line": 1083,
+   "selector": ".hero-video-pick-item.selected",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "HeroVideos.tsx:126이 createPortal로 document.body에 붙이는 편집 모달(.image-object-modal, background:#1a1a1a) 안이라 #hero 다크 섬 밖이다. 모달 셸의 #1a1a1a는 --surface-2의 다크 값과 동일해 Phase 3 채널 토큰화 대상 → 라이트에서 종이 표면(#e9e0cc)으로 뒤집힌다. 금 보더는 두 테마 모두 선명하므로 이 선언 자체는 그대로 둔다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1128,
+   "selector": ".hero-video-pick-item--auto.selected .hero-video-pick-auto-box",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 편집 모달 안. .hero-video-pick-auto-box의 자기 배경은 #151515 리터럴로, 이 역시 '다크 표면 hex 직접 사용 금지' 린트 규칙에 걸려 --surface-2로 채널화될 자리다. 보더용 금색은 뒤집지 않는 것이 설계 의도.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1129,
+   "selector": ".hero-video-pick-item--auto.selected .hero-video-pick-auto-box",
+   "token": "soft-gold",
+   "verdict": "dark-surface-gold",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "바로 위 보더와 달리 이건 '자동(최신 영상)' 글자에 쓰인 금색 텍스트다. 모달 셸(#1a1a1a)·박스(#151515)가 --surface-2로 채널화되면 라이트에서 종이 표면이 되고, 그 위 밝은 금(#e0b84f)은 WCAG 미달. 설계 스펙 E-2의 'color: var(--soft-gold|--accent-color) 공개 구간 금지' 린트 규칙에 정확히 걸리는 형태. 모달 셸을 리터럴 다크로 남기기로 하면 변경 불필요 — 셸 결정에 종속.",
+   "confidence": "medium",
+   "auditOverturned": true
+  },
+  {
+   "line": 1215,
+   "selector": ".mission-eyebrow",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "자기 배경 없음. 조상 .mission-section의 배경은 ink-umber/deep-umber/#1a0f0c 먹 그라디언트지만, 난제 대장 L1191(.mission-media::after 해법)이 '라이트에서는 스크림을 아이보리로 뒤집어 종이에 얹은 사진으로 재해석'이라고 적어 미션 구간이 종이가 되는 것을 전제한다. 종이 위 밝은 금 텍스트는 대비 미달. 같은 블록의 ::after 헤어라인 그라디언트(배경용 금)는 그대로 둔다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1235,
+   "selector": ".mission-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "미션 구간이 종이 지면이 되면 --warm-ivory → #2c2114(먹)가 정답이다. 다만 .mission-section의 background(linear-gradient(180deg, var(--ink-umber), var(--deep-umber), #1a0f0c))는 ink 토큰이라 그대로 두면 '먹 위 먹'이 된다 — 난제 대장 L10058(.about-director)과 동형이므로 라이트 블록에 .mission-section 종이 그라디언트 보정이 반드시 함께 들어가야 한다. 먹 구간 유지로 결정하면 대신 var(--on-media) 고정.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1245,
+   "selector": ".mission-title::after",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "내용이 content:'”' 인용부호 — 장식이 아니라 글자다. 미션 구간이 종이가 되면 밝은 금은 판독 미달. 주의: 실제 CSS는 `.mission-title::before, .mission-title::after`로 묶인 하나의 규칙이라 ::before(여는 따옴표)도 같은 선언을 공유한다 — 한 줄만 고치면 안 되고 그룹 셀렉터 전체가 바뀐다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1283,
+   "selector": ".journey-section",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 블록에 background: linear-gradient(180deg, var(--ink-umber), #1a0f0c)가 있어 지금 상태로는 라이트에서 '먹 배경 + 먹 글자'로 섹션이 통째로 사라진다. 그럼에도 flip이 맞는 이유: 하위 .journey-card/-image/-placeholder가 전부 rgba(246,239,226,0.02~0.06) 아이보리 틴트로만 형태를 만들어 Phase 3 채널 토큰화 대상이고, 난제 대장 L583이 히어로 이음매(#090705)를 var(--bg-color)로 바꾸라고 해 히어로 아래 구간이 종이가 되는 것을 전제한다. 전제조건: 라이트 블록에 .journey-section 종이 그라디언트 보정 추가.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1294,
+   "selector": ".journey-eyebrow",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "자기 배경 없음 → .journey-section 지면 상속. 그 지면이 종이로 뒤집히면 0.78rem 얇은 금색 라벨은 대비가 무너진다. .journey-section을 먹으로 남기는 branch에서는 변경 없음.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1302,
+   "selector": ".journey-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".journey-head 안의 섹션 제목으로 자기 배경 없이 .journey-section 지면을 상속한다. 지면이 종이로 뒤집히면 --warm-ivory의 먹 값이 정답. 부모 .journey-section 배경 보정에 종속(같은 전제).",
+   "confidence": "medium"
+  },
+  {
+   "line": 1363,
+   "selector": ".journey-card-kind",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "0.7rem 금색 칩 텍스트 + rgba(224,184,79,0.42) 금 보더 조합. 카드 배경이 rgba(246,239,226,0.02)(채널화 대상)이라 라이트에서 거의 종이색이 되고 그 위 밝은 금 글자는 판독 불가. 난제 대장 L4189의 .gallery-detail-kind와 완전히 같은 형태이며 그 해법이 'color만 --soft-gold-text로, 보더는 유지'다. 보더는 손대지 않는다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1375,
+   "selector": ".journey-card-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".journey-card-body 안의 제목. 카드 배경 rgba(246,239,226,0.02)가 채널 토큰화되면 라이트에서 종이 위 극히 옅은 먹 틴트가 되므로 --warm-ivory의 먹 값이 정답. 카드 이미지(.journey-card-image) 위가 아니라 본문 영역이라 on-media 아님.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1391,
+   "selector": ".journey-more:hover",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "'더 보기' 링크의 hover 글자색. base .journey-more는 color: rgba(246,239,226,0.72) 리터럴 아이보리(별도 채널화 대상)이고 배경은 .journey-section 지면. 종이 위 hover 금색 글자는 대비 미달이라 텍스트용 금으로 바꾼다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 1392,
+   "selector": ".journey-more:hover",
+   "token": "soft-gold",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 블록이지만 이쪽은 border-color다. --soft-gold는 '배경·보더용'으로 두 테마에서 선명하게 유지하도록 설계됐으므로 어느 branch(종이/먹)든 그대로 두는 것이 정답. color(1391)와 border-color(1392)를 한 규칙으로 묶어 치환하면 안 되는 자리.",
+   "confidence": "high"
+  },
+  {
+   "line": 1409,
+   "selector": "#categories",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 블록의 background가 금 radial + linear-gradient(#1a0f0c → var(--ink-umber)) 고정 먹이라 배경 보정이 전제다. 난제 대장 L1446이 이 섹션에서 '리터럴 유지'로 지목한 것은 .category-card의 사진 위 오버레이와 .category-title뿐이고 섹션 지면은 지목하지 않았다 — 지면은 종이로 가는 전제. 카드 위 제목은 별도로 리터럴 고정해야 한다(대장 항목).",
+   "confidence": "medium"
+  },
+  {
+   "line": 1607,
+   "selector": ".footer-col-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "조상 #main-footer의 background-color가 var(--bg-dark)이고, 설계 스펙 B-1의 라이트 토큰 블록이 --bg-dark: #eee7d7로 뒤집는다. 즉 푸터는 라이트에서 종이 지면이 되므로 전경 토큰이 함께 뒤집히는 것이 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 1614,
+   "selector": ".footer-biz-name",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "푸터 NAP 상호명. #main-footer(--bg-dark, 라이트에서 #eee7d7로 플립) 지면 위 본문 텍스트라 토큰 플립이 정확히 의도한 동작이다.",
+   "confidence": "high"
+  },
+  {
+   "line": 1624,
+   "selector": ".footer-contact",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "푸터 연락처를 0.8rem 대문자 금색으로 쓴 텍스트다. #main-footer 지면이 라이트에서 #eee7d7 종이로 뒤집히므로 #d4a017 금색은 대비 미달(설계 스펙 E-2 린트 규칙 'color: var(--accent-color) 공개 구간 금지'). --accent-color 계열이므로 짝 토큰은 --accent-text(#8a6a10).",
+   "confidence": "high"
+  },
+  {
+   "line": 1644,
+   "selector": ".footer-nav-list a:hover",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "푸터 둘러보기 링크의 hover. base .footer-nav-list a는 var(--text-muted)로 함께 뒤집히는데 hover만 밝은 금으로 남으면 종이 위에서 hover가 오히려 더 안 보인다.",
+   "confidence": "high"
+  },
+  {
+   "line": 1662,
+   "selector": ".footer-contact-line a:hover",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "전화·이메일 링크 hover. 종이 푸터 위 밝은 금은 대비 미달. 주의: 실제 규칙은 `.footer-address a:hover, .footer-contact-line a:hover`로 묶인 그룹 셀렉터라 주소 링크 hover도 같은 선언을 공유한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 1678,
+   "selector": ".footer-hours-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "운영시간 소제목. #main-footer(--bg-dark → #eee7d7) 지면 위 텍스트이므로 --warm-ivory가 먹으로 뒤집히는 것이 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 1731,
+   "selector": ".footer-cal-link",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "캘린더 구독 링크. 자기 배경 없이 #main-footer 종이 지면을 상속하므로 전경 플립이 맞다.",
+   "confidence": "high"
+  },
+  {
+   "line": 1736,
+   "selector": ".footer-cal-link:hover",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "위 링크의 hover 상태. base가 먹으로 뒤집히는데 hover만 밝은 금이면 종이 위에서 대비가 역전된다. 텍스트용 금으로 교체.",
+   "confidence": "high"
+  },
+  {
+   "line": 2102,
+   "selector": ".auth-btn-dashboard",
+   "token": "accent-color",
+   "verdict": "on-accent",
+   "replacement": "변경 없음",
+   "reason": "같은 블록에 background: var(--accent-color) — 금색으로 채워진 칩이고 보더는 배경과 동색이다. 금 배경은 두 테마에서 유지되므로 이 border-color는 그대로 둔다. 다만 짝인 color: var(--primary-color)(#0a0a0a)는 우연히 안 뒤집혀 살아남는 것뿐이라, 스펙 B-2의 '금 배경 위 글자' 16곳 정규화 대상으로 var(--on-accent)로 바꿔 두는 편이 안전하다(별건).",
+   "confidence": "high"
+  },
+  {
+   "line": 2204,
+   "selector": ".auth-container",
+   "token": "bg-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "(auth) 3화면의 전면 지면이다. body와 동일하게 --bg-color가 한지로 뒤집히는 것이 목적이고, 스펙 D의 Phase 3 라우트 목록에도 (auth) 3화면이 포함돼 있다.",
+   "confidence": "high"
+  },
+  {
+   "line": 2234,
+   "selector": ".auth-browse:hover",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "app/(auth)/layout.tsx:43의 '둘러보기' 탈출 링크. .auth-form 카드 밖, .auth-container 지면 위에 직접 놓이고 base color가 var(--text-muted)라 hover에서 더 진해지는 구조 — 지면이 종이가 되면 --warm-ivory의 먹 값이 그 의도를 그대로 유지한다. 같은 블록의 border-bottom-color: rgba(255,255,255,0.4)는 리터럴 흰색이라 rgba(var(--fg-rgb),0.4)로 채널화가 별도로 필요.",
+   "confidence": "high"
+  },
+  {
+   "line": 2289,
+   "selector": ".auth-field input:focus",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "입력 필드 포커스 링에 쓰인 금 보더다. --accent-color는 배경·보더용이라 두 테마에서 유지되므로 이 선언은 그대로 둔다. 단 같은 블록의 background: rgba(255,255,255,0.08)(및 base의 rgba(255,255,255,0.05)/0.15 보더)는 종이 지면 위에서 무효가 되므로 rgba(var(--fg-rgb), α)로 채널화가 함께 필요하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 2309,
+   "selector": ".auth-button",
+   "token": "white-token",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "자기 블록에 background: var(--secondary-color)(#c4302b)가 있고 적색은 두 테마에서 고정이다. 하드케이스 대장 L10477/L11013이 '고정 적색 배경 위 전경은 비플립 토큰(#f6efe2)'을 해법으로 못박은 것과 동일 구조.",
+   "confidence": "high"
+  },
+  {
+   "line": 2368,
+   "selector": ".auth-link a",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "자기 배경 없음 → 조상 .auth-link(3D 없음) → .auth-form(globals.css:2238, rgba(255,255,255,.03) 얕은 워시) → .auth-container(2196, background-color: var(--bg-color))가 실효 지면이라 한지로 뒤집힌다. #d4a017 on #f6f1e6 = 2.11:1로 WCAG 실패.",
+   "confidence": "high"
+  },
+  {
+   "line": 2482,
+   "selector": ".auth-agree input[type='checkbox']",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "accent-color: var(--accent-text)",
+   "reason": "RegisterForm.tsx:276의 동의 체크박스로 .auth-container 지면 위다. 콘솔 선례 4곳(globals.css 6342·8280·13409·13491)이 모두 accent-color: var(--accent-text)를 쓴다 — UA가 자동으로 그리는 체크 표시 대비가 어두운 금에서 확보되기 때문. 다만 accent-color는 엄밀히 '칠(배경)' 속성이라 규칙2(배경용 금 유지)와 충돌 소지가 있어 medium.",
+   "confidence": "medium"
+  },
+  {
+   "line": 2487,
+   "selector": ".auth-agree a",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "약관 링크 텍스트로 .auth-form → .auth-container(var(--bg-color)) 지면 위. underline까지 달린 본문 링크라 한지 위 밝은 금(2.11:1)은 판독 불가.",
+   "confidence": "high"
+  },
+  {
+   "line": 2578,
+   "selector": ".auth-field select:focus",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "decl이 border-color라 '보더용 금색은 두 테마 유지' 규칙 대상. 요소는 .auth-container 지면 위이고 --accent-color는 뒤집히지 않으므로 선언 자체는 그대로 유효하다. 다만 같은 블록의 background: rgba(255,255,255,0.08)은 한지 위에서 소멸하고, 금 보더는 종이 대비 2.11:1로 WCAG 1.4.11(3:1) 미달 — 둘 다 별도 항목으로 처리 필요(notes 참조).",
+   "confidence": "high"
+  },
+  {
+   "line": 2589,
+   "selector": ".auth-field select option",
+   "token": "bg-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 블록이 background-color: var(--bg-color)와 color: var(--text-color)를 짝으로 선언한다. 두 토큰이 라이트 블록에서 함께 뒤집히므로(#0a0a0a/#fff → #f6f1e6/#241b12) 반전 관계가 그대로 보존된다. 전형적인 안전 케이스.",
+   "confidence": "high"
+  },
+  {
+   "line": 2606,
+   "selector": ".auth-pending-icon",
+   "token": "white-token",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "자기 블록에 background: var(--secondary-color)(#c4302b, 비플립 브랜드 적색)가 있는 원형 아이콘 배지. .auth-button(2309)과 완전히 같은 패턴이며 하드케이스 L10477 해법(고정 적색 위 전경은 #f6efe2 고정)을 따른다.",
+   "confidence": "high"
+  },
+  {
+   "line": 2785,
+   "selector": ".edit-mode-toggle",
+   "token": "accent-color",
+   "verdict": "on-media",
+   "replacement": "변경 없음 — 고정 어두운 칩 위 금색이라 --accent-color 그대로 유효(--on-media로 바꾸면 금색 정체성이 사라진다)",
+   "reason": "자기 블록의 background: rgba(10,10,10,0.6)이 고정 어두운 칩이다. globals.css:2153~2154 주석이 의도를 명시한다 — '헤더 배경(투명·밝음·이미지)과 무관하게 어두운 칩이 자체 대비를 만들어 금색 텍스트가 항상 읽히도록'. --accent-color는 플립 목록에 없으므로 라이트에서도 그대로 안전. 단 Phase 3의 리터럴→rgba(var(--bg-rgb),α) 일괄 치환에서 이 칩은 반드시 제외해야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 2790,
+   "selector": ".edit-mode-toggle:hover",
+   "token": "accent-color",
+   "verdict": "on-media",
+   "replacement": "변경 없음",
+   "reason": "같은 블록 background: rgba(10,10,10,0.8) — 2785와 같은 고정 어두운 칩의 호버 상태다. decl이 border-color이고 --accent-color는 뒤집히지 않으므로 두 테마 모두 성립.",
+   "confidence": "high"
+  },
+  {
+   "line": 2795,
+   "selector": ".edit-mode-toggle.active",
+   "token": "bg-color",
+   "verdict": "on-accent",
+   "replacement": "color: var(--on-accent)",
+   "reason": "background: var(--accent-color)(비플립 금) 위 color: var(--bg-color)(한지로 플립) = 금 위 아이보리 글자로 대비 붕괴. 하드케이스 대장 L3823이 '금 배경 + color:var(--bg-color)' 4곳(원본 2813·2960·3823·3943)을 한 항목으로 묶어 --on-accent 해법을 지정했고, Phase 0 이후 18줄 밀린 2795가 원본 2813에 정확히 대응한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 2900,
+   "selector": ".intl-modal-field textarea:focus",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "조상 .intl-modal(globals.css:2815)이 background: var(--bg-color)라 모달 표면이 지면을 따라 뒤집힌다. decl은 border-color이고 보더용 금은 두 테마 유지가 규칙. 같은 블록의 background: rgba(255,255,255,0.08)과 2976 outline: 2px solid var(--accent-color)는 종이 위 대비 문제로 별도 처리 필요.",
+   "confidence": "high"
+  },
+  {
+   "line": 2942,
+   "selector": ".intl-btn-save",
+   "token": "bg-color",
+   "verdict": "on-accent",
+   "replacement": "color: var(--on-accent)",
+   "reason": "자기 블록 background: var(--accent-color) 위 color: var(--bg-color). 하드케이스 L3823이 지목한 4곳 중 '저장 버튼'(원본 2960 = 현재 2942)이다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3007,
+   "selector": ".lang-btn.active",
+   "token": "bg-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 블록이 background: var(--text-color) + color: var(--bg-color)로 두 플립 토큰을 정확히 반대 짝으로 쓴다. 다크=흰 알약/먹 글자, 라이트=먹 알약/한지 글자로 반전이 자동 보존된다. 헤더에서는 .header-auth .lang-btn.active(2184)가 currentColor로 덮어쓰고, auth 페이지(app/(auth)/layout.tsx:26)에서만 이 base가 실제로 적용된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3026,
+   "selector": ".mobile-language-switcher .lang-btn:hover",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "컨테이너 .mobile-language-float(globals.css:2676)의 바탕이 rgba(9,7,5,0.78)인데, 하드케이스 L2696 해법이 이를 rgba(var(--bg-rgb),0.78)로 채널화하도록 지정했다. 그러면 칩이 라이트에서 종이가 되므로 --warm-ivory(→#2c2114 먹)가 올바른 전경이 된다. 같은 컨테이너의 base color도 이미 rgba(var(--ivory-rgb),0.62) 채널 토큰이라 방향이 일치. L2696 해법 채택이 전제라 medium.",
+   "confidence": "medium"
+  },
+  {
+   "line": 3660,
+   "selector": "linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)), radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%); .gallery-hero-label",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "components/gallery/GalleryHero.tsx:12~14가 <section className=\"gallery-hero\"> 직속 자식으로 렌더한다. .gallery-hero는 설계 문서 C-1의 다크 섬 12종 목록에 등재돼 있어 라이트에서도 먹빛 캔버스 + 다크 토큰을 로컬 재선언한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3678,
+   "selector": ".gallery-hero-subtitle",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "GalleryHero.tsx:16이 .gallery-hero 안에서 렌더한다(label/title/subtitle/description 표준 골격). 다크 섬 루트가 토큰을 재선언하므로 하위는 손대지 않는다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3730,
+   "selector": ".gallery-filter-label",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "app/gallery/page.tsx:130~146 구조상 GalleryFilter는 <GalleryHero/>의 형제인 <section className=\"gallery-main\"> 안이라 다크 섬 밖이다. 지면인 .gallery-page(3638)는 하드케이스 L3661 해법대로 라이트에서 종이 그라디언트로 교체된다. 종이 위 #d4a017 = 2.11:1.",
+   "confidence": "high"
+  },
+  {
+   "line": 3740,
+   "selector": ".gallery-filter-select, .gallery-filter-input",
+   "token": "white-token",
+   "verdict": "flip",
+   "replacement": "color: var(--text-color)",
+   "reason": "필터 바는 .gallery-main 지면 위(다크 섬 밖)라 전경이 테마를 따라야 한다. 그런데 --white는 설계 문서 B-1 라이트 블록 플립 목록에 없어 #ffffff로 남는다 → 종이 위 흰 글자 소멸. 따라서 '변경 없음'이 될 수 없고 플립 토큰으로 교체해야 한다. 같은 블록의 background: rgba(255,255,255,0.1)·border rgba(255,255,255,0.3)도 종이 위에서 소멸하므로 함께 채널화 필요.",
+   "confidence": "high"
+  },
+  {
+   "line": 3749,
+   "selector": ".gallery-filter-select option",
+   "token": "white-token",
+   "verdict": "flip",
+   "replacement": "color: var(--text-color)",
+   "reason": "같은 블록의 background: var(--bg-color)는 한지로 뒤집히는데 color: var(--white)는 #ffffff로 고정 → 한지 위 흰 글자 = 드롭다운 항목 소멸. 바로 위 형제 케이스인 .auth-field select option(2589)은 이미 color: var(--text-color)로 짝을 맞춰 놨다 — 같은 형태로 통일하면 된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3755,
+   "selector": ".gallery-filter-input:focus",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "decl이 border-color이고 --accent-color는 뒤집히지 않는다. 요소는 .gallery-main 지면 위지만 '보더용 금색 유지' 규칙 대상이라 선언 자체는 그대로. 다만 포커스 인디케이터로서는 종이 대비 2.11:1로 WCAG 1.4.11(3:1) 미달(notes 참조).",
+   "confidence": "high"
+  },
+  {
+   "line": 3776,
+   "selector": ".gallery-filter-clear:hover",
+   "token": "white-token",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "같은 블록이 background: var(--secondary-color)(#c4302b, 비플립)로 호버 시 적색 솔리드가 된다. 고정 컬러 서피스 위 전경이므로 하드케이스 L11013 해법(비플립 아이보리 역할 토큰)을 따른다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3805,
+   "selector": ".gallery-year-link.active",
+   "token": "bg-color",
+   "verdict": "on-accent",
+   "replacement": "color: var(--on-accent)",
+   "reason": "background: var(--accent-color) 위 color: var(--bg-color). 하드케이스 L3823이 이 셀렉터를 대표 예시로 인용한 바로 그 항목이며(원본 3823 = 현재 3805) '활성 연도 칩'으로 명시돼 있다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3838,
+   "selector": ".gallery-loading-spinner",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "decl은 border-top-color(장식용 금 호)이고 --accent-color는 뒤집히지 않는다. 요소는 .gallery-main 지면 위. 다만 같은 블록의 트랙 border: 3px solid rgba(255,255,255,0.1)은 종이 위에서 완전히 소멸해 스피너가 '금 점 하나'로 보이므로 별도 채널화가 필요하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3893,
+   "selector": ".gallery-event-card:hover",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "decl이 border-color이고 --accent-color는 비플립. base .gallery-event-card(3882)는 하드케이스 L3902 해법대로 라이트에서 #fbf7ed 종이 표면이 되는데, 그 위 금 보더는 호버 강조로 두 테마 모두 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3925,
+   "selector": ".gallery-event-card-featured",
+   "token": "bg-color",
+   "verdict": "on-accent",
+   "replacement": "color: var(--on-accent)",
+   "reason": "자기 블록 background: var(--accent-color) 위 color: var(--bg-color). 하드케이스 L3823이 지목한 4곳 중 'featured 배지'(원본 3943 = 현재 3925). 사진 위에 absolute로 뜨지만 자기 금 배경이 있으므로 on-media가 아니라 on-accent다.",
+   "confidence": "high"
+  },
+  {
+   "line": 3937,
+   "selector": ".gallery-event-card-date",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "자기 배경 없음 → 조상 .gallery-event-card-content(3929, padding만) → .gallery-event-card(3882). 그 카드는 하드케이스 L3902 해법대로 라이트에서 #fbf7ed 불투명 종이 표면이 되므로 밝은 금 텍스트는 대비가 무너진다.",
+   "confidence": "high"
+  },
+  {
+   "line": 4000,
+   "selector": ".gallery-event-card-read-more",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "3937과 같은 .gallery-event-card-content 안의 카드 본문 링크다. 라이트에서 카드 표면이 종이(#fbf7ed)가 되므로 --accent-text(#8a6a10)로 내려야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 4089,
+   "selector": ".gallery-photo-stream-meta span",
+   "token": "accent-color",
+   "verdict": "on-media",
+   "replacement": "변경 없음 — 사진 스크림 위 금색 악센트라 --accent-color 유지(--on-media로 바꾸면 날짜 강조가 사라진다)",
+   "reason": "부모 .gallery-photo-stream-meta(4077)가 사진 위 absolute 오버레이이고 background: linear-gradient(180deg, transparent, rgba(5,5,5,0.82)) 고정 스크림이다. 하드케이스 L4103이 이 블록을 '변환하면 안 되는 역함정 — 리터럴 유지'로 등재했다. --accent-color는 플립 목록 밖이라 현재 상태가 이미 안전하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 4154,
+   "selector": ".gallery-detail-year",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text) (같은 블록의 border: 1px solid var(--accent-color)는 유지)",
+   "reason": "조상은 .gallery-detail-meta(4143) → .gallery-detail-header(4137) → .gallery-detail-page(4108)다. .gallery-detail-header는 '히어로'가 아니고 설계 문서 C-1 다크 섬 12종 목록에도 없다 → 종이 지면 위 금 텍스트. 바로 아래 형제인 .gallery-detail-kind(4171)에 대해 하드케이스 L4189가 같은 해법(텍스트만 --*-text, 보더는 유지)을 지정했다.",
+   "confidence": "high"
+  },
+  {
+   "line": 4171,
+   "selector": ".gallery-detail-kind",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "하드케이스 대장 L4189가 이 셀렉터를 그대로 등재하고 해법까지 명시했다 — '--soft-gold는 배경용이라 라이트에서 뒤집히지 않는다(설계상 의도). 종이 위 밝은 금색 글자는 대비가 무너진다 → color: var(--soft-gold-text)로 교체(보더는 그대로 유지)'.",
+   "confidence": "high"
+  },
+  {
+   "line": 4563,
+   "selector": ".gallery-adjacent-link:hover",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "decl이 border-color이고 --accent-color는 비플립. base .gallery-adjacent-link(4554)의 background: rgba(255,255,255,0.03)은 얕은 워시라 실효 지면은 .gallery-detail-page(4108)이며 라이트에서 종이가 된다. 금 보더 호버 강조는 두 테마 모두 성립.",
+   "confidence": "high"
+  },
+  {
+   "line": 4895,
+   "selector": ".theme-toggle-btn.active",
+   "token": "accent-color",
+   "verdict": "on-accent",
+   "replacement": "변경 없음 — border-color는 배경용 금색이라 두 테마 유지",
+   "reason": "자기 블록이 background: var(--accent-color) + color: var(--on-accent)로 이미 올바르게 처리돼 있고(4894 주석: '금 배경 위 먹 글자 — 두 테마 모두 성립'), 문제의 decl은 같은 금색을 보더로 다시 그은 것뿐이다. 배경과 보더가 같은 비플립 금색이므로 손댈 필요 없다.",
+   "confidence": "high"
+  },
+  {
+   "line": 5749,
+   "selector": ".admin-seg-tab.active",
+   "token": "white-token",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/supplies/SuppliesViewTabs.tsx:19·27과 components/admin/glossary/GlossaryViewTabs.tsx:19·27에서만 쓰인다 — 공개 라우트 사용처 0건. 관리 콘솔 셸(html[data-admin-theme]) 안이라 이번 공개 사이트 라이트 전환 범위 밖이며, 공개 난제 대장(public-theme-hardcases.md)에도 등재돼 있지 않다. 참고로 배경이 비플립 적색이라 콘솔 라이트에서도 흰 글자가 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 7354,
+   "selector": ".cal-chip.is-mine",
+   "token": "soft-gold",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/schedule/ScheduleCalendar.tsx:263에서만 쓰인다 — 공개 라우트 사용처 0건. /admin/schedule은 원생·학부모도 들어가는 멤버 화면이지만 관리 콘솔 셸 안이라 data-admin-theme가 관장한다. 게다가 decl은 금 배경(rgba(212,160,23,0.9)) 위 금 보더라 두 테마 모두 무해.",
+   "confidence": "high"
+  },
+  {
+   "line": 7535,
+   "selector": ".cal-tag.is-mine",
+   "token": "soft-gold",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/schedule/ScheduleCalendar.tsx:356에서만 렌더되는 관리 콘솔 캘린더 칩이다. 게다가 자기 블록이 background: var(--soft-gold) + color:#241b12 리터럴이라 금색이 안 뒤집히는 규칙 아래 이미 안전하다(보더=자기 배경색).",
+   "confidence": "high"
+  },
+  {
+   "line": 7588,
+   "selector": ".cal-swatch.is-mine",
+   "token": "soft-gold",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "ScheduleCalendar.tsx:387의 범례 스와치로 관리 콘솔 전용이다. border-left-color가 자기 background(--soft-gold)와 같은 값이고 --soft-gold는 두 테마 공통이라 어차피 무해하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 7867,
+   "selector": ".students-hero-label",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "app/students/page.tsx:60에서 <section className=\"students-hero\"> 안에 렌더된다. .students-hero는 다크 섬 목록에 등재돼 있어 섬 루트가 --accent-text/--text-color를 다크 값으로 로컬 재선언한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 7886,
+   "selector": ".students-hero-subtitle",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "students/page.tsx:62 — 같은 .students-hero 섹션 내부다. 히어로 배경(검정 스크림+금 라디얼)이 라이트에서도 먹빛으로 유지되므로 밝은 금 텍스트가 그대로 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 7906,
+   "selector": ".students-stats strong",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "students/page.tsx:64의 .students-stats는 .students-hero 섹션 안(</section>은 79행)에 있다. 히어로 다크 섬 범위이므로 밝은 금 숫자를 유지한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 7927,
+   "selector": ".students-year-title",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "students/page.tsx:89 — .students-hero가 아니라 .students-body(81행) 안이라 다크 섬 밖이다. 배경은 .students-page 지면(hardcase L7825에서 --page-ground 종이 그라디언트로 뒤집기로 예정)이므로 한지 위 #e0b84f는 대비 미달이다.",
+   "confidence": "high"
+  },
+  {
+   "line": 7977,
+   "selector": ".student-card-initial",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".student-card-avatar의 배경이 rgba(224,184,79,0.12) 즉 12% 금 틴트뿐이라 실효 배경은 지면(.students-body → .students-page)이다. 라이트 한지 위 밝은 금 이니셜은 판독 불가.",
+   "confidence": "high"
+  },
+  {
+   "line": 7988,
+   "selector": ".student-card-name",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".student-card 배경이 rgba(255,255,255,0.03)로 사실상 지면이 비치는 표면이라 전경이 테마를 따라 뒤집히는 게 정답이다. 다만 그 카드 배경·보더의 리터럴 흰색은 Phase 3에서 rgba(var(--fg-rgb),·)로 채널화돼야 함께 뒤집힌다.",
+   "confidence": "high"
+  },
+  {
+   "line": 7997,
+   "selector": ".student-card-count",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "자기 배경이 rgba(224,184,79,0.12)인 옅은 금 칩이지 채워진 금 배경이 아니다(on-accent 아님). 라이트 지면에 얹힌 12% 틴트 위에서는 어두운 금 #7d5f0b이 필요하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 8016,
+   "selector": ".students-note-link",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".students-note(8007)는 배경 선언이 없고 .students-body 지면 위 본문이다. 링크는 텍스트로 쓰인 금색이라 한지 위 대비 확보용 어두운 금이 필요하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 8092,
+   "selector": ".libmy-status-published",
+   "token": "white-token",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/library/StudentPhotoSubmit.tsx:212에서만 쓰이는 관리 콘솔 컴포넌트다(게다가 현재 import하는 곳이 없어 사실상 죽은 코드). 배경 rgba(14,112,74,0.92) 고정 짙은 초록 위 --white라 어느 테마에서도 안 깨진다.",
+   "confidence": "high"
+  },
+  {
+   "line": 8096,
+   "selector": ".libmy-status-linked",
+   "token": "white-token",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "같은 StudentPhotoSubmit(관리 콘솔) 배지다. 배경 rgba(120,86,196,0.92) 고정 보라 위 흰 글자로 테마와 무관하게 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 8641,
+   "selector": ".photo-inbox-tab.is-active",
+   "token": "bg-color",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "globals.css 8604행 주석이 'Admin Photo Inbox(사진 보관함)'로 명시했고 /admin/gallery/photos의 PhotoInboxManager 전용이다. 다만 콘솔 라이트에서 --bg-color가 #f6f1e6로 뒤집혀 금 배경 위 거의 흰 글자가 되는 기존 버그가 있다(notes 참조).",
+   "confidence": "high"
+  },
+  {
+   "line": 8862,
+   "selector": ".photo-tile-badge.is-public",
+   "token": "white-token",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "PhotoOrganizeBoard(/admin/gallery/photos)의 썸네일 배지다. 배경이 rgba(14,112,74,0.92) 고정 초록이라 --white가 안 뒤집혀 그대로 안전하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 8878,
+   "selector": ".photo-tile-badge.is-pending",
+   "token": "white-token",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "같은 관리 콘솔 사진 타일 배지(rgba(196,108,24,0.92) 고정 주황 위)다. 공개 사이트 라이트 전환 범위 밖.",
+   "confidence": "high"
+  },
+  {
+   "line": 8883,
+   "selector": ".photo-tile-badge.is-submitted",
+   "token": "white-token",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "같은 관리 콘솔 사진 타일 배지(rgba(120,86,196,0.92) 고정 보라 위)다. 사진 위 오버레이라 리터럴 유지가 맞고 --white는 뒤집히지 않는다.",
+   "confidence": "high"
+  },
+  {
+   "line": 9080,
+   "selector": ".photo-lightbox-nav",
+   "token": "white-token",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/gallery/PhotoLightbox.tsx — PhotoOrganizeBoard에서만 열리는 관리 콘솔 라이트박스다. 사진 위 반투명 흰 원형 컨트롤이라 어차피 리터럴 유지가 정답(성격상 on-media).",
+   "confidence": "high"
+  },
+  {
+   "line": 9379,
+   "selector": ".pagination-btn",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "배경 rgba(var(--fg-rgb),0.03)와 보더 rgba(var(--fg-rgb),0.14)가 전경과 같은 채널 축으로 묶여 있어 --warm-ivory가 뒤집히면 지면·표면·글자가 함께 뒤집힌다. (현재 마운트처는 EventPicker·PhotoOrganizeBoard·StudentPhotoSubmit 셋 다 관리 콘솔이지만 components/common에 있어 공개 재사용 시에도 안전하다.)",
+   "confidence": "high"
+  },
+  {
+   "line": 10035,
+   "selector": ".about-hero-korean",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "app/about/page.tsx:55 — <section id=\"about-hero\" className=\"about-hero\"> 안이고 .about-hero는 다크 섬 목록에 있다. hardcase L10018이 말한 '상위 레일 결정 종속'이 섬 등재로 해소돼 주석의 umber 레일 위 5.4:1이 그대로 유지된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 10080,
+   "selector": ".about-director",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".about-director는 다크 섬 12종 목록에 없다 — 즉 라이트에서 종이 섹션이 되는 게 스펙상 기본값이므로 --warm-ivory가 먹으로 뒤집히는 것이 정답이다. 단 같은 커밋에서 자기 background(radial + linear-gradient(var(--ink-umber), #1e130f))를 종이 그라디언트로 보정해야 하며(hardcase L10058), 만약 먹 섹션 유지로 뒤집으면 이 항목은 on-media(#f6efe2 고정)로 바뀐다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 10111,
+   "selector": ".about-director-title-ko",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "바로 위 .about-director가 종이 섹션이 된다는 전제(다크 섬 미등재)에서 한지 위 #e0b84f는 대비 미달이다. hardcase L10018 해법이 '.about-director-title-ko의 var(--soft-gold) 텍스트도 --soft-gold-text로 함께 교체'라고 이 셀렉터를 명시했다. .about-director를 먹 유지로 결정하면 이 항목도 변경 없음으로 뒤집힌다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 10429,
+   "selector": ".feature-eyebrow",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "components/ComingSoonPage.tsx:25 — <section className=\"feature-hero feature-hero-${section}\">(22행) 안이고 .feature-hero는 다크 섬이다. 섬이 --soft-gold-text: var(--soft-gold)로 되돌리므로 밝은 금 라벨이 유지된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 10449,
+   "selector": ".feature-title",
+   "token": "warm-ivory",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "ComingSoonPage.tsx:31의 .feature-title은 .feature-hero-copy → .feature-hero 안이다. hardcase L10364가 걱정한 '사진 위 밝은 글자 증발'이 섬 등재로 해소된다(--warm-ivory가 섬 안에서 #f6efe2로 재선언).",
+   "confidence": "high"
+  },
+  {
+   "line": 10495,
+   "selector": ".feature-action-primary",
+   "token": "warm-ivory",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "자기 블록이 background: linear-gradient(135deg, var(--deep-red), var(--secondary-color))인 고정 적색 버튼이다 — 지면이 아니라 자기 배경이 실효 배경이므로 토큰 플립이 해를 끼친다(hardcase L10477이 지목한 바로 그 케이스). 지금은 .feature-hero 다크 섬 안이라 우연히 안전하지만 .btn-ink-primary와 같은 역할 토큰으로 고정하는 게 옳다.",
+   "confidence": "high"
+  },
+  {
+   "line": 10501,
+   "selector": ".feature-action-secondary",
+   "token": "warm-ivory",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "자기 배경 rgba(246,239,226,0.04)는 4% 워시라 실효 배경이 히어로 스크림+사진, 즉 .feature-hero 다크 섬이다. 섬 안에서 --warm-ivory가 #f6efe2로 유지되므로 손대지 않는다(다만 리터럴 246,239,226은 Phase 3에서 --ivory-rgb 채널화 대상).",
+   "confidence": "high"
+  },
+  {
+   "line": 10526,
+   "selector": ".feature-preview-index",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "ComingSoonPage.tsx:60 — .feature-hero가 아니라 .feature-preview-section(10506, background:#090705) 안이라 다크 섬 밖이다. 그 지면이 라이트에서 종이로 뒤집히면 밝은 금 인덱스는 대비 미달이며, hardcase L10018 해법도 이 셀렉터(10509)를 --soft-gold-text 교체 대상으로 명시했다.",
+   "confidence": "high"
+  },
+  {
+   "line": 10853,
+   "selector": ".hero-tone-row input[type='range']",
+   "token": "accent-color",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "HeroBackgroundManager.tsx의 'Hero 섹션 설정' 편집 모드 모달(.hero-bg-manager-modal, background:#1a1a1a 고정) 내부 관리자 전용 컨트롤이다. 게다가 CSS accent-color 속성(폼 컨트롤 틴트)이고 --accent-color는 두 테마 공통이라 전경/배경 대비 문제가 성립하지 않는다.",
+   "confidence": "high"
+  },
+  {
+   "line": 10949,
+   "selector": ".hero-tone-btn--primary",
+   "token": "accent-color",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "같은 편집 모드 모달의 저장 버튼(HeroBackgroundManager.tsx:320)이다. border-color가 자기 background(--accent-color)와 동일 값이고 글자는 리터럴 #1a1208이라 금 배경 위 먹 글자 규칙을 이미 지킨다.",
+   "confidence": "high"
+  },
+  {
+   "line": 10956,
+   "selector": ".hero-tone-btn--primary:hover",
+   "token": "soft-gold",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "위 버튼의 호버 상태로 background와 border-color를 함께 --soft-gold로 올린다. 배경용 금은 두 테마 공통이라 뒤집힘 자체가 없다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11027,
+   "selector": "border-color 0.35s var(--ease-out-quart), box-shadow 0.35s var(--ease-out-quart); .btn-ink-primary",
+   "token": "warm-ivory",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "자기 배경이 linear-gradient(135deg, var(--deep-red), var(--secondary-color))로 두 테마 공통 고정 적색인데 --warm-ivory만 #2c2114로 뒤집혀 붉은 배경 위 검붉은 글자가 된다. hardcase L11013이 지목한 3중 복제 패턴의 원본이며 not-found·PerformanceHero·RegistrationForm·CampSpotlight 등 지면 위에서도 쓰인다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11037,
+   "selector": ".btn-ink-ghost",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "background: transparent라 실효 배경이 항상 부모 지면이다 — ArchiveBridge(.performance-bridge)·not-found는 페이지 지면, CampSpotlight는 .camp-spotlight 다크 섬이라 두 경우 모두 --warm-ivory 플립이 올바른 결과를 낸다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11042,
+   "selector": ".btn-ink-ghost:hover",
+   "token": "soft-gold",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "보더와 8% 금 배경 워시라 '배경·보더용 금은 두 테마 공통 유지' 규칙에 정확히 해당한다. 다만 한지 위 1px #e0b84f 보더는 얇아 보일 수 있어 .dancheong-divider와 같은 --hairline-alpha류 두께·불투명도 보정 후보다(색 교체는 아님).",
+   "confidence": "high"
+  },
+  {
+   "line": 11074,
+   "selector": "radial-gradient(120% 90% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%), linear-gradient(180deg, var(--ink-umber), var(--ink-black)); .classes-hero-eyebrow",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "app/classes/page.tsx:49 — .classes-hero는 다크 섬 12종 목록에 없다(.program-detail-hero만 등재). 따라서 히어로 배경 linear-gradient(--ink-umber, --ink-black)과 .classes-page의 var(--ink-black)이 종이로 보정되면 밝은 금 eyebrow는 대비 미달이 된다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 11081,
+   "selector": ".classes-hero-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 .classes-hero 안이고 이 섹션은 다크 섬이 아니므로 지면과 함께 먹으로 뒤집히는 게 정답이다. 단 .classes-hero 배경과 .classes-page{background: var(--ink-black)}(11058)이 같은 커밋에서 종이로 보정돼야 성립한다 — 안 하면 먹 위 먹이 된다.",
+   "confidence": "medium"
+  },
+  {
+   "line": 11129,
+   "selector": ".classes-trust-title",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".classes-trust(11117)는 배경 선언이 없고 조상은 .classes-page(11057) `background: var(--ink-black)` — 다크 섬 목록에 없으므로 Phase 3에서 지면으로 플립된다. 밝은 금(#e0b84f)을 텍스트로 쓴 자리라 한지 위에서 WCAG 실패.",
+   "confidence": "high"
+  },
+  {
+   "line": 11191,
+   "selector": ".camp-spotlight-eyebrow",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "다크 섬 셀렉터는 `.camp-spotlight:has(img)`(스펙 C-1)라 CampSpotlight.tsx:61의 `.camp-spotlight--no-image` 변형은 섬 밖 = 종이로 플립된다(하드케이스 L11149). 섬 블록은 --soft-gold-text만 재선언하고 --soft-gold는 손대지 않으므로, --soft-gold-text로 바꿔야 이미지 有(밝은 금 유지)·無(어두운 금) 양쪽이 동시에 성립한다.",
+   "confidence": "high",
+   "auditOverturned": true
+  },
+  {
+   "line": 11199,
+   "selector": ".camp-spotlight-title",
+   "token": "warm-ivory",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "`.camp-spotlight:has(img)` 섬이 --warm-ivory: #f6efe2를 로컬 재선언하므로 사진 변형에서 아이보리 유지, `--no-image` 변형에서는 토큰이 정상 플립돼 종이 위 먹색 — 양쪽 모두 손대지 않아도 성립하는 유일한 케이스다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11225,
+   "selector": ".camp-fact-label",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".camp-spotlight-eyebrow와 동일 논리 — 섬 셀렉터가 `:has(img)` 한정이라 `.camp-spotlight--no-image` 아래에서는 종이 배경 위 밝은 금 라벨이 된다. --soft-gold-text는 섬 안에서 var(--soft-gold)로 되돌려지므로 두 변형 모두 안전.",
+   "confidence": "high",
+   "auditOverturned": true
+  },
+  {
+   "line": 11230,
+   "selector": ".camp-fact-value",
+   "token": "warm-ivory",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": ".camp-spotlight-title과 동일 — 섬이 --warm-ivory를 재선언하고, --no-image 변형에서는 토큰 플립이 정답이라 양쪽 다 무수정으로 성립.",
+   "confidence": "high"
+  },
+  {
+   "line": 11279,
+   "selector": ".program-section-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "ProgramGrid.tsx:39 — /classes 본문 섹션 헤더로 .classes-main 안, 자체·조상 배경이 다크 섬 목록에 없다. 지면을 따라 먹색으로 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 11316,
+   "selector": ".program-card:hover",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "color가 아니라 border-color다. --accent-color는 '배경·보더용 금'이라 두 테마에서 뒤집히지 않고 선명하게 유지되는 것이 설계 의도(:root 26~28행 주석) — 종이 카드 위 금 테두리도 그대로 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11357,
+   "selector": "radial-gradient(120% 120% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%), linear-gradient(160deg, var(--soft-umber), var(--ink-black)); .program-card-type",
+   "token": "soft-gold",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media-accent)  (신설 비플립 금 #e0b84f — --soft-gold와 값이 같아 다크 화면 변화 0)",
+   "reason": "ProgramCard.tsx:63 — .program-card-image(사진) 위 absolute 배지이고 자체 스크림 rgba(9,7,5,0.6) + backdrop-filter: blur(4px)를 갖는다. 하드케이스 L11341이 '배지 전체를 미디어 오버레이로 확정, background/border 리터럴 유지, color만 --on-media-accent로 교체'로 결론. 지금 값도 우연히 안전하지만 린트·의도 표기를 위해 역할 토큰으로 승격.",
+   "confidence": "high"
+  },
+  {
+   "line": 11375,
+   "selector": ".program-card-title",
+   "token": "warm-ivory",
+   "verdict": "on-media",
+   "replacement": "변경 없음",
+   "reason": ".program-card(11292)는 다크 섬 목록에 없는 '지면 위 표면'이라 배경 linear-gradient(var(--ink-umber), var(--deep-umber))가 Phase 3에서 종이 표면으로 치환될 대상이다. 그 전제 하에 제목은 먹색으로 뒤집히는 게 정답. (카드 배경이 안 바뀌면 이 선언이 조용히 사라진다 — notes 참조)",
+   "confidence": "medium",
+   "auditOverturned": true
+  },
+  {
+   "line": 11400,
+   "selector": ".program-card-meta-row dt",
+   "token": "soft-gold",
+   "verdict": "dark-surface-gold",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".program-card-body(사진 아래 카드 본문, 스크림 없음) 안의 정의어 라벨 — 금색을 순수 텍스트로 쓴 자리라 종이 표면에서 대비 미달. 짝인 dd(11403)는 rgba(246,239,226,0.78) 리터럴이라 별도 채널화가 필요(입력 목록에 없음).",
+   "confidence": "high",
+   "auditOverturned": true
+  },
+  {
+   "line": 11418,
+   "selector": ".program-card-price",
+   "token": "soft-gold",
+   "verdict": "dark-surface-gold",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".program-card-footer 안의 가격 텍스트 — 사진이 아니라 카드 본문 표면 위이고 스크림이 없다. 금색 텍스트이므로 어두운 금으로 뒤집혀야 한다.",
+   "confidence": "high",
+   "auditOverturned": true
+  },
+  {
+   "line": 11425,
+   "selector": ".program-card-cta",
+   "token": "warm-ivory",
+   "verdict": "on-media",
+   "replacement": "변경 없음",
+   "reason": ".program-card-body 안(사진 아래)이고 opacity: 0.75가 실려 있을 뿐 배경은 카드 표면이다. 카드가 지면을 따라가므로 전경도 함께 뒤집히는 게 정답.",
+   "confidence": "medium",
+   "auditOverturned": true
+  },
+  {
+   "line": 11474,
+   "selector": ".program-detail-title",
+   "token": "warm-ivory",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "app/classes/[slug]/page.tsx:69~77 — .program-detail-hero > .program-detail-hero-inner 안이다. .program-detail-hero는 스펙 C-1 다크 섬 목록에 등재돼 있어 섬 루트가 --warm-ivory: #f6efe2를 재선언한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11480,
+   "selector": ".program-detail-title-en",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "같은 히어로 안(page.tsx:78). --soft-gold는 어차피 두 테마 불변이고 섬이 어두운 캔버스를 유지하므로 밝은 금이 그대로 정답. camp-spotlight와 달리 섬 셀렉터에 :has(img) 한정이 없어 이미지 없는 경우도 섬에 포함된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11548,
+   "selector": ".program-facts-row dt",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "조상 .program-facts-card(11522)의 background는 var(--ink-panel)이고, 현재 :root 51행에서 이미 rgba(var(--ivory-rgb), 0.055) 채널 토큰으로 승격돼 있어 라이트에서 '종이 위 옅은 먹 틴트 표면'으로 자동 플립된다(하드케이스 L11511 조치 완료). 즉 지면 표면이므로 금색 라벨은 어두운 금이 필요.",
+   "confidence": "high"
+  },
+  {
+   "line": 11551,
+   "selector": ".program-facts-row dd",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 --ink-panel 표면 위 본문값. 표면이 채널 토큰으로 플립되므로 전경도 함께 먹색으로 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 11567,
+   "selector": ".register-panel",
+   "token": "ink-black",
+   "verdict": "on-accent",
+   "replacement": "color: var(--paper-ink)  — 그리고 같은 블록의 background: var(--warm-ivory) → var(--paper-surface) 를 반드시 함께",
+   "reason": "주석 그대로 'the one ivory moment' = 스펙 C-2의 **라이트 섬**. --warm-ivory(배경)는 #2c2114로 뒤집히는데 --ink-black(글자)은 안 뒤집혀서 아무것도 안 해도 라이트에서 '어두운 카드 위 어두운 글자'가 된다. 해법은 패널 루트에 두 테마 동일값 --paper-surface: #f6efe2 / --paper-ink: #241b12를 선언하고 내부가 그것만 참조하게 하는 것(고정 밝은 바탕 위 먹 글자 = on-accent와 같은 역할 계열, var(--on-accent) #14100b로도 기능적으로는 성립).",
+   "confidence": "high"
+  },
+  {
+   "line": 11577,
+   "selector": ".register-title",
+   "token": "ink-black",
+   "verdict": "on-accent",
+   "replacement": "color: var(--paper-ink)",
+   "reason": ".register-panel(라이트 섬) 내부 제목. 패널 배경이 플립되면 함께 사라지므로, 스펙 C-2대로 비플립 종이 먹 토큰을 참조해야 한다. (패널 루트에서 --warm-ivory/--ink-black을 로컬 재선언하는 무수정 방식을 택한다면 이 줄은 변경 없음 — notes 참조)",
+   "confidence": "high"
+  },
+  {
+   "line": 11619,
+   "selector": ".register-field input, .register-field textarea",
+   "token": "ink-black",
+   "verdict": "on-accent",
+   "replacement": "color: var(--paper-ink)  (배경 #fff는 리터럴 유지)",
+   "reason": "자기 블록에 background: #fff 리터럴이 있어 이 선언만 놓고 보면 두 테마에서 이미 안전하다. 다만 하드케이스 L11552가 패널 내부 전체(#fff, #5a4a3a·#3a2e22·#4a3c2e 갈색, rgba(9,7,5,.16) 보더)를 --paper-* 계열로 통일하도록 요구하므로 일관성 차원에서 함께 교체.",
+   "confidence": "high"
+  },
+  {
+   "line": 11697,
+   "selector": ".register-success-title",
+   "token": "ink-black",
+   "verdict": "on-accent",
+   "replacement": "color: var(--paper-ink)",
+   "reason": "RegistrationForm.tsx:148이 className=\"register-panel register-success\"로 붙여 쓰므로 이 제목도 .register-panel의 아이보리 배경 위다. 라이트 섬 처리 대상.",
+   "confidence": "high"
+  },
+  {
+   "line": 11764,
+   "selector": "(규칙 밖)",
+   "token": "soft-gold",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "globals.css 11735 `/* --- Admin extras (programs / applications) --- */` 블록 안의 .admin-status-new(신청 상태 select 변형)다. 관리 콘솔 전용 UI이고 이미 html[data-admin-theme='light']가 담당하는 영역이라 공개 사이트 테마 공사 범위 밖.",
+   "confidence": "high"
+  },
+  {
+   "line": 11873,
+   "selector": "linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)), radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%); .performances-hero-label",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)  (테두리 rgba(212,160,23,0.3)은 배경용 금이므로 유지)",
+   "reason": "함정 주의 — .performances-hero(11856)의 배경은 다크 섬인 .gallery-hero(3647)와 바이트 단위로 동일하지만, 다크 섬 목록에 있는 것은 단수형 .performance-hero뿐이고 복수형 .performances-hero는 아니다. 하드케이스 L11850이 이 워시를 --hero-wash 토큰으로 승격해 **라이트에서 종이 워시로 재정의**하도록 명시 → 지면이 된다. 따라서 금색 텍스트는 어두운 금 필요.",
+   "confidence": "high"
+  },
+  {
+   "line": 11891,
+   "selector": ".performances-hero-subtitle",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": ".performances-hero-label과 같은 히어로(11856) 안이고, 그 히어로는 하드케이스 L11850에 따라 라이트에서 종이 워시로 뒤집힌다. 1.2rem 부제를 밝은 금으로 두면 한지 위에서 판독 불가.",
+   "confidence": "high"
+  },
+  {
+   "line": 11952,
+   "selector": ".performance-hero-eyebrow",
+   "token": "soft-gold",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": ".performance-hero(11908, 단수형 '대표 공연 시네마틱 배너')는 스펙 C-1 다크 섬 목록에 등재돼 있다. 섬이 어두운 캔버스를 유지하므로 밝은 금 eyebrow가 그대로 정답. 변형 .performance-hero--no-image(11916)도 배경이 여전히 var(--deep-umber)→var(--ink-black)이고 섬 셀렉터에 :has(img) 한정이 없어 함께 섬에 포함된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 11960,
+   "selector": ".performance-hero-title",
+   "token": "warm-ivory",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": ".performance-hero 섬 루트가 --warm-ivory: #f6efe2를 재선언하므로 무수정으로 성립한다. (하드케이스 L12026 말미는 이 자리를 --on-media로 바꾸는 대안도 적어 두었으나, 다크 섬으로 격리되면 불필요한 중복 조치다.)",
+   "confidence": "high"
+  },
+  {
+   "line": 11993,
+   "selector": ".repertoire-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "RepertoireSection.tsx:27 — .performances-main(11979) 안의 섹션 제목이고 히어로 밖이다. 조상 .performances-page(11832) background: var(--ink-black)은 다크 섬이 아니라 Phase 3 치환 대상이므로 제목은 지면을 따라 뒤집혀야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 12059,
+   "selector": ".performance-card-meta",
+   "token": "soft-gold",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media-accent)  (신설 비플립 금 #e0b84f)",
+   "reason": ".performance-card-caption(12040) 안이고 그 아래 .performance-card-scrim(12033)이 사진 위에 rgba(9,7,5,0)→0.82 리터럴 스크림을 깐다(호버 시 0.9로 더 짙어짐). 하드케이스 L12026이 '.performance-card-caption 이하 전부를 --on-media/--on-media-accent로 교체'로 결론.",
+   "confidence": "high"
+  },
+  {
+   "line": 12067,
+   "selector": ".performance-card-title",
+   "token": "warm-ivory",
+   "verdict": "on-media",
+   "replacement": "color: var(--on-media)",
+   "reason": "같은 캡션 서브트리. 스크림은 규칙상 리터럴 검정을 유지해야 하는데 제목만 --warm-ivory로 뒤집히면 검은 스크림 위 먹색 제목이 되어 완전히 사라진다 — 하드케이스 L12026이 지목한 바로 그 케이스.",
+   "confidence": "high"
+  },
+  {
+   "line": 12083,
+   "selector": ".performance-bridge-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "ArchiveBridge.tsx:11~14 — .performance-bridge(12074)는 배경 선언 없이 .performances-page 지면 위에 놓인 마무리 섹션이다(카드·사진·스크림 없음). 지면을 따라 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 12120,
+   "selector": ".notfound",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음 (단 .notfound::before 비네트를 rgba(var(--bg-rgb), α)로 채널화하는 조치가 선행돼야 함)",
+   "reason": "유일한 어두운 바탕은 자체 비네트 .notfound::before(12134, 고정 rgba(9,7,5,0.82))인데, 하드케이스 L12110이 이를 rgba(var(--bg-rgb), α) 채널 토큰으로 바꿔 **라이트에서 종이 비네트로 자동 전환**하도록 결론지었다. 즉 .notfound는 다크 섬이 아니라 지면이므로 전경도 함께 먹색으로 뒤집힌다.",
+   "confidence": "high"
+  },
+  {
+   "line": 12160,
+   "selector": ".notfound-code",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음 (같은 블록의 text-shadow는 별건 — 하드케이스 L12147)",
+   "reason": ".notfound 지면 위 큰 숫자. 비네트가 채널화되면 종이 위 먹색이 정답이다. 단 같은 블록의 text-shadow: 0 2px 40px rgba(224,184,79,0.18)은 다크 전용 글로우라 라이트에서 누런 얼룩이 되므로 --code-glow 토큰으로 분리해 끄거나 옅은 먹 그림자로 교체해야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 12166,
+   "selector": ".notfound-code b",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "하드케이스 L12147이 명시적으로 지목: '12150~12153의 .notfound-code b { color: var(--soft-gold) }는 --soft-gold-text로 함께 교체'. 지면(종이 비네트) 위 텍스트 금색이라 대비 확보가 필요하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 12182,
+   "selector": ".notfound-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".notfound-inner 안, 사진·스크림 없이 지면(채널화된 비네트) 위에 놓인 제목. 토큰이 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 12344,
+   "selector": ".push-steps b",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": ".push-steps는 components/push/PushOptInCard.tsx:141에서만 쓰이고, 그 카드는 components/admin/StudentDashboard.tsx:64에서 마운트된다 — /admin 원생·학부모 대시보드 전용이다. 관리 콘솔은 이미 html[data-admin-theme] 축이 담당하므로 공개 사이트 테마 범위 밖.",
+   "confidence": "high"
+  },
+  {
+   "line": 12723,
+   "selector": ".calendar-hero-eyebrow",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "app/calendar/page.tsx:43의 <p>로, 배경은 .calendar-hero의 그라디언트뿐(이미지 없음)이고 .calendar-hero는 다크 섬 목록에 없다 — 라이트에서 한지 지면이 되므로 #e0b84f 텍스트는 대비 미달. 단, 같은 패스에서 .calendar-hero의 linear-gradient(--ink-umber,--ink-black)와 .calendar-page의 background:var(--ink-black)도 함께 재토큰화돼야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 12731,
+   "selector": ".calendar-hero-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".calendar-hero는 다크 섬이 아니라 페이지 지면이고, 자기·조상 어디에도 채워진 배경(금/붉은/사진)이 없다 — 아이보리가 먹으로 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 12781,
+   "selector": ".rsvp-eyebrow",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "components/rsvp/RsvpView.tsx:105의 .rsvp-hero 안이며 히어로 배경은 그라디언트뿐이고 다크 섬 목록에 없다 — 라이트 한지 위 밝은 금 텍스트는 WCAG 실패.",
+   "confidence": "high"
+  },
+  {
+   "line": 12791,
+   "selector": ".rsvp-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "채워진 배경 없이 .rsvp-hero 지면 위에 놓인 제목 — 토큰이 먹으로 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 12832,
+   "selector": ".rsvp-fact dt",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "RsvpView.tsx:117 <dl class=rsvp-facts>는 .rsvp-notice(background rgba(255,255,255,0.03) — 반투명 표면일 뿐 채워진 색이 아님) 안이라 실효 배경은 페이지 지면이다. 금색을 라벨 텍스트로 쓰는 자리.",
+   "confidence": "high"
+  },
+  {
+   "line": 12845,
+   "selector": ".rsvp-fact--accent dd",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "'모이는 시간' 강조 텍스트로 같은 .rsvp-notice 지면 위에 있다 — #d4a017을 텍스트로 쓴 자리라 라이트에서 어두운 금이 필요하다. 실수하면 안 되는 정보라 대비 확보가 특히 중요.",
+   "confidence": "high"
+  },
+  {
+   "line": 12858,
+   "selector": ".rsvp-map-link",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "밑줄 링크 텍스트이며 배경은 .rsvp-notice의 반투명 표면(=지면). 링크는 본문보다 더 확실한 대비가 필요하다.",
+   "confidence": "high"
+  },
+  {
+   "line": 12889,
+   "selector": ".rsvp-section-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "RsvpView.tsx:187의 h2로 .rsvp-body(히어로 아래 본문) 안이다 — 채워진 배경 없이 지면 위이므로 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 13067,
+   "selector": ".legal-hero-eyebrow",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".legal-hero는 그라디언트만 있는 본문형 히어로이고 다크 섬 목록에 없다 — 라이트에서 한지 지면이 되므로 밝은 금 텍스트는 대비 미달.",
+   "confidence": "high"
+  },
+  {
+   "line": 13076,
+   "selector": ".legal-hero-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "지면 위 제목, 채워진 배경 없음 — 토큰이 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 13105,
+   "selector": ".legal-section h2",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "components/legal/LegalDocument.tsx:39의 본문 섹션 소제목으로 .legal-body 지면 위 — 배경 선언이 조상에도 없다.",
+   "confidence": "high"
+  },
+  {
+   "line": 13155,
+   "selector": ".legal-contact a",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "LegalDocument.tsx:56 .legal-contact 카드(rgba(255,255,255,0.03) 반투명 표면=지면) 안의 링크 텍스트. 바로 아래 :hover는 var(--text-color)라 함께 뒤집히므로 일관된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 13201,
+   "selector": "background 0.3s var(--ease-out-quart); .cal-sub-btn:hover",
+   "token": "soft-gold",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "텍스트가 아니라 border-color다 — '배경·보더용 금색은 두 테마에서 선명 유지' 규칙에 해당하고, 버튼 자체도 rgba(224,184,79,0.06~0.12) 옅은 금 틴트라 라이트에서도 한지 위 금 테두리로 성립한다. (셀렉터 문자열의 앞부분은 추출기 아티팩트, 실제 규칙은 .cal-sub-btn:hover)",
+   "confidence": "high"
+  },
+  {
+   "line": 13547,
+   "selector": ".gallery-cal-btn",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "base 버튼의 자기 배경이 rgba(224,184,79,0.06) — 한지 위 6% 금 틴트는 여전히 밝은 지면이라 글자는 먹으로 뒤집히는 게 정답. ⚠️ 단 변형 .gallery-cal-btn--primary(13560)는 color를 재선언하지 않고 이 값을 상속하면서 붉은 그라디언트 배경을 깔므로 별도 처리 필요(notes 참조).",
+   "confidence": "high"
+  },
+  {
+   "line": 13594,
+   "selector": ".admin-weekday-chip.is-on",
+   "token": "soft-gold",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/programs/ProgramForm.tsx:319에서만 쓰이는 관리 콘솔 폼 전용 칩 — 공개 사이트 라이트 전환 범위 밖이다.",
+   "confidence": "high"
+  },
+  {
+   "line": 13595,
+   "selector": ".admin-weekday-chip.is-on",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "위와 같은 관리 콘솔 전용 규칙(ProgramForm.tsx:319). 다만 관리 콘솔 라이트 테마 쪽에서는 금 틴트(18%) 위 전경 대비를 따로 점검할 것.",
+   "confidence": "high"
+  },
+  {
+   "line": 13684,
+   "selector": ".myclass-status-waitlist",
+   "token": "soft-gold",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": ".myclass-* 는 app/admin/my-classes/*, components/admin/ClassCard.tsx:48, app/admin/archive/page.tsx에서만 사용 — 관리 콘솔('내 수업') 전용이라 공개 사이트 범위 밖.",
+   "confidence": "high"
+  },
+  {
+   "line": 13700,
+   "selector": ".myclass-card-title",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/ClassCard.tsx:52에서만 쓰이는 관리 콘솔 카드 제목 — 공개 사이트 범위 밖.",
+   "confidence": "high"
+  },
+  {
+   "line": 13714,
+   "selector": ".myclass-child-name",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "app/admin/my-classes/page.tsx:80의 h2 — 관리 콘솔 전용이라 이번 공개 사이트 라이트 전환 대상이 아니다.",
+   "confidence": "high"
+  },
+  {
+   "line": 13788,
+   "selector": "linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)), radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%); .timeline-hero-label",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": ".timeline-hero는 다크 섬 목록에 명시돼 있고 이 라벨은 그 직계 자식(어두운 그라디언트 위) — 섬 루트에서 토큰을 로컬 재선언하므로 하위는 손대지 않는다.",
+   "confidence": "high"
+  },
+  {
+   "line": 13960,
+   "selector": ".timeline-event-card:hover",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "텍스트가 아니라 hover 시 border-color다 — 배경·보더용 금색은 두 테마에서 유지되고, 카드는 히어로 밖 본문(지면)이라 한지 위 금 테두리로 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 13992,
+   "selector": ".timeline-event-card-date",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": ".timeline-event-card-body 안의 텍스트로, 카드 배경은 rgba(246,239,226,0.055) 반투명(=지면 노출)이고 카드 이미지는 별도 .timeline-event-card-image 블록이라 사진 위가 아니다. 히어로(다크 섬) 밖이므로 라이트에서 한지 위 금 텍스트가 된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14007,
+   "selector": ".timeline-event-card-kind",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "학내 행사 칩이지만 배경은 없고 rgba(224,184,79,0.42) 테두리만 있는 아웃라인 칩 — 즉 금 배경 위가 아니라 지면 위 금 텍스트다. 테두리는 그대로 두면 된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14046,
+   "selector": ".timeline-event-card:hover .timeline-event-card-more",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "기본 상태가 var(--text-muted)인 '더 보기' 텍스트의 hover 색 — 같은 카드 본문(지면) 위이므로 라이트에서 어두운 금이어야 대비가 산다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14295,
+   "selector": ".glossary-hero-label",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "app/glossary/page.tsx:39에서 <section class=glossary-hero> 직계 자식으로 렌더된다. .glossary-hero는 다크 섬 목록에 포함 — 하위는 손대지 않는다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14311,
+   "selector": ".glossary-hero-subtitle",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "app/glossary/page.tsx:41의 IntlObject p로 .glossary-hero 안 — 다크 섬이므로 그대로 둔다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14337,
+   "selector": ".glossary-search-input",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "components/glossary/GlossaryBrowser.tsx:267~270로 히어로가 아니라 .glossary-body 안의 sticky 검색바다 — 입력 배경은 rgba(255,255,255,0.05) 반투명뿐이라 라이트에서 밝은 지면이 비치고 입력 글자는 먹으로 뒤집혀야 한다. 다만 조상 .glossary-search의 스크림 rgba(10,8,6,0.96)이 고정 먹이라 같은 패스에서 반드시 재토큰화해야 한다(안 하면 먹 스크림 위 먹 글자).",
+   "confidence": "medium"
+  },
+  {
+   "line": 14374,
+   "selector": ".glossary-chip:hover",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "비활성 칩의 hover 색이다 — 비활성 칩 배경은 rgba(255,255,255,0.03) 반투명(=지면)이라 뒤집혀야 한다. 금 배경이 깔리는 건 .glossary-chip.is-active(별도 규칙, 이미 리터럴 #1a1206)뿐이라 이 규칙과 충돌하지 않는다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14429,
+   "selector": ".glossary-term-ko",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".glossary-item(rgba(255,255,255,0.03) 반투명 카드) 안의 용어 제목 — 채워진 배경이 없어 지면 위이고, 사진도 없다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14447,
+   "selector": ".glossary-pron-say",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "'발음 강조'용 금색 텍스트로 .glossary-item 지면 위에 있다 — 학습 핵심 정보라 라이트 한지 위에서 대비가 반드시 확보돼야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14468,
+   "selector": ".glossary-example-mark",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "예문 앞 금색 기호로 .glossary-item 지면 위 텍스트다. 색에 알파가 실린 게 아니라 요소 opacity:0.7이므로 토큰 치환만으로 되지만, 한지 위 어두운 금을 70%로 흐리면 대비가 다시 깎이니 라이트에서 opacity를 0.85 이상으로 올리거나 rgba(var(--soft-gold-rgb), 0.7) 형태로 재작성하는 편이 낫다(--soft-gold-rgb는 아직 미정의 — 도입 필요).",
+   "confidence": "medium"
+  },
+  {
+   "line": 14476,
+   "selector": ".glossary-item-cat",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "배경이 rgba(212,160,23,0.1) — 10% 금 틴트라 채워진 금 배경이 아니고 라이트에서 한지가 그대로 비친다. 따라서 on-accent가 아니라 지면 위 금 텍스트로 다뤄야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14520,
+   "selector": ".glossary-tab:hover",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "비활성 탭의 hover 색이다(.glossary-tab은 background:none, 조상 .glossary-tabs도 rgba(255,255,255,0.04) 반투명) — 지면 위이므로 뒤집혀야 한다. 금 배경은 .glossary-tab.is-active 전용이라 무관.",
+   "confidence": "high"
+  },
+  {
+   "line": 14553,
+   "selector": ".glossary-section-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "GlossaryBrowser.tsx:376의 섹션 헤더 텍스트로 .glossary-body 지면 위 — 배경 선언이 자기·조상에 없다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14556,
+   "selector": ".glossary-section-note",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "글로서리 본문(.glossary-body)은 .glossary-page 지면 위이고 자기·조상 어디에도 채워진 배경이 없다(.glossary-section-head는 border-bottom만). 금색을 텍스트(♪ 글리프)로 쓰는 자리라 한지에서 #e0b84f는 대비 미달.",
+   "confidence": "high"
+  },
+  {
+   "line": 14575,
+   "selector": ".glossary-group-head",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "h3 분류 소제목으로 .glossary-list 위 .glossary-body 지면에 직접 놓인다(배경 선언 없음). 0.78rem 소문자 라벨이라 한지 위 #d4a017(약 2.1:1)은 WCAG 실패.",
+   "confidence": "high"
+  },
+  {
+   "line": 14637,
+   "selector": ".song-card-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "조상 .song-card의 배경은 rgba(255,255,255,0.03)로 지면이 거의 그대로 비치는 반투명 카드이고, 그 위는 .glossary-page 지면이다. 지면이 뒤집히면 전경도 함께 뒤집혀야 맞다.",
+   "confidence": "high"
+  },
+  {
+   "line": 14652,
+   "selector": ".song-card-pron",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": ".song-card-head 안의 발음 표기 텍스트. 카드 배경이 rgba(255,255,255,0.03)뿐이라 실효 배경은 지면(한지)이고, 0.95rem 금색 글자는 대비 미달.",
+   "confidence": "high"
+  },
+  {
+   "line": 14691,
+   "selector": ".song-listen-link",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "background 선언이 없는 아웃라인 필(border만 rgba(224,184,79,0.4))이라 채워진 금 배경이 아니다. 0.85rem 링크 텍스트가 한지 위에 놓이므로 어두운 금이 필요. hover의 rgba(224,184,79,0.08)도 8% 틴트라 실효 배경은 여전히 지면.",
+   "confidence": "high"
+  },
+  {
+   "line": 14719,
+   "selector": ".song-lyrics-head",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "자기 background가 rgba(224,184,79,0.06)로 6% 금 틴트에 불과해 '금색 배경'이 아니라 사실상 지면이다. 0.7rem 대문자 표 헤더라 대비가 더 중요.",
+   "confidence": "high"
+  },
+  {
+   "line": 14735,
+   "selector": ".song-ly-ko",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "가사 표 본문 칸. .song-lyrics-row에 배경이 없고(is-refrain만 rgba(196,48,43,0.08) 틴트) 조상 .song-card도 3% 틴트라 실효 배경은 지면. 지면과 함께 뒤집히는 게 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 14739,
+   "selector": ".song-ly-say",
+   "token": "soft-gold",
+   "verdict": "gold-text",
+   "replacement": "color: var(--soft-gold-text)",
+   "reason": "발음 칸 0.9rem 본문 텍스트. 실효 배경이 지면(한지)이라 밝은 금은 판독 불가 수준. 같은 행의 --warm-ivory(.song-ly-ko)와 짝을 이루는 본문급 텍스트다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15096,
+   "selector": ".timeline-sort-btn:hover",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "base .timeline-sort-btn이 background:none이고 감싸는 .timeline-sort도 border만 있다. 그 위는 .timeline-main(배경 없음) → .timeline-page 지면. 지면과 함께 뒤집혀야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15113,
+   "selector": ".comment-section-title",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "CommentSection.tsx의 마운트 지점이 /admin/library/[id]·/admin/gallery/[id]·/admin/my-classes/[id]·/admin/programs/[id] 네 곳뿐이라 관리 콘솔 전용이다. --warm-ivory는 이미 admin 라이트 블록이 뒤집는다. (대장의 scope='public'은 파일 경로가 components/comments/인 탓의 오탐)",
+   "confidence": "high"
+  },
+  {
+   "line": 15134,
+   "selector": ".comment-textarea",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "같은 CommentSection.tsx(관리 콘솔 전용) 소속. 배경도 이미 rgba(var(--fg-rgb),0.04) 채널 토큰이라 admin 테마를 자동으로 따라간다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15205,
+   "selector": ".comment-author",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "CommentSection.tsx 내부(components/comments/CommentSection.tsx:142)이며 공개 라우트 마운트가 없다. 관리 콘솔 테마 규칙이 이미 담당.",
+   "confidence": "high"
+  },
+  {
+   "line": 15242,
+   "selector": ".comment-action-btn:hover",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "CommentSection.tsx:151/163의 수정·삭제 버튼 hover. 관리 콘솔 전용이라 이번 공개 사이트 라이트 전환 범위 밖.",
+   "confidence": "high"
+  },
+  {
+   "line": 15296,
+   "selector": "linear-gradient(180deg, rgba(8, 5, 4, 0.65), rgba(8, 5, 4, 0.18)), radial-gradient(circle at 50% 20%, rgba(224, 184, 79, 0.12), transparent 36%); .media-hero-label",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "MediaHero.tsx:14에서 <section className=\"media-hero\">의 자식으로 렌더된다. .media-hero는 검정 그라디언트 스크림을 가진 다크 섬 목록 항목이므로 섬 루트에서 토큰을 재선언해 처리한다. (셀렉터 문자열의 gradient 접두는 대장 파서 오염이고 실제 규칙은 .media-hero-label)",
+   "confidence": "high"
+  },
+  {
+   "line": 15314,
+   "selector": ".media-hero-subtitle",
+   "token": "accent-color",
+   "verdict": "dark-island",
+   "replacement": "변경 없음 (다크 섬 상속)",
+   "reason": "MediaHero.tsx:16에서 .media-hero 내부 <p>로 렌더된다. 다크 섬 하위이므로 손대지 않는다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15360,
+   "selector": ".media-filter-tab:hover",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "텍스트가 아니라 border-color이고, --accent-color는 '배경·보더용' 고정 금색이라 라이트에서도 뒤집히지 않는다. 탭은 .media-main 지면 위에 있고 base가 background 선언 없이 보더만 가지므로 그대로 두면 된다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15364,
+   "selector": ".media-filter-tab.is-active",
+   "token": "bg-color",
+   "verdict": "on-accent",
+   "replacement": "color: var(--on-accent)",
+   "reason": "같은 블록에서 background: var(--accent-color)로 금색을 꽉 채우는데 글자만 --bg-color(#0a0a0a→#f6f1e6)로 뒤집힌다. 라이트에서 금 배경 위 거의 흰 글자 = 판독 불가. border-color는 이미 --accent-text라 무관.",
+   "confidence": "high"
+  },
+  {
+   "line": 15387,
+   "selector": ".news-card:hover",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "border-color 선언이며 --accent-color는 고정 토큰이라 뒤집히지 않는다. 카드는 .media-main 지면 위(자체 배경 rgba(246,239,226,0.055) 틴트)이므로 금 보더가 두 테마에서 그대로 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15421,
+   "selector": ".news-card-badge",
+   "token": "accent-color",
+   "verdict": "on-media",
+   "replacement": "변경 없음 (고정 검정 스크림 위 금색 — --accent-color는 뒤집히지 않음)",
+   "reason": "NewsCard.tsx:66에서 .news-card-image(사진 컨테이너, background:#1a1a1a + <Image fill>) 안에 absolute로 얹힌다. 자기 배경 rgba(8,5,4,0.72)는 CLAUDE.md 규칙3에 따라 리터럴 유지 대상이고, 전경 --accent-color도 고정색이라 이미 두 테마에서 안전하다. on-media의 기본 치환(var(--on-media))을 적용하면 금색 배지 디자인이 사라지므로 적용하지 말 것.",
+   "confidence": "high"
+  },
+  {
+   "line": 15462,
+   "selector": ".news-card-date",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": ".news-card-content(패딩만, 배경 없음) → .news-card(rgba(246,239,226,0.055) 5% 틴트) → .media-main 지면. 실효 배경이 한지이므로 0.8rem 금색 날짜는 약 2.1:1로 WCAG 실패.",
+   "confidence": "high"
+  },
+  {
+   "line": 15503,
+   "selector": ".news-card-read-more",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": ".news-card-content 안 0.85rem 링크 텍스트로 실효 배경은 지면. hover 규칙(.news-card:hover .news-card-read-more)이 --text-color로 덮으므로 base만 어두운 금으로 바꾸면 두 상태 모두 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15538,
+   "selector": ".media-load-more-btn",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "자기 블록에 background: transparent가 명시돼 있어 실효 배경이 .media-main 지면(한지)이다. 채워진 금 배경이 아니라 금 하프라인 보더뿐이므로 텍스트는 어두운 금이어야 한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15547,
+   "selector": ".media-load-more-btn:hover:not(:disabled)",
+   "token": "bg-color",
+   "verdict": "on-accent",
+   "replacement": "color: var(--on-accent)",
+   "reason": "hover에서 background가 var(--accent-color) 금색 채움으로 바뀌는데 글자만 --bg-color로 뒤집힌다. 라이트에서 금 배경 위 한지색 글자 = 사라짐.",
+   "confidence": "high"
+  },
+  {
+   "line": 15549,
+   "selector": ".media-load-more-btn:hover:not(:disabled)",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 hover 블록의 border-color로, 바로 위 background와 같은 금색을 맞춰 테두리를 지우는 용도다. --accent-color는 고정 토큰이라 두 테마에서 배경과 계속 일치한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15582,
+   "selector": ".news-detail-back:hover",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "NewsDetail.tsx:33의 뒤로가기 링크 hover. .news-detail은 padding만 있고 배경이 없으며 .media-page도 배경 선언이 없어 body 지면이 실효 배경이다. 0.9rem 텍스트 hover 색이라 어두운 금 필요.",
+   "confidence": "high"
+  },
+  {
+   "line": 15597,
+   "selector": ".news-detail-badge",
+   "token": "accent-color",
+   "verdict": "gold-text",
+   "replacement": "color: var(--accent-text)",
+   "reason": "NewsDetail.tsx:41. background 선언이 없고 rgba(212,160,23,0.35) 보더만 있는 아웃라인 칩이라 채워진 금 배경이 아니다. 0.75rem 글자가 한지 위에 그대로 놓인다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15668,
+   "selector": ".news-detail-link-btn",
+   "token": "bg-color",
+   "verdict": "on-accent",
+   "replacement": "color: var(--on-accent)",
+   "reason": "같은 블록에 background: var(--accent-color) 금색 채움이 있는 주 버튼(NewsDetail.tsx:83). 라이트에서 글자만 #f6f1e6로 뒤집히면 금 배경 위에서 사라진다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15691,
+   "selector": ".news-detail-link-btn-outline:hover",
+   "token": "accent-color",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "border-color이고 --accent-color는 고정 금색이라 뒤집히지 않는다. 변형 base인 .news-detail-link-btn-outline이 color/background를 모두 재선언(color: var(--text-color); background: transparent)해 금 배경을 지우므로 지면 위 아웃라인 버튼으로 성립한다.",
+   "confidence": "high"
+  },
+  {
+   "line": 15729,
+   "selector": ".admin-page-link.is-active",
+   "token": "bg-color",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "globals.css 주석이 '관리 콘솔 — 뉴스·미디어 관리 보조 스타일'이고 실제 사용처도 app/admin/news/page.tsx:141 하나뿐이라 공개 사이트에 뜨지 않는다. 다만 admin 라이트 블록이 --bg-color를 #f6f1e6으로 뒤집으므로 콘솔 라이트에서 이미 깨져 있다(notes 참조).",
+   "confidence": "high"
+  },
+  {
+   "line": 15939,
+   "selector": ".event-kind-radio:has(input:checked)",
+   "token": "accent-color",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/gallery/EventForm.tsx:309/319에서만 쓰이는 관리 콘솔 폼 위젯. 배경도 rgba(var(--fg-rgb),0.06) 채널 토큰이라 admin 테마를 이미 따라간다.",
+   "confidence": "high"
+  },
+  {
+   "line": 16087,
+   "selector": ".a2hs-title",
+   "token": "warm-ivory",
+   "verdict": "out-of-scope",
+   "replacement": "변경 없음",
+   "reason": "components/admin/AddToHomeCard.tsx:154 → StudentDashboard.tsx:61에서만 마운트되는 관리 콘솔(마이페이지) 카드. CSS 주석도 '마이페이지 착지 화면 … 두 테마 자동 대응'으로 admin 테마 소관임을 명시한다.",
+   "confidence": "high"
+  }
+ ],
+ "감사": {
+  "뒤집힌판정": [
+   {
+    "line": 11375,
+    "selector": ".program-card-title",
+    "wasVerdict": "flip (변경 없음)",
+    "shouldBe": "on-media — color: var(--on-media). (카드 배경을 종이로 뒤집기로 결정한다면 flip 유지 가능하나, 그 경우 .program-card(11293) background 동반 전환을 판정에 명시해야 함)",
+    "why": ".program-card(globals.css:11293)의 background가 linear-gradient(180deg, var(--ink-umber), var(--deep-umber)) — --ink-*는 비플립 고정 브랜드색이라 라이트에서도 먹 카드다. 카드는 '페이지 지면'이 아니라 컴포넌트이므로 자동으로 뒤집히지 않는다. 결정적 근거: 같은 카드의 .program-card-type(11357)을 이 판정표 스스로 '고정 먹 그라디언트 위'라며 on-media로 판정했다 — 동일 배경에 정반대 판정이 공존한다. .program-card 배경은 난제 대장(docs/operations/public-theme-hardcases.md 80건)에도 없어 동반 전환이 계획돼 있지도 않다."
+   },
+   {
+    "line": 11425,
+    "selector": ".program-card-cta",
+    "wasVerdict": "flip (변경 없음)",
+    "shouldBe": "on-media — color: var(--on-media)",
+    "why": "11375와 동일한 .program-card 고정 먹 그라디언트(11293) 위. opacity:0.75가 실려 있어 대비 여유도 없다 — 먹 위 먹이 되면 hover 전에는 존재 자체가 보이지 않는다."
+   },
+   {
+    "line": 11400,
+    "selector": ".program-card-meta-row dt",
+    "wasVerdict": "gold-text → var(--soft-gold-text)",
+    "why": "배경이 .program-card(11293)의 고정 먹 그라디언트다. --soft-gold-text는 라이트에서 #7d5f0b(어두운 금)이 되는데, 이 색을 먹 카드 위에 올리면 대비가 2:1 아래로 떨어진다. gold-text 치환은 '지면이 한지가 된다'는 전제에서만 성립하는데 이 카드는 지면이 아니다.",
+    "shouldBe": "변경 없음(--soft-gold 유지) 또는 판정표가 신설한 --on-media-accent(#e0b84f)"
+   },
+   {
+    "line": 11418,
+    "selector": ".program-card-price",
+    "wasVerdict": "gold-text → var(--soft-gold-text)",
+    "shouldBe": "변경 없음(--soft-gold 유지) 또는 --on-media-accent",
+    "why": "11400과 동일. 같은 .program-card 고정 먹 카드 위이며, 가격은 카드에서 가장 중요한 정보라 대비 손실의 비용이 가장 크다."
+   },
+   {
+    "line": 1283,
+    "selector": ".journey-section",
+    "wasVerdict": "flip (변경 없음)",
+    "shouldBe": "on-media — color: var(--on-media). (섹션을 한지로 뒤집을 계획이면 background 동반 전환을 조건으로 명시)",
+    "why": "바로 윗줄 1282가 background: linear-gradient(180deg, var(--ink-umber) 0%, #1a0f0c 100%) — 토큰(--ink-umber)도 리터럴(#1a0f0c)도 라이트에서 뒤집히지 않는다. color만 #2c2114로 뒤집히면 먹 위 먹이 되어 홈 '최근 발자취' 섹션이 통째로 사라진다. .journey-section은 다크 섬 12종 목록에도, 난제 대장에도 없다. 이 섹션에서 색을 상속받는 .journey-title(1302)·.journey-card-title(1375) flip 판정도 같은 이유로 함께 무너진다."
+   },
+   {
+    "line": 1235,
+    "selector": ".mission-title",
+    "wasVerdict": "flip (변경 없음)",
+    "shouldBe": "on-media — color: var(--on-media) (또는 .mission-section 배경 동반 전환을 조건으로 명시)",
+    "why": ".mission-section(1146)의 background가 radial-gradient(...rgba(143,33,29,.16)...) + linear-gradient(180deg, var(--ink-umber) 0%, var(--deep-umber) 52%, #1a0f0c 100%)로 전부 비플립 값이다. 같은 섹션의 .mission-eyebrow(1215)·.mission-title::after(1245) gold-text 판정도 동일하게 깨진다(먹 위 #7d5f0b). 참고로 난제 대장은 이 섹션의 .mission-media::after(L1191)·.mission-image(L1200)만 다루고 섹션 배경 자체는 다루지 않는다."
+   },
+   {
+    "line": 1409,
+    "selector": "#categories",
+    "wasVerdict": "flip (변경 없음)",
+    "shouldBe": "on-media — color: var(--on-media) (또는 배경 동반 전환 명시)",
+    "why": "바로 위 1405~1407이 background: radial-gradient(...) + linear-gradient(180deg, #1a0f0c 0%, var(--ink-umber) 100%). 리터럴 + 비플립 토큰 조합이라 라이트에서도 먹 배경인데 color만 먹으로 뒤집힌다. 카테고리 카드 자체는 사진 오버레이라 살아남지만, 이 섹션이 소유한 텍스트는 사라진다."
+   },
+   {
+    "line": 10080,
+    "selector": ".about-director",
+    "wasVerdict": "flip (변경 없음, confidence medium)",
+    "shouldBe": "난제(paired) — 배경 동반 전환 없이는 절대 '변경 없음'이 될 수 없다. 먹 유지 시 color를 var(--on-media)로 고정",
+    "why": "이 프로젝트의 난제 대장이 이 셀렉터를 L10058로 이미 등재해 두고 문자 그대로 이렇게 적어 두었다: '--ink-umber는 라이트 블록에서 뒤집히지 않는데 --warm-ivory는 뒤집힌다(#f6efe2→#2c2114). 즉 아무것도 안 해도 라이트에서 먹색 배경 + 먹색 글자가 되어 섹션 전체가 통째로 사라진다.' 실제 배경도 10077~10079의 linear-gradient(180deg, var(--ink-umber) 0%, #1e130f 100%)로 확인된다. '변경 없음' 판정은 문서화된 파손을 통과시킨다."
+   },
+   {
+    "line": 11191,
+    "selector": ".camp-spotlight-eyebrow",
+    "wasVerdict": "gold-text → var(--soft-gold-text)",
+    "shouldBe": "dark-island / 리터럴 유지 (--soft-gold 그대로, --no-image 후손 셀렉터에서만 --soft-gold-text로 되돌림)",
+    "why": ".camp-spotlight(11140)는 이미지가 있으면 사진+스크림, 없으면 linear-gradient(160deg, var(--soft-umber), var(--ink-black))(11166)로 어느 쪽이든 고정 어두운 캔버스다. 같은 블록의 .camp-spotlight-title(11199)·.camp-fact-value(11230)는 이 판정표가 dark-island로 판정했는데 형제인 eyebrow만 gold-text다 — 같은 배경에 상반된 판정. 난제 대장 L11149의 해법도 '오버레이와 그 위 텍스트는 전부 리터럴(아이보리 #f6efe2, 금 #e0b84f) 고정'이라고 못박고 있다."
+   },
+   {
+    "line": 11225,
+    "selector": ".camp-fact-label",
+    "wasVerdict": "gold-text → var(--soft-gold-text)",
+    "shouldBe": "dark-island / 리터럴 유지 (--soft-gold)",
+    "why": "11191과 동일. 바로 아래 짝인 .camp-fact-value(11230)는 dark-island로 판정됐는데 라벨만 뒤집히면, 같은 dl 안에서 라벨은 안 보이고 값만 보이는 상태가 된다."
+   },
+   {
+    "line": 1129,
+    "selector": ".hero-video-pick-item--auto.selected .hero-video-pick-auto-box",
+    "wasVerdict": "gold-text → var(--soft-gold-text)",
+    "shouldBe": "변경 없음 (고정 어두운 표면 — --soft-gold 유지)",
+    "why": "이 요소의 자기 배경이 1120에 있다: background: #151515 (리터럴, 비플립). 라이트에서 #7d5f0b(어두운 금)을 #151515 위에 올리면 대비 약 1.6:1로 사실상 안 보인다. 같은 판정표가 이웃 .edit-mode-toggle(2785)에 대해서는 '고정 어두운 칩 위라 --accent-color 그대로'라고 올바르게 판정했는데, 여기서는 같은 논리를 적용하지 않았다."
+   },
+   {
+    "line": 11081,
+    "selector": ".classes-hero-title",
+    "wasVerdict": "flip (변경 없음, confidence medium)",
+    "shouldBe": "난제(paired) — .classes-hero(11062) 배경과 .classes-page(11057) 배경 전환을 조건으로 명시하거나 on-media",
+    "why": ".classes-hero(11062)의 background는 radial-gradient(...) + linear-gradient(180deg, var(--ink-umber), var(--ink-black))이고 페이지 셸 .classes-page(11057)는 background: var(--ink-black)이다. 둘 다 비플립 토큰이며 다크 섬 12종 목록에도, 난제 대장 80건에도 없다. 즉 현재 계획대로면 아무도 이 배경을 종이로 바꾸지 않고 제목만 먹으로 뒤집힌다. 판정표가 .register-panel(11567)·.notfound(12120)에는 '배경 동반 전환 필수'를 적어 놓았으면서 여기엔 적지 않은 것은 일관성 결함이다."
+   },
+   {
+    "line": 11074,
+    "selector": ".classes-hero-eyebrow",
+    "wasVerdict": "gold-text → var(--soft-gold-text)",
+    "shouldBe": "11081과 한 세트로 결정 — 먹 히어로 유지 시 --soft-gold 그대로",
+    "why": "판정 근거로 인용된 배경 자체(linear-gradient(180deg, var(--ink-umber), var(--ink-black)))가 라이트에서 뒤집히지 않는다는 사실이 판정에 반영되지 않았다. 먹 위 #7d5f0b는 WCAG 미달이다. 같은 페이지의 .classes-trust-title(11129)도 동일 문제."
+   },
+   {
+    "line": 11279,
+    "selector": ".program-section-title",
+    "wasVerdict": "flip (변경 없음)",
+    "shouldBe": "페이지 셸 전환을 선행 조건으로 명시 (.classes-page background: var(--ink-black) → 지면 토큰)",
+    "why": ".classes-page(11057)가 background: var(--ink-black)이다. --ink-black은 '뒤집히지 않는 고정 브랜드색'으로 명시돼 있고, 이 페이지 셸은 난제 대장에 없다(대장은 .gallery-page·.students-page·.timeline-page·.glossary-page만 등재). 지면이 뒤집힌다는 flip 판정의 전제가 이 라우트에서는 아직 성립하지 않는다. 같은 페이지의 .program-facts-row dd(11551)·dt(11548)도 .program-detail(11439, background: var(--ink-black))에서 동일하다."
+   },
+   {
+    "line": 11993,
+    "selector": ".repertoire-title",
+    "wasVerdict": "flip (변경 없음)",
+    "shouldBe": "페이지 셸 전환을 선행 조건으로 명시 (.performances-page background: var(--ink-black))",
+    "why": ".performances-page(11854)가 background: var(--ink-black) — 비플립 토큰이고 난제 대장에 없다. 대장은 .performances-hero(L11850)만 --hero-wash로 다루므로, 히어로 아래 본문 지면은 여전히 먹인 채 .repertoire-title·.performance-bridge-title(12083)만 먹으로 뒤집힌다."
+   }
+  ],
+  "누락발견": [
+   {
+    "selector": "#main-header.scrolled::before / #main-header.scrolled::after",
+    "line": 297,
+    "problem": "스크롤 후 헤더 배경을 칠하는 두 pseudo 레이어의 폴백이 고정 먹색 rgba(10,10,10,0.95)다(297, 301). 반면 메뉴 글자는 #main-nav a의 var(--header-nav-color-top, var(--text-color))(377)·#main-header.scrolled #main-nav a(391)로 --text-color를 폴백 삼는다. 라이트에서 글자만 #241b12로 뒤집히고 배경 띠는 먹 그대로 → 전 페이지 스크롤 헤더 메뉴가 통째로 사라진다. 판정 목록에 297·301·377·391 모두 없음.",
+    "fix": "폴백을 지면 토큰으로: background-color: var(--header-bg-scrolled, rgba(var(--bg-rgb), 0.95)) / var(--header-menu-bg-scrolled, rgba(var(--bg-rgb), 0.95)). (--bg-rgb는 이미 존재. 관리자가 지정한 커스텀 색이 있을 때는 그 값이 이기므로 별도 이슈)"
+   },
+   {
+    "selector": ".mobile-menu-btn span (+ .mobile-menu-btn 알약 배경)",
+    "line": 419,
+    "problem": "햄버거 3선이 background-color: var(--text-color)(419)인데, 버튼 알약 자체는 ≤1100px 미디어쿼리에서 background: rgba(9,7,5,0.38)(1802) 고정 먹 + border rgba(255,255,255,0.14)(1800) 고정 흰색이다. 라이트에서 선만 #241b12 먹으로 뒤집혀 먹 알약 위 먹 3선 = 모바일에서 메뉴 버튼이 안 보인다.",
+    "fix": "알약을 지면에 맞춰 rgba(var(--bg-rgb), 0.38) + border rgba(var(--fg-rgb), 0.14)로 바꾸면 span은 var(--text-color) 그대로(flip) 성립. 알약을 고정 먹으로 유지하려면 span에 background-color: var(--on-media)."
+   },
+   {
+    "selector": ".auth-btn-primary",
+    "line": 2082,
+    "problem": "background/border만 var(--secondary-color)(붉은색, 안 뒤집힘)로 덮고 color를 재선언하지 않아 base .auth-btn의 color: var(--text-color)(2067)를 상속한다. 라이트에서 붉은 배경 위 먹 글자 = 판독 불가. Header.tsx의 공개 '회원가입' CTA(components/Header.tsx:216)라 전 페이지 노출. grep 'color:'로는 안 잡히는 전형적 상속 케이스.",
+    "fix": ".auth-btn-primary { color: var(--on-media); } 추가 (:hover 규칙 2086은 배경만 바꾸므로 별도 불필요)"
+   },
+   {
+    "selector": ".gallery-cal-btn--primary / :hover",
+    "line": 13561,
+    "problem": "붉은 그라디언트 배경(--deep-red→--secondary-color)만 덮고 color 미선언 → base .gallery-cal-btn의 color: var(--warm-ivory)(13547) 상속. 라이트에서 warm-ivory가 #2c2114로 뒤집혀 붉은 버튼 위 먹 글자. app/gallery/[year]/[slug]/page.tsx:168, components/events/EventLocationMap.tsx:72의 공개 '캘린더에 추가' 주 버튼. base 13547만 판정되고 변형은 목록에 없음.",
+    "fix": ".gallery-cal-btn--primary { color: var(--on-media); } 추가"
+   },
+   {
+    "selector": ".cal-sub-btn--primary",
+    "line": 13207,
+    "problem": "base .cal-sub-btn의 13201은 판정 목록에 있으나, --primary 변형이 자기 규칙에서 다시 color: var(--warm-ivory)를 선언하는 13207은 목록에 없다. 배경이 linear-gradient(135deg, var(--deep-red), var(--secondary-color))(13205) 고정 붉은색이라 라이트에서 먹 글자가 된다. /calendar의 CalendarSubscribe 주 버튼.",
+    "fix": "13207을 color: var(--on-media)로"
+   },
+   {
+    "selector": ".gallery-video-thumb-title",
+    "line": 4537,
+    "problem": "배경이 linear-gradient(to top, rgba(0,0,0,0.8), transparent)(4536) — 영상 썸네일 위 고정 검정 스크림인데 color: var(--text-color)다. 라이트에서 검정 스크림 위 먹 글자 = 제목 소실. -title이라 media 계열 이름이 아니어서 스캔에서 빠진 듯.",
+    "fix": "color: var(--on-media)"
+   },
+   {
+    "selector": ".mobile-language-switcher .lang-btn.active",
+    "line": 3031,
+    "problem": "background: var(--warm-ivory)(3031) + color: #090705(3032, 고정 먹). warm-ivory가 라이트에서 #2c2114로 뒤집히면 먹 배경 위 먹 글자. 드로어 본체 #main-nav는 background: var(--bg-color)(1814)로 함께 뒤집히므로 다크 섬이 아니다. 3026(:hover color)만 판정되고 정작 .active 쌍은 목록에 없다.",
+    "fix": "선택 칩을 지면 반전으로 유지하려면 background: var(--text-color); color: var(--bg-color); (데스크톱 .lang-btn.active 3005~3007과 동일 패턴). 또는 배경을 var(--accent-color) + color: var(--on-accent)."
+   },
+   {
+    "selector": ".register-panel",
+    "line": 11566,
+    "problem": "background: var(--warm-ivory)로 만든 '유일한 아이보리 순간'인데, 안의 전경은 전부 고정 먹이다 — color: var(--ink-black)(11567), .register-title var(--ink-black)(11577), .register-intro #5a4a3a(11581), .register-field label #3a2e22(11607), input color var(--ink-black)/background #fff(11618~). warm-ivory가 뒤집히면 패널 배경만 #2c2114 먹이 되고 글자는 먹 그대로 = 패널 전체 소실. 배경 선언 11566만 목록에서 빠져 있다(11567은 판정됨).",
+    "fix": "라이트 섬으로 못박기: background: #f6efe2 리터럴(또는 --light-island 신규 토큰). 판정 카테고리로는 dark-island의 거울상이므로 하위 고정 먹 전경은 손대지 않는다."
+   },
+   {
+    "selector": ".classes-page / .performances-page / .calendar-page / .rsvp-page / .legal-page / .program-detail",
+    "line": 11058,
+    "problem": "페이지 셸 배경이 background: var(--ink-black) 고정이다(.classes-page 11058, .program-detail 11440, .performances-page 11855, .calendar-page 12702, .rsvp-page 12760, .legal-page 13044). --ink-black은 '고정 브랜드색'이라 안 뒤집히는데 body(134)와 내부 텍스트 토큰은 뒤집힌다 → 이 여섯 페이지는 먹 지면 위 먹 글자로 통째로 깨진다. 다크 섬 목록에는 히어로(.performance-hero, .program-detail-hero)만 있고 셸은 없다. 배경 선언이라 'color:' 스캔에서 누락됨.",
+    "fix": "background: var(--bg-color)로 (셸은 지면 = flip). 그 위 히어로만 다크 섬으로 격리."
+   },
+   {
+    "selector": ".gallery-page / .gallery-detail-page / .students-page / .timeline-page / .glossary-page / .feature-preview-section",
+    "line": 3642,
+    "problem": "같은 문제의 그라디언트 판. .gallery-page 3642, .gallery-detail-page 4112, .students-page 7842, .timeline-page 13770, .glossary-page 14271은 linear-gradient(#120c09 → var(--deep-umber) → var(--soft-umber)/#0a0a0a) 고정 먹 그라디언트, .feature-preview-section 10507은 #090705 단색. 내부 본문(.timeline-year 13923, .timeline-event-card-description 14029, .gallery-photo-stream-meta 4094/4101 등)은 뒤집히거나 리터럴 아이보리라 어느 쪽이든 대비가 무너진다.",
+    "fix": "셸 배경을 지면 토큰 기반으로 재작성(예: linear-gradient(180deg, var(--bg-color), var(--bg-dark)) 또는 그냥 var(--bg-color)). --deep-umber/--soft-umber를 라이트에서 종이 톤으로 재선언하는 방법도 가능하지만, 같은 토큰이 다크 섬 안에서도 쓰이므로 셸만 셀렉터로 보정하는 편이 안전."
+   },
+   {
+    "selector": ".program-card",
+    "line": 11296,
+    "problem": "카드 배경이 linear-gradient(180deg, var(--ink-umber), var(--deep-umber)) 고정 먹인데 카드 안 텍스트는 .program-card-title var(--warm-ivory)(11375, 판정됨), .program-card-meta-row dd rgba(246,239,226,0.78)(11405, 리터럴)이다. 배경만 안 뒤집혀 카드가 통째로 먹-위-먹이 된다. 다크 섬 목록에 카드는 없다.",
+    "fix": "카드를 지면 표면으로: background: var(--surface-2) 또는 linear-gradient(180deg, var(--bg-color), var(--bg-dark)). 카드를 다크 섬으로 유지할 거면 .program-card를 다크 섬 목록에 추가하고 루트에서 토큰 로컬 재선언."
+   },
+   {
+    "selector": ".camp-spotlight--no-image (및 .camp-spotlight 기본 배경)",
+    "line": 11166,
+    "problem": "다크 섬 목록은 '.camp-spotlight(이미지 有)'만 인정하는데, 이미지가 없을 때 쓰는 .camp-spotlight--no-image(11166)는 radial+linear(var(--soft-umber), var(--ink-black)) 고정 먹 배경을 유지한다. 그 위 .camp-spotlight-lede는 rgba(246,239,226,0.82)(11206) 리터럴, 타이틀은 토큰. 이미지 없는 캠프 카드가 라이트에서 애매한 반쪽 다크로 남는다.",
+    "fix": "no-image 변형을 라이트에서 지면 톤으로 보정하거나(셀렉터별 오버라이드), 이미지 유무와 무관하게 .camp-spotlight 전체를 다크 섬으로 승격해 루트에서 토큰을 로컬 재선언."
+   },
+   {
+    "selector": ".notfound::before",
+    "line": 12131,
+    "problem": "position: fixed; inset: 0; z-index: -1로 뷰포트 전체에 radial-gradient(rgba(9,7,5,0.82) …) 고정 먹 비네트를 깐다. .notfound의 color: var(--warm-ivory)(12120)는 판정 목록에 있어 먹으로 뒤집히는데, 비네트는 그대로라 404 페이지가 먹 위 먹이 된다. ::before 장식이라 color 스캔에서 누락.",
+    "fix": "비네트를 지면 채널로: rgba(var(--bg-rgb), 0.82) … 또는 라이트에서 이 ::before를 background: none으로 무력화(밝은 지면에서는 비네트가 필요 없음)."
+   },
+   {
+    "selector": ".timeline-node",
+    "line": 13896,
+    "problem": "background: var(--bg-color)(13896, 뒤집힘)에 border: 1px solid rgba(246,239,226,0.13)(13897, 리터럴 아이보리)를 얹었다. 라이트에서 한지 위 아이보리 13% 보더 = 완전 소실 → 타임라인 노드 원이 사라진다. 같은 절 .timeline-year color rgba(246,239,226,0.35)(13923)도 리터럴이라 한지 위에서 읽히지 않는다.",
+    "fix": "border: 1px solid rgba(var(--ivory-rgb), 0.13); .timeline-year는 color: rgba(var(--ivory-rgb), 0.35) — 단 알파 0.35는 라이트에서 대비 미달이므로 0.55 이상으로 올리거나 var(--text-muted)로."
+   },
+   {
+    "selector": "#main-nav (border-top / border-bottom)",
+    "line": 358,
+    "problem": "데스크톱 메뉴 바 위아래 구분선이 rgba(255,255,255,0.15) 리터럴(358, 359)이다. 뒤집히지 않으므로 한지 위에서 완전히 사라져 메뉴 바 경계가 없어진다. 헤더 영역 전반(.auth-btn border rgba(255,255,255,0.3) 2069, :hover background rgba(255,255,255,0.1) 2077, .mobile-nav-auth border-top rgba(255,255,255,0.14) 1852)이 같은 패턴.",
+    "fix": "rgba(var(--fg-rgb), α) 채널 형태로 일괄 치환. 헤더는 공개 사이트 전 페이지 공통이라 우선순위 높음."
+   },
+   {
+    "selector": "전역 — 리터럴 rgba(255,255,255,α) / rgba(246,239,226,α)",
+    "line": 2069,
+    "problem": "globals.css에 rgba(255,255,255,·) 138건, rgba(246,239,226,·) 57건이 남아 있다(관리 콘솔은 이미 채널 토큰으로 이관됐지만 공개 사이트 CSS는 대부분 리터럴). 이들은 토큰이 아니라 라이트에서 '뒤집히지 않고' 그대로 남아, 보더·구분선은 사라지고 텍스트는 한지 위 흰 글자가 된다. 판정 목록은 var(--…) 선언만 담고 있어 이 195건이 통째로 사각지대다. 확인된 전경 사례: .mission-body p 1267/1272, .journey-more 1383, .gallery-photo-stream-meta 4094/4101, .timeline-year 13923, .timeline-event-card-description 14029, .notfound-text 12190, .feature-preview-body 10533, .about-director-bio p 10147.",
+    "fix": "다크 섬 내부는 그대로 두고, 지면 위 요소만 rgba(var(--fg-rgb), α)·rgba(var(--ivory-rgb), α)로 기계 치환. 다크 섬 판정이 끝난 뒤 라우트 단위로 돌리는 게 안전. 치환 대상 목록 자체를 색 선언 대장에 추가할 것."
+   },
+   {
+    "selector": ":root — --white, --bg-dark (플립 세트 누락)",
+    "line": 8,
+    "problem": "이번 작업의 플립 대상 목록에 --bg-dark(#050505, L8)와 --white(#ffffff, L9)가 빠져 있다. #main-footer는 background-color: var(--bg-dark)(1529) + color: var(--text-color)(1530) 조합이라 --bg-dark가 안 뒤집히면 푸터 전체가 먹 위 먹이 된다(관리 콘솔 라이트 블록 15960은 --bg-dark를 #eee7d7로 뒤집고 있으므로 사이트 블록에도 반드시 필요). 반대로 --white는 관리 콘솔 라이트에서도 안 뒤집히는데 var(--white)가 color로 23곳 쓰인다 — 대부분 붉은/먹 고정 배경 위라 무해하지만 토큰 의미가 --on-media와 중복이다.",
+    "fix": "라이트 블록에 --bg-dark 플립을 반드시 포함. --white는 고정 배경 위 자리에서 var(--on-media)로 치환하고 토큰 자체를 폐기하는 방향 권장(플립 여부를 판단할 필요가 사라짐)."
+   },
+   {
+    "selector": ".qna-a-mark",
+    "line": 15874,
+    "problem": "color: var(--bg-color) + background: var(--accent-color)(15875). 금 배경은 안 뒤집히는데 --bg-color는 한지로 뒤집혀 금 위 밝은 글자 = 대비 붕괴. components/admin/faq/QnaBrowser.tsx 전용이라 out-of-scope로 분류되겠지만, 관리 콘솔 라이트 테마는 이미 배포돼 있어 지금 실제로 깨져 있는 상태다(바로 위 .qna-q-mark 15869는 var(--accent-text)로 올바르게 처리됨).",
+    "fix": "color: var(--on-accent)"
+   },
+   {
+    "selector": ".ink-ambient__wash--ivory / .ink-ambient__grain",
+    "line": 193,
+    "problem": "글로벌 앰비언트 레이어가 다크 전용으로 튜닝돼 있다. --wash--ivory(193)는 rgba(246,239,226,0.42) 아이보리 방울로 '검은 지면을 들어올리는' 역할인데 한지 위에서는 흰 얼룩이 되고, __grain(221)은 mix-blend-mode: overlay + opacity 0.06이라 밝은 지면에서는 질감이 아니라 밝기만 올린다(먹 방울이 아니라 아이보리 방울이므로 '한지에 스며드는 먹'이라는 의도와 반대). 판정 목록에 없음.",
+    "fix": "라이트에서 --wash--ivory를 먹 방울(rgba(36,27,18,0.10) 계열)로 뒤집고, __grain은 mix-blend-mode: multiply + opacity 0.05로 전환. 셀렉터별 라이트 보정으로 처리."
+   }
+  ]
+ }
+}
