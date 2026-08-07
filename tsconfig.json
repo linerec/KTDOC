@@ -11,6 +11,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // `node --test lib/**/*.test.ts` 가 확장자까지 적힌 import로 모듈을 찾는다
+    // (Node의 타입 스트리핑은 ESM 규칙대로 정확한 파일명을 요구한다).
+    // `noEmit: true`와 함께여야 켤 수 있고, Next가 이미 그렇게 두었다.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
