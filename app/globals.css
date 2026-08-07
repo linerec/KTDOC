@@ -11376,7 +11376,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   flex-direction: column;
   /* 카드는 지면 위 '표면'이다 — 지면과 함께 뒤집혀야 안의 글자가 산다. */
   background: linear-gradient(180deg, var(--ground-2), var(--ground-3));
-  border: 1px solid rgba(224, 184, 79, 0.14);
+  /* 금 채널로 — 밝은 금 14%는 한지 위에서 사라져 카드 경계가 없어진다 */
+  border: 1px solid rgba(var(--soft-gold-rgb), 0.22);
   border-radius: 8px;
   overflow: hidden;
   position: relative;
@@ -11452,11 +11453,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 22px 22px 24px;
   flex: 1;
 }
+/* 카드 본문은 지면 위 '표면'이라 테마를 따라 뒤집힌다(.program-card 배경 참고).
+   제목은 카드에서 가장 중요한 정보이므로 가장 진한 전경을 쓴다. */
 .program-card-title {
   font-family: var(--font-heading);
   font-weight: 400;
   font-size: 1.35rem;
-  color: var(--on-media);
+  color: var(--text-color);
   line-height: 1.3;
   word-break: keep-all;
 }
@@ -11480,9 +11483,11 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   gap: 10px;
   font-size: 0.85rem;
 }
+/* '일정'·'대상' 라벨 — 금색 악센트를 유지하되 텍스트용 금을 쓴다
+   (한지 위 밝은 금은 판독 불가). */
 .program-card-meta-row dt {
-  /* theme-exempt: 고정 어두운 표면 위 — 밝은 금이 두 테마 모두 정답 */
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
+  font-weight: 600;
   min-width: 42px;
   letter-spacing: 0.04em;
 }
@@ -11497,18 +11502,18 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin-top: auto;
   padding-top: 16px;
 }
+/* 가격·'문의'는 카드에서 두 번째로 강한 정보 — 금색을 유지하되 텍스트용 금으로 */
 .program-card-price {
   font-family: var(--font-heading);
   font-size: 1.2rem;
-  /* theme-exempt: 고정 어두운 표면 위 — 밝은 금이 두 테마 모두 정답 */
-  color: var(--soft-gold);
+  color: var(--soft-gold-text);
 }
 .program-card-cta {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 0.85rem;
-  color: var(--on-media);
+  color: var(--text-color);
   opacity: 0.75;
   transition: opacity 0.3s, gap 0.3s var(--ease-out-quart);
 }
@@ -16061,7 +16066,9 @@ html:not([data-site-theme]):not([data-admin-theme]) {
   --bg-color: #f6f1e6;
   --bg-dark: #efe7d6;
   --text-color: #241b12;
-  --text-muted: #6e6355;
+  /* 카드 표면(--ground-3/-4)은 페이지 지면보다 깊은 한지다 —
+     지면 기준으로 고른 #6e6355는 카드 위에서 4.48:1로 미달했다. */
+  --text-muted: #675d4f;
   --warm-ivory: #2c2114;
   --white: #241b12;
   --fg-rgb: 36, 27, 18;
@@ -16072,10 +16079,10 @@ html:not([data-site-theme]):not([data-admin-theme]) {
   /* 텍스트로 쓰인 금색만 대비 확보를 위해 어둡게. 배경·보더용 금색
      (--soft-gold/--accent-color)은 라이트에서도 선명하게 유지된다.
      값은 lib/contrast.test.ts가 한지 지면 위 4.5:1을 단언한다 — 함께 바꿀 것. */
-  --soft-gold-text: #7d5f0b;
-  --accent-text: #7f5f0e;
-  --soft-gold-rgb: 125, 95, 11;
-  --accent-gold-rgb: 138, 106, 16;
+  --soft-gold-text: #77590a;
+  --accent-text: #74550b;
+  --soft-gold-rgb: 119, 89, 10;
+  --accent-gold-rgb: 116, 85, 11;
 
   /* 지면 — 먹 5단계를 한지 5단계로. 순서를 거울처럼 뒤집어 그라디언트의
      방향감(위가 밝고 아래가 깊다)이 그대로 보존되게 한다. */
@@ -16205,8 +16212,8 @@ html:not([data-site-theme]):not([data-admin-theme]) .gallery-lightbox {
   --text-muted: #5a4a3a;
   --fg-rgb: 36, 27, 18;
   --ivory-rgb: 246, 239, 226;
-  --soft-gold-text: #7d5f0b;
-  --accent-text: #8a6a10;
+  --soft-gold-text: #77590a;
+  --accent-text: #74550b;
   color-scheme: light;
 }
 
@@ -16224,7 +16231,7 @@ html[data-admin-theme='light'] {
   --bg-color: #f6f1e6;
   --bg-dark: #eee7d7;
   --text-color: #241b12;
-  --text-muted: #6e6355;
+  --text-muted: #675d4f;
   --warm-ivory: #2c2114;
   --fg-rgb: 36, 27, 18;
   --ivory-rgb: 44, 33, 20;
@@ -16233,8 +16240,8 @@ html[data-admin-theme='light'] {
 
   /* 텍스트로 쓰인 금색만 대비 확보를 위해 어둡게. 배경용 금색(soft-gold/accent)은
      라이트에서도 선명하게 유지된다(금 배경 + 먹 글자 칩·버튼이 그대로 성립). */
-  --soft-gold-text: #7d5f0b;
-  --accent-text: #8a6a10;
+  --soft-gold-text: #77590a;
+  --accent-text: #74550b;
 }
 
 /* 먹빛 그라디언트 패널 → 종이 그라디언트 (ink 토큰은 금 배경 위 먹 글자로도

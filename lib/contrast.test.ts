@@ -31,12 +31,15 @@ const LIGHT = {
   bg: '#f6f1e6',
   bgDark: '#efe7d6',
   text: '#241b12',
-  muted: '#6e6355',
+  muted: '#675d4f',
   ivory: '#2c2114',
   surface2: '#e9e0cc',
-  goldText: '#7d5f0b',
-  accentText: '#7f5f0e',
+  goldText: '#77590a',
+  accentText: '#74550b',
   ground: '#f6f1e6',
+  /* 지면 스케일의 깊은 쪽 — 카드·패널 표면이 여기 앉는다 */
+  ground3: '#eae0cb',
+  ground4: '#e4d8bf',
 };
 
 /** 두 테마 공통 역할 토큰 */
@@ -126,6 +129,18 @@ test('붉은 버튼 위 글자 — 라이트에서 --warm-ivory가 뒤집히면 
     contrastRatio(LIGHT.ivory, ROLE.secondary) < AA_LARGE,
     '붉은 배경 위 뒤집힌 아이보리(먹)가 읽히면 --on-media가 필요 없다는 뜻이다'
   );
+});
+
+test('카드 표면 — 지면보다 깊은 한지 위에서도 읽혀야 한다', () => {
+  // 이 테스트가 없어서 놓쳤던 것: 팔레트를 --bg-color 기준으로만 검증하면
+  // 카드(.program-card 등 --ground-3~4 표면) 위에서 미달하는 것을 못 잡는다.
+  // 실제로 --text-muted가 카드 위에서 4.48:1이었다.
+  for (const [name, bg] of [['ground-3', LIGHT.ground3], ['ground-4', LIGHT.ground4]] as const) {
+    check(`${name} 위 본문`, LIGHT.text, bg, AA_TEXT);
+    check(`${name} 위 보조 텍스트`, LIGHT.muted, bg, AA_TEXT);
+    check(`${name} 위 금색 텍스트`, LIGHT.goldText, bg, AA_TEXT);
+    check(`${name} 위 강조 텍스트`, LIGHT.accentText, bg, AA_TEXT);
+  }
 });
 
 test('라이트 섬(register-panel)은 두 테마에서 같은 대비를 갖는다', () => {
