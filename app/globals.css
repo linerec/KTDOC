@@ -1517,7 +1517,9 @@ ul {
 .category-title {
   font-family: var(--font-heading);
   font-size: 1.5rem;
-  color: var(--text-color);
+  /* theme-exempt: 사진 위 — 스크림(.image-object-content-overlay)이 카드 아래쪽을
+     rgba(12,8,5,0.72)까지 어둡게 눌러 두므로 두 테마 모두 밝은 전경이 정답이다. */
+  color: var(--on-media);
   margin: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -4596,8 +4598,9 @@ ul {
   left: 0;
   right: 0;
   padding: 15px;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-  color: var(--text-color);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  /* theme-exempt: 썸네일 위 — 자기 스크림이 검정 80%라 두 테마 모두 밝은 전경이 정답 */
+  color: var(--on-media);
   font-size: 0.85rem;
   text-align: left;
 }

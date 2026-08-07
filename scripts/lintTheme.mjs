@@ -68,6 +68,18 @@ const GROUND_HEROES = [
   '.classes-loading-hero',
 ];
 
+/**
+ * 사진 위에 **고정 어두운 스크림**을 깔고 그 위에 글자를 얹는 컴포넌트들.
+ * 스크림이 자기 블록이 아니라 형제 규칙에 있으면 같은 블록 검사로는 잡히지 않아
+ * 여기 명시한다. 이 접두사로 시작하는 셀렉터에서 테마 전경 토큰을 쓰면 실패한다
+ * (사진 위는 var(--on-media)가 정답).
+ *
+ * 새 '사진 카드'를 만들면 여기 추가할 것 — 안 하면 라이트에서 캡션이 조용히 사라진다.
+ */
+const MEDIA_SCRIM_COMPONENTS = [
+  '.category-',        // 홈 카테고리 카드 — .image-object-content-overlay가 스크림
+];
+
 /** 관리 콘솔 전용 셀렉터 접두사 — 이번 규칙의 대상이 아니다. */
 const ADMIN_PREFIXES = [
   'admin', 'cal-', 'library-', 'photo-drawer', 'photo-modal', 'event-picker',
@@ -243,6 +255,64 @@ lines.forEach((raw, i) => {
 
 // 규칙 4 — --warm-ivory를 전경으로 쓰는 자리는 반드시 대장에 등재돼 있어야 한다.
 // 이 토큰은 라이트에서 #2c2114(거의 먹)로 뒤집힌다. 지면 위면 정답이지만
+// 규칙 4-1 — 같은 블록에 '고정된 어두운 배경'이 있는데 전경이 테마 토큰인 경우.
+// 사진 위 캡션·배지가 자기 스크림을 직접 갖는 흔한 형태다. 스크림은 리터럴이라
+// 뒤집히지 않는데 전경만 먹으로 뒤집혀 글자가 통째로 사라진다.
+// (.category-title·.gallery-video-thumb-title이 실제로 이렇게 깨져 있었다.)
+{
+  // 블록의 시작·끝을 알아야 '같은 블록'을 볼 수 있다
+  const blockOf = new Array(lines.length).fill(null);
+  {
+    const stack = [];
+    lines.forEach((raw, i) => {
+      const opens = (raw.match(/\{/g) ?? []).length;
+      const closes = (raw.match(/\}/g) ?? []).length;
+      if (opens) for (let o = 0; o < opens; o++) stack.push(i);
+      blockOf[i] = stack.length ? stack[stack.length - 1] : null;
+      if (closes) for (let c = 0; c < closes; c++) stack.pop();
+    });
+  }
+  const blockEnd = (start) => {
+    let depth = 0;
+    for (let i = start; i < lines.length; i++) {
+      depth += (lines[i].match(/\{/g) ?? []).length;
+      depth -= (lines[i].match(/\}/g) ?? []).length;
+      if (depth === 0) return i;
+    }
+    return lines.length - 1;
+  };
+  // 뒤집히지 않는 어두운 리터럴 — 먹 계열 rgba와 검정
+  const DARK_LITERAL = /rgba\(\s*(0|[0-9]|1[0-9]|2[0-5])\s*,\s*(0|[0-9]|1[0-9])\s*,\s*(0|[0-9]|1[0-9])\s*,\s*0?\.[3-9]/;
+  const THEME_FG = /^\s*color\s*:\s*var\(--(text-color|text-muted|warm-ivory|white)\)/;
+
+  lines.forEach((raw, i) => {
+    if (!THEME_FG.test(raw)) return;
+    const sel = selOf[i];
+    if (isAdminSelector(sel) || isExempt(i) || inDarkIsland(sel)) return;
+    // (a) 스크림이 자기 블록에 있는 경우
+    const start = blockOf[i];
+    let sameBlockScrim = false;
+    if (start !== null) {
+      const body = lines.slice(start, blockEnd(start) + 1).join('\n');
+      sameBlockScrim = /background(-image|-color)?\s*:/.test(body) && DARK_LITERAL.test(body);
+    }
+    // (b) 스크림이 형제 규칙에 있는 컴포넌트 — 레지스트리로 안다
+    const inScrimComponent = MEDIA_SCRIM_COMPONENTS.some((p) => sel.includes(p));
+
+    if (!sameBlockScrim && !inScrimComponent) return;
+    add(
+      'fixed-dark-bg-theme-fg',
+      i,
+      (sameBlockScrim
+        ? '같은 블록에 뒤집히지 않는 어두운 배경(리터럴 스크림)이 있는데 전경은 테마 토큰이다. '
+        : '사진 위 스크림 컴포넌트(MEDIA_SCRIM_COMPONENTS) 안인데 전경이 테마 토큰이다. ') +
+        '라이트에서 어두운 배경 위 먹 글자가 되어 사라진다 — var(--on-media)를 쓰거나, ' +
+        '배경도 함께 뒤집는 값으로 바꿀 것.',
+      sel
+    );
+  });
+}
+
 // 고정 배경(붉은 버튼·금 칩·사진) 위면 글자가 사라진다. 판단을 코드가 아니라
 // 대장이 갖게 하고, 미등재를 실패로 만든다.
 lines.forEach((raw, i) => {
@@ -333,6 +403,7 @@ const RULE_TITLES = {
   'root-single': ':root 단일 선언',
   'gold-as-text': '금색을 텍스트로 사용',
   'bg-color-as-fg': '--bg-color를 전경으로 사용',
+  'fixed-dark-bg-theme-fg': '고정 어두운 배경 위 테마 전경 (글자 소실)',
   'ivory-unledgered': '--warm-ivory 대장 미등재',
   'ivory-should-be-fixed': '--warm-ivory 고정 배경 위 (교체 필요)',
   'literal-light-color': '흰색·아이보리 리터럴',
