@@ -78,6 +78,31 @@
   --soft-gold-rgb: 224, 184, 79;
   --accent-gold-rgb: 212, 160, 23;
 
+  /* ── 한지(韓紙) 결 ────────────────────────────────────────────────────
+     실제 한지는 세 가지가 겹쳐 보인다: 뜨는 과정에서 생기는 은은한 뭉침,
+     닥섬유 가닥, 그리고 미세한 결. 그래서 세 겹으로 쌓는다.
+
+     사진 대신 SVG feTurbulence를 쓰는 이유: stitchTiles='stitch'로 이음매 없이
+     타일링되고, 전체가 1KB 남짓이라 추가 요청이 없으며, 벡터라 레티나에서도
+     뭉개지지 않는다. 사진이면 반복 이음매·용량·라이선스가 전부 따라온다.
+
+     feTurbulence 출력은 컬러 노이즈라 saturate 0으로 회색으로 만든다 —
+     안 그러면 한지에 색이 섞여 지저분해진다.
+     닥섬유는 baseFrequency를 축마다 다르게 줘서 만든다(한 축은 낮게 = 길게,
+     다른 축은 높게 = 가늘게). 가로·세로 두 벌을 겹치면 손으로 뜬 발의
+     교차 결처럼 읽힌다. */
+  --paper-texture:
+    /* 미세 결 */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.42'/%3E%3C/svg%3E"),
+    /* 닥섬유 — 가로 결 */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cfilter id='fh'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.42' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fh)' opacity='0.3'/%3E%3C/svg%3E"),
+    /* 닥섬유 — 세로 결 */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cfilter id='fv'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.42 0.006' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fv)' opacity='0.26'/%3E%3C/svg%3E"),
+    /* 뜨는 과정의 은은한 뭉침 — 조금만. 세게 넣으면 한지가 아니라 얼룩으로 읽힌다 */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='0.22'/%3E%3C/svg%3E");
+  /* 다크(먹)에서는 종이 결이 성립하지 않으므로 끈다. 라이트 블록이 켠다. */
+  --paper-texture-opacity: 0;
+
   /* 먹 텍스처(black_stroke.png) multiply 강도. 밝은 바탕에서는 이진 알파의
      계단 경계가 드러나므로 라이트에서 크게 낮춘다. */
   --ink-texture-opacity: 0.28;
@@ -13852,6 +13877,35 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
     linear-gradient(180deg, var(--ground-1) 0%, var(--ground-3) 34%, var(--ground-4) 100%);
 }
 
+/* ── 한지 결을 지면에 얹는다 ─────────────────────────────────────────────
+   **다른 페이지로 넓히려면 아래 두 셀렉터 목록에 페이지 셸을 추가하면 된다.**
+   (예: `.timeline-page, .gallery-page {` / `.timeline-page::before, .gallery-page::before {`)
+
+   구현 주의:
+   - `isolation: isolate`가 필요하다. 스태킹 컨텍스트가 없으면 z-index:-1 레이어가
+     페이지 배경 뒤로 빠져 보이지 않는다. 동시에 multiply의 블렌드 대상을
+     이 페이지 배경으로 가둬 주는 역할도 한다.
+   - z-index:-1이라 콘텐츠(카드·글자)는 결 위에 온다. 카드가 반투명이면 결이
+     비쳐 보이는데, 그게 한지 공예 느낌을 만든다.
+   - 다크에서는 --paper-texture-opacity가 0이라 레이어가 그려지지 않는다.  */
+.timeline-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.timeline-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--paper-texture);
+  /* 종이에 스민 결은 '어둡게 배어드는' 것이라 multiply가 물리적으로 맞는 블렌드다.
+     중성 회색을 곱하는 것이므로 한지의 따뜻한 색조는 그대로 보존된다. */
+  mix-blend-mode: multiply;
+  opacity: var(--paper-texture-opacity);
+}
+
 /* Hero — gallery-hero와 같은 결. 상단 오프셋은 히어로가 소유(표준 패턴) */
 .timeline-hero {
   padding: var(--page-offset) 0 40px;
@@ -16088,6 +16142,10 @@ html:not([data-site-theme]):not([data-admin-theme]) {
   --ink-texture-opacity: 0.05;
   /* 얇은 금선은 밝은 바탕에서 사라지므로 양끝 알파를 올려 존재감을 유지한다. */
   --hairline-edge-alpha: 0.22;
+
+  /* 한지 결을 켠다. 값이 클수록 결이 도드라진다 — '슴슴하게'가 목표라
+     글자 가독성에 영향을 주지 않는 선까지만 올린다. */
+  --paper-texture-opacity: 0.5;
 }
 
 /* ── 라이트 알파 보정 — 다크용으로 튜닝된 '흐린 글자' ────────────────────
