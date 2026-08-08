@@ -19,6 +19,7 @@ import {
   type MemberRole,
   type MemberStatus,
 } from '@/lib/members';
+import { getDeviceCountsByUser } from '@/lib/push/tracking';
 import MemberTable from '@/components/admin/members/MemberTable';
 import { TEST_ACCOUNTS } from '@/lib/testAccounts';
 
@@ -55,6 +56,10 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
     getMemberCounts(),
     getStudentOptions(),
   ]);
+
+  // 회원별 알림(푸시) 기기 수 — 목록에서 바로 "이 사람에게 알림이 가나"를 본다.
+  // 조회가 실패해도 회원 관리 자체는 열려야 하므로 빈 값으로 흘린다.
+  const pushDevices = await getDeviceCountsByUser(members.map((m) => m.id)).catch(() => ({}));
 
   const hasFilter = Boolean(params.role || params.status || params.search);
 
@@ -164,6 +169,7 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
         members={members}
         students={students}
         canManageRoles={canManageRoles}
+        pushDevices={pushDevices}
       />
     </div>
   );

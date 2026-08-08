@@ -22,6 +22,8 @@ interface MemberTableProps {
   members: Member[];
   students: StudentOption[];
   canManageRoles: boolean;
+  /** 회원 id → 알림이 켜진 기기 수(없으면 0). 자세한 현황은 /admin/notify. */
+  pushDevices?: Record<string, number>;
 }
 
 /** 관리자가 부여 가능한 역할 (레거시 'user' 제외) */
@@ -45,6 +47,7 @@ export default function MemberTable({
   members,
   students,
   canManageRoles,
+  pushDevices = {},
 }: MemberTableProps) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -134,6 +137,7 @@ export default function MemberTable({
               <th>회원</th>
               <th style={{ width: '110px' }}>역할</th>
               <th style={{ width: '100px' }}>상태</th>
+              <th style={{ width: '90px' }}>알림</th>
               <th style={{ width: '220px' }}>연결</th>
               <th style={{ width: '120px' }}>가입일</th>
               <th style={{ width: '200px' }}>작업</th>
@@ -188,6 +192,25 @@ export default function MemberTable({
                     >
                       {MEMBER_STATUS_LABELS[member.status]}
                     </span>
+                  </td>
+
+                  {/* 알림(푸시)을 켠 기기 수 — 0이면 이 회원에게는 푸시가 가지 않는다 */}
+                  <td>
+                    {(pushDevices[member.id] ?? 0) > 0 ? (
+                      <span
+                        className="admin-badge admin-badge-success"
+                        title={`기기 ${pushDevices[member.id]}대에 알림이 켜져 있습니다.`}
+                      >
+                        {pushDevices[member.id]}대
+                      </span>
+                    ) : (
+                      <span
+                        className="admin-badge admin-badge-muted"
+                        title="알림을 켜지 않아 푸시가 가지 않습니다(‘내 알림’함에는 남습니다)."
+                      >
+                        꺼짐
+                      </span>
+                    )}
                   </td>
 
                   {/* 연결 (학부모→자녀 / 원생→보호자) */}

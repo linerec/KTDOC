@@ -14,6 +14,7 @@ import {
   getAllSubscriptions,
   getSubscriptionsByRoles,
   deleteSubscriptionsByIds,
+  recordDeliveryResults,
 } from './subscriptions';
 
 export interface PushPayload {
@@ -61,6 +62,8 @@ export async function sendToSubscriptions(
   let sent = 0;
   let failed = 0;
   const dead: number[] = [];
+  const delivered: number[] = [];
+  const rejected: number[] = [];
 
   await Promise.all(
     subs.map(async (s) => {
@@ -70,14 +73,19 @@ export async function sendToSubscriptions(
           data
         );
         sent++;
+        delivered.push(s.id);
       } catch (err) {
         failed++;
+        rejected.push(s.id);
         const code = (err as { statusCode?: number })?.statusCode;
         // 404(Not Found)·410(Gone): 구독이 더 이상 유효하지 않음 → 정리.
         if (code === 404 || code === 410) dead.push(s.id);
       }
     })
   );
+
+  // 기기별 도달 집계를 먼저 남긴다 — 만료 정리로 행이 사라지기 전에.
+  await recordDeliveryResults(delivered, rejected);
 
   if (dead.length) {
     await deleteSubscriptionsByIds(dead).catch(() => {});

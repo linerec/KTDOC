@@ -9,7 +9,14 @@ import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getMembers } from '@/lib/members';
 import { getRecentNotifications } from '@/lib/push/notifications';
 import { countSubscriptions } from '@/lib/push/subscriptions';
+import {
+  getMembersWithoutPush,
+  getPushMemberStatuses,
+  getPushSummary,
+  getRecentPushEvents,
+} from '@/lib/push/tracking';
 import NotifyComposer from '@/components/admin/NotifyComposer';
+import NotifyStatus from '@/components/admin/NotifyStatus';
 
 export const metadata = {
   title: '알림 보내기 | KTDOC Admin',
@@ -19,10 +26,30 @@ export default async function AdminNotifyPage() {
   const session = await auth();
   await requireMenuAccess(session, 'notify');
 
-  const [membersResult, recent, subscriberCount] = await Promise.all([
+  const [
+    membersResult,
+    recent,
+    subscriberCount,
+    pushSummary,
+    pushMembers,
+    pushOff,
+    pushEvents,
+  ] = await Promise.all([
     getMembers({ status: 'active', limit: 500 }).catch(() => ({ members: [], total: 0 })),
     getRecentNotifications(20).catch(() => []),
     countSubscriptions().catch(() => 0),
+    getPushSummary().catch(() => ({
+      memberCount: 0,
+      deviceCount: 0,
+      activeMemberCount: 0,
+      offCount: 0,
+      subscribed30d: 0,
+      unsubscribed30d: 0,
+      expired30d: 0,
+    })),
+    getPushMemberStatuses().catch(() => []),
+    getMembersWithoutPush().catch(() => []),
+    getRecentPushEvents(50).catch(() => []),
   ]);
 
   const memberOptions = membersResult.members.map((m) => ({
@@ -44,7 +71,8 @@ export default async function AdminNotifyPage() {
           <h1 className="admin-title">알림 보내기</h1>
           <p className="admin-subtitle">
             원생·학부모에게 휴대폰 푸시 알림을 보냅니다. 알림을 켠 회원에게만 도착합니다.
-            현재 알림을 켠 기기 <strong>{subscriberCount}대</strong>.
+            현재 <strong>{pushSummary.memberCount}명</strong>이 기기{' '}
+            <strong>{subscriberCount}대</strong>에 알림을 켜 두었습니다.
           </p>
         </div>
       </div>
@@ -53,6 +81,13 @@ export default async function AdminNotifyPage() {
         members={memberOptions}
         recent={recent}
         subscriberCount={subscriberCount}
+      />
+
+      <NotifyStatus
+        summary={pushSummary}
+        members={pushMembers}
+        off={pushOff}
+        events={pushEvents}
       />
     </div>
   );
