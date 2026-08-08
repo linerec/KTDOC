@@ -14479,6 +14479,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .event-detail,
 .media-main,
 .journey-section,
+.mission-section,
 .feature-preview-section,
 #categories,
 #traditional,
@@ -14504,6 +14505,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .feature-preview-section::before,
 #categories::before,
 #traditional::before,
+/* .mission-section은 ::before가 금·적 워시(z:1)라 ::after로 얹는다.
+   결은 z:-1이므로 레이어 순서가 유지된다 — 결(-1) < 한삼 궤적(0) < 워시(1) < 본문(2). */
+.mission-section::after,
 /* .notfound는 ::before가 비네트라 ::after로 얹는다 */
 .notfound::after {
   content: '';
