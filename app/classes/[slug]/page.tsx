@@ -106,8 +106,8 @@ export default async function ProgramDetailPage({ params }: PageProps) {
             </div>
 
             <aside className="program-detail-aside">
-              <ShareQrCard title={program.title_ko} />
               <ProgramDetailFacts program={program} />
+              <ShareQrCard title={program.title_ko} />
             </aside>
           </div>
         </section>

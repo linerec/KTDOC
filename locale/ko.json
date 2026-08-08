@@ -178,7 +178,7 @@
   "share.linkCopied": "링크를 복사했습니다.",
   "share.qrCopied": "QR코드를 복사했습니다.",
   "share.qrDownloaded": "QR코드를 이미지로 저장했습니다.",
-  "share.failed": "복사하지 못했습니다. 주소를 직접 복사해 주세요.",
+  "share.failed": "복사하지 못했습니다",
   "register.title": "신청서",
   "register.intro": "아래 정보를 남겨주시면 담당자가 확인 후 연락드립니다.",
   "register.applicantName": "참가자 이름",

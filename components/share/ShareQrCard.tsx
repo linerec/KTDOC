@@ -46,7 +46,7 @@ const OUTCOME_MESSAGE: Record<ShareOutcome, { key: string; ko: string } | null> 
   'link-copied': { key: 'share.linkCopied', ko: '링크를 복사했습니다.' },
   'qr-copied': { key: 'share.qrCopied', ko: 'QR코드를 복사했습니다.' },
   'qr-downloaded': { key: 'share.qrDownloaded', ko: 'QR코드를 이미지로 저장했습니다.' },
-  failed: { key: 'share.failed', ko: '복사하지 못했습니다. 주소를 직접 복사해 주세요.' },
+  failed: { key: 'share.failed', ko: '복사하지 못했습니다' },
 };
 
 export default function ShareQrCard({
@@ -99,12 +99,28 @@ export default function ShareQrCard({
     };
   }, [url, size]);
 
+  // 결과 문구는 안내 문구("휴대폰으로 스캔하세요") 자리를 잠시 빌려 쓴다.
+  // 따로 줄을 두면 평소에 빈 줄이 남아 카드 아래가 허전해진다.
+  const statusTimer = useRef<number | null>(null);
   const announce = useCallback(
     (outcome: ShareOutcome) => {
+      if (statusTimer.current) window.clearTimeout(statusTimer.current);
       const message = OUTCOME_MESSAGE[outcome];
-      setStatus(message ? t(message.key, message.ko) : '');
+      if (!message) {
+        setStatus('');
+        return;
+      }
+      setStatus(t(message.key, message.ko));
+      statusTimer.current = window.setTimeout(() => setStatus(''), 4000);
     },
     [t]
+  );
+
+  useEffect(
+    () => () => {
+      if (statusTimer.current) window.clearTimeout(statusTimer.current);
+    },
+    []
   );
 
   const handleShare = useCallback(async () => {
@@ -135,7 +151,11 @@ export default function ShareQrCard({
           aria-label={t('share.qrAlt', '이 페이지로 이동하는 QR코드')}
         />
       </div>
-      <p className="share-qr-hint">{scanHint}</p>
+      {/* 안내와 결과가 한 자리를 나눠 쓴다. 화면을 보지 않는 사람에게도
+          결과가 전해져야 하므로 이 줄이 aria-live를 맡는다. */}
+      <p className={status ? 'share-qr-hint is-status' : 'share-qr-hint'} aria-live="polite">
+        {status || scanHint}
+      </p>
 
       <div className="share-qr-actions">
         <button type="button" className="share-qr-btn" onClick={handleShare} disabled={!url}>
@@ -150,11 +170,6 @@ export default function ShareQrCard({
           {t('share.copyQrCta', 'QR 복사')}
         </button>
       </div>
-
-      {/* 화면을 보지 않는 사람에게도 결과가 전달돼야 한다. 자리는 늘 잡아 둔다. */}
-      <p className="share-qr-status" aria-live="polite">
-        {status}
-      </p>
     </div>
   );
 }

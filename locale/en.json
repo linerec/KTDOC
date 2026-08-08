@@ -178,7 +178,7 @@
   "share.linkCopied": "Link copied.",
   "share.qrCopied": "QR code copied.",
   "share.qrDownloaded": "QR code saved as an image.",
-  "share.failed": "Couldn't copy. Please copy the address manually.",
+  "share.failed": "Couldn't copy",
   "register.title": "Application",
   "register.intro": "Leave your details and our team will get back to you.",
   "register.applicantName": "Student Name",
