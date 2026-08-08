@@ -6,6 +6,7 @@
  */
 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ApplyButton } from '@/components/classes/ApplyModal';
 import type { ProgramDetail } from '@/types/programs';
 
 interface ProgramDetailFactsProps {
@@ -57,9 +58,9 @@ export default function ProgramDetailFacts({ program }: ProgramDetailFactsProps)
           </div>
         ))}
       </dl>
-      <a href="#apply" className="btn-ink-primary program-facts-cta">
+      <ApplyButton className="btn-ink-primary program-facts-cta">
         {t('programs.detail.applyCta', '신청하기')}
-      </a>
+      </ApplyButton>
     </div>
   );
 }
