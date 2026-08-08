@@ -8,7 +8,7 @@
  * D1 site_settings(`calendar.config`)에 JSON으로 저장된다.
  */
 
-import { getEvents, getPrograms, getSetting, SETTING_CALENDAR_CONFIG } from '@/lib/d1';
+import { getEvents, getPrograms, getSetting, SETTING_CALENDAR_CONFIG, allKindsChronological} from '@/lib/d1';
 import { googleCalendarDates, type ICSEvent } from '@/lib/ical';
 import type { Event } from '@/types/gallery';
 
@@ -128,7 +128,7 @@ export async function getCalendarEvents(
 
   // 공연·행사 — event_date(날짜) + start_time/end_time(시각, 선택)
   if (cfg.includeEvents) {
-    const { events } = await getEvents({ published: true, limit: 500 });
+    const { events } = await getEvents(allKindsChronological());
     for (const ev of events) {
       if (!ev.event_date) continue;
       items.push(eventToICSEvent(ev, baseUrl));

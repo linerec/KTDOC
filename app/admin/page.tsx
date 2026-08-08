@@ -81,6 +81,8 @@ export default async function AdminDashboardPage() {
     getPrograms({ published: 'all', limit: 1 }),
     getPrograms({ published: true, limit: 1 }),
     getApplicationCounts(),
+    // 목록이 아니라 개수만 쓴다(total). 그래서 lib/d1/eventViews의 '관점'이 아니라
+    // 원시 필터를 그대로 둔다 — 여기서 종류·정렬은 의미가 없다.
     getEvents({ published: true, limit: 1 }),
     getGalleryPhotos({ published: undefined, organized: 'unassigned', limit: 1 }),
     getCategories(),

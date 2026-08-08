@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEvents, getCategories, getYears } from '@/lib/d1';
+import { getEvents, getCategories, getYears, adminAllEvents} from '@/lib/d1';
 import EventTable from '@/components/admin/gallery/EventTable';
 import CategoryManagerModal from '@/components/admin/gallery/CategoryManagerModal';
 
@@ -29,14 +29,14 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const [eventsResult, categories, years] = await Promise.all([
-    getEvents({
-      year: params.year ? parseInt(params.year) : undefined,
-      category: params.category || undefined,
-      search: params.search || undefined,
-      page: params.page ? parseInt(params.page) : 1,
-      limit: 50,
-      published: 'all', // Show all
-    }),
+    getEvents(
+      adminAllEvents({
+        year: params.year ? parseInt(params.year) : undefined,
+        category: params.category || undefined,
+        search: params.search || undefined,
+        page: params.page ? parseInt(params.page) : 1,
+      })
+    ),
     getCategories(),
     getYears(),
   ]);

@@ -18,6 +18,7 @@ import {
   getUserCheckedInEventIds,
   getEnrollmentsForUser,
   getEnrollmentsForUsers,
+  memberLibrary
 } from '@/lib/d1';
 import { getGuardianChildren } from '@/lib/members';
 import { expandClassesForMonth } from '@/lib/programSchedule';
@@ -80,7 +81,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
   }
 
   const [eventsResult, checkedInIds, enrollments] = await Promise.all([
-    getEvents({ limit: 500, published: memberView ? 'all' : true }),
+    getEvents(memberLibrary({ limit: 500, canSeeUnpublished: memberView })),
     canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
     loadEnrollments(),
   ]);

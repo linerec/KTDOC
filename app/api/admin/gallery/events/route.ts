@@ -7,7 +7,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
-import { getEvents, createEvent, setEventSupplies, setEventSupplySets } from '@/lib/d1';
+import { getEvents, createEvent, setEventSupplies, setEventSupplySets, adminAllEvents} from '@/lib/d1';
 import { isValidLatLng } from '@/lib/maps';
 import type { CreateEventInput } from '@/types/gallery';
 import { normalizeSupplyLinks, normalizeSupplySetLinks } from '@/types/supplies';
@@ -24,14 +24,15 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const result = await getEvents({
-      year: searchParams.get('year') ? parseInt(searchParams.get('year')!) : undefined,
-      category: searchParams.get('category') || undefined,
-      search: searchParams.get('search') || undefined,
-      page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1,
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50,
-      published: 'all', // Show all (published and unpublished)
-    });
+    const result = await getEvents(
+      adminAllEvents({
+        year: searchParams.get('year') ? parseInt(searchParams.get('year')!) : undefined,
+        category: searchParams.get('category') || undefined,
+        search: searchParams.get('search') || undefined,
+        page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1,
+        limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50,
+      })
+    );
 
     return NextResponse.json({
       success: true,

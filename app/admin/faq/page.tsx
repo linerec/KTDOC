@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getFaqItems, getEvents } from '@/lib/d1';
+import { getFaqItems, getEvents, adminAllEvents} from '@/lib/d1';
 import FaqManager from '@/components/admin/faq/FaqManager';
 import type { FaqEventOption } from '@/components/admin/faq/FaqManager';
 
@@ -20,7 +20,7 @@ export default async function AdminFaqPage() {
 
   const [items, eventsResult] = await Promise.all([
     getFaqItems({ published: 'all' }),
-    getEvents({ published: 'all', limit: 500 }),
+    getEvents(adminAllEvents({ limit: 500 })),
   ]);
 
   // 연결 선택지는 최소 메타만 클라이언트로 전달

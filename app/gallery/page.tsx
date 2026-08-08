@@ -5,7 +5,7 @@
 
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { getEvents, getCategories, getGalleryPhotos } from '@/lib/d1';
+import { getEvents, getCategories, getGalleryPhotos, publicArchive} from '@/lib/d1';
 import GalleryHero from '@/components/gallery/GalleryHero';
 import GalleryFilter from '@/components/gallery/GalleryFilter';
 import YearSection from '@/components/gallery/YearSection';
@@ -72,16 +72,15 @@ async function GalleryContent({
 }) {
   const shouldShowPhotoStream = !year && !category && !search && !kind;
   const [eventsResult, categories, photoStream] = await Promise.all([
-    getEvents({
-      year: year ? parseInt(year) : undefined,
-      category: category || undefined,
-      search: search || undefined,
-      page: page ? parseInt(page) : 1,
-      limit: 100, // Get more events for year grouping
-      published: true,
-      // 알 수 없는 값은 무시하고 전체를 보여준다
-      kind: kind === 'performance' || kind === 'school' ? kind : undefined,
-    }),
+    getEvents(
+      publicArchive({
+        year: year ? parseInt(year) : undefined,
+        category: category || undefined,
+        search: search || undefined,
+        page: page ? parseInt(page) : 1,
+        kind,
+      })
+    ),
     getCategories(),
     shouldShowPhotoStream
       ? getGalleryPhotos({ published: true, limit: 24 })

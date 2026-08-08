@@ -8,7 +8,7 @@ import { headers } from 'next/headers';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getCalendarConfig } from '@/lib/calendar';
-import { getEvents, getPrograms } from '@/lib/d1';
+import { getEvents, getPrograms, allKindsChronological} from '@/lib/d1';
 import CalendarFeedManager from '@/components/admin/calendar/CalendarFeedManager';
 
 export const dynamic = 'force-dynamic';
@@ -31,7 +31,7 @@ export default async function AdminCalendarPage() {
   const [config, feedUrl, eventsResult, campsResult] = await Promise.all([
     getCalendarConfig(),
     resolveFeedUrl(),
-    getEvents({ published: true, limit: 500 }).catch(() => ({ events: [], total: 0, years: [] })),
+    getEvents(allKindsChronological()).catch(() => ({ events: [], total: 0, years: [] })),
     getPrograms({ type: 'camp', published: true, limit: 200 }).catch(() => ({ programs: [], total: 0 })),
   ]);
 

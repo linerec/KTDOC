@@ -4,7 +4,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getEvents } from '@/lib/d1';
+import { getEvents, allKindsChronological} from '@/lib/d1';
 import EventTimeline from '@/components/timeline/EventTimeline';
 import IntlObject from '@/components/common/IntlObject';
 
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TimelinePage() {
-  const { events } = await getEvents({ limit: 500, published: true });
+  const { events } = await getEvents(allKindsChronological());
 
   return (
     <main className="timeline-page">

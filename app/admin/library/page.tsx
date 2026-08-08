@@ -12,7 +12,7 @@ import SiteViewLink from '@/components/common/SiteViewLink';
 import { cookies } from 'next/headers';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEvents, getCategories, getUserCheckedInEventIds } from '@/lib/d1';
+import { getEvents, getCategories, getUserCheckedInEventIds, memberLibrary} from '@/lib/d1';
 import type { EventWithCategory } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import CheckinButton from '@/components/admin/library/CheckinButton';
@@ -58,14 +58,15 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const [eventsResult, categories, checkedInIds] = await Promise.all([
-    getEvents({
-      year: params.year ? parseInt(params.year) : undefined,
-      category: params.category || undefined,
-      search: params.search || undefined,
-      limit: 100,
-      // 멤버(학생·학부모)는 비공개 포함 전체, 그 외 역할은 공개 아카이브만.
-      published: memberView ? 'all' : true,
-    }),
+    getEvents(
+      memberLibrary({
+        year: params.year ? parseInt(params.year) : undefined,
+        category: params.category || undefined,
+        search: params.search || undefined,
+        // 멤버(학생·학부모)는 비공개 포함 전체, 그 외 역할은 공개 아카이브만
+        canSeeUnpublished: memberView,
+      })
+    ),
     getCategories(),
     canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
   ]);

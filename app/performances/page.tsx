@@ -9,7 +9,7 @@ import PerformancesHero from '@/components/performances/PerformancesHero';
 import PerformanceHero from '@/components/performances/PerformanceHero';
 import RepertoireSection from '@/components/performances/RepertoireSection';
 import ArchiveBridge from '@/components/performances/ArchiveBridge';
-import { getEvents } from '@/lib/d1';
+import { getEvents, publicPerformances } from '@/lib/d1';
 import type { EventWithCategory } from '@/types/gallery';
 
 export const dynamic = 'force-dynamic';
@@ -56,11 +56,11 @@ function groupByCategory(events: EventWithCategory[]): CategoryGroup[] {
 export default async function PerformancesPage() {
   // 큐레이션된 대표 공연 우선, 없으면 최근 공개 공연으로 폴백.
   // 학내 행사(kind='school')는 레퍼토리가 아니므로 두 경로 모두에서 제외한다.
-  const showcase = await getEvents({ showcase: true, published: true, limit: 50, kind: 'performance' });
+  const showcase = await getEvents(publicPerformances({ showcase: true }));
   const curated = showcase.events.length > 0;
   let events = showcase.events;
   if (!curated) {
-    const fallback = await getEvents({ published: true, limit: 12, kind: 'performance' });
+    const fallback = await getEvents(publicPerformances({ limit: 12 }));
     events = fallback.events;
   }
 
