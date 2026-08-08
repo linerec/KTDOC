@@ -14878,6 +14878,41 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+/* 제공자가 "질의를 온전히 해석하지 못했다"고 알려 준 결과 — 정확한 결과와 섞이면
+   안 되므로 눈에 띄게 구분한다. */
+.location-picker-suggestion-approx {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  background: rgba(var(--accent-gold-rgb), 0.14);
+  color: var(--accent-text);
+}
+
+/* 주소는 있는데 좌표가 없는 상태. 저장은 되지만 지도가 안 뜬다는 사실을
+   폼에서 바로 알려 준다 — 공개 페이지에서 지도가 비어야 알아채면 늦다. */
+.location-picker-unverified {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--accent-gold-rgb), 0.34);
+  background: rgba(var(--accent-gold-rgb), 0.07);
+}
+.location-picker-unverified strong {
+  font-size: 0.85rem;
+  color: var(--accent-text);
+}
+.location-picker-unverified span {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
 .location-picker-help {
   margin-top: 6px;
   border-bottom: none;

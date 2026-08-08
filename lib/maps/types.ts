@@ -14,10 +14,31 @@
 export interface GeocodeResult {
   /** 장소·건물 이름 (제공자가 알 때만, 예: "Bergen Performing Arts Center") */
   name: string | null;
-  /** 표시용 전체 주소 */
+  /** 표시용 전체 주소. 제공자가 정규화한 값(구글의 formatted_address 등). */
   address: string;
   lat: number;
   lng: number;
+  /**
+   * 제공자가 "질의를 온전히 해석하지 못하고 근사치를 골랐다"고 알려 준 경우 true.
+   * (구글의 partial_match) 그대로 저장하면 엉뚱한 좌표가 확정된 것처럼 보이므로
+   * 화면에서 구분해 보여 준다.
+   */
+  approximate?: boolean;
+}
+
+/**
+ * 주소 검색만 담당하는 제공자.
+ *
+ * 지도 '표시'와 '주소 검색'은 서로 다른 제공자를 써도 된다 — 실제로 그게 낫다.
+ * OSM 임베드는 공짜지만 미국 관공서·캠퍼스 주소가 데이터에 없는 경우가 많고,
+ * Google은 주소를 정확히 찾아 정규화해 주지만 지도 표시까지 쓰면 비용이 는다.
+ * 그래서 표시는 MapsProvider(NEXT_PUBLIC_MAPS_PROVIDER), 검색은 Geocoder
+ * (GEOCODE_PROVIDER, 서버 전용)로 따로 고른다.
+ */
+export interface Geocoder {
+  id: string;
+  /** 주소·장소 텍스트 검색. **서버 전용** — 키가 클라이언트로 새면 안 된다. */
+  geocode(query: string, opts?: { limit?: number }): Promise<GeocodeResult[]>;
 }
 
 export interface EmbedOptions {

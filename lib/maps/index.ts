@@ -11,10 +11,11 @@
  * 서버 전용 키를 쓰고, 그 키는 NEXT_PUBLIC 없이 서버 env로 관리하면 된다.
  */
 
-import type { MapsProvider } from './types';
+import type { Geocoder, MapsProvider } from './types';
 import { osmProvider } from './providers/osm';
+import { googleGeocoder } from './providers/google';
 
-export type { MapsProvider, GeocodeResult, EmbedOptions } from './types';
+export type { MapsProvider, Geocoder, GeocodeResult, EmbedOptions } from './types';
 export { isValidLatLng } from './types';
 
 const PROVIDERS: Record<string, MapsProvider> = {
@@ -31,4 +32,30 @@ export function getMapsProvider(): MapsProvider {
     return PROVIDERS[DEFAULT_PROVIDER_ID];
   }
   return provider;
+}
+
+/**
+ * 주소 검색 제공자 — 지도 '표시'와 따로 고른다.
+ *
+ * 표시는 무료 OSM 임베드로 충분하지만, 주소 검색은 OSM으로 안 된다. 미국 관공서·
+ * 캠퍼스 주소가 OSM 데이터에 아예 없는 경우가 많아서, 어떤 도구를 써도 못 찾는다.
+ * 그래서 검색만 GEOCODE_PROVIDER로 갈아끼운다(서버 전용 환경변수 — 키가 필요한
+ * 제공자를 써도 번들에 들어가지 않는다).
+ *
+ *   GEOCODE_PROVIDER=google + GOOGLE_MAPS_API_KEY=...   (권장)
+ *   미설정 시 표시 제공자의 geocode(=OSM Photon)로 떨어진다.
+ */
+const GEOCODERS: Record<string, Geocoder> = {
+  [osmProvider.id]: osmProvider,
+  [googleGeocoder.id]: googleGeocoder,
+};
+
+export function getGeocoder(): Geocoder {
+  const id = process.env.GEOCODE_PROVIDER || process.env.NEXT_PUBLIC_MAPS_PROVIDER || DEFAULT_PROVIDER_ID;
+  const geocoder = GEOCODERS[id];
+  if (!geocoder) {
+    console.warn(`알 수 없는 지오코더 '${id}' — 기본값 '${DEFAULT_PROVIDER_ID}' 사용`);
+    return GEOCODERS[DEFAULT_PROVIDER_ID];
+  }
+  return geocoder;
 }

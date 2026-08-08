@@ -9,7 +9,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getMapsProvider } from '@/lib/maps';
+import { getGeocoder } from '@/lib/maps';
 
 export async function GET(request: Request) {
   try {
@@ -28,7 +28,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: true, data: [] });
     }
 
-    const results = await getMapsProvider().geocode(q, { limit: 6 });
+    const results = await getGeocoder().geocode(q, { limit: 6 });
+    // 빈 배열은 오류가 아니라 "그런 주소 없음"이다 — 화면이 그렇게 말할 수 있도록
+    // success로 내려보낸다(예전 제공자는 못 찾아도 엉뚱한 걸 채워 넣었다).
     return NextResponse.json({ success: true, data: results });
   } catch (error) {
     console.error('지오코딩 오류:', error);

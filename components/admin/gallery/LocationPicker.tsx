@@ -132,6 +132,24 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
     });
   };
 
+  /**
+   * 입력창을 떠날 때, 제안을 고르지 않았어도 적은 주소를 저장한다.
+   *
+   * 예전에는 타이핑이 로컬 state에만 있어서 제안을 고르지 않으면 **조용히 버려졌다**.
+   * 포스터에서 옮겨 적거나 AI가 뽑아 준 주소가 그런 경우인데, 정규화가 안 되는
+   * 정도가 아니라 아예 저장이 안 됐다. 좌표는 비워 둔다 — 확인되지 않은 주소라는
+   * 사실이 화면과 데이터 양쪽에 남아야 한다(지도도 좌표가 있어야만 뜬다).
+   */
+  const commitTypedAddress = () => {
+    const typed = query.trim();
+    if (typed === value.location_address) return;
+    if (!typed) {
+      onChange({ location_address: '', location_lat: null, location_lng: null });
+      return;
+    }
+    onChange({ location_address: typed, location_lat: null, location_lng: null });
+  };
+
   const clearCoords = () => {
     skipSearchRef.current = true;
     setQuery('');
@@ -182,6 +200,9 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={onKeyDown}
           onFocus={() => results.length > 0 && setOpen(true)}
+          /* 제안 클릭은 onPointerDown에서 preventDefault로 blur를 막으므로
+             여기 걸려도 선택 동작과 부딪히지 않는다. */
+          onBlur={commitTypedAddress}
           placeholder="주소나 장소 이름을 입력해 검색 (예: 100 Grove St, Jersey City)"
           className="admin-form-input"
           autoComplete="off"
@@ -214,6 +235,11 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
               >
                 {r.name && <strong className="location-picker-suggestion-name">{r.name}</strong>}
                 <span className="location-picker-suggestion-address">{r.address}</span>
+                {/* 제공자가 "질의를 온전히 해석하지 못했다"고 알려 준 결과.
+                    표시하지 않으면 정확한 결과와 구분되지 않는다. */}
+                {r.approximate && (
+                  <span className="location-picker-suggestion-approx">근사치 — 확인 필요</span>
+                )}
               </li>
             ))}
           </ul>
@@ -223,6 +249,19 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           검색 결과를 선택하면 좌표가 저장되고, 공연 페이지에 지도가 표시됩니다.
         </p>
       </div>
+
+      {/* 주소는 적혀 있는데 좌표가 없는 상태 — 검색으로 확인되지 않은 주소다.
+          저장은 되지만 지도가 뜨지 않으므로, 왜 안 뜨는지 여기서 알려 준다. */}
+      {!hasCoords && value.location_address.trim() && (
+        <div className="location-picker-unverified">
+          <strong>확인되지 않은 주소</strong>
+          <span>
+            적어 주신 주소는 저장되지만 검색으로 확인되지 않아 좌표가 없습니다. 공연
+            페이지에 지도가 표시되지 않습니다 — 위에서 검색해 결과를 선택하면 지도가
+            함께 나옵니다.
+          </span>
+        </div>
+      )}
 
       {hasCoords && (
         <div className="location-picker-preview">
