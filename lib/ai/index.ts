@@ -16,9 +16,16 @@
  *    클라이언트는 서버 액션/라우트를 통해 사용한다.
  */
 
-import type { AiChatRequest, AiChatResult, AiModelCatalog, AiProviderKey } from '@/types/ai';
+import type {
+  AiChatRequest,
+  AiChatResult,
+  AiImageRequest,
+  AiImageResult,
+  AiModelCatalog,
+  AiProviderKey,
+} from '@/types/ai';
 import { chatAnthropic, listAnthropicModels } from './adapters/anthropic';
-import { chatGoogle, listGoogleModels } from './adapters/google';
+import { chatGoogle, generateImageGoogle, listGoogleModels } from './adapters/google';
 import { chatOpenAi, listOpenAiModels } from './adapters/openai';
 import { getAiPurpose } from './registry';
 import { resolveModelProfile } from './quirks';
@@ -57,6 +64,49 @@ export async function askAI(purposeKey: string, request: AiChatRequest): Promise
   );
 
   return dispatchChat(assignment.provider, cfg, assignment.model, request, profile, assignment.paramOverrides);
+}
+
+/**
+ * 용도 키로 **이미지를 생성**한다. askAI()와 같은 길(용도 → 관리자 지정 → 제공자 키)을
+ * 쓰되 반환이 이미지다. 저장은 하지 않는다 — 호출부가 R2에 올릴지 파일로 쓸지 정한다.
+ *
+ * 지금은 Google(Nano Banana)만 지원한다. 다른 제공자는 이미지가 완전히 다른
+ * 엔드포인트라 어댑터를 새로 써야 하는데, 필요해지면 그때 더한다.
+ */
+export async function generateImage(
+  purposeKey: string,
+  request: AiImageRequest
+): Promise<AiImageResult> {
+  const purpose = getAiPurpose(purposeKey);
+  if (!purpose) {
+    throw new Error(`알 수 없는 AI 용도입니다: ${purposeKey} (lib/ai/registry.ts에 먼저 등록하세요)`);
+  }
+  if (!purpose.producesImage) {
+    throw new Error(
+      `용도 "${purpose.label}"은(는) 이미지 생성 용도가 아닙니다. registry에 producesImage를 표시하거나 askAI()를 쓰세요.`
+    );
+  }
+
+  const { providers, assignments } = await loadAiConfig();
+  // 이미지 용도는 'general'로 폴백하지 않는다 — 텍스트 모델이 지정돼 있으면 실패만 늘어난다
+  const assignment = assignments[purposeKey];
+  if (!assignment) {
+    throw new Error(
+      `AI 용도 "${purpose.label}"에 지정된 모델이 없습니다. 관리 콘솔 > AI 설정에서 이미지 생성 모델을 지정해 주세요.`
+    );
+  }
+  if (assignment.provider !== 'google') {
+    throw new Error(
+      `이미지 생성은 현재 Google(Nano Banana)만 지원합니다. 지정된 제공자: ${assignment.provider}`
+    );
+  }
+
+  const cfg = providers.google;
+  if (!cfg?.enabled) {
+    throw new Error('Google 제공자가 비활성 상태입니다. 관리 콘솔 > AI 설정을 확인해 주세요.');
+  }
+
+  return generateImageGoogle(cfg, assignment.model, request);
 }
 
 /** 제공자 분기 — 테스트 API가 지정 저장 전 임시 조합을 시험할 때도 재사용한다 */

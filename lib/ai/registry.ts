@@ -18,6 +18,11 @@ export interface AiPurpose {
   needsVision?: boolean;
   /** 구조화(JSON) 출력이 필요한 용도 */
   needsJson?: boolean;
+  /**
+   * 텍스트가 아니라 **이미지를 생성**하는 용도. 이런 용도는 askAI()가 아니라
+   * generateImage()로 부르고, 이미지 생성 모델(Nano Banana 등)을 지정해야 한다.
+   */
+  producesImage?: boolean;
 }
 
 export const AI_PURPOSES: AiPurpose[] = [
@@ -34,6 +39,13 @@ export const AI_PURPOSES: AiPurpose[] = [
       '공연 포스터 이미지를 읽어 제목·일시·장소 등 공연 정보를 구조화(JSON)해 추출합니다. (새 공연 만들기에서 사용 예정)',
     needsVision: true,
     needsJson: true,
+  },
+  {
+    key: 'image.generate',
+    label: '장식 이미지 생성',
+    description:
+      '전통 문양·장식 오브젝트 이미지를 만듭니다. 이미지 생성 모델(예: gemini-*-flash-image)을 지정해야 합니다.',
+    producesImage: true,
   },
   {
     key: 'text.polish',

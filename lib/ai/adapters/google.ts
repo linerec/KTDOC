@@ -6,7 +6,14 @@
  * JSON 모드는 responseMimeType: application/json.
  */
 
-import type { AiChatRequest, AiChatResult, AiModelInfo, AiModelParamProfile } from '@/types/ai';
+import type {
+  AiChatRequest,
+  AiChatResult,
+  AiImageRequest,
+  AiImageResult,
+  AiModelInfo,
+  AiModelParamProfile,
+} from '@/types/ai';
 import type { AiProviderConfig } from '../settings';
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
@@ -118,5 +125,77 @@ export async function chatGoogle(
       // Gemini 2.5+는 사고 토큰도 maxOutputTokens 예산에서 차감된다 — 응답이 잘리는 주원인
       thinkingTokens: data.usageMetadata?.thoughtsTokenCount,
     },
+  };
+}
+
+/**
+ * 이미지 생성 — Nano Banana(gemini-*-flash-image / *-pro-image)
+ *
+ * 텍스트와 **같은 generateContent**를 쓴다. 다른 점은 두 가지뿐이다:
+ *  - responseModalities에 IMAGE를 넣어 이미지를 받겠다고 알린다
+ *  - 응답 parts에서 text가 아니라 inlineData(base64)를 꺼낸다
+ * 그래서 어댑터를 새로 만들지 않고 여기 함수 하나를 더한다.
+ *
+ * 저장은 하지 않는다 — 호출부가 R2에 올리든 파일로 쓰든 정한다.
+ */
+export async function generateImageGoogle(
+  cfg: AiProviderConfig,
+  model: string,
+  req: AiImageRequest
+): Promise<AiImageResult> {
+  const key = requireKey(cfg);
+
+  const parts: GooglePart[] = [];
+  for (const img of req.images ?? []) {
+    parts.push({ inline_data: { mime_type: img.mimeType, data: img.dataBase64 } });
+  }
+  // 이미지 모델은 systemInstruction을 받지 않는 경우가 있어 프롬프트 앞에 병합한다.
+  const prompt = req.system ? `${req.system}\n\n---\n\n${req.prompt}` : req.prompt;
+  parts.push({ text: prompt });
+
+  const res = await fetch(
+    `${BASE}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      }),
+      cache: 'no-store',
+      // 이미지 생성은 텍스트보다 오래 걸린다
+      signal: AbortSignal.timeout(120_000),
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`이미지 생성 실패 (HTTP ${res.status}): ${(await res.text()).slice(0, 300)}`);
+  }
+
+  const data = (await res.json()) as {
+    candidates?: {
+      content?: {
+        parts?: { text?: string; inlineData?: { mimeType?: string; data?: string } }[];
+      };
+      finishReason?: string;
+    }[];
+  };
+
+  const responseParts = data.candidates?.[0]?.content?.parts ?? [];
+  const image = responseParts.find((p) => p.inlineData?.data);
+  if (!image?.inlineData?.data) {
+    // 안전 필터에 걸리면 이미지 없이 설명만 온다 — 조용히 넘기지 말고 사유를 보여 준다
+    const said = responseParts.map((p) => p.text ?? '').join(' ').trim();
+    throw new Error(
+      `모델이 이미지를 돌려주지 않았습니다${data.candidates?.[0]?.finishReason ? ` (${data.candidates[0].finishReason})` : ''}` +
+        (said ? `: ${said.slice(0, 200)}` : '. 프롬프트가 안전 필터에 걸렸을 수 있습니다.')
+    );
+  }
+
+  return {
+    mimeType: image.inlineData.mimeType || 'image/png',
+    dataBase64: image.inlineData.data,
+    provider: 'google',
+    model,
+    text: responseParts.map((p) => p.text ?? '').join('').trim() || undefined,
   };
 }

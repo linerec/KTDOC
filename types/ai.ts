@@ -111,3 +111,22 @@ export interface AiChatResult {
    */
   usage?: { inputTokens?: number; outputTokens?: number; thinkingTokens?: number };
 }
+
+/** 이미지 생성 요청 — 텍스트 질의(AiChatRequest)와 반환 종류가 달라 따로 둔다. */
+export interface AiImageRequest {
+  prompt: string;
+  /** 생성 방향을 잡는 지시(화풍·금지 사항 등). 제공자에 따라 프롬프트에 병합될 수 있다. */
+  system?: string;
+  /** 참고 이미지 — 편집·변형 용도(제공자가 지원할 때만). */
+  images?: { mimeType: string; dataBase64: string }[];
+}
+
+/** 생성된 이미지 한 장 — 저장은 호출부(R2 등)가 맡는다. */
+export interface AiImageResult {
+  mimeType: string;
+  dataBase64: string;
+  provider: AiProviderKey;
+  model: string;
+  /** 모델이 이미지와 함께 낸 설명. 없을 수 있다. */
+  text?: string;
+}

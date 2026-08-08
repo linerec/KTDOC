@@ -1665,6 +1665,14 @@ html:not([data-site-theme]):not([data-admin-theme]) .traditional-sky {
   opacity: 0.42;
 }
 
+/* 한지 위에서는 먹을 뒤집지 않는다 — 그대로 곱하면 종이에 스민 그림이 된다 */
+html[data-site-theme='light'] .sansu-image,
+html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
+  filter: none;
+  mix-blend-mode: multiply;
+  opacity: 0.62;
+}
+
 /* 동작 최소화: 일시정지가 아니라 정지 이미지로 대체한다(이 프로젝트 관례). */
 @media (prefers-reduced-motion: reduce) {
   .traditional-sky-video {
@@ -1700,20 +1708,63 @@ html:not([data-site-theme]):not([data-admin-theme]) .traditional-sky {
   text-shadow: 0 1px 18px rgba(0, 0, 0, 0.56);
 }
 
-.traditional-dancheong {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  margin-top: auto;
+/* ── 산수(山水) — 하늘과 이어지는 먹빛 산 ────────────────────────────────
+   화면 아래를 가로지르는 배경이다. 위의 수묵 하늘 영상이 그대로 흘러내려
+   하늘과 산이 한 폭이 된다.
+
+   흰 배경 위 먹 그림이라 블렌드로 배경을 날린다. 알파 PNG를 쓰지 않는 이유:
+   생성 모델이 투명 배경을 만들지 못하고 체커보드를 '그림으로' 그려 넣는다.
+   흰 바탕 + 블렌드가 수묵에는 오히려 정석이고, 하늘도 같은 방식이다.
+   다크는 invert 후 screen(먹이 빛이 된다), 라이트는 그대로 multiply(먹이 스민다).
+
+   **섹션 직속에 둔다.** .traditional-container 안에 두면 그 컨테이너가
+   position:relative + z-index:1로 스태킹 컨텍스트를 만들어 multiply가 갇힌다 —
+   블렌드할 배경이 없으니 흰 바탕이 그대로 남는다. */
+.traditional-sansu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
 }
 
-.dancheong-image {
+.traditional-sansu .traditional-sansu-fill {
   width: 100%;
-  max-width: 900px;
-  height: auto;
-  object-fit: contain;
 }
+
+.sansu-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  filter: invert(1);
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  /* 산은 떠다니지 않는다. 아주 느리게 커졌다 작아지며 안개가 두꺼워졌다
+     엷어지는 것처럼 보이게만 한다 — 움직임이 아니라 호흡이다. */
+  animation: sansuBreathe 26s ease-in-out infinite;
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+@keyframes sansuBreathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.035);
+    opacity: 0.62;
+  }
+}
+
+/* 움직임을 줄이도록 설정한 사용자에게는 멈춘 그림으로 보여 준다 */
+@media (prefers-reduced-motion: reduce) {
+  .sansu-image {
+    animation: none;
+  }
+}
+
 
 /* ========================================
    FOOTER
@@ -10683,12 +10734,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .about-hero-bg::before,
 .about-hero-bg::after {
   pointer-events: none;
-}
-
-/* Traditional(단청) - 흐름 내 이미지 래퍼 크기 고정 */
-.traditional-dancheong .traditional-dancheong-fill {
-  width: 100%;
-  max-width: 900px;
 }
 
 /* Hero 배경 슬라이드쇼 - 각 프레임을 절대 채움 */

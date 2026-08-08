@@ -31,19 +31,23 @@ export default function Traditional() {
                     <IntlObject keycode="traditional.vertical.text" />
                 </div>
 
-                {/* Dancheong Roof Image */}
-                <div className="traditional-dancheong">
-                    <ImageObject
-                        keycode="image.traditional.dancheong"
-                        width={1200}
-                        height={600}
-                        className="dancheong-image"
-                        containerClassName="traditional-dancheong-fill"
-                        fallbackSrc="/assets/images/dancheong.png"
-                        alt="Traditional Korean Roof - Dancheong"
-                        priority
-                    />
-                </div>
+            </div>
+
+            {/* 산수(山水) — 안개 속으로 물러나는 산. 위의 수묵 하늘이 그대로 이어져
+                하늘과 산이 한 폭의 산수화가 된다.
+                흰 배경 위 먹 그림이라 블렌드로 배경을 날린다(하늘과 같은 방식).
+                아주 느리게 숨쉬듯 움직여 안개가 흐르는 것처럼 보이게 한다. */}
+            <div className="traditional-sansu" aria-hidden="true">
+                <ImageObject
+                    keycode="image.traditional.sansu"
+                    width={1568}
+                    height={672}
+                    className="sansu-image"
+                    containerClassName="traditional-sansu-fill"
+                    fallbackSrc="/assets/images/sansu.jpg"
+                    alt=""
+                    priority
+                />
             </div>
         </section>
     );
