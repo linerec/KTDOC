@@ -14450,8 +14450,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 /* ── 한지 결을 지면에 얹는다 ─────────────────────────────────────────────
-   **다른 페이지로 넓히려면 아래 두 셀렉터 목록에 페이지 셸을 추가하면 된다.**
-   (예: `.timeline-page, .gallery-page {` / `.timeline-page::before, .gallery-page::before {`)
+   **새 페이지를 만들면 아래 두 목록에 그 페이지 셸을 추가한다.**
+
+   무엇을 넣나: '지면'을 소유한 요소 — 자기 배경을 칠하는 페이지 셸이나 섹션.
+   무엇을 빼나:
+   - 다른 셸 **안에** 있는 섹션(.gallery-main은 .gallery-page 안이다) — 결이 두 겹이 된다
+   - 다크 섬(히어로·라이트박스) — 사진 위에는 종이 결이 성립하지 않는다
+   - 이미 ::before를 쓰는 요소 — .notfound는 비네트가 ::before라 ::after로 얹는다
 
    구현 주의:
    - `isolation: isolate`가 필요하다. 스태킹 컨텍스트가 없으면 z-index:-1 레이어가
@@ -14460,12 +14465,47 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
    - z-index:-1이라 콘텐츠(카드·글자)는 결 위에 온다. 카드가 반투명이면 결이
      비쳐 보이는데, 그게 한지 공예 느낌을 만든다.
    - 다크에서는 --paper-texture-opacity가 0이라 레이어가 그려지지 않는다.  */
-.timeline-page {
+.timeline-page,
+.gallery-page,
+.students-page,
+.glossary-page,
+.classes-page,
+.classes-loading,
+.performances-page,
+.calendar-page,
+.rsvp-page,
+.legal-page,
+.program-detail,
+.event-detail,
+.media-main,
+.journey-section,
+.feature-preview-section,
+#categories,
+#traditional,
+.notfound {
   position: relative;
   isolation: isolate;
 }
 
-.timeline-page::before {
+.timeline-page::before,
+.gallery-page::before,
+.students-page::before,
+.glossary-page::before,
+.classes-page::before,
+.classes-loading::before,
+.performances-page::before,
+.calendar-page::before,
+.rsvp-page::before,
+.legal-page::before,
+.program-detail::before,
+.event-detail::before,
+.media-main::before,
+.journey-section::before,
+.feature-preview-section::before,
+#categories::before,
+#traditional::before,
+/* .notfound는 ::before가 비네트라 ::after로 얹는다 */
+.notfound::after {
   content: '';
   position: absolute;
   inset: 0;
