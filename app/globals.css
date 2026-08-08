@@ -1232,20 +1232,65 @@ ul {
   padding: clamp(84px, 10vw, 150px) 40px;
 }
 
+/* 한삼 궤적 영상. 예전에는 여기 black_stroke.png가 cover로 깔렸는데, 1000×1654
+   세로 그림이라 가로 섹션에서 3할만 보였다 — 획의 시작도 끝도 잘려 무엇인지
+   알 수 없었다. 영상이 그 자리를 대신한다.
+   레이어 순서를 z-index로 못박는다: 궤적(0) < 금·적 워시(1) < 본문(2). */
+/* opacity 0.18은 눈대중이 아니라 측정값이다. 확정 렌더는 draft보다 천이
+   오른쪽으로 퍼져 카피 영역을 스치는데, 0.35에서는 본문 대비가 5.4:1까지
+   떨어졌다(옛 배경은 9.34:1). 0.18이면 9.61:1로 옛 배경을 넘어서면서도
+   레이아웃을 열어둔 덕에 궤적은 충분히 읽힌다. 올릴 때는 다시 측정할 것 —
+   `_h3/jobs/ktdoc/preview_mission.py`가 이 수치를 뽑는다. */
+.mission-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  mix-blend-mode: screen;
+  opacity: 0.18;
+}
+
+.mission-sky-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* traditional-sky와 같은 규칙 — grayscale이 invert보다 먼저다. 따뜻한 아이보리를
+   그냥 뒤집으면 차가운 청회색이 되어 한지와 충돌한다. */
+html[data-site-theme='light'] .mission-sky,
+html:not([data-site-theme]):not([data-admin-theme]) .mission-sky {
+  filter: grayscale(1) invert(1);
+  mix-blend-mode: multiply;
+  opacity: 0.18;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mission-sky-video {
+    display: none;
+  }
+
+  .mission-sky {
+    background: url('/assets/video/mission-hansam.jpg') center / cover no-repeat;
+  }
+}
+
 .mission-section::before {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 1;
   background:
-    linear-gradient(90deg, rgba(224, 184, 79, 0.12), transparent 28%, transparent 72%, rgba(196, 48, 43, 0.1)),
-    url('/assets/images/black_stroke.png') center / cover no-repeat;
+    linear-gradient(90deg, rgba(224, 184, 79, 0.12), transparent 28%, transparent 72%, rgba(196, 48, 43, 0.1));
   opacity: 0.18;
   pointer-events: none;
 }
 
 .mission-shell {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: var(--container-width);
   margin: 0 auto;
   display: grid;
@@ -1254,31 +1299,23 @@ ul {
   align-items: center;
 }
 
+/* 사진은 contain이라 정사각 원본이 세로로 긴 칸을 다 채우지 못한다. 예전에는
+   그 남는 자리를 불투명 판(#160f0b)과 어두운 베일이 덮어 배경이 아예 보이지
+   않았다 — 배경에 무엇을 깔든 30%만 드러나던 이유다. 판을 걷어내 사진이 지면
+   위에 떠 있게 하고, 입체감은 판 그림자 대신 사진 자체의 drop-shadow로 준다. */
 .mission-media {
   position: relative;
   min-height: clamp(420px, 46vw, 620px);
-  overflow: hidden;
-  border-radius: 8px;
-  background: #160f0b;
-  box-shadow: 0 34px 88px rgba(0, 0, 0, 0.34);
   opacity: 0;
   transform: translateY(28px);
   animation: missionReveal 900ms var(--ease-out-expo) 160ms forwards;
 }
 
-.mission-media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(9, 7, 5, 0.1), rgba(9, 7, 5, 0.24)),
-    linear-gradient(90deg, rgba(9, 7, 5, 0.42), transparent 58%);
-}
-
 .mission-image {
   object-fit: contain;
   object-position: center;
-  filter: saturate(0.94) contrast(1.03) brightness(0.95);
+  filter: saturate(0.94) contrast(1.03) brightness(0.95)
+    drop-shadow(0 24px 56px rgba(0, 0, 0, 0.34));
 }
 
 .mission-copy {
