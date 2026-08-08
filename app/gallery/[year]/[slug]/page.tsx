@@ -23,6 +23,8 @@ import { VideoList } from '@/components/gallery/VideoEmbed';
 import GalleryBackLink from '@/components/gallery/GalleryBackLink';
 import GalleryAdjacentNav from '@/components/gallery/GalleryAdjacentNav';
 import GallerySectionTitle from '@/components/gallery/GallerySectionTitle';
+import EventDetailFacts from '@/components/gallery/EventDetailFacts';
+import ShareQrCard from '@/components/share/ShareQrCard';
 
 interface PageProps {
   params: Promise<{
@@ -74,24 +76,16 @@ export default async function EventDetailPage({ params }: PageProps) {
   const { year, slug } = await params;
   const yearNum = parseInt(year);
 
-  // Debug logging
-  console.log('[Gallery Detail] year:', year, 'slug:', slug, 'decoded:', decodeURIComponent(slug));
-
   if (isNaN(yearNum)) {
     notFound();
   }
 
-  // Try both encoded and decoded slug
+  // slug에 한글이 들어가는 공연이 있어 인코딩된 값과 디코딩된 값을 모두 시도한다
   const decodedSlug = decodeURIComponent(slug);
   let event = await getEventBySlug(yearNum, slug, { imagesLimit: GALLERY_IMAGE_PAGE_SIZE });
-
-  // If not found, try with decoded slug
   if (!event && slug !== decodedSlug) {
-    console.log('[Gallery Detail] Trying decoded slug:', decodedSlug);
     event = await getEventBySlug(yearNum, decodedSlug, { imagesLimit: GALLERY_IMAGE_PAGE_SIZE });
   }
-
-  console.log('[Gallery Detail] Event found:', !!event, event?.is_published);
 
   if (!event || !event.is_published) {
     notFound();
@@ -122,145 +116,129 @@ export default async function EventDetailPage({ params }: PageProps) {
     participantCount = counts.get(event.id) ?? 0;
   }
 
+  // 히어로 배경은 '분위기'를 맡으므로 가로 사진을 우선한다. 포스터(대개 세로 전단)를
+  // cover로 깔면 글자가 잘려 정보가 사라지므로, 포스터는 사이드바에서 통째로 보여 준다.
+  const heroImage = event.thumbnail_url || event.images[0]?.image_url || event.poster_url;
+  const hasLocationSection =
+    event.location ||
+    event.location_address ||
+    (event.location_lat !== null && event.location_lng !== null) ||
+    event.location_url;
+
   return (
-    <main className="gallery-detail-page">
-      {/* Back Navigation */}
-      <GalleryBackLink />
-
-      {/* Event Header */}
-      <section className="gallery-detail-header">
-        <div className="container">
-          <div className="gallery-detail-meta">
-            <span className="gallery-detail-year">{event.year}</span>
-            {event.kind === 'school' && (
-              <span className="gallery-detail-kind">학내 행사</span>
-            )}
+    <main className="event-detail">
+      <section className="event-detail-hero">
+        {heroImage && (
+          <div className="event-detail-hero-bg" aria-hidden="true">
+            <Image
+              src={heroImage}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="event-detail-hero-img"
+            />
+          </div>
+        )}
+        <div className="event-detail-hero-overlay" aria-hidden="true" />
+        <div className="container event-detail-hero-inner">
+          <div className="event-detail-eyebrow">
+            <GalleryBackLink kind={event.kind} className="event-detail-back" />
+            <span className="event-detail-year">{event.year}</span>
+            {event.kind === 'school' && <span className="event-detail-kind">학내 행사</span>}
             {event.category && (
-              <span className="gallery-detail-category">
-                {event.category.name_ko}
-              </span>
+              <span className="event-detail-category">{event.category.name_ko}</span>
             )}
           </div>
-          <h1 className="gallery-detail-title">{event.title_ko}</h1>
-          {event.title_en && (
-            <p className="gallery-detail-title-en">{event.title_en}</p>
-          )}
-          <p className="gallery-detail-date">
+          <h1 className="event-detail-title">{event.title_ko}</h1>
+          {event.title_en && <p className="event-detail-title-en">{event.title_en}</p>}
+          <p className="event-detail-when">
             {formattedDate}
-            {formattedTime && (
-              <span className="gallery-detail-time">{formattedTime}</span>
-            )}
+            {formattedTime && <span className="event-detail-time">{formattedTime}</span>}
+            {event.location && <span className="event-detail-venue">{event.location}</span>}
           </p>
-          {/* 장소를 헤더에서 바로 보여 준다. 아래 "오시는 길" 절이 지도·주소를
-              담고 있지만 화면 한참 아래에 있어, 목록에서 들어온 사람이 "언제·어디서"를
-              한 번에 확인하지 못했다. 주소까지 여기 적으면 제목 블록이 무거워지므로
-              장소명까지만 둔다. */}
-          {event.location && (
-            <p className="gallery-detail-venue">{event.location}</p>
-          )}
-          {/* 참여 기록이 없으면 표시하지 않는다 — '참여 0명'은 역효과 */}
-          {event.kind === 'school' && participantCount > 0 && (
-            <p className="gallery-detail-participants">참여 {participantCount}명</p>
-          )}
-
-          {/* 내 캘린더에 추가 (ko/en) */}
-          <div className="gallery-detail-cal">
-            <a className="gallery-cal-btn gallery-cal-btn--primary" href={calLinks.icsUrl}>
-              <span aria-hidden="true">📅</span>
-              <IntlObject keycode="pages.calendar.sub.addDevice" />
-            </a>
-            <a
-              className="gallery-cal-btn"
-              href={calLinks.googleUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <IntlObject keycode="pages.calendar.sub.addGoogle" />
-            </a>
-          </div>
         </div>
       </section>
 
-      {/* Poster Image */}
-      {event.poster_url && (
-        <section className="gallery-detail-poster">
-          <div className="container">
-            <div className="gallery-poster-wrapper">
-              <Image
-                src={event.poster_url}
-                alt={event.title_ko}
-                width={800}
-                height={1200}
-                className="gallery-poster-img"
-                priority
-              />
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Description */}
-      {(event.description_ko || event.description_en) && (
-        <section className="gallery-detail-description">
-          <div className="container">
-            {event.description_ko && (
-              <EventDescription text={event.description_ko} className="gallery-description-ko" />
+      <section className="event-detail-body">
+        <div className="container event-detail-grid">
+          <div className="event-detail-content">
+            {(event.description_ko || event.description_en) && (
+              <div className="event-detail-description">
+                {event.description_ko && (
+                  <EventDescription text={event.description_ko} className="gallery-description-ko" />
+                )}
+                {event.description_en && (
+                  <EventDescription text={event.description_en} className="gallery-description-en" />
+                )}
+              </div>
             )}
-            {event.description_en && (
-              <EventDescription text={event.description_en} className="gallery-description-en" />
+
+            {hasLocationSection && (
+              <div className="event-detail-section">
+                <GallerySectionTitle keycode="gallery.detail.location" />
+                <EventLocationMap
+                  location={event.location}
+                  address={event.location_address}
+                  lat={event.location_lat}
+                  lng={event.location_lng}
+                  locationUrl={event.location_url}
+                  directionsLabel={<IntlObject keycode="gallery.detail.directions" />}
+                  largerMapLabel={<IntlObject keycode="gallery.detail.largerMap" />}
+                />
+              </div>
+            )}
+
+            {event.images && event.images.length > 0 && (
+              <div className="event-detail-section">
+                <span className="dancheong-divider" aria-hidden="true" />
+                <GallerySectionTitle keycode="gallery.detail.photoGallery" />
+                <ImageGallery
+                  images={event.images}
+                  total={event.image_total ?? event.images.length}
+                  loadMoreUrl={`/api/gallery/events/${event.id}/images`}
+                  pageSize={GALLERY_IMAGE_PAGE_SIZE}
+                  locale="ko"
+                />
+              </div>
+            )}
+
+            {event.videos && event.videos.length > 0 && (
+              <div className="event-detail-section">
+                <GallerySectionTitle keycode="gallery.detail.videos" />
+                <VideoList videos={event.videos} locale="ko" />
+              </div>
             )}
           </div>
-        </section>
-      )}
 
-      {/* 오시는 길 — 좌표가 있으면 지도, 없으면 장소명·링크만 */}
-      {(event.location ||
-        event.location_address ||
-        (event.location_lat !== null && event.location_lng !== null) ||
-        event.location_url) && (
-        <section className="gallery-detail-location">
-          <div className="container">
-            <GallerySectionTitle keycode="gallery.detail.location" />
-            <EventLocationMap
+          <aside className="event-detail-aside">
+            {/* 포스터는 세로 전단이라 잘리면 안 된다 — 사이드바에서 원래 비율로 */}
+            {event.poster_url && (
+              <div className="event-poster-card">
+                <Image
+                  src={event.poster_url}
+                  alt={event.title_ko}
+                  width={800}
+                  height={1200}
+                  className="event-poster-img"
+                  sizes="(max-width: 980px) 100vw, 340px"
+                />
+              </div>
+            )}
+            <EventDetailFacts
+              date={formattedDate}
+              time={formattedTime}
               location={event.location}
               address={event.location_address}
-              lat={event.location_lat}
-              lng={event.location_lng}
-              locationUrl={event.location_url}
-              directionsLabel={<IntlObject keycode="gallery.detail.directions" />}
-              largerMapLabel={<IntlObject keycode="gallery.detail.largerMap" />}
+              participantCount={event.kind === 'school' ? participantCount : 0}
+              icsUrl={calLinks.icsUrl}
+              googleUrl={calLinks.googleUrl}
             />
-          </div>
-        </section>
-      )}
+            <ShareQrCard title={event.title_ko} />
+          </aside>
+        </div>
+      </section>
 
-      {/* Photo Gallery */}
-      {event.images && event.images.length > 0 && (
-        <section className="gallery-detail-images">
-          <div className="container">
-            <GallerySectionTitle keycode="gallery.detail.photoGallery" />
-            <ImageGallery
-              images={event.images}
-              total={event.image_total ?? event.images.length}
-              loadMoreUrl={`/api/gallery/events/${event.id}/images`}
-              pageSize={GALLERY_IMAGE_PAGE_SIZE}
-              locale="ko"
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Videos */}
-      {event.videos && event.videos.length > 0 && (
-        <section className="gallery-detail-videos">
-          <div className="container">
-            <GallerySectionTitle keycode="gallery.detail.videos" />
-            <VideoList videos={event.videos} locale="ko" />
-          </div>
-        </section>
-      )}
-
-      {/* Adjacent Navigation */}
       <GalleryAdjacentNav prev={adjacent.prev} next={adjacent.next} />
     </main>
   );

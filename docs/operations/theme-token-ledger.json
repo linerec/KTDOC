@@ -1827,6 +1827,24 @@
    "replacement": "변경 없음",
    "reason": "components/admin/AddToHomeCard.tsx:154 → StudentDashboard.tsx:61에서만 마운트되는 관리 콘솔(마이페이지) 카드. CSS 주석도 '마이페이지 착지 화면 … 두 테마 자동 대응'으로 admin 테마 소관임을 명시한다.",
    "confidence": "high"
+  },
+  {
+   "line": 12083,
+   "selector": ".event-facts-row dd",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "공연 상세 사이드바 정보 카드(.event-facts-card)의 값. 카드 배경이 var(--ink-panel) = rgba(var(--ivory-rgb),.055) 채널 토큰이라 지면과 함께 뒤집힌다 — 한지 위 먹 글자가 정답.",
+   "confidence": "high"
+  },
+  {
+   "line": 12104,
+   "selector": ".event-cal-btn",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "같은 카드 위 보조 버튼. 배경이 rgba(224,184,79,0.06) 옅은 금 틴트라 사실상 카드 표면이 비친다. 붉은 배경을 가진 --primary 변형만 --on-media로 따로 고정했다.",
+   "confidence": "high"
   }
  ],
  "감사": {

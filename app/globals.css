@@ -1594,12 +1594,58 @@ ul {
   min-height: 750px;
 }
 
+/* 처마 뒤 하늘 — 수묵 루프 영상.
+   소스는 '검은 바탕에 아이보리 먹' 한 벌이고, 테마마다 블렌드가 뒤집힌다:
+   다크는 screen(검정이 투명 → 먹 위로 안개가 떠오름), 라이트는 invert 후
+   multiply(흰 바탕이 투명 → 한지에 먹이 스민다). multiply/screen을 그냥
+   나눠 쓰면 한쪽은 바탕째 날아가므로 invert가 둘을 잇는 고리다.
+   blend·opacity는 래퍼가 소유한다 — 그래야 reduced-motion에서 video를
+   걷어내고 포스터를 깔아도 같은 합성이 그대로 유지된다. */
+.traditional-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+
+.traditional-sky-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* grayscale이 invert보다 먼저 와야 한다 — 소스의 따뜻한 아이보리를 그냥
+   뒤집으면 보색인 차가운 청회색이 되어 한지와 충돌한다. 무채색으로 만든 뒤
+   뒤집으면 multiply가 한지색과 곱해 주며 따뜻한 세피아 먹으로 앉는다. */
+html[data-site-theme='light'] .traditional-sky,
+html:not([data-site-theme]):not([data-admin-theme]) .traditional-sky {
+  filter: grayscale(1) invert(1);
+  mix-blend-mode: multiply;
+  opacity: 0.42;
+}
+
+/* 동작 최소화: 일시정지가 아니라 정지 이미지로 대체한다(이 프로젝트 관례). */
+@media (prefers-reduced-motion: reduce) {
+  .traditional-sky-video {
+    display: none;
+  }
+
+  .traditional-sky {
+    background: url('/assets/video/traditional-sky.jpg') center / cover no-repeat;
+  }
+}
+
 .traditional-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   position: relative;
+  z-index: 1;
   min-height: 750px;
   padding-top: 80px;
 }
@@ -4218,20 +4264,7 @@ ul {
   line-height: 1.45;
 }
 
-/* Gallery Detail Page */
-.gallery-detail-page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background:
-    linear-gradient(180deg, var(--ground-1) 0%, var(--ground-3) 45%, var(--ground-1) 100%);
-  padding-top: var(--page-offset);
-}
 
-.gallery-detail-nav {
-  padding: 20px 0;
-  border-bottom: 1px solid rgba(var(--fg-rgb),  0.1);
-}
 
 .gallery-back-link {
   display: inline-flex;
@@ -4251,103 +4284,20 @@ ul {
   height: 18px;
 }
 
-.gallery-detail-header {
-  padding: 60px 0 40px;
-  text-align: center;
-}
 
-.gallery-detail-meta {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
 
-.gallery-detail-year {
-  font-size: 0.85rem;
-  color: var(--accent-text);
-  padding: 4px 12px;
-  border: 1px solid var(--accent-color);
-  border-radius: 4px;
-}
 
-.gallery-detail-category {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  padding: 4px 12px;
-  background: rgba(var(--fg-rgb),  0.05);
-  border-radius: 4px;
-}
 
-/* 학내 행사 표시 — 카테고리 칩과 같은 골격에 금색 테두리만 얹는다 */
-.gallery-detail-kind {
-  font-size: 0.85rem;
-  color: var(--soft-gold-text);
-  padding: 4px 12px;
-  border: 1px solid rgba(224, 184, 79, 0.42);
-  border-radius: 4px;
-}
 
-/* 참여 인원 — 이름 없이 규모만. 기록이 스스로 말하게 하는 자리 */
-.gallery-detail-participants {
-  margin-top: 6px;
-  font-size: 0.95rem;
-  color: var(--text-muted);
-}
 
-.gallery-detail-title {
-  font-family: var(--font-heading);
-  font-size: 2.5rem;
-  font-weight: 400;
-  color: var(--text-color);
-  margin-bottom: 10px;
-}
 
-.gallery-detail-title-en {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  margin-bottom: 15px;
-}
 
-.gallery-detail-date {
-  font-size: 1rem;
-  color: var(--text-muted);
-}
 
-/* 상세 헤더의 시각·장소. 날짜 줄에 이어 붙어 "언제·어디서"가 제목 바로 아래에서
-   끝나게 한다 — 예전에는 장소를 보려면 "오시는 길" 절까지 스크롤해야 했다. */
-.gallery-detail-time::before {
-  content: ' · ';
-  opacity: 0.6;
-}
 
-.gallery-detail-venue {
-  margin-top: 4px;
-  font-size: 1rem;
-  color: var(--text-muted);
-}
 
-/* Poster */
-.gallery-detail-poster {
-  padding: 0 0 60px;
-}
 
-.gallery-poster-wrapper {
-  max-width: 600px;
-  margin: 0 auto;
-}
 
-.gallery-poster-img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
 
-/* Description */
-.gallery-detail-description {
-  padding: 40px 0;
-  border-top: 1px solid rgba(var(--fg-rgb),  0.1);
-}
 
 .gallery-description-ko,
 .gallery-description-en {
@@ -4407,11 +4357,6 @@ ul {
   margin-bottom: 30px;
 }
 
-/* Images Section */
-.gallery-detail-images {
-  padding: 60px 0;
-  background: rgba(0, 0, 0, 0.3);
-}
 
 .gallery-images-grid {
   display: grid;
@@ -4550,10 +4495,6 @@ ul {
   color: var(--text-muted);
 }
 
-/* Videos Section */
-.gallery-detail-videos {
-  padding: 60px 0;
-}
 
 .gallery-videos-list {
   display: grid;
@@ -11844,6 +11785,288 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   color: var(--warm-ivory);
   font-size: 1.05rem;
 }
+/* ============================================================
+   EVENT DETAIL — 공연·행사 상세
+   수업 상세(.program-detail)와 같은 골격을 쓴다. 예전에는 폭이 제각각인 섹션이
+   세로로 쌓여 있고 일정·캘린더가 제목 밑에 흩어져 있었다. 하나의 컨테이너 안
+   2단 그리드로 모으고, "언제·어디서"와 QR은 사이드바가 맡는다.
+============================================================ */
+.event-detail {
+  background: var(--ground);
+}
+.event-detail-hero {
+  position: relative;
+  min-height: 52vh;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--page-offset) 0 52px;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--deep-umber), var(--ink-black));
+}
+.event-detail-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+/* 히어로 배경은 '분위기'만 맡는다.
+   공연 이미지는 가로 사진일 때도, 세로 포스터(전단)일 때도 있다. 포스터를 cover로
+   깔면 크게 확대돼 전단 글자가 제목 위로 겹쳐 읽힌다 — 실제로 광복절 행사에서
+   'TUESDAY, AUGUST 11'이 제목을 뚫고 나왔다. 그래서 어떤 이미지가 와도 흐리게
+   눌러 배경으로 만든다. 진짜 포스터와 사진은 아래 사이드바·갤러리가 보여 준다.
+   scale은 blur 때문에 생기는 가장자리 투명을 덮기 위한 것이다. */
+.event-detail-hero-img {
+  object-fit: cover;
+  filter: saturate(0.9) contrast(1.02) brightness(0.72) blur(3px);
+  transform: scale(1.08);
+}
+.event-detail-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* 위쪽은 스크림이 가장 옅은 곳인데 하필 되돌아가기 링크·연도 칩이 거기 앉는다.
+     밝은 포스터가 배경일 때도 읽히도록 상단 값을 넉넉히 잡는다. */
+  background:
+    linear-gradient(180deg, rgba(9, 7, 5, 0.66), rgba(9, 7, 5, 0.9)),
+    radial-gradient(120% 80% at 50% 100%, rgba(9, 7, 5, 0.5), transparent 70%);
+}
+.event-detail-hero-inner {
+  position: relative;
+  z-index: 2;
+}
+.event-detail-eyebrow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+/* 목록으로 돌아가는 길을 히어로 안에 둔다 — 예전처럼 헤더 위 별도 바로 두면
+   페이지가 시작되기 전에 줄 하나가 먼저 오는 어중간한 인상을 준다. */
+.event-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: rgba(var(--ivory-rgb), 0.72);
+  transition: color 0.3s;
+}
+.event-detail-back:hover {
+  color: var(--warm-ivory);
+}
+.event-detail-back svg {
+  width: 16px;
+  height: 16px;
+}
+.event-detail-year,
+.event-detail-kind,
+.event-detail-category {
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 184, 79, 0.34);
+  color: var(--soft-gold);
+}
+.event-detail-kind {
+  border-color: rgba(196, 48, 43, 0.5);
+  color: #f0c8a0;
+}
+.event-detail-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2rem, 4.4vw, 3.5rem);
+  color: var(--warm-ivory);
+  line-height: 1.14;
+  word-break: keep-all;
+}
+.event-detail-title-en {
+  margin-top: 8px;
+  color: var(--soft-gold);
+  letter-spacing: 0.04em;
+  font-size: 1.02rem;
+}
+.event-detail-when {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  color: rgba(var(--ivory-rgb), 0.84);
+  font-size: 1rem;
+}
+.event-detail-time,
+.event-detail-venue {
+  position: relative;
+  padding-left: 17px;
+}
+.event-detail-time::before,
+.event-detail-venue::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--soft-gold);
+  transform: translateY(-50%);
+  opacity: 0.7;
+}
+
+.event-detail-body {
+  padding: 60px 0 72px;
+}
+.event-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 56px;
+  align-items: start;
+}
+.event-detail-content {
+  min-width: 0;
+}
+.event-detail-description {
+  color: rgba(var(--ivory-rgb), 0.85);
+  font-size: 1.05rem;
+  line-height: 1.95;
+}
+.event-detail-section {
+  margin-top: 46px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.event-detail-aside {
+  position: sticky;
+  /* sticky는 스크롤 중 보이는 요소 — 축소된(스크롤 후) 헤더 실높이 기준 */
+  top: calc(var(--header-h-scrolled) + 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 포스터 — 대개 세로 전단이라 자르지 않고 통째로 보여 준다 */
+.event-poster-card {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--soft-gold-rgb), 0.22);
+  background: var(--surface-2);
+  line-height: 0;
+}
+.event-poster-img {
+  width: 100%;
+  height: auto;
+}
+
+/* facts card — .program-facts-card와 같은 결 */
+.event-facts-card {
+  background: var(--ink-panel);
+  border: 1px solid rgba(224, 184, 79, 0.18);
+  border-radius: 8px;
+  padding: 26px;
+}
+.event-facts-list {
+  display: flex;
+  flex-direction: column;
+}
+.event-facts-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(224, 184, 79, 0.12);
+}
+.event-facts-row:first-child {
+  padding-top: 0;
+}
+.event-facts-row dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--soft-gold-text);
+}
+.event-facts-row dd {
+  color: var(--warm-ivory);
+  font-size: 1.02rem;
+  line-height: 1.55;
+  /* 장소 아래 주소를 줄바꿈으로 이어 붙인다 */
+  white-space: pre-line;
+}
+.event-facts-cal {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.event-cal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(224, 184, 79, 0.5);
+  background: rgba(224, 184, 79, 0.06);
+  color: var(--warm-ivory);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  transition: transform 0.3s var(--ease-out-quart), border-color 0.3s var(--ease-out-quart),
+    background 0.3s var(--ease-out-quart);
+}
+.event-cal-btn svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.event-cal-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--soft-gold-text);
+  background: rgba(224, 184, 79, 0.12);
+}
+/* 붉은 그라디언트는 두 테마에서 고정이므로 그 위 글자도 고정이어야 한다 */
+.event-cal-btn--primary,
+.event-cal-btn--primary:hover {
+  background: linear-gradient(135deg, var(--deep-red), var(--secondary-color));
+  border-color: transparent;
+  color: var(--on-media);
+}
+.event-cal-btn--primary {
+  box-shadow: 0 10px 26px rgba(143, 33, 29, 0.24);
+}
+.event-cal-btn--primary:hover {
+  background: linear-gradient(135deg, var(--secondary-color), var(--deep-red));
+}
+
+@media (max-width: 980px) {
+  .event-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .event-detail-aside {
+    position: static;
+  }
+  /* 좁은 화면에서 포스터가 화면을 다 먹지 않도록 */
+  .event-poster-card {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .event-detail-hero {
+    min-height: 42vh;
+    padding-bottom: 40px;
+  }
+  .event-detail-body {
+    padding: 44px 0 56px;
+  }
+  .event-detail-section {
+    margin-top: 36px;
+  }
+}
+
 .program-facts-cta {
   width: 100%;
   margin-top: 24px;
@@ -12809,6 +13032,150 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   border: 1px solid rgba(212, 160, 23, 0.32);
   border-radius: 999px;
   padding: 2px 9px;
+}
+
+/* 알림 현황 — 누가 어느 기기에 켜 뒀는지 */
+.notify-status {
+  /* .admin-account-card의 520px 제한을 푼다(표가 들어가는 전폭 섹션) */
+  max-width: none;
+  margin-top: 24px;
+}
+.notify-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.notify-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(var(--fg-rgb), 0.03);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+}
+.notify-stat-value {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--soft-gold-text);
+  line-height: 1.2;
+}
+.notify-stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.notify-stat-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+.notify-status-tabs {
+  margin-bottom: 18px;
+}
+.notify-tab-count {
+  font-size: 0.76rem;
+  opacity: 0.75;
+}
+.notify-status-table {
+  min-width: 720px;
+}
+.notify-nowrap {
+  white-space: nowrap;
+}
+.notify-device-list,
+.notify-off-list,
+.notify-event-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.notify-device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notify-device {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.notify-device-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.notify-device-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+/* 상태색은 다크 기준으로 고른 고정색이라 라이트 보정을 아래에 함께 둔다 */
+.notify-warn-chip {
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: #ffb4b0;
+  background: rgba(196, 48, 43, 0.16);
+  border: 1px solid rgba(196, 48, 43, 0.42);
+}
+.notify-off-list,
+.notify-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.notify-off-item,
+.notify-event-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(var(--fg-rgb), 0.02);
+  border: 1px solid rgba(var(--fg-rgb), 0.08);
+}
+.notify-off-name,
+.notify-event-who {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.notify-off-note,
+.notify-event-device {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.notify-event-when {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.notify-event-chip {
+  flex: 0 0 auto;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid transparent;
+}
+.notify-event-subscribed {
+  color: #9ed99e;
+  background: rgba(120, 190, 120, 0.14);
+  border-color: rgba(120, 190, 120, 0.4);
+}
+.notify-event-unsubscribed {
+  color: #ffb4b0;
+  background: rgba(196, 48, 43, 0.14);
+  border-color: rgba(196, 48, 43, 0.36);
+}
+.notify-event-expired {
+  color: var(--text-muted);
+  background: rgba(var(--fg-rgb), 0.05);
+  border-color: rgba(var(--fg-rgb), 0.16);
 }
 
 @media (max-width: 900px) {
@@ -13805,15 +14172,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   }
 }
 
-/* ============================================
-   Gallery event detail — "내 캘린더에 추가"
-   ============================================ */
-.gallery-detail-cal {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
 .gallery-cal-btn {
   display: inline-flex;
   align-items: center;
@@ -13835,14 +14193,19 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   border-color: var(--soft-gold-text);
   background: rgba(224, 184, 79, 0.12);
 }
+/* 붉은 그라디언트는 두 테마에서 그대로다(고정 브랜드색). 그래서 그 위 글자도
+   테마를 따라가면 안 된다 — base의 --warm-ivory를 상속하면 라이트에서 먹색이 되어
+   붉은 버튼 위 글자가 사라진다. */
 .gallery-cal-btn--primary {
   background: linear-gradient(135deg, var(--deep-red), var(--secondary-color));
   border-color: transparent;
+  color: var(--on-media);
   box-shadow: 0 10px 26px rgba(143, 33, 29, 0.28);
 }
 .gallery-cal-btn--primary:hover {
   background: linear-gradient(135deg, var(--secondary-color), var(--deep-red));
   border-color: transparent;
+  color: var(--on-media);
 }
 
 /* 수업 요일 선택 칩(ProgramForm 정규수업 일정) */
@@ -14452,13 +14815,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   gap: 10px;
 }
 
-/* 공개 이벤트 상세 '오시는 길' 섹션 */
-.gallery-detail-location {
-  padding: 24px 0 40px;
-}
-.gallery-detail-location .event-location {
-  max-width: 760px;
-}
 
 /* 멤버 상세(실행 정보 박스) 안에서는 더 컴팩트하게 */
 .event-logistics-value .event-location {
@@ -16363,6 +16719,7 @@ html[data-site-theme='light'] .about-hero,
 html[data-site-theme='light'] .feature-hero,
 html[data-site-theme='light'] .performance-hero,
 html[data-site-theme='light'] .program-detail-hero,
+html[data-site-theme='light'] .event-detail-hero,
 html[data-site-theme='light'] .camp-spotlight,
 html[data-site-theme='light'] .gallery-lightbox,
 html:not([data-site-theme]):not([data-admin-theme]) #hero,
@@ -16371,6 +16728,7 @@ html:not([data-site-theme]):not([data-admin-theme]) .about-hero,
 html:not([data-site-theme]):not([data-admin-theme]) .feature-hero,
 html:not([data-site-theme]):not([data-admin-theme]) .performance-hero,
 html:not([data-site-theme]):not([data-admin-theme]) .program-detail-hero,
+html:not([data-site-theme]):not([data-admin-theme]) .event-detail-hero,
 html:not([data-site-theme]):not([data-admin-theme]) .camp-spotlight,
 html:not([data-site-theme]):not([data-admin-theme]) .gallery-lightbox {
   color-scheme: dark;
@@ -16499,6 +16857,18 @@ html[data-admin-theme='light'] .push-card-feedback--err,
 html[data-admin-theme='light'] .inbox-del:hover,
 html[data-admin-theme='light'] .gallery-load-more-error {
   color: #a02520;
+}
+
+/* 알림 현황의 상태 칩 — 다크에서 고른 파스텔은 한지 위에서 읽히지 않는다 */
+html[data-admin-theme='light'] .notify-warn-chip,
+html[data-admin-theme='light'] .notify-event-unsubscribed {
+  color: #8f2a24;
+  background: rgba(196, 48, 43, 0.1);
+}
+
+html[data-admin-theme='light'] .notify-event-subscribed {
+  color: #256c33;
+  background: rgba(120, 190, 120, 0.16);
 }
 
 html[data-admin-theme='light'] .admin-badge-success {

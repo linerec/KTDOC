@@ -45,6 +45,7 @@ const DARK_ISLANDS = [
   '.feature-hero',
   '.performance-hero',
   '.program-detail-hero',
+  '.event-detail-hero',
   '.gallery-lightbox',
   '.camp-spotlight',
 ];
@@ -109,6 +110,9 @@ const ISLAND_DESCENDANTS = [
   '.hero-videos', '.btn-youtube', '.video-card', '.play-icon',
   '.about-hero-', '.feature-hero-', '.performance-hero-', '.program-detail-hero-',
   '.gallery-lightbox-', '.camp-spotlight-', '.camp-fact-',
+  '.event-detail-hero-', '.event-detail-eyebrow', '.event-detail-back',
+  '.event-detail-year', '.event-detail-kind', '.event-detail-category',
+  '.event-detail-title', '.event-detail-when', '.event-detail-time', '.event-detail-venue',
 ];
 
 const inDarkIsland = (sel) =>
