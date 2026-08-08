@@ -87,6 +87,30 @@ ResizeObserver로 실높이를 재서 문서 루트에 발행한다:
    **두 테마 모두 눈으로 확인**한다. 판정 근거는
    `docs/operations/theme-token-ledger.json`과 `public-theme-decisions.md`에 있다.
 
+## 배경 영상 (섹션 뒤에 까는 루프)
+
+`public/assets/video/`에 mp4 + webm + 포스터 jpg 3종으로 둔다. 현재
+`traditional-sky`(홈 하단 처마 뒤)와 `mission-hansam`(소개 미션)이 있다.
+소재는 로컬 리그로 만든다 — 절차는 KBNWorks의 `site-background-video` 스킬.
+
+1. **소스는 검은 바탕에 밝은 형상 한 벌**이고, 테마마다 블렌드가 뒤집힌다.
+   다크는 `mix-blend-mode: screen`, 라이트는 `filter: grayscale(1) invert(1)`
+   + `multiply`. screen은 검정을, multiply는 흰색을 투명으로 떨어뜨리므로
+   그냥 나눠 쓰면 한쪽이 바탕째 날아간다 — invert가 그 사이를 잇는다.
+2. **`grayscale`은 반드시 `invert` 앞에.** 따뜻한 아이보리를 그냥 뒤집으면
+   보색인 청회색이 되어 한지와 충돌한다. 무채색으로 만든 뒤 뒤집어야
+   multiply가 지면 색으로 다시 물들여 세피아 먹으로 앉는다.
+   (소스를 아예 회색조로 인코딩하지는 말 것 — 다크에서 따뜻함을 잃는다.)
+3. **blend·opacity는 `<video>`가 아니라 래퍼가 갖는다.** 그래야
+   `prefers-reduced-motion`에서 영상을 걷어내고 포스터를 배경으로 깔아도
+   합성이 같다. 동작 최소화는 일시정지가 아니라 정지 이미지 대체다.
+4. **본문 위에 걸치면 opacity를 눈대중으로 정하지 않는다.** 카피 영역의
+   대비를 재고, 교체 전 배경이 받던 점수보다 낮아지지 않게 한다(4.5:1은
+   최저선일 뿐). 측정 스크립트는 `D:\ComfyUI\_h3\jobs\ktdoc\preview_mission.py`.
+5. `autoplay loop muted playsinline` + `poster`. `muted`·`playsinline`이 없으면
+   모바일이 자동재생을 거부한다. webm이 mp4보다 큰 경우가 있으니
+   **`<source>` 첫 줄에 둘 중 작은 쪽**이 오게 확인한다.
+
 ## 관리 콘솔 테마 (라이트 기본 / 다크 전환) — 콘솔 한정
 
 관리 콘솔도 **라이트가 기본값**이고, 상단바
