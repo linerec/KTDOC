@@ -115,9 +115,15 @@ export const mapboxGeocoder: Geocoder = {
         address,
         lat,
         lng,
-        // confidence가 없는 결과(주소가 아닌 지역 등)는 근사치로 보지 않는다 —
-        // '동네'를 고른 것은 틀린 게 아니라 그 수준의 답이다.
-        approximate: confidence ? !PRECISE_CONFIDENCE.has(confidence) : false,
+        /**
+         * match_code는 **주소로 해석된 결과에만** 붙는다. 그게 없다는 것은
+         * 지오코더가 주소를 못 찾고 거리·동네·우편번호 같은 **더 성긴 단위로
+         * 물러났다**는 뜻이다. 실제로 "1 Bergen County Plaza, Hackensack, NJ"를
+         * 넣으면 [street] County Place가 나온다 — 이름만 비슷한 1km 떨어진 다른 길이다.
+         * 이걸 '정확함'으로 넘기면 관리자가 엉뚱한 좌표를 확정된 주소로 착각한다.
+         * 그래서 confidence가 없으면 근사치로 본다.
+         */
+        approximate: confidence ? !PRECISE_CONFIDENCE.has(confidence) : true,
       });
     }
     return out;

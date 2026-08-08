@@ -81,6 +81,26 @@ test('full_address가 없으면 name + place_formatted로 조립한다', async (
   assert.equal(r.address, 'Hackensack, New Jersey, United States');
 });
 
+test('match_code가 없으면 근사치다 — 주소를 못 찾고 더 성긴 단위로 물러난 것', async () => {
+  // 실제 사례: "1 Bergen County Plaza, Hackensack, NJ"를 넣으면
+  // [street] County Place가 나온다. 이름만 비슷한 1km 떨어진 다른 길이다.
+  mockFetch({
+    features: [
+      feature({
+        feature_type: 'street',
+        name: 'County Place',
+        full_address: 'County Place, Hackensack, New Jersey 07601, United States',
+      }),
+    ],
+  });
+  const [r] = await mapboxGeocoder.geocode('1 Bergen County Plaza, Hackensack, NJ');
+  assert.equal(
+    r.approximate,
+    true,
+    '거리 수준 대체품을 정확한 주소로 넘기면 엉뚱한 좌표가 확정된 것처럼 저장된다'
+  );
+});
+
 test('confidence가 낮으면 근사치로 구분한다', async () => {
   mockFetch({
     features: [
@@ -95,6 +115,19 @@ test('confidence가 낮으면 근사치로 구분한다', async () => {
     out.map((r) => r.approximate),
     [false, false, true, true]
   );
+});
+
+test('주소로 해석된 결과만 정확할 수 있다', async () => {
+  // confidence가 붙는다는 것 자체가 '주소로 해석됐다'는 뜻이다.
+  mockFetch({
+    features: [
+      feature({ feature_type: 'address', full_address: '주소', match_code: { confidence: 'exact' } }),
+      feature({ feature_type: 'postcode', full_address: '우편번호 구역' }),
+      feature({ feature_type: 'neighborhood', full_address: '동네' }),
+    ],
+  });
+  const out = await mapboxGeocoder.geocode('x');
+  assert.deepEqual(out.map((r) => r.approximate), [false, true, true]);
 });
 
 test('주소형 결과의 name은 장소명으로 쓰지 않는다 — 주소와 중복된다', async () => {
