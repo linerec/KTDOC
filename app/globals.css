@@ -11159,6 +11159,82 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   background: rgba(224, 184, 79, 0.08);
 }
 
+/* --- Share QR card (공용) ------------------------------------------------
+   페이지 주소를 QR로 보여주고 공유·복사하는 카드. 수업 상세 사이드바에서 처음
+   쓰지만 어느 페이지에나 놓을 수 있다 → components/share/ShareQrCard.tsx
+-------------------------------------------------------------------------- */
+.share-qr-card {
+  background: var(--ink-panel);
+  border: 1px solid rgba(224, 184, 79, 0.18);
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.share-qr-frame {
+  /* theme-exempt: QR은 사람이 아니라 스캐너가 읽는 그림이다. 다크에서 반전시키면
+     못 읽는 기기가 생기므로 두 테마 모두 흰 바탕·검은 모듈을 유지한다. */
+  background: #ffffff;
+  border-radius: 6px;
+  /* 여백(quiet zone)이 없으면 인식률이 떨어진다 — 흰 테두리를 두른다. */
+  padding: 10px;
+  box-sizing: content-box;
+  line-height: 0;
+}
+.share-qr-canvas {
+  display: block;
+  /* 실제 크기는 컴포넌트가 인라인으로 정한다(qrcode가 박아 넣는 값을 되돌리므로).
+     여기 max-width는 그 되돌림이 실패해도 카드를 뚫지 않게 하는 안전망이다. */
+  max-width: 100%;
+}
+
+.share-qr-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.share-qr-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+.share-qr-btn {
+  padding: 10px 8px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-color);
+  background: transparent;
+  border: 1px solid rgba(224, 184, 79, 0.35);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease-out-quart), background 0.3s var(--ease-out-quart);
+}
+.share-qr-btn:hover:not(:disabled) {
+  border-color: var(--soft-gold);
+  background: rgba(224, 184, 79, 0.08);
+}
+.share-qr-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.share-qr-status {
+  /* 문구가 나타났다 사라져도 카드 높이가 흔들리지 않게 자리를 잡아 둔다. */
+  min-height: 1.4em;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--soft-gold-text);
+  text-align: center;
+}
+
 /* --- Dancheong divider (the single sanctioned motif) --- */
 .dancheong-divider {
   display: block;
@@ -11633,6 +11709,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   position: sticky;
   /* sticky는 스크롤 중 보이는 요소 — 축소된(스크롤 후) 헤더 실높이 기준 */
   top: calc(var(--header-h-scrolled) + 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* facts card */

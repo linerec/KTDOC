@@ -12,6 +12,7 @@ import IntlObject from '@/components/common/IntlObject';
 import ImageGallery from '@/components/gallery/ImageGallery';
 import RegistrationForm from '@/components/classes/RegistrationForm';
 import ProgramDetailFacts from '@/components/classes/ProgramDetailFacts';
+import ShareQrCard from '@/components/share/ShareQrCard';
 import SupplyList from '@/components/supplies/SupplyList';
 import { getProgramBySlug, incrementProgramViewCount, getProgramSupplies, getProgramSupplySets } from '@/lib/d1';
 
@@ -105,6 +106,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
             </div>
 
             <aside className="program-detail-aside">
+              <ShareQrCard title={program.title_ko} />
               <ProgramDetailFacts program={program} />
             </aside>
           </div>
