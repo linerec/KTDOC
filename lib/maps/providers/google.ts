@@ -66,7 +66,9 @@ export const googleGeocoder: Geocoder = {
       key,
       // 공연장이 전부 미국이라 미국 해석을 우선한다. 다른 나라 주소도 못 찾는 건 아니다.
       region: 'us',
-      language: 'ko',
+      // 주소는 현지 표기가 정답이다. 한국어로 번역하면 '미국 뉴저지주…'처럼 나와
+      // 지도 앱이나 내비게이션에 붙여넣을 수 없다.
+      language: 'en',
     });
 
     const res = await fetch(`${ENDPOINT}?${params.toString()}`, {

@@ -14,6 +14,7 @@
 import type { Geocoder, MapsProvider } from './types';
 import { osmProvider } from './providers/osm';
 import { googleGeocoder } from './providers/google';
+import { mapboxGeocoder } from './providers/mapbox';
 
 export type { MapsProvider, Geocoder, GeocodeResult, EmbedOptions } from './types';
 export { isValidLatLng } from './types';
@@ -42,12 +43,14 @@ export function getMapsProvider(): MapsProvider {
  * 그래서 검색만 GEOCODE_PROVIDER로 갈아끼운다(서버 전용 환경변수 — 키가 필요한
  * 제공자를 써도 번들에 들어가지 않는다).
  *
- *   GEOCODE_PROVIDER=google + GOOGLE_MAPS_API_KEY=...   (권장)
+ *   GEOCODE_PROVIDER=mapbox + MAPBOX_ACCESS_TOKEN=...   (현재 선택 — 결제수단 불필요)
+ *   GEOCODE_PROVIDER=google + GOOGLE_MAPS_API_KEY=...   (품질은 가장 좋음, 결제 등록 필요)
  *   미설정 시 표시 제공자의 geocode(=OSM Photon)로 떨어진다.
  */
 const GEOCODERS: Record<string, Geocoder> = {
   [osmProvider.id]: osmProvider,
   [googleGeocoder.id]: googleGeocoder,
+  [mapboxGeocoder.id]: mapboxGeocoder,
 };
 
 export function getGeocoder(): Geocoder {

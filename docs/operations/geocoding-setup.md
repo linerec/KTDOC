@@ -22,30 +22,45 @@ OSM 안에서는 도구를 바꿔도 해결되지 않는다. (대조군: `350 5t
 `125 E Columbia Ave, Palisades Park`는 정상 조회 — OSM이 미국 주소 전반을 못 하는 건 아니고,
 관공서·캠퍼스형 주소에 구멍이 많다. 공연장이 하필 그런 곳이 많다.)
 
-## 설정
+## 설정 — Mapbox (현재 선택)
 
-`.env.local`(및 Vercel 환경변수)에:
+결제 수단 등록 없이 **월 100,000건 무료**다. 미국 주소 품질은 구글보다 조금 아래지만
+OSM보다는 확실히 낫다.
+
+1. https://account.mapbox.com/auth/signup 에서 가입 (카드 등록 불필요)
+2. https://account.mapbox.com/access-tokens 에서 **Default public token** 복사
+   (별도 토큰을 만들 거면 스코프는 기본값 그대로 두면 된다 — 지오코딩은 공개 스코프)
+3. `.env.local`(및 Vercel 환경변수)에:
+
+```
+GEOCODE_PROVIDER=mapbox
+MAPBOX_ACCESS_TOKEN=pk.eyJ1...
+```
+
+- **`NEXT_PUBLIC_` 접두사를 붙이지 말 것.** 붙이면 토큰이 번들에 들어가 남이 쓸 수 있다.
+  지오코딩은 `/api/admin/geocode`(서버)에서만 호출한다.
+- `GEOCODE_PROVIDER`를 지우면 예전 동작(OSM Photon)으로 떨어진다.
+- 지도 표시는 그대로 OSM(무료)이다. `NEXT_PUBLIC_MAPS_PROVIDER`는 건드리지 않는다.
+
+### 질의 방식
+
+`country=us` 같은 하드 필터 대신 학원 근처(Palisades Park)로 **가중치**만 준다.
+필터를 걸면 미국 밖 주소를 아예 못 찾게 되기 때문이다. 언어는 `en` — 주소는 현지
+표기가 정답이고, 한국어로 번역하면 지도 앱에 붙여넣을 수 없다.
+
+## 대안 — Google (품질 최상, 결제 등록 필요)
+
+미국 관공서·캠퍼스 주소까지 가장 잘 찾는다. 월 $200 크레딧(약 40,000건) 내에서는
+청구되지 않지만 **결제 수단 등록이 필요하다**.
 
 ```
 GEOCODE_PROVIDER=google
 GOOGLE_MAPS_API_KEY=<서버 전용 키>
 ```
 
-- `GOOGLE_MAPS_API_KEY`에 **`NEXT_PUBLIC_` 접두사를 붙이지 말 것.** 붙이면 키가 번들에
-  들어가 공개된다. 지오코딩은 `/api/admin/geocode`(서버)에서만 호출한다.
-- `GEOCODE_PROVIDER`를 지우면 표시 제공자(`NEXT_PUBLIC_MAPS_PROVIDER`, 기본 `osm`)의
-  geocode로 떨어진다 — 즉 예전 Photon 동작으로 돌아간다.
-- 지도 표시는 그대로 OSM(무료)이다. `NEXT_PUBLIC_MAPS_PROVIDER`는 건드리지 않는다.
-
-### Google Cloud 콘솔에서 키 만들기
-
-1. 프로젝트 생성 → **Geocoding API**만 사용 설정
-2. 사용자 인증 정보 → API 키 생성
-3. 키 제한: **API 제한 = Geocoding API**
-4. **애플리케이션 제한은 걸지 말 것** — 서버에서 호출하므로 HTTP 리퍼러가 없어 거부된다.
-   필요하면 서버 고정 IP 제한을 쓴다.
-5. 결제 계정 연결 필요(월 $200 크레딧 내에서는 청구되지 않는다. 지오코딩 $5/1000건 →
-   약 40,000건/월이 무료 범위)
+콘솔에서 **Geocoding API만** 사용 설정하고, 키 제한은 `API 제한 = Geocoding API`.
+**애플리케이션 제한(HTTP 리퍼러)은 걸지 말 것** — 서버 호출이라 리퍼러가 없어 거부된다.
+필요하면 서버 고정 IP 제한을 쓴다.
 
 ## 확인 방법
 
@@ -56,8 +71,8 @@ curl -s "http://localhost:3000/api/admin/geocode?q=1+Bergen+County+Plaza,+Hacken
   -H "Cookie: <관리자 세션 쿠키>"
 ```
 
-키가 없거나 잘못되면 조용히 빈 결과가 나오지 않고 502와 함께 서버 로그에 사유가 남는다
-(`lib/maps/google.test.ts`가 이 동작을 잠그고 있다).
+토큰이 없거나 잘못되면 조용히 빈 결과가 나오지 않고 502와 함께 서버 로그에 사유가 남는다
+(`lib/maps/mapbox.test.ts`·`google.test.ts`가 이 동작을 잠그고 있다).
 
 ## 확인되지 않은 주소
 
