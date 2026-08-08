@@ -46,8 +46,10 @@ function TimelineEventCard({ event, index }: { event: EventWithCategory; index: 
       className="timeline-event-card reveal reveal--up"
       style={{ '--reveal-delay': `${Math.min(index, 5) * 70}ms` } as React.CSSProperties}
     >
-      {imageUrl && (
-        <div className="timeline-event-card-image">
+      {/* 이미지 슬롯은 사진이 없어도 자리를 지킨다 — 비우면 아래 텍스트가 위로
+          올라와 같은 줄의 카드들과 시작선이 어긋난다(.card-placeholder 참고) */}
+      <div className="timeline-event-card-image">
+        {imageUrl ? (
           <Image
             src={imageUrl}
             alt={title}
@@ -55,8 +57,12 @@ function TimelineEventCard({ event, index }: { event: EventWithCategory; index: 
             sizes="(max-width: 768px) 100vw, 360px"
             className="timeline-event-card-img"
           />
-        </div>
-      )}
+        ) : (
+          <div className="timeline-event-card-placeholder" aria-hidden="true">
+            <span>춤누리</span>
+          </div>
+        )}
+      </div>
       <div className="timeline-event-card-body">
         <div className="timeline-event-card-meta">
           <span className="timeline-event-card-date">

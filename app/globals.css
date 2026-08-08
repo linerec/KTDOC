@@ -1414,10 +1414,38 @@ ul {
   object-fit: cover;
 }
 
-.journey-card-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(var(--ivory-rgb),  0.06), rgba(var(--ivory-rgb),  0.02));
+/* ============================================================
+   CARD PLACEHOLDER — 이미지가 없을 때 자리를 지키는 더미
+   ------------------------------------------------------------
+   이미지가 없다고 슬롯을 비우면 아래 텍스트가 위로 올라와 같은 줄의 카드들과
+   높이·시작선이 어긋난다. 그래서 이미지 슬롯은 **항상** 존재하고, 사진이 없으면
+   이 더미가 그 자리를 채운다.
+
+   'No Image' 같은 기술 문구 대신 브랜드 워드마크를 놓는다 — 빈 자리가 아니라
+   한지에 찍은 표지처럼 읽히게. 지면 토큰으로 칠하므로 두 테마를 함께 따라간다.
+   카드 종류마다 비율(16/9·4/3·16/10)은 다르지만 슬롯을 채우는 방식은 하나다.
+============================================================ */
+.card-placeholder,
+.journey-card-placeholder,
+.gallery-event-card-placeholder,
+.news-card-placeholder,
+.program-card-placeholder,
+.performance-card-placeholder,
+.timeline-event-card-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  letter-spacing: 0.2em;
+  color: rgba(var(--soft-gold-rgb), 0.5);
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(var(--accent-gold-rgb), 0.1), transparent 62%),
+    linear-gradient(160deg, var(--ground-2), var(--ground-4));
+  /* 더미는 사진이 아니다 — 검색·스크린리더에 잡히지 않도록 호출부에서 aria-hidden */
+  user-select: none;
 }
 
 .journey-card-body {
@@ -3996,14 +4024,6 @@ ul {
   object-position: center 42%;
 }
 
-.gallery-event-card-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
 
 .gallery-event-card-featured {
   position: absolute;
@@ -11431,19 +11451,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .program-card:hover .program-card-img {
   transform: scale(1.04);
 }
-.program-card-placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-heading);
-  letter-spacing: 0.2em;
-  color: rgba(224, 184, 79, 0.35);
-  background:
-    radial-gradient(120% 120% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 60%),
-    linear-gradient(160deg, var(--soft-umber), var(--ink-black));
-}
 .program-card-type {
   position: absolute;
   top: 14px;
@@ -12131,18 +12138,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .performance-card:hover .performance-card-img {
   transform: scale(1.06);
-}
-.performance-card-placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-heading);
-  letter-spacing: 0.2em;
-  /* 사진이 없을 때만 나타나는 '표면'이다(사진 위 오버레이가 아니다) — 지면과 함께 뒤집는다 */
-  color: rgba(var(--soft-gold-rgb), 0.55);
-  background: linear-gradient(160deg, var(--ground-4), var(--ground));
 }
 .performance-card-scrim {
   position: absolute;
@@ -14098,7 +14093,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .timeline-event-card-image {
   position: relative;
   aspect-ratio: 16 / 9;
-  background: rgba(0, 0, 0, 0.25);
+  /* 사진이 뜨기 전 비치는 바닥 — 고정 검정으로 두면 한지 카드 안에서 번쩍인다 */
+  background: var(--surface-2);
+  overflow: hidden;
 }
 
 .timeline-event-card-img {
@@ -15534,17 +15531,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   object-position: center;
 }
 
-.news-card-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  background: radial-gradient(circle at 50% 40%, rgba(224, 184, 79, 0.08), transparent 60%);
-}
 
 .news-card-badge {
   position: absolute;

@@ -45,7 +45,9 @@ export default function RecentJourneyCard({
             className="journey-card-img"
           />
         ) : (
-          <div className="journey-card-placeholder" aria-hidden="true" />
+          <div className="journey-card-placeholder" aria-hidden="true">
+            <span>춤누리</span>
+          </div>
         )}
       </div>
       <div className="journey-card-body">

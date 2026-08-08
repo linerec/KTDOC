@@ -52,8 +52,8 @@ export default function NewsCard({ post, revealDelay = 0, reveal = true }: NewsC
             className="news-card-img"
           />
         ) : (
-          <div className={`news-card-placeholder news-card-placeholder-${post.category}`}>
-            <span>{categoryLabel}</span>
+          <div className="news-card-placeholder" aria-hidden="true">
+            <span>춤누리</span>
           </div>
         )}
         {post.category === 'video' && (

@@ -56,8 +56,8 @@ export default function EventCard({
             className="gallery-event-card-img"
           />
         ) : (
-          <div className="gallery-event-card-placeholder">
-            <span>{messages['common.noImage'] || 'No Image'}</span>
+          <div className="gallery-event-card-placeholder" aria-hidden="true">
+            <span>춤누리</span>
           </div>
         )}
         {event.is_featured === 1 && (
