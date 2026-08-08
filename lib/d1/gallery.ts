@@ -1066,28 +1066,43 @@ export async function getYears(): Promise<number[]> {
   return result.map((r) => r.year);
 }
 
+/**
+ * 상세 페이지 하단의 이전/다음 이동.
+ *
+ * **같은 종류 안에서만 움직인다.** 공연 상세에서 '이전'을 누르는 사람은 다른 공연을
+ * 기대하지, 학내 행사 공지를 기대하지 않는다. 예전에는 kind 조건이 없어서 공연
+ * 상세의 '이전'에 '2026–2027 춤누리 정규 클래스 개강'(kind=school)이 떴고,
+ * 그 행사는 정작 /performances 목록에는 없었다 — 목록과 이동의 기준이 어긋나 있었다.
+ *
+ * kind는 NOT NULL DEFAULT 'performance'(migration 0032)라 빠지는 행이 없다.
+ * 종류를 섞어 보고 싶으면 /timeline이 그 자리다.
+ */
 export async function getAdjacentEvents(
   eventId: number,
-  year: number
+  year: number,
+  kind?: string | null
 ): Promise<{ prev: EventWithCategory | null; next: EventWithCategory | null }> {
+  const kindClause = kind ? ' AND e.kind = ?' : '';
+  const kindParam = kind ? [kind] : [];
+
   const [prevResults, nextResults] = await Promise.all([
     queryD1<EventWithCategory>(
       `SELECT e.*, c.name_ko as category_name_ko, c.name_en as category_name_en, c.slug as category_slug
        FROM events e
        LEFT JOIN event_categories c ON e.category_id = c.id
-       WHERE e.is_published = 1 AND (e.year < ? OR (e.year = ? AND e.id < ?))
+       WHERE e.is_published = 1${kindClause} AND (e.year < ? OR (e.year = ? AND e.id < ?))
        ORDER BY e.year DESC, e.event_date DESC, e.id DESC
        LIMIT 1`,
-      [year, year, eventId]
+      [...kindParam, year, year, eventId]
     ),
     queryD1<EventWithCategory>(
       `SELECT e.*, c.name_ko as category_name_ko, c.name_en as category_name_en, c.slug as category_slug
        FROM events e
        LEFT JOIN event_categories c ON e.category_id = c.id
-       WHERE e.is_published = 1 AND (e.year > ? OR (e.year = ? AND e.id > ?))
+       WHERE e.is_published = 1${kindClause} AND (e.year > ? OR (e.year = ? AND e.id > ?))
        ORDER BY e.year ASC, e.event_date ASC, e.id ASC
        LIMIT 1`,
-      [year, year, eventId]
+      [...kindParam, year, year, eventId]
     ),
   ]);
 

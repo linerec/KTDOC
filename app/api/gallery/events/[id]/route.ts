@@ -58,7 +58,8 @@ export async function GET(request: Request, { params }: RouteParams) {
     // Get adjacent events if requested
     let adjacent = null;
     if (includeAdjacent) {
-      adjacent = await getAdjacentEvents(event.id, event.year);
+      // 상세 페이지와 같은 기준 — 이전/다음은 같은 종류 안에서만 움직인다
+      adjacent = await getAdjacentEvents(event.id, event.year, event.kind);
     }
 
     return NextResponse.json({

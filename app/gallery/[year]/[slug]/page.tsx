@@ -94,8 +94,8 @@ export default async function EventDetailPage({ params }: PageProps) {
   // Track view count (fire and forget)
   incrementViewCount(event.id).catch(() => {});
 
-  // Get adjacent events for navigation
-  const adjacent = await getAdjacentEvents(event.id, event.year);
+  // 이전/다음은 같은 종류 안에서만 — 공연에서 학내 행사로 건너뛰지 않는다
+  const adjacent = await getAdjacentEvents(event.id, event.year, event.kind);
 
   const formattedDate = formatEventDate(event.event_date, 'ko');
   // 집합 시간은 넘기지 않는다 — 출연자용 내부 정보다(formatEventTimeRange 주석).
