@@ -16,7 +16,7 @@
  *  - 탭이 모달 밖으로 새지 않게 가둔다
  */
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useT } from '@/lib/i18n/useT';
 
@@ -31,6 +31,20 @@ interface ModalProps {
   className?: string;
 }
 
+/**
+ * "지금 브라우저인가" — createPortal은 document가 있어야 하므로 서버 렌더에서는
+ * 아무것도 그리지 않아야 한다.
+ *
+ * useEffect로 setMounted(true)를 하면 같은 결과를 얻지만 렌더가 한 번 더 돈다.
+ * useSyncExternalStore는 서버 스냅샷(false)과 클라이언트 스냅샷(true)이 다르다는
+ * 사실만으로 같은 일을 하고, 하이드레이션 시점에 React가 알아서 맞춰 준다.
+ * 구독할 외부 상태는 없으므로 subscribe는 아무 일도 하지 않는다.
+ * (참조가 매 렌더 바뀌면 무한 루프가 되므로 컴포넌트 밖에 둔다.)
+ */
+const NO_SUBSCRIPTION = () => () => {};
+const IS_BROWSER = () => true;
+const IS_SERVER = () => false;
+
 const FOCUSABLE = [
   'a[href]',
   'button:not([disabled])',
@@ -44,9 +58,7 @@ export default function Modal({ open, onClose, label, title, children, className
   const t = useT();
   const shellRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(NO_SUBSCRIPTION, IS_BROWSER, IS_SERVER);
 
   // 열 때의 포커스를 기억해 뒀다가 닫을 때 그 자리로 돌려준다.
   useEffect(() => {
@@ -109,7 +121,6 @@ export default function Modal({ open, onClose, label, title, children, className
   if (!mounted || !open) return null;
 
   return createPortal(
-    /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
     <div className="modal-scrim" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={shellRef}
