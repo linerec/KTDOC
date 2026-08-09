@@ -11,6 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
+import { isAdmin } from '@/lib/isAdmin';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import {
   getProgramById,
@@ -70,8 +71,8 @@ export default async function MyClassDetailPage({ params }: PageProps) {
   const program = await getProgramById(programId);
   if (!program) notFound();
 
-  // 배정 검증 — 본인(학생) 또는 자녀(학부모)에 배정된 수업만. admin은 통과.
-  let allowed = role === 'admin';
+  // 배정 검증 — 본인(학생) 또는 자녀(학부모)에 배정된 수업만. 관리 권한자는 통과.
+  let allowed = isAdmin(session);
   if (!allowed && userId) {
     let enrollments;
     if (role === 'parent') {

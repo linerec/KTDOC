@@ -25,7 +25,11 @@ type CellMap = Record<string, boolean>;
 
 const cellId = (menuKey: string, role: MemberRole) => `${menuKey}::${role}`;
 
-/** 행 프리셋: 편집 가능한(admin 제외) 역할의 허용 집합 */
+/**
+ * 행 프리셋: 신분별 허용 집합.
+ * 'adminOnly'는 아무 신분에도 주지 않는다는 뜻이다 — 관리 권한(플래그)을 가진
+ * 사람은 매트릭스와 무관하게 통과하므로, 그 결과가 곧 "관리자만"이 된다.
+ */
 const PRESETS: { key: string; label: string; roles: MemberRole[] }[] = [
   { key: 'public', label: '공용(전체)', roles: ['user', 'student', 'parent', 'teacher'] },
   { key: 'studentParent', label: '학생+학부모', roles: ['student', 'parent'] },
@@ -79,7 +83,7 @@ export default function PermissionMatrix({
     setCells((prev) => {
       const next = { ...prev };
       for (const role of roles) {
-        if (role === 'admin' || isLocked(row, role)) continue;
+        if (isLocked(row, role)) continue;
         next[cellId(row.key, role)] = preset.roles.includes(role);
       }
       return next;
@@ -94,7 +98,6 @@ export default function PermissionMatrix({
     for (const row of rows) {
       if (row.fixed || row.requireRole) continue;
       for (const role of roles) {
-        if (role === 'admin') continue;
         permissions.push({
           menu_key: row.key,
           role,

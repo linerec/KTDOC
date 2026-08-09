@@ -18,6 +18,7 @@ import {
   getPermMatrix,
   getAllowedMenus,
   effectiveAllowedByKey,
+  viewerOf,
 } from '@/lib/admin/permissions';
 import type { MemberRole } from '@/types/members';
 import AdminShell from '@/components/admin/AdminShell';
@@ -44,6 +45,8 @@ export default async function AdminLayout({
   }
 
   const role = (session.user.role ?? 'user') as MemberRole;
+  // 신분과 관리 권한을 함께 들고 판정한다(0034 — 권한은 신분이 아니라 플래그).
+  const viewer = viewerOf(session);
   const pathname = (await headers()).get('x-pathname');
   const menuKey = resolveMenuKey(pathname);
 
@@ -54,16 +57,16 @@ export default async function AdminLayout({
     console.error('권한 매트릭스 로드 실패 — 기본 권한으로 폴백:', err);
     return {} as Awaited<ReturnType<typeof getPermMatrix>>;
   });
-  const menus = getAllowedMenus(role, matrix);
+  const menus = getAllowedMenus(viewer, matrix);
 
   // 현재 경로 메뉴 접근 강제(admin은 무조건 통과).
   // - 권한이 없으면 '/'로 내치지 않고 이 역할이 볼 수 있는 "첫 허용 메뉴"로 보낸다.
   //   콘솔 진입점(/admin=home) 권한이 없는 원생·학부모도 둘러보기 등 본인 메뉴로 착지한다.
   // - 허용 메뉴가 하나도 없으면 '/'. menus[0]은 항상 접근 가능한 경로라 리다이렉트 루프가 없다.
   // - 미매핑 경로(레지스트리 미등록)는 fail-closed: 관리자 외에는 접근 메뉴로 보낸다.
-  if (role !== 'admin') {
+  if (!viewer.isAdmin) {
     const allowed = menuKey
-      ? effectiveAllowedByKey(menuKey, role, matrix)
+      ? effectiveAllowedByKey(menuKey, viewer, matrix)
       : false;
     if (!allowed) {
       redirect(menus[0]?.href ?? '/');
@@ -79,9 +82,9 @@ export default async function AdminLayout({
   const consoleLabel = isMember ? '마이페이지' : '관리 콘솔';
   const consoleLabelKey = isMember ? 'admin.shell.consoleMember' : 'admin.shell.console';
 
-  // 운영진(선생님·관리자)에게만 '운영진 전용' 점을 노출한다.
+  // 운영진(선생님이거나 관리 권한자)에게만 '운영진 전용' 점을 노출한다.
   // 원생·학부모는 보이는 게 곧 본인 메뉴라 점이 의미 없고 혼란만 준다.
-  const showStaffMarks = role === 'teacher' || role === 'admin';
+  const showStaffMarks = role === 'teacher' || viewer.isAdmin;
 
   return (
     <AdminThemeProvider>

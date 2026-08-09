@@ -5,7 +5,7 @@
 
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/isAdmin';
+import { isAdmin, isStaff } from '@/lib/isAdmin';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getMemberById, type MemberRole } from '@/lib/members';
 import ProfileForm from '@/components/admin/profile/ProfileForm';
@@ -61,7 +61,7 @@ export default async function AdminProfilePage() {
       <div className="admin-profile-push">
         <PushOptInCard
           placement="settings"
-          audience={role === 'teacher' || role === 'admin' ? 'staff' : 'member'}
+          audience={isStaff(session) ? 'staff' : 'member'}
         />
       </div>
     </div>

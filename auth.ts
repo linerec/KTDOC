@@ -11,6 +11,8 @@ interface DBUser {
   password_hash: string;
   name: string | null;
   role: MemberRole;
+  /** 관리 권한 — 신분(role)과 별개다. 0034 참고. */
+  is_admin: 0 | 1;
   status: MemberStatus;
   must_change_password: 0 | 1;
 }
@@ -31,7 +33,7 @@ const credentialsProvider = Credentials({
     }
 
     const users = await query<DBUser[]>(
-      'SELECT id, email, password_hash, name, role, status, must_change_password FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, name, role, is_admin, status, must_change_password FROM users WHERE email = ?',
       [credentials.email]
     );
 
@@ -56,6 +58,7 @@ const credentialsProvider = Credentials({
       email: user.email,
       name: user.name,
       role: user.role,
+      isAdmin: user.is_admin === 1,
       status: user.status,
       // 임시 비밀번호 발급 상태 — 미들웨어가 새 비밀번호 설정 페이지로 강제 이동
       mustChangePassword: user.must_change_password === 1,
@@ -74,7 +77,7 @@ const devAdminProvider = Credentials({
     if (!credentials?.email) return null;
 
     const users = await query<DBUser[]>(
-      'SELECT id, email, password_hash, name, role, status, must_change_password FROM users WHERE email = ?',
+      'SELECT id, email, password_hash, name, role, is_admin, status, must_change_password FROM users WHERE email = ?',
       [credentials.email]
     );
 
@@ -86,6 +89,7 @@ const devAdminProvider = Credentials({
       email: user.email,
       name: user.name,
       role: user.role,
+      isAdmin: user.is_admin === 1,
       status: user.status,
       mustChangePassword: user.must_change_password === 1,
     };
@@ -114,17 +118,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // update 트리거(클라이언트 useSession().update()) 시에도 DB에서 재조회한다 —
       // 새 비밀번호 설정 완료 후 mustChangePassword 클레임을 해제하는 경로.
       // 클라이언트가 보낸 값을 믿지 않고 항상 DB를 기준으로 갱신한다.
-      if (token.id && (!token.status || params.trigger === 'update')) {
+      //
+      // 같은 장치로 신분/권한 분리(0034)도 넘어온다. 그 전에 발급된 토큰에는
+      // isAdmin 클레임이 없고 role이 'admin'일 수 있는데, 클레임이 비어 있으면
+      // DB에서 보충하므로 재로그인 없이 새 체계(role=teacher/staff + isAdmin)로
+      // 갈아탄다.
+      if (
+        token.id &&
+        (!token.status || token.isAdmin === undefined || params.trigger === 'update')
+      ) {
         try {
           const rows = await query<
-            { role: MemberRole; status: MemberStatus; must_change_password: 0 | 1 }[]
+            {
+              role: MemberRole;
+              is_admin: 0 | 1;
+              status: MemberStatus;
+              must_change_password: 0 | 1;
+            }[]
           >(
-            'SELECT role, status, must_change_password FROM users WHERE id = ?',
+            'SELECT role, is_admin, status, must_change_password FROM users WHERE id = ?',
             [token.id]
           );
           const fresh = rows[0];
           if (fresh) {
             token.role = fresh.role;
+            token.isAdmin = fresh.is_admin === 1;
             token.status = fresh.status;
             token.mustChangePassword = fresh.must_change_password === 1;
           }

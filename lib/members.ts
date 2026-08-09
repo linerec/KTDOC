@@ -49,6 +49,7 @@ interface MemberRow {
   phone: string | null;
   email_verified: Date | string | null;
   role: MemberRole | null;
+  is_admin: number | null;
   status: MemberStatus | null;
   enrollment_year: number | null;
   public_archive_consent: number | null;
@@ -57,7 +58,8 @@ interface MemberRow {
   updated_at: Date | string | null;
 }
 
-const VALID_ROLES: MemberRole[] = ['user', 'student', 'parent', 'teacher', 'admin'];
+// 레거시 'admin'도 받아 준다 — 0034 이관 전 행이 남아 있어도 화면이 깨지지 않게.
+const VALID_ROLES: MemberRole[] = ['user', 'student', 'parent', 'teacher', 'staff', 'admin'];
 const VALID_STATUSES: MemberStatus[] = ['pending', 'active', 'rejected', 'suspended'];
 
 function toISO(value: Date | string | null): string | null {
@@ -74,6 +76,7 @@ function normalizeMember(row: MemberRow): Member {
     phone: row.phone ?? null,
     email_verified: toISO(row.email_verified),
     role: row.role && VALID_ROLES.includes(row.role) ? row.role : 'user',
+    is_admin: row.is_admin === 1,
     status: row.status && VALID_STATUSES.includes(row.status) ? row.status : 'active',
     enrollment_year: row.enrollment_year ?? null,
     public_archive_consent: row.public_archive_consent === 1,
@@ -83,7 +86,7 @@ function normalizeMember(row: MemberRow): Member {
   };
 }
 
-const MEMBER_SELECT = `id, email, name, phone, email_verified, role, status, enrollment_year, public_archive_consent, profile_photo_url, created_at, updated_at`;
+const MEMBER_SELECT = `id, email, name, phone, email_verified, role, is_admin, status, enrollment_year, public_archive_consent, profile_photo_url, created_at, updated_at`;
 
 /**
  * 회원 목록 조회 (검색·권한·상태 필터·페이지네이션 지원).
@@ -507,13 +510,16 @@ export async function getGuardianUserIdsForStudents(studentIds: string[]): Promi
 }
 
 /* ------------------------------------------------------------------ */
-/* 승인·상태·역할 변경 액션                                            */
+/* 승인·상태·신분·관리 권한 변경 액션                                   */
 /* ------------------------------------------------------------------ */
 
-/** 현재 활성(active) 관리자 수 — 락아웃(마지막 관리자 강등/정지) 방지용. */
+/**
+ * 현재 활성(active) 관리 권한자 수 — 락아웃(마지막 관리자 회수/정지) 방지용.
+ * 신분이 아니라 플래그를 센다(0034). 선생님이든 원생이든 권한을 가졌으면 관리자다.
+ */
 export async function countActiveAdmins(): Promise<number> {
   const rows = await query<{ n: number | string }[]>(
-    `SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND status = 'active'`
+    `SELECT COUNT(*) AS n FROM users WHERE is_admin = 1 AND status = 'active'`
   );
   return Number(rows[0]?.n ?? 0);
 }
@@ -544,6 +550,14 @@ export async function setMemberStatus(
 /** 회원 역할 변경 (관리자 전용 — 선생님 임명 등). */
 export async function setMemberRole(id: string, role: MemberRole): Promise<void> {
   await query(`UPDATE users SET role = ? WHERE id = ?`, [role, id]);
+}
+
+/**
+ * 관리 권한을 붙이거나 뗀다. 신분(role)은 건드리지 않는다 — 그것이 이 분리의 요점이다.
+ * 선생님에게 관리를 맡겼다가 거둬도 그 사람은 계속 선생님이다.
+ */
+export async function setMemberAdmin(id: string, isAdmin: boolean): Promise<void> {
+  await query(`UPDATE users SET is_admin = ? WHERE id = ?`, [isAdmin ? 1 : 0, id]);
 }
 
 /** 미해결 학부모 연결에 실제 원생을 지정. */

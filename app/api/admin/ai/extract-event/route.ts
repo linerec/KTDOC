@@ -26,7 +26,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getPermMatrix, effectiveAllowedByKey } from '@/lib/admin/permissions';
+import { getPermMatrix, effectiveAllowedByKey, viewerOf } from '@/lib/admin/permissions';
 import { askAI, extractJson } from '@/lib/ai';
 import {
   parseTime,
@@ -37,7 +37,6 @@ import {
 } from '@/lib/ai/eventFields';
 import { getMapsProvider } from '@/lib/maps';
 import type { ExtractedEventInfo } from '@/types/gallery';
-import type { MemberRole } from '@/types/members';
 
 /** base64 기준 약 9MB(원본 ~6.7MB) — 클라이언트가 리사이즈해 보내므로 여유치 */
 const MAX_IMAGE_BASE64 = 12 * 1024 * 1024;
@@ -180,9 +179,8 @@ export async function POST(request: Request) {
       );
     }
     // 공연 관리 권한과 동일한 통제(메뉴 매트릭스 'gallery')
-    const actorRole = (session.user.role ?? 'user') as MemberRole;
     const matrix = await getPermMatrix();
-    if (!effectiveAllowedByKey('gallery', actorRole, matrix)) {
+    if (!effectiveAllowedByKey('gallery', viewerOf(session), matrix)) {
       return NextResponse.json(
         { success: false, error: '공연 관리 권한이 없습니다.' },
         { status: 403 }

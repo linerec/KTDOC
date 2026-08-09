@@ -2,10 +2,14 @@
  * 메뉴 권한(RBAC) 서버 로직 — server-only (lib/db 사용)
  *
  * 평가 순서(고정):
- *   1) role === 'admin'        → 무조건 허용 (락아웃·DB장애 면역)
+ *   1) 관리 권한(is_admin)      → 무조건 허용 (락아웃·DB장애 면역)
  *   2) node.requireRole        → role === requireRole (하드플로어, DB로 못 바꿈)
  *   3) DB에 menu_key 행 존재    → 그 (menu_key, role) allowed 값
  *   4) 미설정(행 없음)          → 레지스트리 defaultRoles
+ *
+ * 1)이 신분이 아니라 **플래그**를 본다는 점이 핵심이다(0034). 그래서 선생님이
+ * 관리 권한을 받아도 선생님 메뉴를 잃지 않는다 — 신분으로 열리는 메뉴에
+ * 관리 메뉴가 더해질 뿐이다. 매트릭스의 열은 신분뿐이고 'admin' 열은 없다.
  *
  * 클라이언트에서 import 금지(이 파일은 DB에 접근한다). 타입만 필요하면 types/permissions.ts.
  */
@@ -16,25 +20,34 @@ import type { Session } from 'next-auth';
 import { query } from '@/lib/db';
 import {
   MENU_REGISTRY,
-  getMenuNode,
   getGroupLabel,
   getGroupLabelKey,
   getMenuLabelKey,
   isKnownMenuKey,
   isStaffOnlyMenu,
 } from '@/lib/admin/menu-registry';
+import {
+  viewerOf,
+  effectiveAllowed,
+  effectiveAllowedByKey,
+  type MenuViewer,
+} from '@/lib/admin/menuAccess';
 import { MEMBER_ROLES, type MemberRole } from '@/types/members';
 import type {
   MenuKey,
-  MenuNode,
   NavMenu,
   PermMatrix,
   ToolRow,
   ToolCell,
 } from '@/types/permissions';
 
-// 역할 목록의 단일 출처는 types/members.ts의 MEMBER_ROLES (별도 배열 중복 방지)
+// 신분 목록의 단일 출처는 types/members.ts의 MEMBER_ROLES (별도 배열 중복 방지).
+// 레거시 'admin'은 여기 없다 — 관리 권한은 열이 아니라 플래그다.
 const ALL_ROLES: MemberRole[] = MEMBER_ROLES;
+
+// 판정 자체는 순수 모듈(menuAccess)에 있다 — 여기서 재수출해 호출부는 그대로 둔다.
+export { viewerOf, effectiveAllowed, effectiveAllowedByKey };
+export type { MenuViewer };
 
 /**
  * 프로세스 단위 TTL 캐시.
@@ -84,36 +97,9 @@ export const getPermMatrix = cache(async (): Promise<PermMatrix> => {
   }
 });
 
-/** 단일 메뉴 노드에 대한 역할 허용 판정 */
-export function effectiveAllowed(
-  node: MenuNode,
-  role: MemberRole,
-  matrix: PermMatrix
-): boolean {
-  if (role === 'admin') return true;
-  if (node.requireRole) return role === node.requireRole;
-  const rows = matrix[node.key];
-  // 이 역할의 명시 행이 있으면 그 값, 없으면(미설정/신규 역할) defaultRoles 폴백
-  if (rows && role in rows) return rows[role] === true;
-  return node.defaultRoles.includes(role);
-}
-
-/** menu_key 문자열 기준 판정(미매핑/고아 키는 fail-closed = admin만) */
-export function effectiveAllowedByKey(
-  key: string | null,
-  role: MemberRole,
-  matrix: PermMatrix
-): boolean {
-  if (role === 'admin') return true;
-  if (!key) return false;
-  const node = getMenuNode(key);
-  if (!node) return false;
-  return effectiveAllowed(node, role, matrix);
-}
-
-/** 역할이 볼 수 있는 네비 메뉴(직렬화 가능) */
-export function getAllowedMenus(role: MemberRole, matrix: PermMatrix): NavMenu[] {
-  return MENU_REGISTRY.filter((node) => effectiveAllowed(node, role, matrix)).map(
+/** 주체가 볼 수 있는 네비 메뉴(직렬화 가능) */
+export function getAllowedMenus(viewer: MenuViewer, matrix: PermMatrix): NavMenu[] {
+  return MENU_REGISTRY.filter((node) => effectiveAllowed(node, viewer, matrix)).map(
     (node) => ({
       key: node.key,
       href: node.href,
@@ -131,53 +117,54 @@ export function getAllowedMenus(role: MemberRole, matrix: PermMatrix): NavMenu[]
 
 /**
  * 메뉴 접근 강제. 권한 없으면 redirect (절대 /admin 하위로 보내지 않음 → 무한루프 방지).
- * admin은 DB 조회 없이 통과(DB 장애·락아웃 면역).
+ * 관리 권한자는 DB 조회 없이 통과(DB 장애·락아웃 면역).
  */
 export async function requireMenuAccess(
   session: Session | null,
   key: MenuKey | null
 ): Promise<void> {
   if (!session?.user) redirect('/login');
-  const role = (session.user.role ?? 'user') as MemberRole;
-  if (role === 'admin') return;
+  const viewer = viewerOf(session);
+  if (viewer.isAdmin) return;
   const matrix = await getPermMatrix();
-  if (!effectiveAllowedByKey(key, role, matrix)) redirect('/');
+  if (!effectiveAllowedByKey(key, viewer, matrix)) redirect('/');
 }
 
 /**
  * API 라우트용 메뉴 접근 판정(redirect 없이 boolean 반환).
  * 페이지는 requireMenuAccess, JSON 응답을 돌려줘야 하는 API는 이 함수를 쓴다.
- * admin은 DB 조회 없이 통과, 나머지는 정회원(active) + 매트릭스 판정.
+ * 관리 권한자는 DB 조회 없이 통과, 나머지는 정회원(active) + 매트릭스 판정.
  */
 export async function hasMenuAccess(
   session: Session | null,
   key: MenuKey
 ): Promise<boolean> {
   if (!session?.user) return false;
-  const role = (session.user.role ?? 'user') as MemberRole;
-  if (role === 'admin') return true;
+  const viewer = viewerOf(session);
+  if (viewer.isAdmin) return true;
   if (session.user.status !== 'active') return false;
   const matrix = await getPermMatrix().catch(() => ({}) as PermMatrix);
-  return effectiveAllowedByKey(key, role, matrix);
+  return effectiveAllowedByKey(key, viewer, matrix);
 }
 
 /* ------------------------------------------------------------------ */
 /* 권한 관리 툴용                                                       */
 /* ------------------------------------------------------------------ */
 
-/** 매트릭스 UI에 넘길 행 목록(메뉴별 5역할 셀 상태) */
+/**
+ * 매트릭스 UI에 넘길 행 목록(메뉴별 신분 셀 상태).
+ * 관리 권한은 열이 아니므로 여기 없다 — 플래그를 가진 사람은 어차피 전부 통과한다.
+ */
 export function buildToolMatrix(matrix: PermMatrix): ToolRow[] {
   return MENU_REGISTRY.map((node) => {
     const rows = matrix[node.key];
     const cells = {} as Record<MemberRole, ToolCell>;
     for (const role of ALL_ROLES) {
-      // admin 열, fixed 메뉴, requireRole 메뉴는 토글 불가
-      const locked =
-        role === 'admin' || !!node.fixed || !!node.requireRole;
+      // fixed 메뉴, requireRole 메뉴는 토글 불가
+      const locked = !!node.fixed || !!node.requireRole;
       const hasRow = !!rows && role in rows;
       let allowed: boolean;
-      if (role === 'admin') allowed = true;
-      else if (node.requireRole) allowed = role === node.requireRole;
+      if (node.requireRole) allowed = role === node.requireRole;
       else if (hasRow) allowed = rows![role] === true;
       else allowed = node.defaultRoles.includes(role);
       cells[role] = {
@@ -209,9 +196,12 @@ export async function listOrphanKeys(): Promise<string[]> {
 
 /**
  * 매트릭스 저장(전체 덮어쓰기). 보안 불변식을 서버에서 강제한다:
- *  - admin 행은 무조건 allowed=1 (락아웃 방지)
  *  - fixed/requireRole 메뉴(권한 툴)는 DB로 못 바꿈 → 건너뜀
  *  - 레지스트리에 없는 키는 무시(클라 payload 불신)
+ *
+ * 예전에는 'admin' 행을 무조건 1로 박아 락아웃을 막았다. 이제 관리 권한이
+ * 매트릭스 밖(플래그)에 있으므로 매트릭스를 어떻게 저장하든 관리자가 자기
+ * 콘솔에서 잠길 수 없다 — 그 방어는 구조가 대신한다.
  */
 export async function savePermissions(
   desired: { menu_key: string; role: MemberRole; allowed: boolean }[],
@@ -227,9 +217,7 @@ export async function savePermissions(
     if (node.fixed || node.requireRole) continue; // 잠긴 메뉴
     for (const role of ALL_ROLES) {
       let allowed: boolean;
-      if (role === 'admin') {
-        allowed = true; // 락아웃 방지
-      } else if (want.has(`${node.key}:${role}`)) {
+      if (want.has(`${node.key}:${role}`)) {
         allowed = want.get(`${node.key}:${role}`)!;
       } else {
         allowed = node.defaultRoles.includes(role);

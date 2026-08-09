@@ -11,12 +11,13 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { getPermMatrix, effectiveAllowedByKey } from '@/lib/admin/permissions';
+import { getPermMatrix, effectiveAllowedByKey, viewerOf } from '@/lib/admin/permissions';
 import {
   approveMember,
   rejectMember,
   setMemberStatus,
   setMemberRole,
+  setMemberAdmin,
   setTempPassword,
   linkGuardianToStudent,
   getMemberById,
@@ -36,7 +37,10 @@ type Action =
   | 'reject'
   | 'suspend'
   | 'restore'
+  /** 신분 변경(원생·학부모·선생님·운영) — 관리 권한은 건드리지 않는다 */
   | 'setRole'
+  /** 관리 권한 부여·회수 — 신분은 건드리지 않는다 */
+  | 'setAdmin'
   | 'linkStudent'
   | 'issueTempPassword';
 
@@ -51,9 +55,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
     // 메뉴 권한 매트릭스와 일관된 접근 통제 — 'members' 메뉴 접근 권한이 있어야 한다.
     // (페이지뿐 아니라 API 직접 호출도 매트릭스 설정을 따른다. 액션별 플로어는 아래에서 별도 적용.)
-    const actorRole = (session.user.role ?? 'user') as MemberRole;
     const matrix = await getPermMatrix();
-    if (!effectiveAllowedByKey('members', actorRole, matrix)) {
+    if (!effectiveAllowedByKey('members', viewerOf(session), matrix)) {
       return NextResponse.json(
         { success: false, error: '회원 관리 접근 권한이 없습니다.' },
         { status: 403 }
@@ -64,10 +67,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const body = await request.json();
     const action: Action = body.action;
 
-    // 락아웃 방지: 활성 관리자에 대한 권한 박탈(거절/정지/강등)은 마지막 관리자·자기 자신을 보호.
+    // 락아웃 방지: 활성 관리자를 막는 조치(거절/정지)는 마지막 관리자·자기 자신을 보호.
+    // 신분이 아니라 관리 권한(is_admin)을 본다 — 선생님이든 원생이든 권한자면 보호 대상.
     if (action === 'reject' || action === 'suspend') {
       const target = await getMemberById(id);
-      if (target?.role === 'admin' && target.status === 'active') {
+      if (target?.is_admin && target.status === 'active') {
         if (id === session!.user.id) {
           return NextResponse.json(
             { success: false, error: '자기 자신의 접근 권한은 해제할 수 없습니다.' },
@@ -105,39 +109,55 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         break;
       }
       case 'setRole': {
-        // 역할 변경은 관리자 전용
+        // 신분 변경은 관리자 전용
         if (!isAdmin(session)) {
           return NextResponse.json(
-            { success: false, error: '역할 변경은 관리자만 가능합니다.' },
+            { success: false, error: '신분 변경은 관리자만 가능합니다.' },
             { status: 403 }
           );
         }
         const role: MemberRole = body.role;
         if (!role || !MEMBER_ROLES.includes(role)) {
           return NextResponse.json(
-            { success: false, error: '유효하지 않은 역할입니다.' },
+            { success: false, error: '유효하지 않은 신분입니다.' },
             { status: 400 }
           );
         }
-        // 마지막 관리자 강등·자기 강등 차단
-        if (role !== 'admin') {
+        // 신분을 바꿔도 관리 권한은 그대로 남는다(0034). 그래서 여기에는
+        // 락아웃 방지가 필요 없다 — 권한을 건드리는 곳은 setAdmin뿐이다.
+        await setMemberRole(id, role);
+        break;
+      }
+      case 'setAdmin': {
+        // 관리 권한 부여·회수는 관리자 전용
+        if (!isAdmin(session)) {
+          return NextResponse.json(
+            { success: false, error: '관리자 권한 변경은 관리자만 가능합니다.' },
+            { status: 403 }
+          );
+        }
+        const grant = body.isAdmin === true;
+        if (!grant) {
+          // 회수는 자기 자신과 마지막 관리자를 보호한다.
+          if (id === session!.user.id) {
+            return NextResponse.json(
+              { success: false, error: '자기 자신의 관리자 권한은 해제할 수 없습니다.' },
+              { status: 403 }
+            );
+          }
           const target = await getMemberById(id);
-          if (target?.role === 'admin') {
-            if (id === session!.user.id) {
-              return NextResponse.json(
-                { success: false, error: '자기 자신의 관리자 권한은 해제할 수 없습니다.' },
-                { status: 403 }
-              );
-            }
-            if (target.status === 'active' && (await countActiveAdmins()) <= 1) {
-              return NextResponse.json(
-                { success: false, error: '마지막 관리자는 강등할 수 없습니다.' },
-                { status: 400 }
-              );
-            }
+          if (
+            target?.is_admin &&
+            target.status === 'active' &&
+            (await countActiveAdmins()) <= 1
+          ) {
+            return NextResponse.json(
+              { success: false, error: '마지막 관리자의 권한은 해제할 수 없습니다.' },
+              { status: 400 }
+            );
           }
         }
-        await setMemberRole(id, role);
+        await setMemberAdmin(id, grant);
         break;
       }
       case 'issueTempPassword': {
@@ -148,8 +168,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             { status: 404 }
           );
         }
-        // 관리자 계정 탈취 방지: 관리자 대상 발급은 관리자만 가능
-        if (target.role === 'admin' && !isAdmin(session)) {
+        // 관리자 계정 탈취 방지: 관리 권한자 대상 발급은 관리자만 가능
+        if (target.is_admin && !isAdmin(session)) {
           return NextResponse.json(
             { success: false, error: '관리자 계정의 임시 비밀번호는 관리자만 발급할 수 있습니다.' },
             { status: 403 }

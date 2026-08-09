@@ -57,6 +57,7 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         token.id = user.id as string;
         token.role = user.role;
+        token.isAdmin = user.isAdmin ?? false;
         token.status = user.status;
         token.mustChangePassword = user.mustChangePassword ?? false;
       }
@@ -70,6 +71,9 @@ export const authConfig: NextAuthConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role;
+        // 낡은 토큰에는 이 클레임이 없다. auth.ts의 jwt 콜백이 DB에서 보충할 때까지
+        // false로 두면 관리 권한이 잠깐 없는 것처럼 보일 뿐, 권한이 새지는 않는다.
+        session.user.isAdmin = token.isAdmin ?? false;
         session.user.status = token.status;
         session.user.mustChangePassword = token.mustChangePassword ?? false;
       }
