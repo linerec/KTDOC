@@ -15,6 +15,20 @@ export function isAdmin(session: Session | null | undefined): boolean {
 }
 
 /**
+ * 본인 이름으로 행사에 참여 체크인할 수 있는지.
+ *
+ * 선생님도 무대에 서고 관리자도 행사에 나간다. 원생만 참여자로 보면 운영진의
+ * 참여 기록이 통째로 빠지고, 명단이 실제와 어긋난다.
+ *
+ * 학부모는 false다 — 본인이 아니라 자녀를 대신 체크인하며, 그 경로는
+ * ParentCheckin이 따로 맡는다.
+ */
+export function canSelfCheckIn(session: Session | null | undefined): boolean {
+  const role = session?.user?.role;
+  return role === 'student' || role === 'teacher' || isAdmin(session);
+}
+
+/**
  * 세션이 운영진인지 확인 — 신분이 선생님이거나, 관리 권한을 가진 사람.
  * 회원 승인 등 관리 작업의 접근 기준.
  *

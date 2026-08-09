@@ -12,6 +12,7 @@
 
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
+import { canSelfCheckIn } from '@/lib/isAdmin';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import {
   getEvents,
@@ -61,8 +62,9 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
 
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
-  const canCheckIn = role === 'student' && !!userId;
-  const memberView = (role === 'student' || role === 'parent') && !!userId;
+  const canCheckIn = canSelfCheckIn(session) && !!userId;
+  // 체크인할 수 있는 사람은 비공개 공연도 본다 — 참여 대상일 수 있기 때문이다.
+  const memberView = (canCheckIn || role === 'parent') && !!userId;
 
   const { month: monthParam } = await searchParams;
   const { year, month } = parseMonth(monthParam);

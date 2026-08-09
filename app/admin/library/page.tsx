@@ -2,21 +2,24 @@
  * 공연 둘러보기 (학생 · 학부모용, 읽기 전용)
  *
  * 공개된 공연을 검색·필터·열람한다. 콘텐츠 편집 기능은 없으며,
- * 카드를 누르면 공개 갤러리 페이지의 공연 상세(사진·영상)로 이동한다.
- * 본인 사진 업로드/제출(library.my)은 소유자 데이터 모델이 준비된 후 추가된다.
+ * 멤버는 콘솔 상세(체크인·사진 제출)로, 그 외 역할은 공개 갤러리 상세로 이동한다.
+ *
+ * 이 파일은 무엇을 보여줄지만 정한다 — 필터 폼은 LibraryFilters, 카드·줄 렌더는
+ * LibraryEventList가 맡는다(두 보기가 같은 배지·링크 규칙을 쓰도록).
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import SiteViewLink from '@/components/common/SiteViewLink';
 import { cookies } from 'next/headers';
 import { auth } from '@/auth';
+import { canSelfCheckIn } from '@/lib/isAdmin';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEvents, getCategories, getUserCheckedInEventIds, memberLibrary} from '@/lib/d1';
+import { getEvents, getCategories, getUserCheckedInEventIds, memberLibrary } from '@/lib/d1';
 import type { EventWithCategory } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
-import CheckinButton from '@/components/admin/library/CheckinButton';
-import LibraryViewToggle, { type LibraryView } from '@/components/admin/library/LibraryViewToggle';
+import T from '@/components/common/T';
+import LibraryFilters from '@/components/admin/library/LibraryFilters';
+import LibraryEventList from '@/components/admin/library/LibraryEventList';
+import type { LibraryView } from '@/components/admin/library/LibraryViewToggle';
 
 export const metadata: Metadata = {
   title: '공연 둘러보기 | KTDOC Admin',
@@ -48,13 +51,14 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const session = await auth();
   await requireMenuAccess(session, 'library');
 
-  // 체크인은 수강생(student) 본인 참여 기록 — 학생에게만 자기 토글을 노출한다.
-  // 학부모는 자녀 대행 체크인을 위해 공연 상세로 들어가야 하므로, 멤버(학생·학부모)는
-  // 전체 공연을 보고 콘솔 상세로 연결한다.
+  // 체크인은 본인 참여 기록 — 원생·선생님·관리자에게 자기 토글을 노출한다.
+  // 학부모는 자녀 대행 체크인을 위해 공연 상세로 들어가야 한다.
+  // 체크인할 수 있는 사람은 모두 콘솔 상세로 연결한다 — 공개 갤러리로 보내면
+  // 정작 체크인할 자리가 없다. 비공개 공연도 함께 본다(참여 대상일 수 있으므로).
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
-  const canCheckIn = role === 'student' && !!userId;
-  const memberView = (role === 'student' || role === 'parent') && !!userId;
+  const canCheckIn = canSelfCheckIn(session) && !!userId;
+  const memberView = (canCheckIn || role === 'parent') && !!userId;
 
   const params = await searchParams;
   const [eventsResult, categories, checkedInIds] = await Promise.all([
@@ -118,219 +122,85 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
     return `/admin/library?${q.toString()}`;
   };
 
-  // 공연 카드 1장(둘러보기 공통). 다가오는 섹션과 연도 목록에서 함께 쓴다.
-  const eventCard = (event: EventWithCategory) => {
-    const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
-    const isDraft = event.is_published === 0;
-    const isChecked = canCheckIn && checkedInIds.has(event.id);
-    const isUpcoming = event.event_date >= today;
-    const inner = (
-      <>
-        <div className="library-card-thumb">
-          {thumb ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={thumb} alt={event.title_ko} loading="lazy" />
-          ) : (
-            <span className="library-card-thumb-empty">이미지 없음</span>
-          )}
-          {isChecked && (
-            <span className="library-card-checked-flag">
-              ✓ {isUpcoming ? '참여 예정' : '참여함'}
-            </span>
-          )}
-          {!isChecked && isUpcoming && (
-            <span className="library-card-upcoming-flag">다가오는</span>
-          )}
-        </div>
-        <div className="library-card-body">
-          <span className="library-card-meta">
-            {event.category_name_ko && (
-              <span className="library-card-category">{event.category_name_ko}</span>
-            )}
-            {isDraft && <span className="library-card-draft">비공개</span>}
-          </span>
-          <h3 className="library-card-title">{event.title_ko}</h3>
-          <p className="library-card-date">{event.event_date}</p>
-        </div>
-      </>
-    );
-    return (
-      <div key={event.id} className={`library-card${isChecked ? ' is-checked' : ''}`}>
-        {memberView ? (
-          <Link href={`/admin/library/${event.id}`} className="library-card-link">
-            {inner}
-          </Link>
-        ) : (
-          <SiteViewLink
-            href={`/gallery/${event.year}/${event.slug}`}
-            className="library-card-link"
-          >
-            {inner}
-          </SiteViewLink>
-        )}
-        {canCheckIn && (
-          <CheckinButton
-            eventId={event.id}
-            initialCheckedIn={checkedInIds.has(event.id)}
-            upcoming={isUpcoming}
-          />
-        )}
-      </div>
-    );
+  // Set은 서버→클라이언트 경계를 넘지 못한다(직렬화 불가) — 배열로 넘긴다.
+  const checkedInList = Array.from(checkedInIds);
+  const listProps = {
+    view,
+    memberView,
+    canCheckIn,
+    checkedInIds: checkedInList,
+    today,
   };
-
-  // 게시판형 목록 한 줄(list 뷰). 카드와 같은 링크 대상·배지·체크인을 압축해 담는다.
-  const eventRow = (event: EventWithCategory) => {
-    const isDraft = event.is_published === 0;
-    const isChecked = canCheckIn && checkedInIds.has(event.id);
-    const isUpcoming = event.event_date >= today;
-    const inner = (
-      <>
-        <span className="library-row-date">{event.event_date}</span>
-        <span className="library-row-main">
-          <span className="library-row-title">{event.title_ko}</span>
-          {event.category_name_ko && (
-            <span className="library-row-category">{event.category_name_ko}</span>
-          )}
-          {isDraft && <span className="library-card-draft">비공개</span>}
-          {isChecked && (
-            <span className="library-row-checked">✓ {isUpcoming ? '참여 예정' : '참여함'}</span>
-          )}
-          {!isChecked && isUpcoming && (
-            <span className="library-row-upcoming">다가오는</span>
-          )}
-        </span>
-      </>
-    );
-    return (
-      <div key={event.id} className={`library-row${isChecked ? ' is-checked' : ''}`}>
-        {memberView ? (
-          <Link href={`/admin/library/${event.id}`} className="library-row-link">
-            {inner}
-          </Link>
-        ) : (
-          <SiteViewLink
-            href={`/gallery/${event.year}/${event.slug}`}
-            className="library-row-link"
-          >
-            {inner}
-          </SiteViewLink>
-        )}
-        {canCheckIn && (
-          <CheckinButton
-            eventId={event.id}
-            initialCheckedIn={checkedInIds.has(event.id)}
-            upcoming={isUpcoming}
-          />
-        )}
-      </div>
-    );
-  };
-
-  // 보기 방식에 따라 섹션 본문 렌더러를 고른다(다가오는·연도별 공통)
-  const renderEvents = (list: EventWithCategory[]) =>
-    view === 'list' ? (
-      <div className="library-rows">{list.map(eventRow)}</div>
-    ) : (
-      <div className="library-grid">{list.map(eventCard)}</div>
-    );
 
   return (
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <span>공연</span>
+            <span>
+              <T k="admin.schedule.typePerformance">공연</T>
+            </span>
             <span>/</span>
-            <span>둘러보기</span>
+            <span>
+              <T k="admin.library.crumb">둘러보기</T>
+            </span>
           </div>
-          <h1 className="admin-title">공연 둘러보기</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.library">공연 둘러보기</T>
+          </h1>
           <p className="admin-subtitle">
-            {canCheckIn
-              ? '본인이 참여하는 공연에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개) 공연에도 체크인할 수 있습니다.'
-              : '공개된 공연을 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가 열립니다.'}
+            {canCheckIn ? (
+              <T k="admin.library.subtitleStudent">
+                본인이 참여하는 공연에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개)
+                공연에도 체크인할 수 있습니다.
+              </T>
+            ) : (
+              <T k="admin.library.subtitle">
+                공개된 공연을 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가
+                열립니다.
+              </T>
+            )}
           </p>
         </div>
       </div>
 
-      {/* 검색 · 필터 */}
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <select name="year" className="admin-filter-select" defaultValue={params.year || ''}>
-            <option value="">전체 연도</option>
-            {years.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-
-          <select name="category" className="admin-filter-select" defaultValue={params.category || ''}>
-            <option value="">전체 카테고리</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>{cat.name_ko}</option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            name="search"
-            placeholder="제목 검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-
-          <button type="submit" className="admin-btn admin-btn-sm">검색</button>
-
-          {hasFilters && (
-            <Link href="/admin/library" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-
-          {canCheckIn && (
-            <Link
-              href={mineOnly ? '/admin/library' : '/admin/library?mine=1'}
-              className={`admin-btn admin-btn-sm ${mineOnly ? '' : 'admin-btn-outline'}`}
-            >
-              {mineOnly ? '전체 보기' : `✓ 체크인한 것만 (${checkedInCount})`}
-            </Link>
-          )}
-
-          <Link href="/admin/schedule" className="admin-btn admin-btn-sm admin-btn-outline">
-            📅 캘린더
-          </Link>
-
-          {canCheckIn && (
-            <Link href="/admin/archive" className="admin-btn admin-btn-sm admin-btn-outline">
-              내 참여 아카이브 →
-            </Link>
-          )}
-        </form>
-
-        <div className="admin-filter-side">
-          <LibraryViewToggle view={view} cardHref={viewHref('card')} listHref={viewHref('list')} />
-          <div className="admin-filter-info">
-            {mineOnly ? '체크인한 공연' : canCheckIn ? '공연' : '공개된 공연'} {displayCount}개
-          </div>
-        </div>
-      </div>
+      <LibraryFilters
+        years={years}
+        categories={categories}
+        year={params.year || ''}
+        category={params.category || ''}
+        search={params.search || ''}
+        hasFilters={hasFilters}
+        canCheckIn={canCheckIn}
+        mineOnly={mineOnly}
+        checkedInCount={checkedInCount}
+        displayCount={displayCount}
+        view={view}
+        cardHref={viewHref('card')}
+        listHref={viewHref('list')}
+      />
 
       {/* 응답 필요 알림 (다가오는 공연 중 미응답) */}
       {showUpcomingFirst && pendingCount > 0 && (
         <div className="admin-callout">
-          다가오는 공연 중 <strong>{pendingCount}개</strong>에 아직 참여 응답을 하지 않았습니다.
-          아래에서 참여 여부를 정해 주세요.
+          <T k="admin.library.pendingCallout" params={{ n: <strong>{pendingCount}</strong> }}>
+            {'다가오는 공연 중 {n}개에 아직 참여 응답을 하지 않았습니다. 아래에서 참여 여부를 정해 주세요.'}
+          </T>
         </div>
       )}
 
-      {/* 결과 */}
       {displayEvents.length === 0 ? (
         <div className="admin-empty-state">
           <p>
-            {mineOnly
-              ? '아직 체크인한 공연이 없습니다. 참여한 공연에 체크인해 보세요.'
-              : hasFilters
-                ? '조건에 맞는 공연이 없습니다.'
-                : '아직 공개된 공연이 없습니다.'}
+            {mineOnly ? (
+              <T k="admin.library.emptyMine">
+                아직 체크인한 공연이 없습니다. 참여한 공연에 체크인해 보세요.
+              </T>
+            ) : hasFilters ? (
+              <T k="admin.eventPicker.emptyFiltered">조건에 맞는 공연이 없습니다.</T>
+            ) : (
+              <T k="admin.library.empty">아직 공개된 공연이 없습니다.</T>
+            )}
           </p>
         </div>
       ) : (
@@ -338,8 +208,10 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           {/* 다가오는 공연 (학생, 미필터 시) */}
           {showUpcomingFirst && upcomingEvents.length > 0 && (
             <section className="library-year library-upcoming">
-              <h2 className="library-year-title">다가오는 공연</h2>
-              {renderEvents(upcomingEvents)}
+              <h2 className="library-year-title">
+                <T k="admin.library.upcomingSection">다가오는 공연</T>
+              </h2>
+              <LibraryEventList events={upcomingEvents} {...listProps} />
             </section>
           )}
 
@@ -347,9 +219,15 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           {sortedYears.map((year) => (
             <section key={year} className="library-year">
               <h2 className="library-year-title">
-                {showUpcomingFirst ? `${year} · 지난 공연` : `${year}`}
+                {showUpcomingFirst ? (
+                  <T k="admin.library.pastYear" params={{ y: year }}>
+                    {'{y} · 지난 공연'}
+                  </T>
+                ) : (
+                  year
+                )}
               </h2>
-              {renderEvents(grouped.get(year) ?? [])}
+              <LibraryEventList events={grouped.get(year) ?? []} {...listProps} />
             </section>
           ))}
         </div>

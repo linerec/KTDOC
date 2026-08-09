@@ -276,6 +276,7 @@ export async function getMemberById(id: string): Promise<Member | null> {
 
 /**
  * 원생 선택지 (학부모 연결이 미해결일 때 관리자가 직접 지정하기 위한 목록).
+ * **원생만** 나와야 한다 — 학부모의 자녀로 지정할 대상이므로.
  */
 export async function getStudentOptions(): Promise<
   { id: string; name: string | null; enrollment_year: number | null }[]
@@ -284,6 +285,32 @@ export async function getStudentOptions(): Promise<
     `SELECT id, name, enrollment_year FROM users
      WHERE role = 'student'
      ORDER BY enrollment_year DESC, name ASC`
+  );
+}
+
+/** 수업에 배정할 수 있는 회원 한 줄 */
+export interface EnrollableMember {
+  id: string;
+  name: string | null;
+  enrollment_year: number | null;
+  role: MemberRole;
+}
+
+/**
+ * 수업에 배정할 수 있는 회원 — 원생과 선생님.
+ *
+ * 선생님도 수업에 들어간다(함께 서는 무대, 연수 과정). 원생만 고를 수 있으면
+ * 선생님이 참여하는 수업의 명단이 실제와 어긋난다.
+ *
+ * 학부모는 제외한다 — 자녀를 통해 연결되지 본인이 수강하지 않는다. 운영(staff)
+ * 계정도 제외한다(배우지 않는 계정이다). 관리 권한은 신분이 아니므로 여기서
+ * 보지 않는다 — 관리자면서 선생님인 사람은 선생님으로 이미 들어온다.
+ */
+export async function getEnrollableMembers(): Promise<EnrollableMember[]> {
+  return query<EnrollableMember[]>(
+    `SELECT id, name, enrollment_year, role FROM users
+     WHERE role IN ('student', 'teacher')
+     ORDER BY FIELD(role, 'student', 'teacher'), enrollment_year DESC, name ASC`
   );
 }
 

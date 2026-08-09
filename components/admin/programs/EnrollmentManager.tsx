@@ -11,38 +11,51 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { EnrollmentWithMember, EnrollmentStatus } from '@/types/programs';
-import { ENROLLMENT_STATUSES, ENROLLMENT_STATUS_LABELS } from '@/types/programs';
+import { ENROLLMENT_STATUSES } from '@/types/programs';
+import { useT, type TFunction } from '@/lib/i18n/useT';
+import { enrollmentStatusLabel } from '@/lib/i18n/programLabels';
+import type { MemberRole } from '@/types/members';
 
-interface StudentOption {
+/** 수업에 배정할 수 있는 회원 — 원생과 선생님(신분에 따라 라벨이 달라진다) */
+interface MemberOption {
   id: string;
   name: string | null;
   enrollment_year: number | null;
+  role: MemberRole;
 }
 
 interface EnrollmentManagerProps {
   programId: number;
   initialEnrollments: EnrollmentWithMember[];
-  studentOptions: StudentOption[];
+  memberOptions: MemberOption[];
 }
 
-function studentLabel(name: string | null, year: number | null): string {
-  const base = name || '이름 미입력';
-  return year ? `${base} · ${year}년` : base;
+/**
+ * 드롭다운 한 줄. 원생은 입학년도로, 선생님은 '선생님'으로 구분한다 —
+ * 한 목록에 섞여 나오므로 누구인지 보이지 않으면 잘못 고르기 쉽다.
+ */
+function memberLabel(t: TFunction, m: MemberOption): string {
+  const base = m.name || t('admin.common.noNameEntered', '이름 미입력');
+  if (m.role === 'teacher') return `${base} · ${t('admin.member.role.teacher', '선생님')}`;
+  return m.enrollment_year
+    ? `${base} · ${t('admin.members.yearSuffix', '{y}년', { y: m.enrollment_year })}`
+    : base;
 }
 
 export default function EnrollmentManager({
   programId,
   initialEnrollments,
-  studentOptions,
+  memberOptions,
 }: EnrollmentManagerProps) {
   const router = useRouter();
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState('');
   const [addStatus, setAddStatus] = useState<EnrollmentStatus>('active');
 
   const enrolledIds = new Set(initialEnrollments.map((e) => e.user_id));
-  const available = studentOptions.filter((s) => !enrolledIds.has(s.id));
+  const available = memberOptions.filter((s) => !enrolledIds.has(s.id));
   const activeCount = initialEnrollments.filter((e) => e.status !== 'cancelled').length;
   const cancelledCount = initialEnrollments.length - activeCount;
 
@@ -65,7 +78,7 @@ export default function EnrollmentManager({
 
   async function handleAdd() {
     if (!selectedId) {
-      setError('배정할 원생을 선택하세요.');
+      setError(t('admin.enroll.pickFirst', '배정할 원생을 선택하세요.'));
       return;
     }
     const ok = await call(
@@ -75,7 +88,7 @@ export default function EnrollmentManager({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: selectedId, status: addStatus }),
       },
-      '수강생 배정에 실패했습니다.'
+      t('admin.enroll.addFailed', '수강생 배정에 실패했습니다.')
     );
     if (ok) {
       setSelectedId('');
@@ -91,16 +104,23 @@ export default function EnrollmentManager({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       },
-      '상태 변경에 실패했습니다.'
+      t('admin.common.toggleFailed', '상태 변경에 실패했습니다.')
     );
   }
 
   function handleRemove(enrollmentId: number, name: string | null) {
-    if (!confirm(`${name || '이 원생'}의 배정을 해제할까요?`)) return;
+    if (
+      !confirm(
+        t('admin.enroll.removeConfirm', '{name}의 배정을 해제할까요?', {
+          name: name || t('admin.enroll.thisStudent', '이 원생'),
+        })
+      )
+    )
+      return;
     void call(
       `/api/admin/programs/${programId}/enrollments/${enrollmentId}`,
       { method: 'DELETE' },
-      '배정 해제에 실패했습니다.'
+      t('admin.enroll.removeFailed', '배정 해제에 실패했습니다.')
     );
   }
 
@@ -108,14 +128,17 @@ export default function EnrollmentManager({
     <div>
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
 
-      {studentOptions.length === 0 ? (
+      {memberOptions.length === 0 ? (
         <p className="admin-form-help">
-          아직 등록된 원생 회원이 없습니다. 회원 관리에서 원생 가입을 승인하면 이곳에서 배정할 수 있습니다.
+          {t(
+            'admin.enroll.noStudents',
+            '아직 등록된 원생 회원이 없습니다. 회원 관리에서 원생 가입을 승인하면 이곳에서 배정할 수 있습니다.'
+          )}
         </p>
       ) : (
         <div className="admin-form-row" style={{ alignItems: 'flex-end', gap: '8px' }}>
           <div className="admin-form-group" style={{ flex: 2 }}>
-            <label className="admin-form-label">원생 선택</label>
+            <label className="admin-form-label">{t('admin.enroll.pickStudent', '원생 선택')}</label>
             <select
               className="admin-form-select"
               value={selectedId}
@@ -123,17 +146,19 @@ export default function EnrollmentManager({
               disabled={busy || available.length === 0}
             >
               <option value="">
-                {available.length === 0 ? '모든 원생이 이미 배정되었습니다' : '원생을 선택하세요'}
+                {available.length === 0
+                  ? t('admin.enroll.allAssigned', '배정할 수 있는 사람이 모두 배정되었습니다')
+                  : t('admin.enroll.selectPrompt', '배정할 사람을 선택하세요')}
               </option>
-              {available.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {studentLabel(s.name, s.enrollment_year)}
+              {available.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {memberLabel(t, m)}
                 </option>
               ))}
             </select>
           </div>
           <div className="admin-form-group" style={{ flex: 1 }}>
-            <label className="admin-form-label">상태</label>
+            <label className="admin-form-label">{t('admin.members.colStatus', '상태')}</label>
             <select
               className="admin-form-select"
               value={addStatus}
@@ -142,7 +167,7 @@ export default function EnrollmentManager({
             >
               {ENROLLMENT_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {ENROLLMENT_STATUS_LABELS[s].ko}
+                  {enrollmentStatusLabel(t, s)}
                 </option>
               ))}
             </select>
@@ -153,18 +178,22 @@ export default function EnrollmentManager({
             onClick={handleAdd}
             disabled={busy || !selectedId}
           >
-            배정
+            {t('admin.enroll.assign', '배정')}
           </button>
         </div>
       )}
 
       <p className="admin-form-help" style={{ marginTop: '12px' }}>
-        배정된 수강생 {activeCount}명
-        {cancelledCount > 0 ? ` · 취소 ${cancelledCount}명` : ''}
+        {t('admin.enroll.countLine', '배정된 수강생 {n}명', { n: activeCount })}
+        {cancelledCount > 0
+          ? ` · ${t('admin.enroll.cancelledCount', '취소 {n}명', { n: cancelledCount })}`
+          : ''}
       </p>
 
       {initialEnrollments.length === 0 ? (
-        <p className="admin-form-help">아직 배정된 수강생이 없습니다.</p>
+        <p className="admin-form-help">
+          {t('admin.enroll.empty', '아직 배정된 수강생이 없습니다.')}
+        </p>
       ) : (
         <ul
           style={{
@@ -190,9 +219,12 @@ export default function EnrollmentManager({
               }}
             >
               <span style={{ flex: 1, fontWeight: 600 }}>
-                {e.member_name || '이름 미입력'}
+                {e.member_name || t('admin.common.noNameEntered', '이름 미입력')}
                 {e.enrollment_year ? (
-                  <span style={{ fontWeight: 400, opacity: 0.6 }}> · {e.enrollment_year}년</span>
+                  <span style={{ fontWeight: 400, opacity: 0.6 }}>
+                    {' · '}
+                    {t('admin.members.yearSuffix', '{y}년', { y: e.enrollment_year })}
+                  </span>
                 ) : null}
               </span>
               <select
@@ -201,11 +233,13 @@ export default function EnrollmentManager({
                 value={e.status}
                 onChange={(ev) => handleStatusChange(e.id, ev.target.value as EnrollmentStatus)}
                 disabled={busy}
-                aria-label={`${e.member_name || '원생'} 수강 상태`}
+                aria-label={t('admin.enroll.statusAria', '{name} 수강 상태', {
+                  name: e.member_name || t('admin.member.role.student', '원생'),
+                })}
               >
                 {ENROLLMENT_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {ENROLLMENT_STATUS_LABELS[s].ko}
+                    {enrollmentStatusLabel(t, s)}
                   </option>
                 ))}
               </select>
@@ -215,7 +249,7 @@ export default function EnrollmentManager({
                 onClick={() => handleRemove(e.id, e.member_name)}
                 disabled={busy}
               >
-                해제
+                {t('admin.enroll.remove', '해제')}
               </button>
             </li>
           ))}

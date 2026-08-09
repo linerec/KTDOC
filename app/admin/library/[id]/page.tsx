@@ -14,15 +14,16 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEventById, isCheckedIn, getEventCheckins, getEventSupplies, getEventSupplySets } from '@/lib/d1';
 import { getUserNamesByIds, getGuardianChildren } from '@/lib/members';
-import { isStaff } from '@/lib/isAdmin';
+import { isStaff, canSelfCheckIn } from '@/lib/isAdmin';
 import SupplyList from '@/components/supplies/SupplyList';
 import { getCommentThreads } from '@/lib/comments/thread';
 import CommentSection from '@/components/comments/CommentSection';
 import { formatEventDate } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import EventLocationMap from '@/components/events/EventLocationMap';
-import ImageGallery from '@/components/gallery/ImageGallery';
-import { VideoList } from '@/components/gallery/VideoEmbed';
+import { LocaleImageGallery, LocaleVideoList } from '@/components/admin/library/LocaleMedia';
+import T from '@/components/common/T';
+import LocaleText from '@/components/common/LocaleText';
 import CheckinButton from '@/components/admin/library/CheckinButton';
 import ParentCheckin from '@/components/admin/library/ParentCheckin';
 import PhotoSubmitModal from '@/components/admin/library/PhotoSubmitModal';
@@ -53,7 +54,7 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
   ]);
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
-  const canCheckIn = role === 'student' && !!userId;
+  const canCheckIn = canSelfCheckIn(session) && !!userId;
   const isParent = role === 'parent' && !!userId;
   const checkedIn = canCheckIn ? await isCheckedIn(eventId, userId) : false;
 
@@ -95,16 +96,39 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin/library">공연 둘러보기</Link>
+            <Link href="/admin/library">
+              <T k="admin.nav.library">공연 둘러보기</T>
+            </Link>
             <span>/</span>
-            <span>{event.title_ko}</span>
+            <span>
+              <LocaleText ko={event.title_ko} en={event.title_en} />
+            </span>
           </div>
-          <h1 className="admin-title">{event.title_ko}</h1>
+          <h1 className="admin-title">
+            <LocaleText ko={event.title_ko} en={event.title_en} />
+          </h1>
           <p className="admin-subtitle library-detail-sub">
-            {isUpcoming && <span className="library-upcoming-badge">다가오는 공연</span>}
-            {event.category_name_ko && <span>{event.category_name_ko}</span>}
-            <span>{formatEventDate(event.event_date, 'ko')}</span>
-            {isDraft && <span className="library-card-draft">비공개</span>}
+            {isUpcoming && (
+              <span className="library-upcoming-badge">
+                <T k="admin.library.upcomingSection">다가오는 공연</T>
+              </span>
+            )}
+            {event.category_name_ko && (
+              <span>
+                <LocaleText ko={event.category_name_ko} en={event.category_name_en} />
+              </span>
+            )}
+            <span>
+              <LocaleText
+                ko={formatEventDate(event.event_date, 'ko')}
+                en={formatEventDate(event.event_date, 'en')}
+              />
+            </span>
+            {isDraft && (
+              <span className="library-card-draft">
+                <T k="admin.common.unpublished">비공개</T>
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -117,7 +141,9 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
 
       {isParent && (
         <section className="library-detail-section">
-          <h2 className="library-detail-section-title">자녀 참여 체크인</h2>
+          <h2 className="library-detail-section-title">
+            <T k="admin.checkin.childSection">자녀 참여 체크인</T>
+          </h2>
           <ParentCheckin
             eventId={eventId}
             childrenList={guardianChildren}
@@ -131,7 +157,9 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
         <section className="event-logistics">
           {(event.location || event.location_url || event.location_address || hasCoords) && (
             <div className="event-logistics-item">
-              <span className="event-logistics-label">장소</span>
+              <span className="event-logistics-label">
+                <T k="admin.common.location">장소</T>
+              </span>
               <span className="event-logistics-value">
                 <EventLocationMap
                   location={event.location}
@@ -139,25 +167,47 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
                   lat={event.location_lat}
                   lng={event.location_lng}
                   locationUrl={event.location_url}
-                  directionsLabel="길찾기"
-                  largerMapLabel="큰 지도로 보기"
+                  directionsLabel={<T k="admin.library.directions">길찾기</T>}
+                  largerMapLabel={<T k="admin.library.largerMap">큰 지도로 보기</T>}
                 />
               </span>
             </div>
           )}
           {(event.call_time || event.start_time || event.end_time) && (
             <div className="event-logistics-item">
-              <span className="event-logistics-label">시간</span>
+              <span className="event-logistics-label">
+                <T k="admin.library.time">시간</T>
+              </span>
               <span className="event-logistics-value">
-                {event.call_time && <>집합 {event.call_time}</>}
-                {event.start_time && <> · 시작 {event.start_time}</>}
-                {event.end_time && <> · 종료 {event.end_time}</>}
+                {event.call_time && (
+                  <T k="admin.library.callAt" params={{ t: event.call_time }}>
+                    {'집합 {t}'}
+                  </T>
+                )}
+                {event.start_time && (
+                  <>
+                    {' · '}
+                    <T k="admin.library.startAt" params={{ t: event.start_time }}>
+                      {'시작 {t}'}
+                    </T>
+                  </>
+                )}
+                {event.end_time && (
+                  <>
+                    {' · '}
+                    <T k="admin.library.endAt" params={{ t: event.end_time }}>
+                      {'종료 {t}'}
+                    </T>
+                  </>
+                )}
               </span>
             </div>
           )}
           {event.prep_notes && (
             <div className="event-logistics-item">
-              <span className="event-logistics-label">준비물 · 안내</span>
+              <span className="event-logistics-label">
+                <T k="admin.library.prep">준비물 · 안내</T>
+              </span>
               <span className="event-logistics-value event-logistics-prep">{event.prep_notes}</span>
             </div>
           )}
@@ -169,16 +219,21 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
       {/* 참가자(체크인 인원) */}
       <section className="event-participants">
         <h2 className="library-detail-section-title">
-          참가자 <span className="event-participants-count">{checkins.length}</span>
+          <T k="admin.library.participants">참가자</T>{' '}
+          <span className="event-participants-count">{checkins.length}</span>
         </h2>
         {checkins.length === 0 ? (
-          <p className="event-participants-empty">아직 체크인한 참가자가 없습니다.</p>
+          <p className="event-participants-empty">
+            <T k="admin.library.noParticipants">아직 체크인한 참가자가 없습니다.</T>
+          </p>
         ) : (
           <ul className="participation-people">
             {checkins.map((c) => (
               <li key={c.id} className="participation-person">
                 <span className="participation-person-name">
-                  {participantNames.get(c.user_id) || '이름 미상'}
+                  {participantNames.get(c.user_id) || (
+                    <T k="admin.library.unknownName">이름 미상</T>
+                  )}
                 </span>
               </li>
             ))}
@@ -187,36 +242,57 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
       </section>
 
       {event.description_ko && (
-        <p className="library-detail-desc">{event.description_ko}</p>
+        <p className="library-detail-desc">
+          <LocaleText ko={event.description_ko} en={event.description_en} />
+        </p>
       )}
 
       {(canCheckIn || isParent) && (
         <section className="library-detail-section">
-          <h2 className="library-detail-section-title">사진 올리기</h2>
+          <h2 className="library-detail-section-title">
+            <T k="admin.photoSubmit.button">사진 올리기</T>
+          </h2>
           <p className="admin-form-help">
-            이 공연에서 찍은 사진을 올리면 운영진 검토 후 공개 갤러리에 반영됩니다.
+            <T k="admin.library.photoHelp">
+              이 공연에서 찍은 사진을 올리면 운영진 검토 후 공개 갤러리에 반영됩니다.
+            </T>
           </p>
-          <PhotoSubmitModal eventId={eventId} buttonLabel="이 공연에 사진 올리기" />
+          <PhotoSubmitModal
+            eventId={eventId}
+            buttonLabelKey="admin.library.submitPhoto"
+            buttonLabel="이 공연에 사진 올리기"
+          />
         </section>
       )}
 
       {event.images.length > 0 && (
         <section className="library-detail-section">
-          <h2 className="library-detail-section-title">사진 {event.image_total ?? event.images.length}장</h2>
-          <ImageGallery images={event.images} total={event.image_total} locale="ko" />
+          <h2 className="library-detail-section-title">
+            <T
+              k="admin.library.photoCount"
+              params={{ n: event.image_total ?? event.images.length }}
+            >
+              {'사진 {n}장'}
+            </T>
+          </h2>
+          <LocaleImageGallery images={event.images} total={event.image_total} />
         </section>
       )}
 
       {event.videos.length > 0 && (
         <section className="library-detail-section">
-          <h2 className="library-detail-section-title">영상</h2>
-          <VideoList videos={event.videos} locale="ko" />
+          <h2 className="library-detail-section-title">
+            <T k="admin.library.videos">영상</T>
+          </h2>
+          <LocaleVideoList videos={event.videos} />
         </section>
       )}
 
       {!hasContent && (
         <div className="admin-empty-state">
-          <p>아직 등록된 상세 내용(사진·영상·설명)이 없습니다.</p>
+          <p>
+            <T k="admin.library.noContent">아직 등록된 상세 내용(사진·영상·설명)이 없습니다.</T>
+          </p>
         </div>
       )}
 

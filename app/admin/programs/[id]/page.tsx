@@ -7,13 +7,15 @@ import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getProgramById, getProgramEnrollments, getActiveSupplyItems, getProgramSupplies, getActiveSupplySets, getProgramSupplySets } from '@/lib/d1';
-import { getStudentOptions, getUserNamesByIds } from '@/lib/members';
+import { getEnrollableMembers, getUserNamesByIds } from '@/lib/members';
 import { isStaff } from '@/lib/isAdmin';
 import ProgramForm from '@/components/admin/programs/ProgramForm';
 import EnrollmentManager from '@/components/admin/programs/EnrollmentManager';
 import { getCommentThreads } from '@/lib/comments/thread';
 import CommentSection from '@/components/comments/CommentSection';
 import type { EnrollmentWithMember } from '@/types/programs';
+import T from '@/components/common/T';
+import LocaleText from '@/components/common/LocaleText';
 
 export const metadata = {
   title: '프로그램 편집 | KTDOC Admin',
@@ -38,10 +40,11 @@ export default async function EditProgramPage({ params }: PageProps) {
     notFound();
   }
 
-  // 수강생(배정된 원생) + 회원 이름 결합. studentOptions는 추가 드롭다운·입학년도 표시용.
-  const [enrollmentRows, studentOptions, activeSupplies, programSupplies, activeSupplySets, programSupplySets, commentThreads] = await Promise.all([
+  // 배정된 사람 + 회원 이름 결합. memberOptions는 추가 드롭다운·입학년도 표시용
+  // (원생뿐 아니라 선생님도 수업에 들어간다 — getEnrollableMembers 참고).
+  const [enrollmentRows, memberOptions, activeSupplies, programSupplies, activeSupplySets, programSupplySets, commentThreads] = await Promise.all([
     getProgramEnrollments(programId),
-    getStudentOptions(),
+    getEnrollableMembers(),
     getActiveSupplyItems(),
     getProgramSupplies(programId),
     getActiveSupplySets(),
@@ -63,7 +66,7 @@ export default async function EditProgramPage({ params }: PageProps) {
     is_required: s.is_required === 1,
   }));
   const names = await getUserNamesByIds(enrollmentRows.map((e) => e.user_id));
-  const yearById = new Map(studentOptions.map((s) => [s.id, s.enrollment_year]));
+  const yearById = new Map(memberOptions.map((s) => [s.id, s.enrollment_year]));
   const enrollments: EnrollmentWithMember[] = enrollmentRows.map((e) => ({
     ...e,
     member_name: names.get(e.user_id) ?? null,
@@ -75,13 +78,21 @@ export default async function EditProgramPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <Link href="/admin/programs">수업 · 프로그램 관리</Link>
+            <Link href="/admin/programs">
+              <T k="admin.nav.programs">수업 · 프로그램 관리</T>
+            </Link>
             <span>/</span>
-            <span>{program.title_ko}</span>
+            <span>
+              <LocaleText ko={program.title_ko} en={program.title_en} />
+            </span>
           </div>
-          <h1 className="admin-title">프로그램 편집</h1>
+          <h1 className="admin-title">
+            <T k="admin.programs.editTitle">프로그램 편집</T>
+          </h1>
         </div>
         <div className="admin-header-actions">
           {program.is_published === 1 && (
@@ -90,7 +101,7 @@ export default async function EditProgramPage({ params }: PageProps) {
               target="_blank"
               className="admin-btn admin-btn-outline"
             >
-              공개 페이지 보기
+              <T k="admin.common.viewPublicPage">공개 페이지 보기</T>
             </Link>
           )}
         </div>
@@ -106,15 +117,19 @@ export default async function EditProgramPage({ params }: PageProps) {
 
       <div className="admin-form" style={{ marginTop: '24px' }}>
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">수강생</h3>
+          <h3 className="admin-form-section-title">
+            <T k="admin.enroll.section">수강생</T>
+          </h3>
           <p className="admin-form-help">
-            이 수업·프로그램에 원생을 배정합니다. 배정된 원생은 본인의 &lsquo;내 수업&rsquo;에서
-            확인할 수 있고, 학부모는 자녀의 수업으로 볼 수 있습니다.
+            <T k="admin.enroll.sectionHelp">
+              이 수업·프로그램에 원생을 배정합니다. 배정된 원생은 본인의 ‘내 수업’에서 확인할 수
+              있고, 학부모는 자녀의 수업으로 볼 수 있습니다.
+            </T>
           </p>
           <EnrollmentManager
             programId={program.id}
             initialEnrollments={enrollments}
-            studentOptions={studentOptions}
+            memberOptions={memberOptions}
           />
         </div>
       </div>

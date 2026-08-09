@@ -82,7 +82,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 캘린더(독립): 공연·행사와 내가 참여하는 수업 일정을 월별로 한눈에. 공연/수업을 모두 아우른다.
   { key: 'schedule', href: '/admin/schedule', label: '캘린더', iconKey: 'calendar', group: 'lesson', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 내 수업(원생·학부모): 운영진이 배정한 수업·프로그램을 본인(학부모는 자녀별)으로 확인. 운영진은 programs에서 관리하므로 제외(admin은 항상 표시).
-  { key: 'my-classes', href: '/admin/my-classes', label: '내 수업', iconKey: 'calendar', group: 'lesson', defaultRoles: ['student', 'parent'] },
+  // 선생님도 수업에 배정된다(함께 서는 무대·연수) — 배정만 되고 볼 곳이 없으면 안 된다.
+  { key: 'my-classes', href: '/admin/my-classes', label: '내 수업', iconKey: 'calendar', group: 'lesson', defaultRoles: ['student', 'parent', 'teacher'] },
   { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램 관리', iconKey: 'calendar', group: 'lesson', defaultRoles: ['teacher', 'admin'] },
   // 신청 현황: '수업 · 프로그램 관리'의 하위 메뉴. 공개 신청 폼으로 들어온 신청자를 확인·응대(admin 전용).
   { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', parentKey: 'programs', group: 'lesson', defaultRoles: ['admin'] },
