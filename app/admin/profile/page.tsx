@@ -1,6 +1,6 @@
 /**
  * Admin Profile
- * 내 프로필 — 자신의 기본 정보(이름) 변경 및 비밀번호 변경
+ * 내 프로필 — 자신의 기본 정보(이름) 변경, 비밀번호 변경, 이 기기의 알림 설정
  */
 
 import Link from 'next/link';
@@ -10,6 +10,7 @@ import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getMemberById, type MemberRole } from '@/lib/members';
 import ProfileForm from '@/components/admin/profile/ProfileForm';
 import ChangePasswordCard from '@/components/admin/ChangePasswordCard';
+import PushOptInCard from '@/components/push/PushOptInCard';
 
 export const metadata = {
   title: '내 프로필 | KTDOC Admin',
@@ -38,7 +39,7 @@ export default async function AdminProfilePage() {
           </div>
           <h1 className="admin-title">내 프로필</h1>
           <p className="admin-subtitle">
-            내 계정 정보를 확인하고, 이름과 비밀번호를 변경합니다.
+            내 계정 정보를 확인하고, 이름·비밀번호와 이 기기의 알림 설정을 변경합니다.
           </p>
         </div>
       </div>
@@ -53,6 +54,12 @@ export default async function AdminProfilePage() {
           initialPhotoUrl={member?.profile_photo_url ?? null}
         />
         <ChangePasswordCard />
+      </div>
+
+      {/* 알림 설정 — 대시보드 카드는 켜고 나면 사라지므로 끄기·테스트는 여기가 집이다.
+          구독은 기기(브라우저)마다 따로이므로 지금 보고 있는 기기의 상태를 보여준다. */}
+      <div className="admin-profile-push">
+        <PushOptInCard lede="이 기기에서 알림을 받을지 설정합니다. 휴대폰과 컴퓨터는 따로 켜야 합니다." />
       </div>
     </div>
   );

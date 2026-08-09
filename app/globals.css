@@ -8280,6 +8280,14 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .admin-profile-grid .admin-account-card {
   max-width: none;
 }
+/* 알림 설정 카드 — 위 그리드 열과 같은 폭으로 맞춰 한 줄 더 이어지는 것처럼 보이게. */
+.admin-profile-push {
+  max-width: 520px;
+  margin-top: 24px;
+}
+.admin-profile-push .push-card {
+  margin-bottom: 0;
+}
 .admin-profile-meta {
   display: flex;
   flex-wrap: wrap;

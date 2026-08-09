@@ -74,6 +74,33 @@ export async function getExistingSubscription(): Promise<PushSubscription | null
   }
 }
 
+/**
+ * 이 기기의 기존 구독을 서버에 다시 등록해 "서버도 이 기기를 안다"를 확인한다.
+ *
+ * 브라우저에 구독이 남아 있다고 알림이 온다는 보장은 없다. 구독은 브라우저에
+ * 저장되지만 "누구의 기기인가"는 서버에만 있어서, 같은 브라우저로 다른 계정에
+ * 로그인하거나 구독 행이 지워지면 둘이 어긋난다. 등록은 멱등(upsert)이므로
+ * 다시 보내는 것으로 확인과 복구를 겸한다 — 마지막 사용 시각도 함께 갱신돼
+ * 운영진의 '기기 현황'이 실제에 가까워진다.
+ *
+ * 권한을 새로 묻지 않는다(이미 있는 구독만 다룬다) — 조용히 실행해도 안전하다.
+ */
+export async function confirmSubscriptionOnServer(): Promise<boolean> {
+  const sub = await getExistingSubscription();
+  if (!sub) return false;
+  try {
+    const res = await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub.toJSON() }),
+    });
+    return res.ok;
+  } catch {
+    // 오프라인·일시 장애 — 확인 실패는 "모른다"로 다룬다(카드를 접지 않는 쪽이 안전).
+    return false;
+  }
+}
+
 export interface SubscribeResult {
   ok: boolean;
   error?: string;

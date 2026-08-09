@@ -1,14 +1,15 @@
 'use client';
 
 /**
- * PushOptInCard — 알림 받기 온보딩 카드(원생·학부모 대시보드)
+ * PushOptInCard — 알림 받기 카드
  *
- * 기기/지원 상태에 따라 분기:
- *  - iOS 미설치        → '홈 화면에 추가' 설치 안내
- *  - 미지원 브라우저    → 안내 메시지
- *  - 권한 거부          → 브라우저 설정에서 허용 안내
- *  - 지원/미구독        → "알림 켜기"
- *  - 구독됨            → "테스트 알림 받기" + "알림 끄기"
+ * 두 자리에서 서로 다르게 쓴다:
+ *  - 대시보드(`hideWhenEnabled`) — 아직 안 켠 사람에게만 권한다. 켜고 나면 사라진다.
+ *  - 내 프로필(기본)            — 항상 남아 끄기·테스트의 집이 된다.
+ * 대시보드에서 사라진 뒤에도 끌 수 있어야 하므로 두 자리는 한 쌍이다. 한쪽만 두면
+ * "켤 수는 있는데 끌 수는 없는" 카드가 된다.
+ *
+ * 기기/지원 상태 분기는 lib/push/optIn.ts(순수 함수)가 정하고 여기서는 그리기만 한다.
  */
 
 import { useEffect, useState } from 'react';
@@ -18,17 +19,32 @@ import {
   getPlatform,
   getPermission,
   getExistingSubscription,
+  confirmSubscriptionOnServer,
   subscribePush,
   unsubscribePush,
   sendTestPush,
   type Platform,
 } from '@/lib/push/client';
+import { resolveOptInState, canCollapse, type OptInState } from '@/lib/push/optIn';
 
-type State = 'loading' | 'unsupported' | 'needs-install' | 'prompt' | 'denied' | 'enabled';
+interface Props {
+  /**
+   * 이 기기에서 이미 켜져 있으면 카드를 아예 렌더하지 않는다(대시보드용).
+   * 서버가 이 기기를 알고 있다고 확인된 경우에만 접는다 — optIn.ts의 canCollapse 참고.
+   */
+  hideWhenEnabled?: boolean;
+  /** 설명 문구. 받는 알림의 성격이 역할마다 달라서 부르는 쪽이 정한다. */
+  lede?: string;
+}
 
-export default function PushOptInCard() {
-  const [state, setState] = useState<State>('loading');
+const DEFAULT_LEDE =
+  '공연·수업 일정, 준비물, 새 사진 등 중요한 소식을 휴대폰 알림으로 받아보세요.';
+
+export default function PushOptInCard({ hideWhenEnabled = false, lede }: Props) {
+  const [state, setState] = useState<OptInState>('loading');
   const [platform, setPlatform] = useState<Platform>('desktop');
+  // 서버도 이 기기를 알고 있다고 확인됐는가. 접기 판단의 두 번째 조건.
+  const [serverKnowsDevice, setServerKnowsDevice] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
@@ -36,23 +52,28 @@ export default function PushOptInCard() {
   useEffect(() => {
     let cancelled = false;
 
-    // 지원/설치/권한/구독 상태를 클라이언트에서 판별한다(navigator·window 의존).
-    const detect = async (): Promise<{ platform: Platform; state: State }> => {
+    // 브라우저 사실을 모아 순수 함수에 넘긴다(navigator·window 의존은 여기까지).
+    const detect = async () => {
       const platform = getPlatform();
-      if (!isPushSupported()) {
-        // iOS는 홈 화면에 설치해야 PushManager가 노출된다.
-        const state: State = platform === 'ios' && !isStandalone() ? 'needs-install' : 'unsupported';
-        return { platform, state };
-      }
-      if (getPermission() === 'denied') return { platform, state: 'denied' };
-      const sub = await getExistingSubscription();
-      return { platform, state: sub ? 'enabled' : 'prompt' };
+      const supported = isPushSupported();
+      const hasSubscription = supported ? (await getExistingSubscription()) !== null : false;
+      const state = resolveOptInState({
+        supported,
+        platform,
+        standalone: isStandalone(),
+        permission: getPermission(),
+        hasSubscription,
+      });
+      // 켜져 있을 때만 서버에 확인한다 — 안 켠 기기에는 확인할 것이 없다.
+      const serverKnowsDevice = state === 'enabled' ? await confirmSubscriptionOnServer() : false;
+      return { platform, state, serverKnowsDevice };
     };
 
-    detect().then(({ platform, state }) => {
+    detect().then((next) => {
       if (cancelled) return;
-      setPlatform(platform);
-      setState(state);
+      setPlatform(next.platform);
+      setState(next.state);
+      setServerKnowsDevice(next.serverKnowsDevice);
     });
 
     return () => {
@@ -68,6 +89,8 @@ export default function PushOptInCard() {
     setBusy(false);
     if (result.ok) {
       setState('enabled');
+      // 방금 서버에 등록하고 온 길이다.
+      setServerKnowsDevice(true);
       setMsg('알림이 켜졌습니다. 새 소식이 오면 이 기기로 알려드립니다.');
     } else {
       setErr(result.error || '알림을 켜지 못했습니다.');
@@ -82,6 +105,7 @@ export default function PushOptInCard() {
     await unsubscribePush();
     setBusy(false);
     setState('prompt');
+    setServerKnowsDevice(false);
     setMsg('알림을 껐습니다.');
   };
 
@@ -95,6 +119,10 @@ export default function PushOptInCard() {
     else setErr(result.error || '테스트 발송에 실패했습니다.');
   };
 
+  // 방금 켠 직후에는 접지 않는다 — 안내 문구(msg)를 읽을 새도 없이 사라지면
+  // 눌렀는데 아무 일도 안 일어난 것처럼 보인다.
+  if (canCollapse(state, hideWhenEnabled, serverKnowsDevice) && !msg) return null;
+
   return (
     <section className="push-card">
       <div className="push-card-head">
@@ -106,9 +134,7 @@ export default function PushOptInCard() {
         </span>
         <div>
           <h2 className="push-card-title">알림 받기</h2>
-          <p className="push-card-lede">
-            공연·수업 일정, 준비물, 새 사진 등 중요한 소식을 휴대폰 알림으로 받아보세요.
-          </p>
+          <p className="push-card-lede">{lede ?? DEFAULT_LEDE}</p>
         </div>
         {state === 'enabled' && <span className="push-badge push-badge--on">켜짐</span>}
       </div>
@@ -132,6 +158,13 @@ export default function PushOptInCard() {
           <button className="admin-btn admin-btn-outline" onClick={handleDisable} disabled={busy}>
             알림 끄기
           </button>
+          {/* 브라우저에는 구독이 있는데 서버 등록이 확인되지 않은 상태.
+              둘이 어긋나면 알림이 오지 않으므로 조용히 넘기지 않는다. */}
+          {!serverKnowsDevice && (
+            <span className="push-card-hint">
+              이 기기의 알림 등록을 확인하지 못했습니다. 알림이 오지 않으면 ‘알림 끄기’ 후 다시 켜주세요.
+            </span>
+          )}
         </div>
       )}
 

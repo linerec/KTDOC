@@ -23,7 +23,8 @@ const QUICK_LINKS: QuickLink[] = [
   { href: '/admin/my-classes', title: '내 수업', desc: '배정된 수업·프로그램 보기' },
   { href: '/admin/library', title: '공연 둘러보기', desc: '공개된 공연·행사' },
   { href: '/admin/archive', title: '내 참여 아카이브', desc: '참여한 수업·공연과 사진' },
-  { href: '/admin/profile', title: '내 프로필', desc: '이름·비밀번호·공개 설정' },
+  // 알림을 켠 뒤 대시보드 카드가 사라지므로, 끄는 곳을 여기서 알려 준다.
+  { href: '/admin/profile', title: '내 프로필', desc: '이름·비밀번호·알림·공개 설정' },
 ];
 
 export default function StudentDashboard({
@@ -60,8 +61,8 @@ export default function StudentDashboard({
           설치(standalone) 상태·'나중에'로 닫은 상태에서는 스스로 렌더하지 않는다. */}
       <AddToHomeCard />
 
-      {/* 1) 알림 받기 — 온보딩 핵심 */}
-      <PushOptInCard />
+      {/* 1) 알림 받기 — 온보딩 핵심. 이 기기에서 켜고 나면 사라진다(끄기·테스트는 내 프로필). */}
+      <PushOptInCard hideWhenEnabled />
 
       {/* 2) 수업·프로그램 신청 */}
       <section className="dash-cta">
