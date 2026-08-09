@@ -6096,6 +6096,27 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: var(--accent-text);
 }
 
+/* 관리 권한 배지 — 신분 배지 옆에 따로 붙는다(신분이 아니라 권한이므로). */
+.admin-badge-admin {
+  margin-left: 6px;
+  background: rgba(143, 33, 29, 0.14);
+  color: var(--secondary-color);
+}
+
+/* 회원 표의 관리 권한 토글 */
+.admin-admin-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.admin-admin-toggle input {
+  cursor: pointer;
+}
+
 /* 회원 상태 배지 */
 .admin-badge-warning {
   background: rgba(212, 160, 23, 0.16);

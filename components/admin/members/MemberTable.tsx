@@ -10,7 +10,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Member, MemberRole } from '@/types/members';
-import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from '@/types/members';
+import { useT, type TFunction } from '@/lib/i18n/useT';
+import { roleLabel, statusLabel } from '@/lib/i18n/memberLabels';
 
 interface StudentOption {
   id: string;
@@ -26,8 +27,11 @@ interface MemberTableProps {
   pushDevices?: Record<string, number>;
 }
 
-/** 관리자가 부여 가능한 역할 (레거시 'user' 제외) */
-const ASSIGNABLE_ROLES: MemberRole[] = ['student', 'parent', 'teacher', 'admin'];
+/**
+ * 관리자가 부여 가능한 **신분** (레거시 'user'·'admin' 제외).
+ * 관리 권한은 신분이 아니라 옆의 토글이 맡는다(0034).
+ */
+const ASSIGNABLE_ROLES: MemberRole[] = ['student', 'parent', 'teacher', 'staff'];
 
 function formatDate(value: string | null): string {
   if (!value) return '-';
@@ -50,6 +54,7 @@ export default function MemberTable({
   pushDevices = {},
 }: MemberTableProps) {
   const router = useRouter();
+  const t = useT();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
   // 임시 비밀번호 발급 결과 — 평문은 이 모달에서 한 번만 표시된다
@@ -67,12 +72,12 @@ export default function MemberTable({
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setError(data.error || '작업에 실패했습니다.');
+        setError(data.error || t('admin.common.actionFailed', '작업에 실패했습니다.'));
         return;
       }
       router.refresh();
     } catch {
-      setError('작업 중 오류가 발생했습니다.');
+      setError(t('admin.common.actionError', '작업 중 오류가 발생했습니다.'));
     } finally {
       setBusyId(null);
     }
@@ -82,7 +87,11 @@ export default function MemberTable({
   async function issueTempPassword(member: Member) {
     const displayName = member.name || member.email;
     const ok = window.confirm(
-      `${displayName} 회원에게 임시 비밀번호를 발급할까요?\n기존 비밀번호는 즉시 사용할 수 없게 됩니다.`
+      t(
+        'admin.members.tempPwConfirm',
+        '{name} 회원에게 임시 비밀번호를 발급할까요?\n기존 비밀번호는 즉시 사용할 수 없게 됩니다.',
+        { name: displayName }
+      )
     );
     if (!ok) return;
 
@@ -96,14 +105,16 @@ export default function MemberTable({
       });
       const data = await res.json();
       if (!res.ok || !data.success || !data.tempPassword) {
-        setError(data.error || '임시 비밀번호 발급에 실패했습니다.');
+        setError(
+          data.error || t('admin.members.tempPwFailed', '임시 비밀번호 발급에 실패했습니다.')
+        );
         return;
       }
       setCopied(false);
       setTempResult({ name: displayName, password: data.tempPassword });
       router.refresh();
     } catch {
-      setError('작업 중 오류가 발생했습니다.');
+      setError(t('admin.common.actionError', '작업 중 오류가 발생했습니다.'));
     } finally {
       setBusyId(null);
     }
@@ -122,7 +133,7 @@ export default function MemberTable({
   if (members.length === 0) {
     return (
       <div className="admin-empty-state">
-        <p>조건에 맞는 회원이 없습니다.</p>
+        <p>{t('admin.members.empty', '조건에 맞는 회원이 없습니다.')}</p>
       </div>
     );
   }
@@ -134,19 +145,20 @@ export default function MemberTable({
         <table className="admin-table">
           <thead>
             <tr>
-              <th>회원</th>
-              <th style={{ width: '110px' }}>역할</th>
-              <th style={{ width: '100px' }}>상태</th>
-              <th style={{ width: '90px' }}>알림</th>
-              <th style={{ width: '220px' }}>연결</th>
-              <th style={{ width: '120px' }}>가입일</th>
-              <th style={{ width: '200px' }}>작업</th>
+              <th>{t('admin.members.colMember', '회원')}</th>
+              <th style={{ width: '110px' }}>{t('admin.members.colRole', '역할')}</th>
+              <th style={{ width: '100px' }}>{t('admin.members.colStatus', '상태')}</th>
+              <th style={{ width: '90px' }}>{t('admin.members.colPush', '알림')}</th>
+              <th style={{ width: '220px' }}>{t('admin.members.colLink', '연결')}</th>
+              <th style={{ width: '120px' }}>{t('admin.members.colJoined', '가입일')}</th>
+              <th style={{ width: '200px' }}>{t('admin.common.colActions', '작업')}</th>
             </tr>
           </thead>
           <tbody>
             {members.map((member) => {
               const displayName = member.name || member.email.split('@')[0];
               const busy = busyId === member.id;
+              const devices = pushDevices[member.id] ?? 0;
               return (
                 <tr key={member.id} className={busy ? 'is-busy' : undefined}>
                   {/* 회원 */}
@@ -164,23 +176,30 @@ export default function MemberTable({
                       )}
                       {member.role === 'student' && member.enrollment_year && (
                         <span className="admin-table-subtitle">
-                          {member.enrollment_year}년 입학
+                          {t('admin.members.enrolledYear', '{y}년 입학', {
+                            y: member.enrollment_year,
+                          })}
                         </span>
                       )}
                     </div>
                   </td>
 
-                  {/* 역할 */}
+                  {/* 신분 + 관리 권한 — 둘은 별개이므로 배지도 따로 단다 */}
                   <td>
                     <span
                       className={`admin-badge ${
-                        member.role === 'admin' || member.role === 'teacher'
+                        member.role === 'teacher' || member.role === 'staff'
                           ? 'admin-badge-role'
                           : 'admin-badge-muted'
                       }`}
                     >
-                      {MEMBER_ROLE_LABELS[member.role]}
+                      {roleLabel(t, member.role)}
                     </span>
+                    {member.is_admin && (
+                      <span className="admin-badge admin-badge-admin">
+                        {t('admin.members.adminFlag', '관리자')}
+                      </span>
+                    )}
                   </td>
 
                   {/* 상태 */}
@@ -190,25 +209,32 @@ export default function MemberTable({
                         STATUS_BADGE_CLASS[member.status] || 'admin-badge-muted'
                       }`}
                     >
-                      {MEMBER_STATUS_LABELS[member.status]}
+                      {statusLabel(t, member.status)}
                     </span>
                   </td>
 
                   {/* 알림(푸시)을 켠 기기 수 — 0이면 이 회원에게는 푸시가 가지 않는다 */}
                   <td>
-                    {(pushDevices[member.id] ?? 0) > 0 ? (
+                    {devices > 0 ? (
                       <span
                         className="admin-badge admin-badge-success"
-                        title={`기기 ${pushDevices[member.id]}대에 알림이 켜져 있습니다.`}
+                        title={t(
+                          'admin.members.pushOnTitle',
+                          '기기 {n}대에 알림이 켜져 있습니다.',
+                          { n: devices }
+                        )}
                       >
-                        {pushDevices[member.id]}대
+                        {t('admin.members.pushDevices', '{n}대', { n: devices })}
                       </span>
                     ) : (
                       <span
                         className="admin-badge admin-badge-muted"
-                        title="알림을 켜지 않아 푸시가 가지 않습니다(‘내 알림’함에는 남습니다)."
+                        title={t(
+                          'admin.members.pushOffTitle',
+                          '알림을 켜지 않아 푸시가 가지 않습니다(‘내 알림’함에는 남습니다).'
+                        )}
                       >
-                        꺼짐
+                        {t('admin.members.pushOff', '꺼짐')}
                       </span>
                     )}
                   </td>
@@ -221,17 +247,24 @@ export default function MemberTable({
                           <div key={c.linkId} className="admin-conn-item">
                             {c.studentId ? (
                               <span className="admin-conn-ok">
-                                자녀: {c.studentName || c.claimedName}
+                                {t('admin.members.child', '자녀: {name}', {
+                                  name: c.studentName || c.claimedName,
+                                })}
                               </span>
                             ) : (
                               <div className="admin-conn-unresolved">
                                 <span className="admin-conn-warn">
-                                  미연결: {c.claimedName}
+                                  {t('admin.members.unlinked', '미연결: {name}', {
+                                    name: c.claimedName,
+                                  })}
                                   {c.claimedEnrollmentYear
-                                    ? ` (${c.claimedEnrollmentYear}년)`
+                                    ? ` ${t('admin.members.yearParen', '({y}년)', {
+                                        y: c.claimedEnrollmentYear,
+                                      })}`
                                     : ''}
                                 </span>
                                 <ResolveStudent
+                                  t={t}
                                   students={students}
                                   disabled={busy}
                                   onLink={(studentId) =>
@@ -255,7 +288,9 @@ export default function MemberTable({
                       <div className="admin-conn">
                         {(member.guardians ?? []).map((g) => (
                           <span key={g.guardianId} className="admin-conn-item admin-conn-ok">
-                            보호자: {g.guardianName || g.guardianEmail}
+                            {t('admin.members.guardian', '보호자: {name}', {
+                              name: g.guardianName || g.guardianEmail,
+                            })}
                           </span>
                         ))}
                         {(member.guardians ?? []).length === 0 && (
@@ -282,7 +317,7 @@ export default function MemberTable({
                             disabled={busy}
                             onClick={() => runAction(member.id, { action: 'approve' })}
                           >
-                            승인
+                            {t('admin.members.approve', '승인')}
                           </button>
                           <button
                             type="button"
@@ -290,7 +325,7 @@ export default function MemberTable({
                             disabled={busy}
                             onClick={() => runAction(member.id, { action: 'reject' })}
                           >
-                            거절
+                            {t('admin.members.reject', '거절')}
                           </button>
                         </div>
                       )}
@@ -301,7 +336,7 @@ export default function MemberTable({
                           disabled={busy}
                           onClick={() => runAction(member.id, { action: 'suspend' })}
                         >
-                          정지
+                          {t('admin.members.suspend', '정지')}
                         </button>
                       )}
                       {(member.status === 'rejected' || member.status === 'suspended') && (
@@ -311,7 +346,7 @@ export default function MemberTable({
                           disabled={busy}
                           onClick={() => runAction(member.id, { action: 'restore' })}
                         >
-                          복구(승인)
+                          {t('admin.members.restore', '복구(승인)')}
                         </button>
                       )}
 
@@ -322,9 +357,12 @@ export default function MemberTable({
                           className="admin-btn admin-btn-sm admin-btn-outline"
                           disabled={busy}
                           onClick={() => issueTempPassword(member)}
-                          title="비밀번호를 잊은 회원에게 임시 비밀번호를 발급합니다"
+                          title={t(
+                            'admin.members.tempPwTitle',
+                            '비밀번호를 잊은 회원에게 임시 비밀번호를 발급합니다'
+                          )}
                         >
-                          임시 비밀번호
+                          {t('admin.members.tempPw', '임시 비밀번호')}
                         </button>
                       )}
 
@@ -341,16 +379,33 @@ export default function MemberTable({
                           }
                         >
                           {!ASSIGNABLE_ROLES.includes(member.role) && (
-                            <option value={member.role}>
-                              {MEMBER_ROLE_LABELS[member.role]}
-                            </option>
+                            <option value={member.role}>{roleLabel(t, member.role)}</option>
                           )}
                           {ASSIGNABLE_ROLES.map((r) => (
                             <option key={r} value={r}>
-                              {MEMBER_ROLE_LABELS[r]}
+                              {roleLabel(t, r)}
                             </option>
                           ))}
                         </select>
+                      )}
+
+                      {/* 관리 권한은 신분과 별개로 붙였다 뗀다 — 선생님에게 관리를
+                          맡겼다 거둬도 그 사람은 계속 선생님이다. */}
+                      {canManageRoles && (
+                        <label className="admin-admin-toggle">
+                          <input
+                            type="checkbox"
+                            checked={member.is_admin}
+                            disabled={busy}
+                            onChange={(e) =>
+                              runAction(member.id, {
+                                action: 'setAdmin',
+                                isAdmin: e.target.checked,
+                              })
+                            }
+                          />
+                          <span>{t('admin.members.adminFlag', '관리자')}</span>
+                        </label>
                       )}
                     </div>
                   </td>
@@ -366,17 +421,20 @@ export default function MemberTable({
           className="admin-temp-pw-overlay"
           role="dialog"
           aria-modal="true"
-          aria-label="임시 비밀번호 발급 완료"
+          aria-label={t('admin.members.tempPwDone', '임시 비밀번호 발급 완료')}
           onClick={() => setTempResult(null)}
         >
           <div className="admin-temp-pw-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="admin-temp-pw-title">임시 비밀번호 발급 완료</h3>
+            <h3 className="admin-temp-pw-title">
+              {t('admin.members.tempPwDone', '임시 비밀번호 발급 완료')}
+            </h3>
             <p className="admin-temp-pw-target">{tempResult.name}</p>
             <div className="admin-temp-pw-code">{tempResult.password}</div>
             <p className="admin-temp-pw-guide">
-              이 비밀번호는 지금 한 번만 표시됩니다. 전화·문자 등으로 회원에게 직접
-              전달해 주세요. 회원이 이 비밀번호로 로그인하면 새 비밀번호를 만들도록
-              안내됩니다.
+              {t(
+                'admin.members.tempPwGuide',
+                '이 비밀번호는 지금 한 번만 표시됩니다. 전화·문자 등으로 회원에게 직접 전달해 주세요. 회원이 이 비밀번호로 로그인하면 새 비밀번호를 만들도록 안내됩니다.'
+              )}
             </p>
             <div className="admin-btn-row admin-temp-pw-actions">
               <button
@@ -384,14 +442,16 @@ export default function MemberTable({
                 className="admin-btn admin-btn-sm admin-btn-outline"
                 onClick={copyTempPassword}
               >
-                {copied ? '복사됨' : '복사'}
+                {copied
+                  ? t('admin.common.copied', '복사됨')
+                  : t('admin.common.copy', '복사')}
               </button>
               <button
                 type="button"
                 className="admin-btn admin-btn-sm admin-btn-primary"
                 onClick={() => setTempResult(null)}
               >
-                닫기
+                {t('admin.common.close', '닫기')}
               </button>
             </div>
           </div>
@@ -403,10 +463,12 @@ export default function MemberTable({
 
 /** 미연결 학부모에게 실제 원생을 지정하는 셀렉트 */
 function ResolveStudent({
+  t,
   students,
   disabled,
   onLink,
 }: {
+  t: TFunction;
   students: StudentOption[];
   disabled: boolean;
   onLink: (studentId: string) => void;
@@ -420,11 +482,13 @@ function ResolveStudent({
         disabled={disabled}
         onChange={(e) => setValue(e.target.value)}
       >
-        <option value="">원생 선택...</option>
+        <option value="">{t('admin.members.pickStudent', '원생 선택...')}</option>
         {students.map((s) => (
           <option key={s.id} value={s.id}>
-            {s.name || '(이름없음)'}
-            {s.enrollment_year ? ` · ${s.enrollment_year}년` : ''}
+            {s.name || t('admin.common.noName', '(이름없음)')}
+            {s.enrollment_year
+              ? ` · ${t('admin.members.yearSuffix', '{y}년', { y: s.enrollment_year })}`
+              : ''}
           </option>
         ))}
       </select>
@@ -434,7 +498,7 @@ function ResolveStudent({
         disabled={disabled || !value}
         onClick={() => value && onLink(value)}
       >
-        연결
+        {t('admin.members.link', '연결')}
       </button>
     </div>
   );
