@@ -5329,6 +5329,50 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: var(--text-muted);
 }
 
+/* 페이지 탭 — 한 화면 안의 부분 전환(알약 모양 .notify-tab)과 달리 '어느 화면을
+   보고 있는가'를 말한다. 그래서 밑줄로 크게 세워 머리글에 붙인다. 링크이므로
+   현재 탭 표시는 aria-current="page"가 맡고, is-active는 보이는 쪽만 담당한다. */
+.admin-page-tabs {
+  display: flex;
+  gap: 4px;
+  margin: -8px 0 22px;
+  border-bottom: 1px solid rgba(var(--fg-rgb), 0.12);
+}
+.admin-page-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.16s, border-color 0.16s;
+}
+.admin-page-tab:hover {
+  color: var(--text-color);
+}
+.admin-page-tab.is-active {
+  color: var(--soft-gold-text);
+  border-bottom-color: var(--accent-color);
+}
+.admin-page-tab-count {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: rgba(var(--fg-rgb), 0.08);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+.admin-page-tab.is-active .admin-page-tab-count {
+  background: rgba(212, 160, 23, 0.18);
+  color: var(--soft-gold-text);
+}
+
 .admin-kicker {
   margin-bottom: 10px;
   color: var(--accent-text);
