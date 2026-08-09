@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { headers } from 'next/headers';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
@@ -43,14 +44,22 @@ export default async function AdminCalendarPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">홈</Link>
+            <Link href="/admin">
+              <T k="admin.nav.home">홈</T>
+            </Link>
             <span>/</span>
-            <span>캘린더 구독</span>
+            <span>
+              <T k="admin.nav.calendar">캘린더 구독</T>
+            </span>
           </div>
-          <h1 className="admin-title">캘린더 구독 피드</h1>
+          <h1 className="admin-title">
+            <T k="admin.cal.pageTitle">캘린더 구독 피드</T>
+          </h1>
           <p className="admin-subtitle">
-            원생·선생님이 이 주소를 한 번 구독하면, 공연·행사·캠프를 등록·수정·삭제할 때
-            각자의 휴대폰·PC 캘린더(애플·구글·아웃룩)에 자동으로 반영됩니다.
+            <T k="admin.cal.pageSubtitle">
+              원생·선생님이 이 주소를 한 번 구독하면, 공연·행사·캠프를 등록·수정·삭제할 때 각자의
+              휴대폰·PC 캘린더(애플·구글·아웃룩)에 자동으로 반영됩니다.
+            </T>
           </p>
         </div>
       </div>

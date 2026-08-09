@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getFaqItems } from '@/lib/d1';
@@ -25,14 +26,22 @@ export default async function AdminQnaPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>Q&A</span>
+            <span>
+              <T k="admin.nav.qna">Q&A</T>
+            </span>
           </div>
-          <h1 className="admin-title">Q&A</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.qna">Q&A</T>
+          </h1>
           <p className="admin-subtitle">
-            공연·행사 준비에 자주 나오는 질문을 미리 정리했습니다. 찾는 내용이 없으면
-            선생님께 문의해 주세요.
+            <T k="admin.qna.subtitle">
+              공연·행사 준비에 자주 나오는 질문을 미리 정리했습니다. 찾는 내용이 없으면 선생님께
+              문의해 주세요.
+            </T>
           </p>
         </div>
       </div>
@@ -41,9 +50,13 @@ export default async function AdminQnaPage() {
 
       {/* 문의 동선 — 정리된 답으로 해결되지 않으면 바로 사람에게 닿게 한다 */}
       <div className="qna-contact">
-        <p className="qna-contact-title">찾는 답이 없나요?</p>
+        <p className="qna-contact-title">
+          <T k="admin.qna.contactTitle">찾는 답이 없나요?</T>
+        </p>
         <p className="qna-contact-desc">
-          전화나 카카오톡으로 문의해 주시면 선생님이 직접 안내해 드립니다.
+          <T k="admin.qna.contactDesc">
+            전화나 카카오톡으로 문의해 주시면 선생님이 직접 안내해 드립니다.
+          </T>
         </p>
         <ContactChannels />
       </div>

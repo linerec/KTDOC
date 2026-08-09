@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useT } from '@/lib/i18n/useT';
+import { checkinLabel } from './checkinLabel';
 
 interface CheckinButtonProps {
   eventId: number;
@@ -17,6 +19,7 @@ interface CheckinButtonProps {
  */
 export default function CheckinButton({ eventId, initialCheckedIn, upcoming = false }: CheckinButtonProps) {
   const router = useRouter();
+  const t = useT();
   const [checkedIn, setCheckedIn] = useState(initialCheckedIn);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,13 +35,13 @@ export default function CheckinButton({ eventId, initialCheckedIn, upcoming = fa
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
-        throw new Error(data.error || '처리에 실패했습니다.');
+        throw new Error(data.error || t('admin.checkin.failed', '처리에 실패했습니다.'));
       }
       setCheckedIn(!checkedIn);
       // 같은 페이지의 참가자 목록(서버 렌더)을 즉시 다시 불러와 반영한다.
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : '처리에 실패했습니다.');
+      setError(e instanceof Error ? e.message : t('admin.checkin.failed', '처리에 실패했습니다.'));
     } finally {
       setBusy(false);
     }
@@ -53,15 +56,7 @@ export default function CheckinButton({ eventId, initialCheckedIn, upcoming = fa
         disabled={busy}
         aria-pressed={checkedIn}
       >
-        {busy
-          ? '처리 중…'
-          : checkedIn
-            ? upcoming
-              ? '✓ 참여 예정 · 취소'
-              : '✓ 참여함 · 체크인 취소'
-            : upcoming
-              ? '참여 신청'
-              : '참여 체크인'}
+        {checkinLabel(t, { busy, checked: checkedIn, upcoming })}
       </button>
       {error && <p className="library-checkin-error">{error}</p>}
     </div>

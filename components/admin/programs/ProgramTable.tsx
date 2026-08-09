@@ -10,7 +10,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { ProgramWithMeta } from '@/types/programs';
-import { PROGRAM_TYPE_LABELS } from '@/types/programs';
+import { useT } from '@/lib/i18n/useT';
+import { programTypeLabel } from '@/lib/i18n/programLabels';
 
 interface ProgramTableProps {
   programs: ProgramWithMeta[];
@@ -27,12 +28,20 @@ function scheduleSummary(p: ProgramWithMeta): string {
 
 export default function ProgramTable({ programs }: ProgramTableProps) {
   const router = useRouter();
+  const t = useT();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (program: ProgramWithMeta) => {
-    if (!confirm(`"${program.title_ko}" 프로그램을 삭제하시겠습니까?`)) return;
+    if (
+      !confirm(
+        t('admin.programs.deleteConfirm', '"{title}" 프로그램을 삭제하시겠습니까?', {
+          title: program.title_ko,
+        })
+      )
+    )
+      return;
 
     setDeletingId(program.id);
     setError(null);
@@ -40,11 +49,13 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
       const res = await fetch(`/api/admin/programs/${program.id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || '삭제에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
+      );
     } finally {
       setDeletingId(null);
     }
@@ -61,11 +72,17 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
       });
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || '상태 변경에 실패했습니다.');
+        throw new Error(
+          data.error || t('admin.common.toggleFailed', '상태 변경에 실패했습니다.')
+        );
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '상태 변경에 실패했습니다.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.common.toggleFailed', '상태 변경에 실패했습니다.')
+      );
     } finally {
       setTogglingId(null);
     }
@@ -74,9 +91,9 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
   if (programs.length === 0) {
     return (
       <div className="admin-empty-state">
-        <p>아직 등록된 프로그램이 없습니다.</p>
+        <p>{t('admin.programs.empty', '아직 등록된 프로그램이 없습니다.')}</p>
         <Link href="/admin/programs/new" className="admin-btn admin-btn-primary">
-          첫 프로그램 만들기
+          {t('admin.programs.emptyCta', '첫 프로그램 만들기')}
         </Link>
       </div>
     );
@@ -89,12 +106,12 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
         <table className="admin-table">
           <thead>
             <tr>
-              <th style={{ width: '80px' }}>사진</th>
-              <th>프로그램명</th>
-              <th style={{ width: '90px' }}>종류</th>
-              <th style={{ width: '150px' }}>일정</th>
-              <th style={{ width: '92px' }}>공개 상태</th>
-              <th style={{ width: '280px' }}>작업</th>
+              <th style={{ width: '80px' }}>{t('admin.common.colPhoto', '사진')}</th>
+              <th>{t('admin.programs.colTitle', '프로그램명')}</th>
+              <th style={{ width: '90px' }}>{t('admin.programs.colType', '종류')}</th>
+              <th style={{ width: '150px' }}>{t('admin.programs.colSchedule', '일정')}</th>
+              <th style={{ width: '92px' }}>{t('admin.common.colPublished', '공개 상태')}</th>
+              <th style={{ width: '280px' }}>{t('admin.common.colActions', '작업')}</th>
             </tr>
           </thead>
           <tbody>
@@ -127,7 +144,7 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
                   </td>
                   <td>
                     <span className={`admin-badge admin-badge-${program.program_type}`}>
-                      {PROGRAM_TYPE_LABELS[program.program_type].ko}
+                      {programTypeLabel(t, program.program_type)}
                     </span>
                   </td>
                   <td>{scheduleSummary(program)}</td>
@@ -140,7 +157,11 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
                       onClick={() => handleTogglePublish(program)}
                       disabled={togglingId === program.id}
                     >
-                      {togglingId === program.id ? '...' : program.is_published ? '공개' : '비공개'}
+                      {togglingId === program.id
+                        ? '...'
+                        : program.is_published
+                          ? t('admin.common.published', '공개')
+                          : t('admin.common.unpublished', '비공개')}
                     </button>
                   </td>
                   <td>
@@ -149,7 +170,7 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
                         href={`/admin/programs/${program.id}`}
                         className="admin-btn admin-btn-sm"
                       >
-                        편집
+                        {t('admin.common.edit', '편집')}
                       </Link>
                       {program.is_published && (
                         <Link
@@ -157,7 +178,7 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
                           target="_blank"
                           className="admin-btn admin-btn-sm admin-btn-outline"
                         >
-                          공개 페이지
+                          {t('admin.common.publicPage', '공개 페이지')}
                         </Link>
                       )}
                       <button
@@ -166,7 +187,7 @@ export default function ProgramTable({ programs }: ProgramTableProps) {
                         onClick={() => handleDelete(program)}
                         disabled={deletingId === program.id}
                       >
-                        {deletingId === program.id ? '...' : '삭제'}
+                        {deletingId === program.id ? '...' : t('admin.common.delete', '삭제')}
                       </button>
                     </div>
                   </td>

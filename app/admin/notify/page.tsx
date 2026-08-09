@@ -24,6 +24,8 @@ import {
 } from '@/lib/push/tracking';
 import NotifyComposer from '@/components/admin/NotifyComposer';
 import NotifyStatus from '@/components/admin/NotifyStatus';
+import T from '@/components/common/T';
+import AdminPageTabs, { type AdminPageTab } from '@/components/admin/AdminPageTabs';
 
 export const metadata = {
   title: '알림 보내기 | KTDOC Admin',
@@ -83,12 +85,19 @@ export default async function AdminNotifyPage({ searchParams }: PageProps) {
     role: m.role,
   }));
 
-  const tabs: { view: View; href: string; label: string; count?: number }[] = [
-    { view: 'send', href: '/admin/notify', label: '알림 보내기' },
+  // 탭 라벨은 AdminPageTabs가 그릴 때 번역한다 — 여기서는 키와 한국어 폴백만 정한다.
+  const tabs: AdminPageTab[] = [
     {
-      view: 'status',
+      value: 'send',
+      href: '/admin/notify',
+      labelKey: 'admin.nav.notify',
+      labelKo: '알림 보내기',
+    },
+    {
+      value: 'status',
       href: '/admin/notify?view=status',
-      label: '알림 현황',
+      labelKey: 'admin.notify.statusTitle',
+      labelKo: '알림 현황',
       count: summary.memberCount,
     },
   ];
@@ -98,44 +107,51 @@ export default async function AdminNotifyPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">홈</Link>
+            <Link href="/admin">
+              <T k="admin.nav.home">홈</T>
+            </Link>
             <span>/</span>
-            <span>알림</span>
+            <span>
+              <T k="admin.navGroup.notify">알림</T>
+            </span>
           </div>
-          <h1 className="admin-title">{view === 'status' ? '알림 현황' : '알림 보내기'}</h1>
+          <h1 className="admin-title">
+            {view === 'status' ? (
+              <T k="admin.notify.statusTitle">알림 현황</T>
+            ) : (
+              <T k="admin.nav.notify">알림 보내기</T>
+            )}
+          </h1>
           <p className="admin-subtitle">
             {view === 'status' ? (
-              <>
-                누가 어떤 기기로 알림을 받고 있는지 봅니다. 한 사람이 휴대폰과 컴퓨터에
-                따로 켤 수 있어 회원 수와 기기 수는 다릅니다.
-              </>
+              <T k="admin.notify.statusLede">
+                누가 어떤 기기로 알림을 받고 있는지 봅니다. 한 사람이 휴대폰과 컴퓨터에 따로 켤 수
+                있어 회원 수와 기기 수는 다릅니다.
+              </T>
             ) : (
-              <>
+              <T k="admin.notify.sendLede">
                 원생·학부모에게 휴대폰 푸시 알림을 보냅니다. 알림을 켠 회원에게만 도착합니다.
-              </>
+              </T>
             )}{' '}
-            현재 <strong>{summary.memberCount}명</strong>이 기기{' '}
-            <strong>{subscriberCount}대</strong>에 알림을 켜 두었습니다.
+            <T
+              k="admin.notify.currentOn"
+              params={{
+                people: <strong>{summary.memberCount}</strong>,
+                devices: <strong>{subscriberCount}</strong>,
+              }}
+            >
+              {'현재 {people}명이 기기 {devices}대에 알림을 켜 두었습니다.'}
+            </T>
           </p>
         </div>
       </div>
 
-      {/* 페이지 탭 — 링크다(버튼이 아니라). 주소가 상태이므로 뒤로 가기와 공유가 그냥 된다. */}
-      <nav className="admin-page-tabs" aria-label="알림 화면">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.view}
-            href={tab.href}
-            className={`admin-page-tab${view === tab.view ? ' is-active' : ''}`}
-            aria-current={view === tab.view ? 'page' : undefined}
-          >
-            {tab.label}
-            {tab.count !== undefined && (
-              <span className="admin-page-tab-count">{tab.count}</span>
-            )}
-          </Link>
-        ))}
-      </nav>
+      <AdminPageTabs
+        tabs={tabs}
+        current={view}
+        ariaLabelKey="admin.notify.tabsAria"
+        ariaLabelKo="알림 화면"
+      />
 
       {view === 'send' ? (
         <NotifyComposer

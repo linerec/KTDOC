@@ -27,9 +27,11 @@ import SupplyList from '@/components/supplies/SupplyList';
 import { getCommentThreads } from '@/lib/comments/thread';
 import CommentSection from '@/components/comments/CommentSection';
 import type { MemberRole } from '@/types/members';
-import type { ProgramDetail } from '@/types/programs';
 import { PROGRAM_TYPE_LABELS } from '@/types/programs';
+import { formatClassSchedule } from '@/lib/programText';
 import PhotoSubmitModal from '@/components/admin/library/PhotoSubmitModal';
+import T from '@/components/common/T';
+import LocaleText from '@/components/common/LocaleText';
 
 export const metadata: Metadata = {
   title: '수업 상세 | KTDOC',
@@ -37,24 +39,6 @@ export const metadata: Metadata = {
 
 interface PageProps {
   params: Promise<{ id: string }>;
-}
-
-const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
-
-function scheduleLine(p: ProgramDetail): string {
-  if (p.program_type === 'camp') {
-    if (p.start_date && p.end_date) return `${p.start_date} ~ ${p.end_date}`;
-    return p.start_date || '';
-  }
-  const days = (p.weekdays || '').split(',').filter(Boolean);
-  if (days.length > 0) {
-    const label = days.map((d) => WEEKDAY_KO[Number(d)] ?? '').join('·');
-    const time = p.class_start_time
-      ? ` ${p.class_start_time}${p.class_end_time ? `~${p.class_end_time}` : ''}`
-      : '';
-    return `매주 ${label}${time}`;
-  }
-  return p.schedule_ko || '';
 }
 
 export default async function MyClassDetailPage({ params }: PageProps) {
@@ -92,7 +76,10 @@ export default async function MyClassDetailPage({ params }: PageProps) {
     ? (await getGalleryPhotos({ programId, uploadedBy: userId, limit: 60, sort: 'recent' })).photos
     : [];
 
-  const schedule = scheduleLine(program);
+  // 일정 문구는 두 언어를 모두 지어 <LocaleText>에 넘긴다 — 이 페이지를 서버 컴포넌트로 둔 채
+  // 언어 전환에 따라가게 하는 방법이다.
+  const scheduleKo = formatClassSchedule(program, 'ko');
+  const scheduleEn = formatClassSchedule(program, 'en');
   const [programSupplies, programSupplySets, commentThreads] = await Promise.all([
     getProgramSupplies(programId),
     getProgramSupplySets(programId),
@@ -104,41 +91,69 @@ export default async function MyClassDetailPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin/my-classes">내 수업</Link>
+            <Link href="/admin/my-classes">
+              <T k="admin.nav.my-classes">내 수업</T>
+            </Link>
             <span>/</span>
-            <span>{program.title_ko}</span>
+            <span>
+              <LocaleText ko={program.title_ko} en={program.title_en} />
+            </span>
           </div>
-          <h1 className="admin-title">{program.title_ko}</h1>
+          <h1 className="admin-title">
+            <LocaleText ko={program.title_ko} en={program.title_en} />
+          </h1>
           <p className="admin-subtitle library-detail-sub">
-            <span>{PROGRAM_TYPE_LABELS[program.program_type].ko}</span>
-            {schedule && <span>{schedule}</span>}
+            <span>
+              <T k={`admin.program.type.${program.program_type}`}>
+                {PROGRAM_TYPE_LABELS[program.program_type].ko}
+              </T>
+            </span>
+            {scheduleKo && (
+              <span>
+                <LocaleText ko={scheduleKo} en={scheduleEn} />
+              </span>
+            )}
           </p>
         </div>
       </div>
 
       <section className="event-logistics">
-        {schedule && (
+        {scheduleKo && (
           <div className="event-logistics-item">
-            <span className="event-logistics-label">일정</span>
-            <span className="event-logistics-value">{schedule}</span>
+            <span className="event-logistics-label">
+              <T k="admin.programs.colSchedule">일정</T>
+            </span>
+            <span className="event-logistics-value">
+              <LocaleText ko={scheduleKo} en={scheduleEn} />
+            </span>
           </div>
         )}
         {program.location_ko && (
           <div className="event-logistics-item">
-            <span className="event-logistics-label">장소</span>
-            <span className="event-logistics-value">{program.location_ko}</span>
+            <span className="event-logistics-label">
+              <T k="admin.common.location">장소</T>
+            </span>
+            <span className="event-logistics-value">
+              <LocaleText ko={program.location_ko} en={program.location_en} />
+            </span>
           </div>
         )}
         {program.age_range && (
           <div className="event-logistics-item">
-            <span className="event-logistics-label">대상</span>
+            <span className="event-logistics-label">
+              <T k="admin.myClasses.target">대상</T>
+            </span>
             <span className="event-logistics-value">{program.age_range}</span>
           </div>
         )}
         {program.price_ko && (
           <div className="event-logistics-item">
-            <span className="event-logistics-label">수강료</span>
-            <span className="event-logistics-value">{program.price_ko}</span>
+            <span className="event-logistics-label">
+              <T k="admin.myClasses.price">수강료</T>
+            </span>
+            <span className="event-logistics-value">
+              <LocaleText ko={program.price_ko} en={program.price_en} />
+            </span>
           </div>
         )}
       </section>
@@ -146,17 +161,27 @@ export default async function MyClassDetailPage({ params }: PageProps) {
       <SupplyList supplies={programSupplies} sets={programSupplySets} />
 
       {program.description_ko && (
-        <p className="library-detail-desc">{program.description_ko}</p>
+        <p className="library-detail-desc">
+          <LocaleText ko={program.description_ko} en={program.description_en} />
+        </p>
       )}
 
       <section className="library-detail-section">
         <div className="myclass-detail-photohead">
-          <h2 className="library-detail-section-title">내 사진</h2>
-          <PhotoSubmitModal programId={programId} buttonLabel="이 수업에 사진 올리기" />
+          <h2 className="library-detail-section-title">
+            <T k="admin.myClasses.myPhotos">내 사진</T>
+          </h2>
+          <PhotoSubmitModal
+            programId={programId}
+            buttonLabelKey="admin.myClasses.submitPhoto"
+            buttonLabel="이 수업에 사진 올리기"
+          />
         </div>
         {myPhotos.length === 0 ? (
           <p className="admin-form-help">
-            아직 올린 사진이 없습니다. 수업·연습 사진을 올리면 운영진 검토 후 공개됩니다.
+            <T k="admin.myClasses.noPhotos">
+              아직 올린 사진이 없습니다. 수업·연습 사진을 올리면 운영진 검토 후 공개됩니다.
+            </T>
           </p>
         ) : (
           <div className="myclass-photo-grid">
@@ -172,7 +197,11 @@ export default async function MyClassDetailPage({ params }: PageProps) {
                 <figcaption
                   className={`myclass-photo-status${ph.is_published ? ' is-pub' : ''}`}
                 >
-                  {ph.is_published ? '게시됨' : '검토 중'}
+                  {ph.is_published ? (
+                    <T k="admin.common.posted">게시됨</T>
+                  ) : (
+                    <T k="admin.common.underReview">검토 중</T>
+                  )}
                 </figcaption>
               </figure>
             ))}

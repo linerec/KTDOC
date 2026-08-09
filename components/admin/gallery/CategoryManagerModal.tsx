@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import { useRouter } from 'next/navigation';
 import CategoryManager from './CategoryManager';
 import type { EventCategory } from '@/types/gallery';
@@ -20,6 +21,7 @@ interface CategoryManagerModalProps {
 export default function CategoryManagerModal({
   initialCategories,
 }: CategoryManagerModalProps) {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -32,7 +34,7 @@ export default function CategoryManagerModal({
         className="admin-btn admin-btn-outline"
         onClick={() => setOpen(true)}
       >
-        공연 카테고리
+        {t('admin.categories.title', '공연 카테고리')}
       </button>
 
       {open && (
@@ -42,21 +44,24 @@ export default function CategoryManagerModal({
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="공연 카테고리 관리"
+            aria-label={t('admin.categories.manageAria', '공연 카테고리 관리')}
           >
             <div className="photo-modal-head">
-              <h3>공연 카테고리</h3>
+              <h3>{t('admin.categories.title', '공연 카테고리')}</h3>
               <button
                 type="button"
                 className="photo-modal-close"
                 onClick={close}
-                aria-label="닫기"
+                aria-label={t('admin.common.close', '닫기')}
               >
                 ✕
               </button>
             </div>
             <p className="admin-form-help">
-              방문자가 갤러리 페이지에서 공연을 분류해 볼 때 쓰는 카테고리입니다. 저장하면 이 페이지의 분류 필터에 바로 반영됩니다.
+              {t(
+                'admin.categories.help',
+                '방문자가 갤러리 페이지에서 공연을 분류해 볼 때 쓰는 카테고리입니다. 저장하면 이 페이지의 분류 필터에 바로 반영됩니다.'
+              )}
             </p>
 
             <CategoryManager
@@ -70,7 +75,7 @@ export default function CategoryManagerModal({
                 className="admin-btn admin-btn-outline"
                 onClick={close}
               >
-                닫기
+                {t('admin.common.close', '닫기')}
               </button>
             </div>
           </div>

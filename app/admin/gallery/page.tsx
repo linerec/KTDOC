@@ -9,6 +9,8 @@ import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEvents, getCategories, getYears, adminAllEvents} from '@/lib/d1';
 import EventTable from '@/components/admin/gallery/EventTable';
 import CategoryManagerModal from '@/components/admin/gallery/CategoryManagerModal';
+import EventFilters from '@/components/admin/gallery/EventFilters';
+import T from '@/components/common/T';
 
 export const metadata = {
   title: '공연 관리 | KTDOC Admin',
@@ -48,81 +50,43 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>공연 · 행사 관리</span>
+            <span>
+              <T k="admin.nav.gallery">공연 · 행사 관리</T>
+            </span>
           </div>
-          <h1 className="admin-title">공연 · 행사 관리</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.gallery">공연 · 행사 관리</T>
+          </h1>
           <p className="admin-subtitle">
-            공개 갤러리 페이지에 표시될 공연과 학내 행사(수료식·발표회)를 관리합니다.
-            종류는 만들기 화면 맨 위에서 고릅니다. 사진과 영상은 각 편집 화면에서 추가합니다.
+            <T k="admin.events.subtitle">
+              공개 갤러리 페이지에 표시될 공연과 학내 행사(수료식·발표회)를 관리합니다. 종류는
+              만들기 화면 맨 위에서 고릅니다. 사진과 영상은 각 편집 화면에서 추가합니다.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <CategoryManagerModal initialCategories={categories} />
-          <Link
-            href="/admin/gallery/photos"
-            className="admin-btn admin-btn-outline"
-          >
-            사진 보관함
+          <Link href="/admin/gallery/photos" className="admin-btn admin-btn-outline">
+            <T k="admin.nav.gallery.photos">사진 보관함</T>
           </Link>
-          <Link
-            href="/admin/gallery/new"
-            className="admin-btn admin-btn-primary"
-          >
-            + 새로 만들기
+          <Link href="/admin/gallery/new" className="admin-btn admin-btn-primary">
+            <T k="admin.events.new">+ 새로 만들기</T>
           </Link>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <select
-            name="year"
-            className="admin-filter-select"
-            defaultValue={params.year || ''}
-          >
-            <option value="">전체 연도</option>
-            {years.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-
-          <select
-            name="category"
-            className="admin-filter-select"
-            defaultValue={params.category || ''}
-          >
-            <option value="">전체 카테고리</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>{cat.name_ko}</option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            name="search"
-            placeholder="검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-
-          <button type="submit" className="admin-btn admin-btn-sm">
-            검색
-          </button>
-
-          {(params.year || params.category || params.search) && (
-            <Link href="/admin/gallery" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-        </form>
-
-        <div className="admin-filter-info">
-          총 {total}개의 공연
-        </div>
-      </div>
+      <EventFilters
+        years={years}
+        categories={categories}
+        year={params.year || ''}
+        category={params.category || ''}
+        search={params.search || ''}
+        total={total}
+      />
 
       {/* Event Table */}
       <EventTable events={events} />

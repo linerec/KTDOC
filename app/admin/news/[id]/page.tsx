@@ -4,6 +4,8 @@
  */
 
 import { notFound } from 'next/navigation';
+import T from '@/components/common/T';
+import LocaleText from '@/components/common/LocaleText';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
@@ -46,16 +48,31 @@ export default async function AdminNewsEditPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <Link href="/admin/news">뉴스 · 미디어</Link>
+            <Link href="/admin/news">
+              <T k="admin.news.crumb">뉴스 · 미디어</T>
+            </Link>
             <span>/</span>
-            <span>{post.title_ko}</span>
+            <span>
+              <LocaleText ko={post.title_ko} en={post.title_en} />
+            </span>
           </div>
-          <h1 className="admin-title">게시물 편집</h1>
+          <h1 className="admin-title">
+            <T k="admin.news.editTitle">게시물 편집</T>
+          </h1>
           <p className="admin-subtitle">
-            {NEWS_CATEGORY_LABELS[post.category]} ·{' '}
-            {post.is_published ? '공개 미디어 페이지에 표시 중' : '비공개 저장 중'}
+            <T k={`admin.news.category.${post.category}`}>
+              {NEWS_CATEGORY_LABELS[post.category]}
+            </T>{' '}
+            ·{' '}
+            {post.is_published ? (
+              <T k="admin.news.shownPublic">공개 미디어 페이지에 표시 중</T>
+            ) : (
+              <T k="admin.events.savedPrivate">비공개 저장 중</T>
+            )}
           </p>
         </div>
         <div className="admin-header-actions">
@@ -65,7 +82,7 @@ export default async function AdminNewsEditPage({ params }: PageProps) {
               target="_blank"
               className="admin-btn admin-btn-outline"
             >
-              공개 페이지 보기
+              <T k="admin.common.viewPublicPage">공개 페이지 보기</T>
             </Link>
           ) : null}
         </div>

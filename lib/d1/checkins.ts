@@ -115,7 +115,7 @@ export async function getEventCheckins(eventId: number): Promise<EventCheckin[]>
  */
 export async function getEventsWithParticipantCounts(): Promise<EventParticipation[]> {
   return queryD1<EventParticipation>(
-    `SELECT e.id AS event_id, e.title_ko, e.year, e.event_date, e.is_published,
+    `SELECT e.id AS event_id, e.title_ko, e.title_en, e.year, e.event_date, e.is_published,
             COUNT(ec.id) AS participant_count
      FROM events e
      JOIN event_checkins ec ON ec.event_id = e.id

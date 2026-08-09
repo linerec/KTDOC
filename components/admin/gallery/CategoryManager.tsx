@@ -7,6 +7,9 @@
 
 import { useState } from 'react';
 import type { EventCategory, CreateCategoryInput } from '@/types/gallery';
+import { useT } from '@/lib/i18n/useT';
+import { useLocaleText } from '@/components/common/LocaleText';
+import CategoryFields from './CategoryFields';
 
 interface CategoryManagerProps {
   initialCategories: EventCategory[];
@@ -18,6 +21,8 @@ export default function CategoryManager({
   initialCategories,
   onChanged,
 }: CategoryManagerProps) {
+  const t = useT();
+  const pick = useLocaleText();
   const [categories, setCategories] = useState(initialCategories);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -76,7 +81,7 @@ export default function CategoryManager({
 
     try {
       if (!formData.slug || !formData.name_ko || !formData.name_en) {
-        throw new Error('모든 필드를 입력해주세요.');
+        throw new Error(t('admin.categories.allFieldsRequired', '모든 필드를 입력해주세요.'));
       }
 
       if (isAdding) {
@@ -89,7 +94,7 @@ export default function CategoryManager({
 
         const data = await res.json();
         if (!data.success) {
-          throw new Error(data.error || '생성에 실패했습니다.');
+          throw new Error(data.error || t('admin.categories.createFailed', '생성에 실패했습니다.'));
         }
 
         setCategories((prev) => [
@@ -113,7 +118,7 @@ export default function CategoryManager({
 
         const data = await res.json();
         if (!data.success) {
-          throw new Error(data.error || '수정에 실패했습니다.');
+          throw new Error(data.error || t('admin.categories.updateFailed', '수정에 실패했습니다.'));
         }
 
         setCategories((prev) =>
@@ -126,7 +131,9 @@ export default function CategoryManager({
       resetForm();
       onChanged?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.saveFailed', '저장에 실패했습니다.')
+      );
     } finally {
       setSaving(false);
     }
@@ -135,7 +142,14 @@ export default function CategoryManager({
   const handleDelete = async (id: number) => {
     const category = categories.find((c) => c.id === id);
     if (!category) return;
-    if (!confirm(`"${category.name_ko}" 카테고리를 삭제하시겠습니까?`)) return;
+    if (
+      !confirm(
+        t('admin.categories.deleteConfirm', '"{name}" 카테고리를 삭제하시겠습니까?', {
+          name: category.name_ko,
+        })
+      )
+    )
+      return;
 
     try {
       const res = await fetch(
@@ -145,13 +159,15 @@ export default function CategoryManager({
 
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || '삭제에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
       }
 
       setCategories((prev) => prev.filter((cat) => cat.id !== id));
       onChanged?.();
     } catch (err) {
-      alert(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      alert(
+        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
+      );
     }
   };
 
@@ -169,64 +185,23 @@ export default function CategoryManager({
               }`}
             >
               {editingId === category.id ? (
-                <div className="admin-category-form">
-                  <input
-                    type="text"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleChange}
-                    placeholder="slug"
-                    className="admin-form-input admin-form-input-sm"
-                  />
-                  <input
-                    type="text"
-                    name="name_ko"
-                    value={formData.name_ko}
-                    onChange={handleChange}
-                    placeholder="한글명"
-                    className="admin-form-input admin-form-input-sm"
-                  />
-                  <input
-                    type="text"
-                    name="name_en"
-                    value={formData.name_en}
-                    onChange={handleChange}
-                    placeholder="영문명"
-                    className="admin-form-input admin-form-input-sm"
-                  />
-                  <input
-                    type="number"
-                    name="sort_order"
-                    value={formData.sort_order}
-                    onChange={handleChange}
-                    placeholder="순서"
-                    className="admin-form-input admin-form-input-sm admin-form-input-number"
-                  />
-                  <div className="admin-category-actions">
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn-sm admin-btn-primary"
-                      onClick={handleSave}
-                      disabled={saving}
-                    >
-                      {saving ? '...' : '저장'}
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn-sm"
-                      onClick={resetForm}
-                      disabled={saving}
-                    >
-                      취소
-                    </button>
-                  </div>
-                </div>
+                <CategoryFields
+                  value={formData}
+                  onChange={handleChange}
+                  onSubmit={handleSave}
+                  onCancel={resetForm}
+                  saving={saving}
+                  submitLabel={t('admin.common.save', '저장')}
+                  slugPlaceholder="slug"
+                />
               ) : (
                 <>
                   <div className="admin-category-info">
                     <span className="admin-category-order">{category.sort_order}</span>
                     <span className="admin-category-slug">{category.slug}</span>
-                    <span className="admin-category-name">{category.name_ko}</span>
+                    <span className="admin-category-name">
+                      {pick(category.name_ko, category.name_en)}
+                    </span>
                     <span className="admin-category-name-en">{category.name_en}</span>
                   </div>
                   <div className="admin-category-actions">
@@ -235,14 +210,14 @@ export default function CategoryManager({
                       className="admin-btn admin-btn-sm"
                       onClick={() => startEdit(category)}
                     >
-                      수정
+                      {t('admin.common.editShort', '수정')}
                     </button>
                     <button
                       type="button"
                       className="admin-btn admin-btn-sm admin-btn-danger"
                       onClick={() => handleDelete(category.id)}
                     >
-                      삭제
+                      {t('admin.common.delete', '삭제')}
                     </button>
                   </div>
                 </>
@@ -254,58 +229,15 @@ export default function CategoryManager({
       {/* Add New Category */}
       {isAdding ? (
         <div className="admin-category-add">
-          <div className="admin-category-form">
-            <input
-              type="text"
-              name="slug"
-              value={formData.slug}
-              onChange={handleChange}
-              placeholder="slug (예: festival)"
-              className="admin-form-input admin-form-input-sm"
-            />
-            <input
-              type="text"
-              name="name_ko"
-              value={formData.name_ko}
-              onChange={handleChange}
-              placeholder="한글명"
-              className="admin-form-input admin-form-input-sm"
-            />
-            <input
-              type="text"
-              name="name_en"
-              value={formData.name_en}
-              onChange={handleChange}
-              placeholder="영문명"
-              className="admin-form-input admin-form-input-sm"
-            />
-            <input
-              type="number"
-              name="sort_order"
-              value={formData.sort_order}
-              onChange={handleChange}
-              placeholder="순서"
-              className="admin-form-input admin-form-input-sm admin-form-input-number"
-            />
-            <div className="admin-category-actions">
-              <button
-                type="button"
-                className="admin-btn admin-btn-sm admin-btn-primary"
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? '...' : '추가'}
-              </button>
-              <button
-                type="button"
-                className="admin-btn admin-btn-sm"
-                onClick={resetForm}
-                disabled={saving}
-              >
-                취소
-              </button>
-            </div>
-          </div>
+          <CategoryFields
+            value={formData}
+            onChange={handleChange}
+            onSubmit={handleSave}
+            onCancel={resetForm}
+            saving={saving}
+            submitLabel={t('admin.categories.add', '추가')}
+            slugPlaceholder={t('admin.categories.slugPlaceholder', 'slug (예: festival)')}
+          />
           {error && (
             <div className="admin-alert admin-alert-error admin-alert-sm">
               {error}
@@ -318,7 +250,7 @@ export default function CategoryManager({
           className="admin-btn admin-btn-outline admin-btn-block"
           onClick={startAdd}
         >
-          + 새 카테고리 추가
+          {t('admin.categories.addNew', '+ 새 카테고리 추가')}
         </button>
       )}
     </div>

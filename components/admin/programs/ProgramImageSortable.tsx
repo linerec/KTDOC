@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import type { ProgramImage } from '@/types/programs';
+import { useT } from '@/lib/i18n/useT';
 
 interface ProgramImageSortableProps {
   programId: number;
@@ -22,12 +23,13 @@ export default function ProgramImageSortable({
   onReorder,
   onDelete,
 }: ProgramImageSortableProps) {
+  const t = useT();
   const [deleting, setDeleting] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleDelete = async (imageId: number) => {
-    if (!confirm('이 사진을 삭제하시겠습니까?')) return;
+    if (!confirm(t('admin.common.deletePhotoConfirm', '이 사진을 삭제하시겠습니까?'))) return;
 
     setDeleting(imageId);
     try {
@@ -37,11 +39,13 @@ export default function ProgramImageSortable({
       );
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || '삭제에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
       }
       onDelete(imageId);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      alert(
+        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
+      );
     } finally {
       setDeleting(null);
     }
@@ -95,9 +99,10 @@ export default function ProgramImageSortable({
     <div className="admin-image-sortable">
       <div className="admin-image-sortable-header">
         <span>
-          {images.length}개의 사진 {saving && '(저장 중...)'}
+          {t('admin.common.photoCount', '{n}개의 사진', { n: images.length })}{' '}
+          {saving && `(${t('admin.common.saving', '저장 중...')})`}
         </span>
-        <span className="admin-hint">드래그하여 순서 변경</span>
+        <span className="admin-hint">{t('admin.common.dragToReorder', '드래그하여 순서 변경')}</span>
       </div>
 
       <div className="admin-image-grid">
@@ -115,7 +120,9 @@ export default function ProgramImageSortable({
             <div className="admin-image-item-preview">
               <Image
                 src={image.image_url}
-                alt={image.caption_ko || `사진 ${index + 1}`}
+                alt={
+                  image.caption_ko || t('admin.common.photoAlt', '사진 {n}', { n: index + 1 })
+                }
                 fill
                 sizes="150px"
                 className="admin-image-thumb"

@@ -8,11 +8,9 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getApplications, getApplicationCounts, getPrograms } from '@/lib/d1';
 import ApplicationTable from '@/components/admin/applications/ApplicationTable';
-import {
-  APPLICATION_STATUSES,
-  APPLICATION_STATUS_LABELS,
-  type ApplicationStatus,
-} from '@/types/programs';
+import ApplicationFilters from '@/components/admin/applications/ApplicationFilters';
+import T from '@/components/common/T';
+import { APPLICATION_STATUSES, type ApplicationStatus } from '@/types/programs';
 
 export const metadata = {
   title: '신청 현황 | KTDOC Admin',
@@ -48,59 +46,40 @@ export default async function AdminApplicationsPage({ searchParams }: PageProps)
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>신청 현황</span>
+            <span>
+              <T k="admin.nav.applications">신청 현황</T>
+            </span>
           </div>
-          <h1 className="admin-title">신청 현황</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.applications">신청 현황</T>
+          </h1>
           <p className="admin-subtitle">
-            프로그램별 신청자를 확인하고 상태를 관리합니다. 이메일 답장 또는 전화로 바로 연락하세요.
+            <T k="admin.applications.subtitle">
+              프로그램별 신청자를 확인하고 상태를 관리합니다. 이메일 답장 또는 전화로 바로
+              연락하세요.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/admin/programs" className="admin-btn admin-btn-outline">
-            프로그램 관리
+            <T k="admin.home.programsManage">프로그램 관리</T>
           </Link>
         </div>
       </div>
 
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <select name="program_id" className="admin-filter-select" defaultValue={params.program_id || ''}>
-            <option value="">전체 프로그램</option>
-            {programsResult.programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title_ko}
-              </option>
-            ))}
-          </select>
-          <select name="status" className="admin-filter-select" defaultValue={params.status || ''}>
-            <option value="">전체 상태</option>
-            {APPLICATION_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {APPLICATION_STATUS_LABELS[s].ko}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="search"
-            placeholder="이름·이메일·전화 검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-          <button type="submit" className="admin-btn admin-btn-sm">검색</button>
-          {(params.status || params.program_id || params.search) && (
-            <Link href="/admin/applications" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-        </form>
-        <div className="admin-filter-info">
-          전체 {counts.total} · <strong>신규 {counts.new}</strong>
-          {total !== counts.total ? ` · 현재 목록 ${total}` : ''}
-        </div>
-      </div>
+      <ApplicationFilters
+        programs={programsResult.programs}
+        programId={params.program_id || ''}
+        status={params.status || ''}
+        search={params.search || ''}
+        total={total}
+        countsTotal={counts.total}
+        countsNew={counts.new}
+      />
 
       <ApplicationTable applications={applications} />
     </div>

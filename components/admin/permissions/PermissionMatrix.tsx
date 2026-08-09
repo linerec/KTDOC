@@ -10,6 +10,7 @@
  */
 
 import { useMemo, useRef, useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import { useRouter } from 'next/navigation';
 import type { MemberRole } from '@/types/members';
 import type { ToolRow } from '@/types/permissions';
@@ -36,6 +37,7 @@ const PRESETS: { key: string; label: string; roles: MemberRole[] }[] = [
   { key: 'studentOnly', label: '학생만', roles: ['student'] },
   { key: 'staff', label: '운영진(선생님)', roles: ['teacher'] },
   { key: 'adminOnly', label: '관리자만', roles: [] },
+  // label은 한국어 폴백 — 화면에서는 admin.perm.preset.<key>로 번역한다
 ];
 
 function buildInitial(rows: ToolRow[], roles: MemberRole[]): CellMap {
@@ -54,6 +56,7 @@ export default function PermissionMatrix({
   roles,
   roleLabels,
 }: PermissionMatrixProps) {
+  const t = useT();
   const router = useRouter();
   const initialRef = useRef<CellMap>(buildInitial(rows, roles));
   const [cells, setCells] = useState<CellMap>(() => buildInitial(rows, roles));
@@ -113,14 +116,20 @@ export default function PermissionMatrix({
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setMessage({ type: 'err', text: data.error || '저장에 실패했습니다.' });
+        setMessage({
+          type: 'err',
+          text: data.error || t('admin.common.saveFailed', '저장에 실패했습니다.'),
+        });
         return;
       }
       initialRef.current = { ...cells };
-      setMessage({ type: 'ok', text: '저장되었습니다. 변경된 권한은 즉시 적용됩니다.' });
+      setMessage({
+        type: 'ok',
+        text: t('admin.perm.saved', '저장되었습니다. 변경된 권한은 즉시 적용됩니다.'),
+      });
       router.refresh();
     } catch {
-      setMessage({ type: 'err', text: '저장 중 오류가 발생했습니다.' });
+      setMessage({ type: 'err', text: t('admin.perm.saveError', '저장 중 오류가 발생했습니다.') });
     } finally {
       setSaving(false);
     }
@@ -132,7 +141,14 @@ export default function PermissionMatrix({
   }
 
   async function removeOrphan(key: string) {
-    if (!window.confirm(`사용하지 않는 메뉴 '${key}'의 권한 데이터를 삭제할까요?`)) return;
+    if (
+      !window.confirm(
+        t('admin.perm.removeOrphanConfirm', "사용하지 않는 메뉴 '{key}'의 권한 데이터를 삭제할까요?", {
+          key,
+        })
+      )
+    )
+      return;
     try {
       const res = await fetch('/api/admin/permissions', {
         method: 'POST',
@@ -141,12 +157,15 @@ export default function PermissionMatrix({
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setMessage({ type: 'err', text: data.error || '삭제에 실패했습니다.' });
+        setMessage({
+          type: 'err',
+          text: data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'),
+        });
         return;
       }
       router.refresh();
     } catch {
-      setMessage({ type: 'err', text: '삭제 중 오류가 발생했습니다.' });
+      setMessage({ type: 'err', text: t('admin.perm.deleteError', '삭제 중 오류가 발생했습니다.') });
     }
   }
 
@@ -155,19 +174,25 @@ export default function PermissionMatrix({
       <div className="perm-toolbar">
         <div className="perm-toolbar-info">
           {dirty ? (
-            <span className="perm-dirty">저장하지 않은 변경사항이 있습니다.</span>
+            <span className="perm-dirty">
+              {t('admin.perm.dirty', '저장하지 않은 변경사항이 있습니다.')}
+            </span>
           ) : (
-            <span className="admin-table-muted">메뉴별로 접근 가능한 역할을 체크하세요.</span>
+            <span className="admin-table-muted">
+              {t('admin.perm.hint', '메뉴별로 접근 가능한 역할을 체크하세요.')}
+            </span>
           )}
         </div>
         <div className="perm-toolbar-actions">
           {dirty && (
             <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={reset} disabled={saving}>
-              되돌리기
+              {t('admin.perm.revert', '되돌리기')}
             </button>
           )}
           <button type="button" className="admin-btn admin-btn-sm admin-btn-primary" onClick={save} disabled={!dirty || saving}>
-            {saving ? '저장 중...' : '변경사항 저장'}
+            {saving
+              ? t('admin.common.saving', '저장 중...')
+              : t('admin.perm.save', '변경사항 저장')}
           </button>
         </div>
       </div>
@@ -182,13 +207,13 @@ export default function PermissionMatrix({
         <table className="admin-table perm-table">
           <thead>
             <tr>
-              <th className="perm-th-menu">메뉴</th>
+              <th className="perm-th-menu">{t('admin.perm.colMenu', '메뉴')}</th>
               {roles.map((role) => (
                 <th key={role} className="perm-th-role">
                   {roleLabels[role]}
                 </th>
               ))}
-              <th className="perm-th-preset">빠른 설정</th>
+              <th className="perm-th-preset">{t('admin.perm.colPreset', '빠른 설정')}</th>
             </tr>
           </thead>
           <tbody>
@@ -198,7 +223,9 @@ export default function PermissionMatrix({
                   <div className={`perm-menu-name${row.sub ? ' is-sub' : ''}`}>
                     <span className="perm-menu-label">{row.label}</span>
                     {(row.fixed || row.requireRole) && (
-                      <span className="perm-lock-tag">관리자 전용 · 잠김</span>
+                      <span className="perm-lock-tag">
+                        {t('admin.perm.locked', '관리자 전용 · 잠김')}
+                      </span>
                     )}
                   </div>
                 </td>
@@ -231,11 +258,11 @@ export default function PermissionMatrix({
                     }}
                   >
                     <option value="" disabled>
-                      프리셋...
+                      {t('admin.perm.presetPrompt', '프리셋...')}
                     </option>
                     {PRESETS.map((p) => (
                       <option key={p.key} value={p.key}>
-                        {p.label}
+                        {t(`admin.perm.preset.${p.key}`, p.label)}
                       </option>
                     ))}
                   </select>
@@ -248,16 +275,19 @@ export default function PermissionMatrix({
 
       {orphans.length > 0 && (
         <div className="perm-orphans">
-          <h2 className="perm-orphans-title">사용하지 않는 메뉴</h2>
+          <h2 className="perm-orphans-title">{t('admin.perm.orphans', '사용하지 않는 메뉴')}</h2>
           <p className="admin-table-muted">
-            코드에서 제거됐지만 권한 데이터가 남아있는 메뉴입니다. 접근에는 영향이 없으며 정리할 수 있습니다.
+            {t(
+              'admin.perm.orphansHelp',
+              '코드에서 제거됐지만 권한 데이터가 남아있는 메뉴입니다. 접근에는 영향이 없으며 정리할 수 있습니다.'
+            )}
           </p>
           <ul className="perm-orphans-list">
             {orphans.map((key) => (
               <li key={key}>
                 <code>{key}</code>
                 <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => removeOrphan(key)}>
-                  정리
+                  {t('admin.perm.cleanUp', '정리')}
                 </button>
               </li>
             ))}

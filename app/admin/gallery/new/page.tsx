@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getCategories, getActiveSupplyItems, getActiveSupplySets } from '@/lib/d1';
@@ -28,16 +29,26 @@ export default async function AdminGalleryNewPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <Link href="/admin/gallery">공연 · 행사 관리</Link>
+            <Link href="/admin/gallery">
+              <T k="admin.nav.gallery">공연 · 행사 관리</T>
+            </Link>
             <span>/</span>
-            <span>새로 만들기</span>
+            <span>
+              <T k="admin.events.newCrumb">새로 만들기</T>
+            </span>
           </div>
-          <h1 className="admin-title">새로 만들기</h1>
+          <h1 className="admin-title">
+            <T k="admin.events.newCrumb">새로 만들기</T>
+          </h1>
           <p className="admin-subtitle">
-            맨 위에서 종류(공연 / 학내 행사)를 고르고 제목·날짜를 저장한 뒤,
-            사진과 영상을 추가할 수 있습니다.
+            <T k="admin.events.newSubtitle">
+              맨 위에서 종류(공연 / 학내 행사)를 고르고 제목·날짜를 저장한 뒤, 사진과 영상을
+              추가할 수 있습니다.
+            </T>
           </p>
         </div>
       </div>

@@ -3,6 +3,8 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
+import GlossaryFilters from '@/components/admin/glossary/GlossaryFilters';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getSupplyItems, getSupplyCounts } from '@/lib/d1';
@@ -35,42 +37,42 @@ export default async function AdminSuppliesPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>준비물</span>
+            <span>
+              <T k="admin.nav.supplies">준비물</T>
+            </span>
           </div>
-          <h1 className="admin-title">준비물 카탈로그</h1>
+          <h1 className="admin-title">
+            <T k="admin.supplies.catalog">준비물 카탈로그</T>
+          </h1>
           <p className="admin-subtitle">
-            자주 쓰는 준비물을 등록해 두면, 공연·수업을 만들 때 골라 붙일 수 있습니다. 학생·학부모는 각 공연·수업에서 무엇을 챙길지 확인합니다.
+            <T k="admin.supplies.subtitle">
+              자주 쓰는 준비물을 등록해 두면, 공연·수업을 만들 때 골라 붙일 수 있습니다.
+              학생·학부모는 각 공연·수업에서 무엇을 챙길지 확인합니다.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/admin/supplies/new" className="admin-btn admin-btn-primary">
-            + 새 준비물 추가
+            <T k="admin.supplies.new">+ 새 준비물 추가</T>
           </Link>
         </div>
       </div>
 
       <SuppliesViewTabs active="items" itemCount={counts.items} setCount={counts.sets} />
 
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <input
-            type="text"
-            name="search"
-            placeholder="이름·설명 검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-          <button type="submit" className="admin-btn admin-btn-sm">검색</button>
-          {params.search && (
-            <Link href="/admin/supplies" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-        </form>
-        <div className="admin-filter-info">총 {total}개</div>
-      </div>
+      <GlossaryFilters
+        search={params.search || ''}
+        total={total}
+        resetHref="/admin/supplies"
+        countKey="admin.supplies.total"
+        countKo="총 {n}개"
+        searchPlaceholderKey="admin.supplies.searchPlaceholder"
+        searchPlaceholderKo="이름·설명 검색..."
+      />
 
       <SupplyTable items={items} />
     </div>

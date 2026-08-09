@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import { useT } from '@/lib/i18n/useT';
 
 interface SuppliesViewTabsProps {
   active: 'items' | 'sets';
@@ -12,14 +13,15 @@ interface SuppliesViewTabsProps {
 }
 
 export default function SuppliesViewTabs({ active, itemCount, setCount }: SuppliesViewTabsProps) {
+  const t = useT();
   return (
-    <nav className="admin-seg-tabs" aria-label="준비물 보기 전환">
+    <nav className="admin-seg-tabs" aria-label={t('admin.supplies.tabsAria', '준비물 보기 전환')}>
       <Link
         href="/admin/supplies"
         className={`admin-seg-tab${active === 'items' ? ' active' : ''}`}
         aria-current={active === 'items' ? 'page' : undefined}
       >
-        개별 항목
+        {t('admin.supplies.tabItems', '개별 항목')}
         <span className="admin-seg-tab-count">{itemCount}</span>
       </Link>
       <Link
@@ -27,7 +29,7 @@ export default function SuppliesViewTabs({ active, itemCount, setCount }: Suppli
         className={`admin-seg-tab${active === 'sets' ? ' active' : ''}`}
         aria-current={active === 'sets' ? 'page' : undefined}
       >
-        세트
+        {t('admin.programs.supplySets', '세트')}
         <span className="admin-seg-tab-count">{setCount}</span>
       </Link>
     </nav>

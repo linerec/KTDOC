@@ -7,6 +7,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useT } from '@/lib/i18n/useT';
+import { useLanguage } from '@/contexts/LanguageContext';
+// 시각 표기는 알림 화면과 같은 규칙(타임존 고정)을 쓴다 — 하이드레이션 불일치 방지.
+import { formatInboxWhen } from './notify/timeFormat';
 
 interface InboxItem {
   id: number;
@@ -18,24 +22,10 @@ interface InboxItem {
   sender_name: string | null;
 }
 
-// 서버(UTC)·브라우저(로컬TZ) 렌더가 동일해야 하이드레이션 불일치(React #418)가 없다.
-// 고정 타임존(Asia/Seoul)으로 양쪽 동일 문자열을 만든다.
-function formatWhen(value: string): string {
-  const d = new Date(value.includes('T') ? value : value.replace(' ', 'T') + 'Z');
-  if (Number.isNaN(d.getTime())) return value;
-  return new Intl.DateTimeFormat('ko-KR', {
-    timeZone: 'Asia/Seoul',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(d);
-}
-
 export default function InboxList({ initialItems }: { initialItems: InboxItem[] }) {
   const router = useRouter();
+  const t = useT();
+  const { locale } = useLanguage();
   const [items, setItems] = useState<InboxItem[]>(initialItems);
   const unreadCount = items.filter((i) => !i.read).length;
 
@@ -72,8 +62,10 @@ export default function InboxList({ initialItems }: { initialItems: InboxItem[] 
   if (items.length === 0) {
     return (
       <div className="inbox-empty">
-        <p>받은 알림이 없습니다.</p>
-        <p className="inbox-empty-sub">운영진이 보낸 공지·일정 알림이 이곳에 모입니다.</p>
+        <p>{t('admin.inbox.empty', '받은 알림이 없습니다.')}</p>
+        <p className="inbox-empty-sub">
+          {t('admin.inbox.emptySub', '운영진이 보낸 공지·일정 알림이 이곳에 모입니다.')}
+        </p>
       </div>
     );
   }
@@ -82,11 +74,13 @@ export default function InboxList({ initialItems }: { initialItems: InboxItem[] 
     <div className="inbox-wrap">
       <div className="inbox-toolbar">
         <span className="inbox-count">
-          {unreadCount > 0 ? `안 읽음 ${unreadCount}개` : '모두 읽었습니다'}
+          {unreadCount > 0
+            ? t('admin.inbox.unreadCount', '안 읽음 {n}개', { n: unreadCount })
+            : t('admin.inbox.allRead', '모두 읽었습니다')}
         </span>
         {unreadCount > 0 && (
           <button type="button" className="admin-btn admin-btn-outline" onClick={markAllRead}>
-            모두 읽음
+            {t('admin.inbox.markAllRead', '모두 읽음')}
           </button>
         )}
       </div>
@@ -105,28 +99,32 @@ export default function InboxList({ initialItems }: { initialItems: InboxItem[] 
                 onClick={() => !item.read && markRead(item.id)}
               >
                 <span className="inbox-item-top">
-                  {!item.read && <span className="inbox-dot" aria-label="안 읽음" />}
+                  {!item.read && <span className="inbox-dot" aria-label={t('admin.inbox.unread', '안 읽음')} />}
                   <span className="inbox-item-title">{item.title}</span>
-                  <span className="inbox-item-when">{formatWhen(item.created_at)}</span>
+                  <span className="inbox-item-when">
+                    {formatInboxWhen(item.created_at, locale)}
+                  </span>
                 </span>
                 <span className="inbox-item-body">{item.body}</span>
                 <span className="inbox-item-meta">
-                  {item.sender_name ? `보낸 사람: ${item.sender_name}` : 'KTDOC'}
+                  {item.sender_name
+                    ? t('admin.inbox.sender', '보낸 사람: {name}', { name: item.sender_name })
+                    : 'KTDOC'}
                 </span>
               </button>
               <div className="inbox-item-actions">
                 {hasLink && (
                   <a href={item.url!} className="inbox-link" onClick={() => markRead(item.id)}>
-                    바로가기 →
+                    {t('admin.inbox.goto', '바로가기')} →
                   </a>
                 )}
                 <button
                   type="button"
                   className="inbox-del"
                   onClick={() => remove(item.id)}
-                  aria-label="삭제"
+                  aria-label={t('admin.common.delete', '삭제')}
                 >
-                  삭제
+                  {t('admin.common.delete', '삭제')}
                 </button>
               </div>
             </li>

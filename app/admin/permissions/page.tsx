@@ -5,6 +5,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import {
   getPermMatrix,
@@ -33,13 +34,22 @@ export default async function AdminPermissionsPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>권한 관리</span>
+            <span>
+              <T k="admin.nav.settings.permissions">권한 관리</T>
+            </span>
           </div>
-          <h1 className="admin-title">권한 관리</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.settings.permissions">권한 관리</T>
+          </h1>
           <p className="admin-subtitle">
-            각 메뉴를 어떤 역할이 보고 접근할 수 있는지 설정합니다. 관리자는 항상 모든 메뉴에 접근할 수 있습니다.
+            <T k="admin.perm.pageSubtitle">
+              각 메뉴를 어떤 역할이 보고 접근할 수 있는지 설정합니다. 관리자는 항상 모든 메뉴에
+              접근할 수 있습니다.
+            </T>
           </p>
         </div>
       </div>

@@ -8,7 +8,9 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getPrograms } from '@/lib/d1';
 import ProgramTable from '@/components/admin/programs/ProgramTable';
-import { PROGRAM_TYPES, PROGRAM_TYPE_LABELS, type ProgramType } from '@/types/programs';
+import ProgramFilters from '@/components/admin/programs/ProgramFilters';
+import T from '@/components/common/T';
+import { PROGRAM_TYPES, type ProgramType } from '@/types/programs';
 
 export const metadata = {
   title: '수업 · 프로그램 관리 | KTDOC Admin',
@@ -40,51 +42,39 @@ export default async function AdminProgramsPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>수업 · 프로그램 관리</span>
+            <span>
+              <T k="admin.nav.programs">수업 · 프로그램 관리</T>
+            </span>
           </div>
-          <h1 className="admin-title">수업 · 프로그램 관리</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.programs">수업 · 프로그램 관리</T>
+          </h1>
           <p className="admin-subtitle">
-            공개 페이지에 표시될 수업·프로그램·캠프를 관리합니다. 사진은 각 프로그램 편집 화면에서 추가합니다.
+            <T k="admin.programs.subtitle">
+              공개 페이지에 표시될 수업·프로그램·캠프를 관리합니다. 사진은 각 프로그램 편집
+              화면에서 추가합니다.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/admin/applications" className="admin-btn admin-btn-outline">
-            신청자 관리
+            <T k="admin.programs.manageApplicants">신청자 관리</T>
           </Link>
           <Link href="/admin/programs/new" className="admin-btn admin-btn-primary">
-            + 새 프로그램 만들기
+            <T k="admin.programs.new">+ 새 프로그램 만들기</T>
           </Link>
         </div>
       </div>
 
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <select name="type" className="admin-filter-select" defaultValue={params.type || ''}>
-            <option value="">전체 종류</option>
-            {PROGRAM_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {PROGRAM_TYPE_LABELS[t].ko}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="search"
-            placeholder="검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-          <button type="submit" className="admin-btn admin-btn-sm">검색</button>
-          {(params.type || params.search) && (
-            <Link href="/admin/programs" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-        </form>
-        <div className="admin-filter-info">총 {total}개의 프로그램</div>
-      </div>
+      <ProgramFilters
+        type={params.type || ''}
+        search={params.search || ''}
+        total={total}
+      />
 
       <ProgramTable programs={programs} />
     </div>

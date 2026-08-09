@@ -17,10 +17,12 @@ import {
   getEnrollmentsForUsers,
 } from '@/lib/d1';
 import { getGuardianChildren } from '@/lib/members';
-import { formatEventDate, type CheckedInEvent, type EventImage } from '@/types/gallery';
+import type { CheckedInEvent, EventImage } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import type { MyEnrollment } from '@/types/programs';
 import ClassCard from '@/components/admin/ClassCard';
+import ArchiveEventCard from '@/components/admin/library/ArchiveEventCard';
+import T from '@/components/common/T';
 
 export const metadata: Metadata = {
   title: '내 참여 아카이브 | KTDOC Admin',
@@ -87,28 +89,51 @@ export default async function AdminArchivePage() {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
-          <h1 className="admin-title">내 참여 아카이브</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.archive">내 참여 아카이브</T>
+          </h1>
           <p className="admin-subtitle">
-            참여한 수업과 체크인한 공연을 연도별로 모았습니다. 카드를 누르면 상세가 열립니다.
+            <T k="admin.archive.subtitle">
+              참여한 수업과 체크인한 공연을 연도별로 모았습니다. 카드를 누르면 상세가 열립니다.
+            </T>
           </p>
         </div>
       </div>
 
       {isEmpty ? (
         <div className="admin-empty-state">
-          <p>아직 참여한 수업이나 체크인한 공연이 없습니다.</p>
+          <p>
+            <T k="admin.archive.empty">아직 참여한 수업이나 체크인한 공연이 없습니다.</T>
+          </p>
           <p className="admin-empty-sub">
-            <Link href="/admin/library" className="admin-callout-link">
-              공연 둘러보기 →
-            </Link>
-            에서 참여한 공연에 체크인하거나, 운영진이 수업에 배정하면 이곳에 모입니다.
+            <T
+              k="admin.archive.emptyHint"
+              params={{
+                browse: (
+                  <Link href="/admin/library" className="admin-callout-link">
+                    <T k="admin.nav.library">공연 둘러보기</T> →
+                  </Link>
+                ),
+              }}
+            >
+              {'{browse}에서 참여한 공연에 체크인하거나, 운영진이 수업에 배정하면 이곳에 모입니다.'}
+            </T>
           </p>
         </div>
       ) : (
         <>
           <div className="admin-filter-info">
-            참여 수업 <strong>{totalClasses}</strong> · 참여 공연 <strong>{totalEvents}</strong>
-            {' '}· 활동 연도 {sortedYears.length}개 ({sortedYears.join(', ')})
+            <T
+              k="admin.archive.counts"
+              params={{
+                classes: <strong>{totalClasses}</strong>,
+                events: <strong>{totalEvents}</strong>,
+                years: sortedYears.length,
+                list: sortedYears.join(', '),
+              }}
+            >
+              {'참여 수업 {classes} · 참여 공연 {events} · 활동 연도 {years}개 ({list})'}
+            </T>
           </div>
 
           <div className="library-content">
@@ -128,51 +153,13 @@ export default async function AdminArchivePage() {
 
                   {bucket.events.length > 0 && (
                     <div className="library-grid">
-                      {bucket.events.map((event) => {
-                        const strip = previews.get(event.id) ?? [];
-                        const thumb =
-                          event.thumbnail_url || event.poster_url || strip[0]?.image_url || null;
-                        const isDraft = event.is_published === 0;
-                        return (
-                          <Link
-                            key={`ev-${event.id}`}
-                            href={`/admin/library/${event.id}`}
-                            className="library-card"
-                          >
-                            <div className="library-card-thumb">
-                              {thumb ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={thumb} alt={event.title_ko} loading="lazy" />
-                              ) : (
-                                <span className="library-card-thumb-empty">이미지 없음</span>
-                              )}
-                            </div>
-                            <div className="library-card-body">
-                              <span className="library-card-meta">
-                                {event.category_name_ko && (
-                                  <span className="library-card-category">
-                                    {event.category_name_ko}
-                                  </span>
-                                )}
-                                {isDraft && <span className="library-card-draft">비공개</span>}
-                              </span>
-                              <h3 className="library-card-title">{event.title_ko}</h3>
-                              <p className="library-card-date">{event.event_date}</p>
-                              <p className="archive-card-checkin">
-                                참여 체크인 · {formatEventDate(event.checked_in_at, 'ko')}
-                              </p>
-                            </div>
-                            {strip.length > 0 && (
-                              <div className="archive-strip">
-                                {strip.map((img) => (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img key={img.id} src={img.image_url} alt="" loading="lazy" />
-                                ))}
-                              </div>
-                            )}
-                          </Link>
-                        );
-                      })}
+                      {bucket.events.map((event) => (
+                        <ArchiveEventCard
+                          key={`ev-${event.id}`}
+                          event={event}
+                          strip={previews.get(event.id) ?? []}
+                        />
+                      ))}
                     </div>
                   )}
                 </section>

@@ -12,6 +12,7 @@
  */
 
 import { useRef, useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import type { EventCategory, ExtractedEventInfo } from '@/types/gallery';
 
 interface AiEventFillProps {
@@ -32,7 +33,7 @@ async function fileToBase64(file: File): Promise<{ dataBase64: string; mimeType:
     new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
-      reader.onerror = () => reject(new Error('파일을 읽지 못했습니다.'));
+      reader.onerror = () => reject(new Error('파일을 읽지 못했습니다.'));  // 내부 오류 — 화면에는 아래 문구로 나간다
       reader.readAsDataURL(blob);
     });
 
@@ -58,6 +59,7 @@ async function fileToBase64(file: File): Promise<{ dataBase64: string; mimeType:
 }
 
 export default function AiEventFill({ categories, onApply, onPosterChange }: AiEventFillProps) {
+  const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -89,7 +91,9 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
 
   const handleExtract = async () => {
     if (!file && !text.trim()) {
-      setError('포스터 이미지 또는 안내 텍스트 중 하나 이상을 입력해 주세요.');
+      setError(
+        t('admin.aiFill.needInput', '포스터 이미지 또는 안내 텍스트 중 하나 이상을 입력해 주세요.')
+      );
       return;
     }
     setExtracting(true);
@@ -117,13 +121,13 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
             typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail, null, 2)
           );
         }
-        throw new Error(data.error || '추출에 실패했습니다.');
+        throw new Error(data.error || t('admin.aiFill.failed', '추출에 실패했습니다.'));
       }
       onApply(data.data as ExtractedEventInfo);
       setWarnings(Array.isArray(data.warnings) ? data.warnings : []);
       setDone(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '추출에 실패했습니다.');
+      setError(err instanceof Error ? err.message : t('admin.aiFill.failed', '추출에 실패했습니다.'));
     } finally {
       setExtracting(false);
     }
@@ -131,11 +135,12 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
 
   return (
     <div className="admin-form-section ai-fill">
-      <h3 className="admin-form-section-title">AI로 정보 채우기</h3>
+      <h3 className="admin-form-section-title">{t('admin.aiFill.title', 'AI로 정보 채우기')}</h3>
       <p className="admin-form-help">
-        공연 포스터 이미지나 안내 텍스트를 넣으면 아래 폼에 제목·날짜·장소·소개(한/영)를
-        자동으로 채웁니다. 이미지와 텍스트 중 하나만 있어도 됩니다. 채워진 값은
-        초안이니 검토 후 수정해서 저장하세요.
+        {t(
+          'admin.aiFill.help',
+          '공연 포스터 이미지나 안내 텍스트를 넣으면 아래 폼에 제목·날짜·장소·소개(한/영)를 자동으로 채웁니다. 이미지와 텍스트 중 하나만 있어도 됩니다. 채워진 값은 초안이니 검토 후 수정해서 저장하세요.'
+        )}
       </p>
 
       <div className="ai-fill-grid">
@@ -167,7 +172,11 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
             <>
               {/* 로컬 미리보기(objectURL)라 next/image 최적화 대상이 아니다 */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={previewUrl} alt="포스터 미리보기" className="ai-fill-preview" />
+              <img
+                src={previewUrl}
+                alt={t('admin.aiFill.previewAlt', '포스터 미리보기')}
+                className="ai-fill-preview"
+              />
               <button
                 type="button"
                 className="ai-fill-remove"
@@ -177,13 +186,13 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
                   if (fileInputRef.current) fileInputRef.current.value = '';
                 }}
               >
-                이미지 제거
+                {t('admin.aiFill.removeImage', '이미지 제거')}
               </button>
             </>
           ) : (
             <span className="ai-fill-drop-hint">
-              포스터 이미지 선택
-              <small>클릭하거나 파일을 끌어다 놓으세요</small>
+              {t('admin.aiFill.pickPoster', '포스터 이미지 선택')}
+              <small>{t('admin.aiFill.pickHint', '클릭하거나 파일을 끌어다 놓으세요')}</small>
             </span>
           )}
         </div>
@@ -195,7 +204,12 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
               checked={attachAsPhoto}
               onChange={(e) => toggleAttach(e.target.checked)}
             />
-            <span>이 포스터를 공연 사진으로도 등록 (저장 시 원본이 업로드됩니다)</span>
+            <span>
+              {t(
+                'admin.aiFill.attachPoster',
+                '이 포스터를 공연 사진으로도 등록 (저장 시 원본이 업로드됩니다)'
+              )}
+            </span>
           </label>
         )}
         </div>
@@ -209,7 +223,10 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
             setDone(false);
           }}
           placeholder={
-            '안내 텍스트 붙여넣기 (선택)\n\n공지 문자·이메일·웹페이지 등에서 복사한 공연 안내문을 그대로 붙여 넣으면 함께 분석합니다.'
+            t(
+              'admin.aiFill.textPlaceholder',
+              '안내 텍스트 붙여넣기 (선택)\n\n공지 문자·이메일·웹페이지 등에서 복사한 공연 안내문을 그대로 붙여 넣으면 함께 분석합니다.'
+            )
           }
           rows={8}
         />
@@ -222,10 +239,14 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
           disabled={extracting}
           onClick={handleExtract}
         >
-          {extracting ? 'AI 분석 중... (수십 초 걸릴 수 있음)' : 'AI로 정보 추출'}
+          {extracting
+            ? t('admin.aiFill.extracting', 'AI 분석 중... (수십 초 걸릴 수 있음)')
+            : t('admin.aiFill.extract', 'AI로 정보 추출')}
         </button>
         {done && !error && (
-          <span className="ai-fill-done">아래 폼에 채웠습니다 — 검토 후 저장하세요.</span>
+          <span className="ai-fill-done">
+            {t('admin.aiFill.done', '아래 폼에 채웠습니다 — 검토 후 저장하세요.')}
+          </span>
         )}
       </div>
 
@@ -235,7 +256,7 @@ export default function AiEventFill({ categories, onApply, onPosterChange }: AiE
           {/* 원인 원문은 기본으로 감춘다 — 필요할 때만 펼쳐서 디버깅에 쓴다 */}
           {errorDetail && (
             <details className="ai-fill-detail">
-              <summary>자세히 (기술 정보)</summary>
+              <summary>{t('admin.aiFill.detail', '자세히 (기술 정보)')}</summary>
               <pre>{errorDetail}</pre>
             </details>
           )}

@@ -4,10 +4,12 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
+import NewsFilters from '@/components/admin/news/NewsFilters';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getNewsPosts } from '@/lib/d1';
-import { NEWS_CATEGORIES, NEWS_CATEGORY_LABELS, isNewsCategory } from '@/types/news';
+import { isNewsCategory } from '@/types/news';
 import NewsTable from '@/components/admin/news/NewsTable';
 
 export const metadata = {
@@ -61,74 +63,40 @@ export default async function AdminNewsPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>뉴스 · 미디어</span>
+            <span>
+              <T k="admin.news.crumb">뉴스 · 미디어</T>
+            </span>
           </div>
-          <h1 className="admin-title">뉴스 · 미디어 관리</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.news">뉴스 · 미디어 관리</T>
+          </h1>
           <p className="admin-subtitle">
-            공개 미디어 페이지(/media)에 표시될 소식, 언론 보도, 영상을 관리합니다.
+            <T k="admin.news.subtitle">
+              공개 미디어 페이지(/media)에 표시될 소식, 언론 보도, 영상을 관리합니다.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/media" target="_blank" className="admin-btn admin-btn-outline">
-            공개 페이지 보기
+            <T k="admin.common.viewPublicPage">공개 페이지 보기</T>
           </Link>
           <Link href="/admin/news/new" className="admin-btn admin-btn-primary">
-            + 새 게시물 작성
+            <T k="admin.news.new">+ 새 게시물 작성</T>
           </Link>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <select
-            name="category"
-            className="admin-filter-select"
-            defaultValue={params.category || ''}
-          >
-            <option value="">전체 분류</option>
-            {NEWS_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{NEWS_CATEGORY_LABELS[c]}</option>
-            ))}
-          </select>
+      <NewsFilters
+        category={params.category || ''}
+        status={params.status || ''}
+        search={params.search || ''}
+        total={total}
+      />
 
-          <select
-            name="status"
-            className="admin-filter-select"
-            defaultValue={params.status || ''}
-          >
-            <option value="">전체 상태</option>
-            <option value="published">공개</option>
-            <option value="draft">비공개</option>
-          </select>
-
-          <input
-            type="text"
-            name="search"
-            placeholder="검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-
-          <button type="submit" className="admin-btn admin-btn-sm">
-            검색
-          </button>
-
-          {(params.category || params.status || params.search) && (
-            <Link href="/admin/news" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-        </form>
-
-        <div className="admin-filter-info">
-          총 {total}개의 게시물
-        </div>
-      </div>
-
-      {/* News Table */}
       <NewsTable posts={posts} />
 
       {/* Pagination */}

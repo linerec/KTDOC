@@ -1,16 +1,20 @@
 'use client';
 
 /**
- * NewsForm Component
- * 뉴스·미디어 게시물 생성/편집 폼
+ * NewsForm — 뉴스·미디어 게시물 생성/편집
+ *
+ * 폼 상태와 저장만 여기서 맡고, 화면은 두 조각으로 갈랐다:
+ *  - PostFields     : 분류·게시일·제목·본문 (분류에 따라 필요한 칸이 달라진다)
+ *  - ThumbnailField : 대표 이미지 업로드와 공개 여부
  */
 
 import { useRef, useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { NewsPost, NewsCategory, CreateNewsPostInput, UpdateNewsPostInput } from '@/types/news';
-import { NEWS_CATEGORIES, NEWS_CATEGORY_LABELS } from '@/types/news';
 import { uploadImageFile } from '@/lib/uploadClient';
+import { useT } from '@/lib/i18n/useT';
+import PostFields, { type NewsFormData } from './PostFields';
+import ThumbnailField from './ThumbnailField';
 
 interface NewsFormProps {
   post?: NewsPost | null;
@@ -19,6 +23,7 @@ interface NewsFormProps {
 
 export default function NewsForm({ post, isNew = false }: NewsFormProps) {
   const router = useRouter();
+  const t = useT();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 저장 완료 피드백(편집 시 화면 변화가 없어 명확한 신호가 필요)
@@ -27,7 +32,7 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<NewsFormData>({
     category: (post?.category || 'news') as NewsCategory,
     title_ko: post?.title_ko || '',
     title_en: post?.title_en || '',
@@ -63,14 +68,20 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
       const res = await uploadImageFile<{
         success: boolean;
         data: { url: string; key: string };
-      }>('/api/admin/news/upload', file, { failMessage: '이미지 업로드에 실패했습니다.' });
+      }>('/api/admin/news/upload', file, {
+        failMessage: t('admin.news.uploadFailed', '이미지 업로드에 실패했습니다.'),
+      });
       setFormData((prev) => ({
         ...prev,
         thumbnail_url: res.data.url,
         thumbnail_r2_key: res.data.key,
       }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : '이미지 업로드에 실패했습니다.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.news.uploadFailed', '이미지 업로드에 실패했습니다.')
+      );
     } finally {
       setUploading(false);
       // 같은 파일을 다시 선택해도 change 이벤트가 발생하도록 초기화
@@ -88,14 +99,13 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
     setSavedMsg('');
 
     if (formData.category === 'video' && !formData.youtube_url.trim()) {
-      setError('영상 게시물에는 YouTube 링크가 필요합니다.');
+      setError(t('admin.news.youtubeRequired', '영상 게시물에는 YouTube 링크가 필요합니다.'));
       return;
     }
 
     setSaving(true);
     try {
       const url = isNew ? '/api/admin/news' : `/api/admin/news/${post?.id}`;
-      const method = isNew ? 'POST' : 'PUT';
 
       // 빈 문자열을 보내면 서버가 null로 저장(값 지우기 지원)
       const body: CreateNewsPostInput | UpdateNewsPostInput = {
@@ -114,13 +124,13 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
       };
 
       const res = await fetch(url, {
-        method,
+        method: isNew ? 'POST' : 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || '저장에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.saveFailed', '저장에 실패했습니다.'));
       }
 
       if (isNew) {
@@ -128,12 +138,14 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
         router.refresh();
       } else {
         setSaved(true);
-        setSavedMsg('저장되었습니다.');
+        setSavedMsg(t('admin.news.saved', '저장되었습니다.'));
         router.refresh();
         window.setTimeout(() => setSaved(false), 3000);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.saveFailed', '저장에 실패했습니다.')
+      );
     } finally {
       setSaving(false);
     }
@@ -144,212 +156,22 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
 
       <div className="admin-form-grid">
-        <div className="admin-form-section">
-          <h3 className="admin-form-section-title">게시물 기본 정보</h3>
-          <p className="admin-form-help">
-            이 정보가 공개 미디어 페이지(/media)의 카드와 상세 화면에 표시됩니다.
-          </p>
-
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label htmlFor="category" className="admin-form-label">
-                분류 <span className="required">*</span>
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="admin-form-select"
-              >
-                {NEWS_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{NEWS_CATEGORY_LABELS[c]}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="admin-form-group">
-              <label htmlFor="published_at" className="admin-form-label">
-                게시일 <span className="required">*</span>
-              </label>
-              <input
-                type="date"
-                id="published_at"
-                name="published_at"
-                value={formData.published_at}
-                onChange={handleChange}
-                required
-                className="admin-form-input"
-              />
-            </div>
-          </div>
-
-          <div className="admin-form-group">
-            <label htmlFor="title_ko" className="admin-form-label">
-              제목 (한글) <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="title_ko"
-              name="title_ko"
-              value={formData.title_ko}
-              onChange={handleChange}
-              required
-              className="admin-form-input"
-            />
-          </div>
-
-          <div className="admin-form-group">
-            <label htmlFor="title_en" className="admin-form-label">
-              제목 (영문)
-            </label>
-            <input
-              type="text"
-              id="title_en"
-              name="title_en"
-              value={formData.title_en}
-              onChange={handleChange}
-              className="admin-form-input"
-            />
-          </div>
-
-          {formData.category === 'press' && (
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="source_name" className="admin-form-label">
-                  출처 (매체명)
-                </label>
-                <input
-                  type="text"
-                  id="source_name"
-                  name="source_name"
-                  value={formData.source_name}
-                  onChange={handleChange}
-                  placeholder="예: 중앙일보"
-                  className="admin-form-input"
-                />
-              </div>
-
-              <div className="admin-form-group">
-                <label htmlFor="external_url" className="admin-form-label">
-                  기사 원문 링크
-                </label>
-                <input
-                  type="url"
-                  id="external_url"
-                  name="external_url"
-                  value={formData.external_url}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                  className="admin-form-input"
-                />
-              </div>
-            </div>
-          )}
-
-          {formData.category === 'video' && (
-            <div className="admin-form-group">
-              <label htmlFor="youtube_url" className="admin-form-label">
-                YouTube 링크 <span className="required">*</span>
-              </label>
-              <input
-                type="url"
-                id="youtube_url"
-                name="youtube_url"
-                value={formData.youtube_url}
-                onChange={handleChange}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="admin-form-input"
-              />
-              <p className="admin-form-help">
-                상세 화면에 영상이 임베드됩니다. 대표 이미지가 없으면 YouTube 썸네일이 사용됩니다.
-              </p>
-            </div>
-          )}
-
-          <div className="admin-form-group">
-            <label htmlFor="body_ko" className="admin-form-label">
-              본문 (한글)
-            </label>
-            <textarea
-              id="body_ko"
-              name="body_ko"
-              value={formData.body_ko}
-              onChange={handleChange}
-              rows={8}
-              className="admin-form-textarea"
-            />
-          </div>
-
-          <div className="admin-form-group">
-            <label htmlFor="body_en" className="admin-form-label">
-              본문 (영문)
-            </label>
-            <textarea
-              id="body_en"
-              name="body_en"
-              value={formData.body_en}
-              onChange={handleChange}
-              rows={8}
-              className="admin-form-textarea"
-            />
-          </div>
-        </div>
-
-        <div className="admin-form-section">
-          <h3 className="admin-form-section-title">대표 이미지</h3>
-          <p className="admin-form-help">
-            카드와 상세 화면 상단에 표시됩니다. 4MB 이하의 JPEG·PNG·WebP·GIF 파일을 올릴 수 있습니다.
-          </p>
-
-          {formData.thumbnail_url ? (
-            <div className="admin-news-thumb-preview">
-              <Image
-                src={formData.thumbnail_url}
-                alt="대표 이미지 미리보기"
-                width={320}
-                height={200}
-                className="admin-news-thumb-img"
-              />
-              <button
-                type="button"
-                className="admin-btn admin-btn-sm admin-btn-outline"
-                onClick={clearThumbnail}
-              >
-                이미지 제거
-              </button>
-            </div>
-          ) : (
-            <div className="admin-form-group">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={handleThumbnailSelect}
-                disabled={uploading}
-                className="admin-form-input"
-              />
-              {uploading && <p className="admin-form-help">업로드 중...</p>}
-            </div>
-          )}
-
-          <div className="admin-form-checkbox" style={{ marginTop: 20 }}>
-            <input
-              type="checkbox"
-              id="is_published"
-              name="is_published"
-              checked={formData.is_published}
-              onChange={handleChange}
-            />
-            <label htmlFor="is_published">공개 미디어 페이지에 표시</label>
-          </div>
-        </div>
+        <PostFields formData={formData} onChange={handleChange} />
+        <ThumbnailField
+          formData={formData}
+          onChange={handleChange}
+          onSelectFile={handleThumbnailSelect}
+          onClear={clearThumbnail}
+          uploading={uploading}
+          fileInputRef={fileInputRef}
+        />
       </div>
 
-      {/* Actions */}
       <div className="admin-form-actions">
         {savedMsg && (
-          <span className="admin-form-saved" role="status">✓ {savedMsg}</span>
+          <span className="admin-form-saved" role="status">
+            ✓ {savedMsg}
+          </span>
         )}
         <button
           type="button"
@@ -357,14 +179,20 @@ export default function NewsForm({ post, isNew = false }: NewsFormProps) {
           onClick={() => router.back()}
           disabled={saving}
         >
-          취소
+          {t('admin.common.cancel', '취소')}
         </button>
         <button
           type="submit"
           className={`admin-btn ${saved ? 'admin-btn-gold' : 'admin-btn-primary'}`}
           disabled={saving || uploading}
         >
-          {saving ? '저장 중...' : saved ? '저장됨 ✓' : isNew ? '생성' : '저장'}
+          {saving
+            ? t('admin.common.saving', '저장 중...')
+            : saved
+              ? t('admin.common.savedMark', '저장됨 ✓')
+              : isNew
+                ? t('admin.common.create', '생성')
+                : t('admin.common.save', '저장')}
         </button>
       </div>
     </form>

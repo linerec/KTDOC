@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import { useRouter } from 'next/navigation';
 import type {
   GlossaryTermWithCategory,
@@ -22,6 +23,7 @@ interface GlossaryFormProps {
 }
 
 export default function GlossaryForm({ term, categories, isNew = false }: GlossaryFormProps) {
+  const t = useT();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,7 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
     setError(null);
 
     if (!formData.term_ko.trim()) {
-      setError('용어(한글)는 필수입니다.');
+      setError(t('admin.glossary.termRequired', '용어(한글)는 필수입니다.'));
       return;
     }
 
@@ -83,13 +85,15 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
       });
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || '저장에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.saveFailed', '저장에 실패했습니다.'));
       }
 
       router.push('/admin/glossary');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.saveFailed', '저장에 실패했습니다.')
+      );
     } finally {
       setSaving(false);
     }
@@ -102,15 +106,18 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
       <div className="admin-form-grid">
         {/* 용어 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">용어</h3>
+          <h3 className="admin-form-section-title">{t('admin.glossary.term', '용어')}</h3>
           <p className="admin-form-help">
-            한글 용어와 영문 의미를 입력하세요. 로마자 표기는 검색·표준용, 발음 가이드는 아이들이 실제로 읽는 방식입니다.
+            {t(
+              'admin.glossary.termHelp',
+              '한글 용어와 영문 의미를 입력하세요. 로마자 표기는 검색·표준용, 발음 가이드는 아이들이 실제로 읽는 방식입니다.'
+            )}
           </p>
 
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label htmlFor="term_ko" className="admin-form-label">
-                용어 (한글) <span className="required">*</span>
+                {t('admin.glossary.termKo', '용어 (한글)')} <span className="required">*</span>
               </label>
               <input
                 type="text"
@@ -120,11 +127,13 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
                 onChange={handleChange}
                 required
                 className="admin-form-input"
-                placeholder="춤사위"
+                placeholder={t('admin.glossary.termPlaceholder', '춤사위')}
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="term_en" className="admin-form-label">의미 (영문)</label>
+              <label htmlFor="term_en" className="admin-form-label">
+                {t('admin.glossary.termEn', '의미 (영문)')}
+              </label>
               <input
                 type="text"
                 id="term_en"
@@ -139,7 +148,9 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
 
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label htmlFor="romanization" className="admin-form-label">로마자 표기</label>
+              <label htmlFor="romanization" className="admin-form-label">
+                {t('admin.glossary.roman', '로마자 표기')}
+              </label>
               <input
                 type="text"
                 id="romanization"
@@ -151,7 +162,9 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="pronunciation" className="admin-form-label">발음 가이드 (읽는 법)</label>
+              <label htmlFor="pronunciation" className="admin-form-label">
+                {t('admin.glossary.pron', '발음 가이드 (읽는 법)')}
+              </label>
               <input
                 type="text"
                 id="pronunciation"
@@ -165,7 +178,9 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="category_id" className="admin-form-label">분류</label>
+            <label htmlFor="category_id" className="admin-form-label">
+              {t('admin.glossary.category', '분류')}
+            </label>
             <select
               id="category_id"
               name="category_id"
@@ -173,7 +188,7 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
               onChange={handleChange}
               className="admin-form-select"
             >
-              <option value="">분류 없음</option>
+              <option value="">{t('admin.glossary.noCategory', '분류 없음')}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name_ko}
@@ -186,9 +201,11 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
 
         {/* 뜻 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">뜻 · 설명</h3>
+          <h3 className="admin-form-section-title">{t('admin.glossary.meaning', '뜻 · 설명')}</h3>
           <div className="admin-form-group">
-            <label htmlFor="definition_ko" className="admin-form-label">뜻 (한글)</label>
+            <label htmlFor="definition_ko" className="admin-form-label">
+              {t('admin.glossary.defKo', '뜻 (한글)')}
+            </label>
             <textarea
               id="definition_ko"
               name="definition_ko"
@@ -196,11 +213,16 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
               onChange={handleChange}
               rows={3}
               className="admin-form-textarea"
-              placeholder="손과 팔, 몸의 움직임으로 감정을 표현하는 전통무용의 기본 동작."
+              placeholder={t(
+                'admin.glossary.defPlaceholder',
+                '손과 팔, 몸의 움직임으로 감정을 표현하는 전통무용의 기본 동작.'
+              )}
             />
           </div>
           <div className="admin-form-group">
-            <label htmlFor="definition_en" className="admin-form-label">뜻 (영문)</label>
+            <label htmlFor="definition_en" className="admin-form-label">
+              {t('admin.glossary.defEn', '뜻 (영문)')}
+            </label>
             <textarea
               id="definition_en"
               name="definition_en"
@@ -215,10 +237,19 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
 
         {/* 예문 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">예문 · 용례 (선택)</h3>
-          <p className="admin-form-help">이 용어가 실제로 어떻게 쓰이는지 짧은 문장으로 보여주면 이해에 도움이 됩니다.</p>
+          <h3 className="admin-form-section-title">
+            {t('admin.glossary.example', '예문 · 용례 (선택)')}
+          </h3>
+          <p className="admin-form-help">
+            {t(
+              'admin.glossary.exampleHelp',
+              '이 용어가 실제로 어떻게 쓰이는지 짧은 문장으로 보여주면 이해에 도움이 됩니다.'
+            )}
+          </p>
           <div className="admin-form-group">
-            <label htmlFor="example_ko" className="admin-form-label">예문 (한글)</label>
+            <label htmlFor="example_ko" className="admin-form-label">
+              {t('admin.glossary.exKo', '예문 (한글)')}
+            </label>
             <input
               type="text"
               id="example_ko"
@@ -226,11 +257,13 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
               value={formData.example_ko}
               onChange={handleChange}
               className="admin-form-input"
-              placeholder="선생님이 춤사위를 하나씩 보여주셨다."
+              placeholder={t('admin.glossary.exPlaceholder', '선생님이 춤사위를 하나씩 보여주셨다.')}
             />
           </div>
           <div className="admin-form-group">
-            <label htmlFor="example_en" className="admin-form-label">예문 (영문)</label>
+            <label htmlFor="example_en" className="admin-form-label">
+              {t('admin.glossary.exEn', '예문 (영문)')}
+            </label>
             <input
               type="text"
               id="example_en"
@@ -245,7 +278,9 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
 
         {/* 공개 설정 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">공개 설정</h3>
+          <h3 className="admin-form-section-title">
+            {t('admin.common.secVisibility', '공개 설정')}
+          </h3>
           <div className="admin-form-checkbox">
             <input
               type="checkbox"
@@ -254,7 +289,9 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
               checked={formData.is_published}
               onChange={handleChange}
             />
-            <label htmlFor="is_published">공개 (체크하면 말모이 페이지에 표시됩니다)</label>
+            <label htmlFor="is_published">
+              {t('admin.glossary.publishLabel', '공개 (체크하면 말모이 페이지에 표시됩니다)')}
+            </label>
           </div>
         </div>
       </div>
@@ -266,10 +303,14 @@ export default function GlossaryForm({ term, categories, isNew = false }: Glossa
           onClick={() => router.push('/admin/glossary')}
           disabled={saving}
         >
-          취소
+          {t('admin.common.cancel', '취소')}
         </button>
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-          {saving ? '저장 중...' : isNew ? '생성' : '저장'}
+          {saving
+            ? t('admin.common.saving', '저장 중...')
+            : isNew
+              ? t('admin.common.create', '생성')
+              : t('admin.common.save', '저장')}
         </button>
       </div>
     </form>

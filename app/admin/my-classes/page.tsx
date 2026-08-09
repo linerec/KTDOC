@@ -15,6 +15,7 @@ import { getGuardianChildren } from '@/lib/members';
 import type { MemberRole } from '@/types/members';
 import type { MyEnrollment } from '@/types/programs';
 import ClassCard from '@/components/admin/ClassCard';
+import T from '@/components/common/T';
 
 export const metadata: Metadata = {
   title: '내 수업 | KTDOC',
@@ -25,7 +26,9 @@ function ClassList({ items }: { items: MyEnrollment[] }) {
   if (visible.length === 0) {
     return (
       <p className="admin-form-help">
-        아직 배정된 수업이 없습니다. 운영진이 수업에 배정하면 이곳에 표시됩니다.
+        <T k="admin.myClasses.empty">
+          아직 배정된 수업이 없습니다. 운영진이 수업에 배정하면 이곳에 표시됩니다.
+        </T>
       </p>
     );
   }
@@ -63,21 +66,29 @@ export default async function MyClassesPage() {
       <div className="admin-page">
         <div className="admin-header">
           <div className="admin-header-content">
-            <h1 className="admin-title">내 수업</h1>
-            <p className="admin-subtitle">자녀가 배정된 수업·프로그램입니다.</p>
+            <h1 className="admin-title">
+              <T k="admin.nav.my-classes">내 수업</T>
+            </h1>
+            <p className="admin-subtitle">
+              <T k="admin.myClasses.subtitleParent">자녀가 배정된 수업·프로그램입니다.</T>
+            </p>
           </div>
         </div>
 
         {children.length === 0 ? (
           <p className="admin-form-help">
-            아직 연결된 자녀가 없습니다. 회원 관리에서 자녀 연결이 확정되면 자녀의 수업이 이곳에
-            표시됩니다.
+            <T k="admin.myClasses.noChildren">
+              아직 연결된 자녀가 없습니다. 회원 관리에서 자녀 연결이 확정되면 자녀의 수업이 이곳에
+              표시됩니다.
+            </T>
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
             {children.map((c) => (
               <section key={c.studentId}>
-                <h2 className="myclass-child-name">{c.studentName || '자녀'}</h2>
+                <h2 className="myclass-child-name">
+                  {c.studentName || <T k="admin.myClasses.child">자녀</T>}
+                </h2>
                 <ClassList items={byChild.get(c.studentId) ?? []} />
               </section>
             ))}
@@ -93,8 +104,12 @@ export default async function MyClassesPage() {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
-          <h1 className="admin-title">내 수업</h1>
-          <p className="admin-subtitle">내가 배정된 수업·프로그램입니다.</p>
+          <h1 className="admin-title">
+            <T k="admin.nav.my-classes">내 수업</T>
+          </h1>
+          <p className="admin-subtitle">
+            <T k="admin.myClasses.subtitleStudent">내가 배정된 수업·프로그램입니다.</T>
+          </p>
         </div>
       </div>
       <ClassList items={items} />

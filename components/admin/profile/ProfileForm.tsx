@@ -7,10 +7,14 @@
  */
 
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useT } from '@/lib/i18n/useT';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatTimestampDate } from '@/lib/i18n/formatDate';
+import { roleLabel } from '@/lib/i18n/memberLabels';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
+import type { MemberRole } from '@/types/members';
 import { uploadImageFile } from '@/lib/uploadClient';
 
 interface ProfileFormProps {
@@ -24,13 +28,6 @@ interface ProfileFormProps {
   initialPhotoUrl: string | null;
 }
 
-function formatDate(value: string | null): string {
-  if (!value) return '-';
-  const d = new Date(value.includes('T') ? value : value.replace(' ', 'T') + 'Z');
-  if (Number.isNaN(d.getTime())) return value;
-  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`;
-}
-
 export default function ProfileForm({
   initialName,
   email,
@@ -39,6 +36,8 @@ export default function ProfileForm({
   initialConsent,
   initialPhotoUrl,
 }: ProfileFormProps) {
+  const t = useT();
+  const { locale } = useLanguage();
   const { update } = useSession();
   const router = useRouter();
 
@@ -64,13 +63,17 @@ export default function ProfileForm({
       const data = await uploadImageFile<{ success: boolean; url: string }>(
         '/api/admin/profile/photo',
         file,
-        { failMessage: '사진 업로드에 실패했습니다.' }
+        { failMessage: t('admin.profile.photoUploadFailed', '사진 업로드에 실패했습니다.') }
       );
       setPhotoUrl(data.url);
-      setSuccess('프로필 사진이 저장되었습니다.');
+      setSuccess(t('admin.profile.photoSaved', '프로필 사진이 저장되었습니다.'));
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '사진 업로드 중 오류가 발생했습니다.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.profile.photoUploadError', '사진 업로드 중 오류가 발생했습니다.')
+      );
     } finally {
       setPhotoBusy(false);
     }
@@ -84,14 +87,14 @@ export default function ProfileForm({
       const res = await fetch('/api/admin/profile/photo', { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setError(data.error || '사진 제거에 실패했습니다.');
+        setError(data.error || t('admin.profile.photoRemoveFailed', '사진 제거에 실패했습니다.'));
         return;
       }
       setPhotoUrl(null);
-      setSuccess('프로필 사진을 제거했습니다.');
+      setSuccess(t('admin.profile.photoRemoved', '프로필 사진을 제거했습니다.'));
       router.refresh();
     } catch {
-      setError('사진 제거 중 오류가 발생했습니다.');
+      setError(t('admin.profile.photoRemoveError', '사진 제거 중 오류가 발생했습니다.'));
     } finally {
       setPhotoBusy(false);
     }
@@ -109,7 +112,7 @@ export default function ProfileForm({
 
     const trimmed = name.trim();
     if (!trimmed) {
-      setError('이름을 입력해주세요.');
+      setError(t('admin.profile.needName', '이름을 입력해주세요.'));
       return;
     }
 
@@ -125,16 +128,16 @@ export default function ProfileForm({
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setError(data.error || '변경에 실패했습니다.');
+        setError(data.error || t('admin.password.failed', '변경에 실패했습니다.'));
         return;
       }
 
       // 세션 토큰과 사이드바(서버 렌더)에 새 이름 반영
       await update({ name: trimmed });
       router.refresh();
-      setSuccess(data.message || '저장되었습니다.');
+      setSuccess(data.message || t('admin.news.saved', '저장되었습니다.'));
     } catch {
-      setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      setError(t('admin.common.serverErrorRetry', '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
     } finally {
       setSaving(false);
     }
@@ -142,13 +145,16 @@ export default function ProfileForm({
 
   return (
     <form className="admin-form-section admin-account-card" onSubmit={handleSubmit}>
-      <h2 className="admin-form-section-title">기본 정보</h2>
+      <h2 className="admin-form-section-title">{t('admin.programs.secBasic', '기본 정보')}</h2>
       <p className="admin-form-help">
-        이름은 관리자 화면에 표시됩니다. 이메일(로그인 아이디)과 권한은 변경할 수 없습니다.
+        {t(
+          'admin.profile.help',
+          '이름은 관리자 화면에 표시됩니다. 이메일(로그인 아이디)과 권한은 변경할 수 없습니다.'
+        )}
       </p>
 
       <div className="admin-form-group">
-        <span className="admin-form-label">프로필 사진</span>
+        <span className="admin-form-label">{t('admin.profile.photo', '프로필 사진')}</span>
         <div className="admin-avatar-row">
           <span className="admin-avatar" aria-hidden="true">
             {photoUrl ? (
@@ -173,7 +179,11 @@ export default function ProfileForm({
               onClick={() => fileInputRef.current?.click()}
               disabled={photoBusy}
             >
-              {photoBusy ? '처리 중...' : photoUrl ? '사진 변경' : '사진 업로드'}
+              {photoBusy
+                ? t('admin.profile.photoBusy', '처리 중...')
+                : photoUrl
+                  ? t('admin.profile.photoChange', '사진 변경')
+                  : t('admin.profile.photoUpload', '사진 업로드')}
             </button>
             {photoUrl && (
               <button
@@ -182,12 +192,14 @@ export default function ProfileForm({
                 onClick={handlePhotoRemove}
                 disabled={photoBusy}
               >
-                사진 제거
+                {t('admin.supplies.removePhoto', '사진 제거')}
               </button>
             )}
             <p className="admin-avatar-help">
-              JPEG·PNG·WebP, 4MB 이하. 공개 수강생 페이지에는 공개 표시에 동의한 원생의
-              사진만 표시됩니다.
+              {t(
+                'admin.profile.photoHelp',
+                'JPEG·PNG·WebP, 4MB 이하. 공개 수강생 페이지에는 공개 표시에 동의한 원생의 사진만 표시됩니다.'
+              )}
             </p>
           </div>
         </div>
@@ -195,7 +207,7 @@ export default function ProfileForm({
 
       <div className="admin-form-group">
         <label className="admin-form-label" htmlFor="profile-name">
-          이름 <span className="required">*</span>
+          {t('admin.members.colName', '이름')} <span className="required">*</span>
         </label>
         <input
           id="profile-name"
@@ -211,17 +223,17 @@ export default function ProfileForm({
 
       <div className="admin-form-group">
         <label className="admin-form-label" htmlFor="profile-email">
-          이메일
+          {t('admin.members.colEmail', '이메일')}
         </label>
         <input id="profile-email" type="email" className="admin-form-input" value={email} disabled readOnly />
       </div>
 
       <div className="admin-profile-meta">
         <span>
-          권한 <strong>{MEMBER_ROLE_LABELS[role]}</strong>
+          {t('admin.profile.role', '권한')} <strong>{roleLabel(t, role)}</strong>
         </span>
         <span>
-          가입일 <strong>{formatDate(joinedAt)}</strong>
+          {t('admin.members.colJoined', '가입일')} <strong>{formatTimestampDate(joinedAt, locale)}</strong>
         </span>
       </div>
 
@@ -234,10 +246,12 @@ export default function ProfileForm({
             disabled={saving}
           />
           <span className="admin-consent-text">
-            <strong>공개 수강생 페이지에 내 이름 표시 동의</strong>
+            <strong>{t('admin.profile.consent', '공개 수강생 페이지에 내 이름 표시 동의')}</strong>
             <span className="admin-consent-help">
-              동의하면 누구나 볼 수 있는 ‘수강생 아카이브’ 페이지에 프로필 사진·이름·입학년도·참여
-              횟수가 표시됩니다. 동의를 해제하면 즉시 제외됩니다.
+              {t(
+                'admin.profile.consentHelp',
+                '동의하면 누구나 볼 수 있는 ‘수강생 아카이브’ 페이지에 프로필 사진·이름·입학년도·참여 횟수가 표시됩니다. 동의를 해제하면 즉시 제외됩니다.'
+              )}
             </span>
           </span>
         </label>
@@ -256,7 +270,7 @@ export default function ProfileForm({
 
       <div className="admin-domain-actions">
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving || !dirty}>
-          {saving ? '저장 중...' : '저장'}
+          {saving ? t('admin.common.saving', '저장 중...') : t('admin.common.save', '저장')}
         </button>
       </div>
     </form>

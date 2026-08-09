@@ -8,6 +8,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import T from '@/components/common/T';
 
 export const metadata: Metadata = {
   title: '페이지를 찾을 수 없습니다 | KTDOC Admin',
@@ -19,17 +20,21 @@ export default function AdminNotFound() {
     <div className="admin-page">
       <div className="admin-notfound">
         <p className="admin-notfound-code">404</p>
-        <h1 className="admin-notfound-title">찾을 수 없는 페이지입니다</h1>
+        <h1 className="admin-notfound-title">
+          <T k="admin.notFound.title">찾을 수 없는 페이지입니다</T>
+        </h1>
         <p className="admin-notfound-text">
-          요청하신 화면이 없거나 주소가 바뀌었습니다. 왼쪽 메뉴에서 원하는 항목을
-          선택하시거나, 아래 버튼으로 처음으로 돌아갈 수 있습니다.
+          <T k="admin.notFound.text">
+            요청하신 화면이 없거나 주소가 바뀌었습니다. 왼쪽 메뉴에서 원하는 항목을 선택하시거나,
+            아래 버튼으로 처음으로 돌아갈 수 있습니다.
+          </T>
         </p>
         <div className="admin-notfound-actions">
           <Link href="/admin" className="admin-btn admin-btn-primary">
-            처음으로
+            <T k="admin.notFound.home">처음으로</T>
           </Link>
           <Link href="/" className="admin-btn admin-btn-outline">
-            사이트 보기 ↗
+            <T k="admin.shell.viewSite">사이트 보기</T> ↗
           </Link>
         </div>
       </div>

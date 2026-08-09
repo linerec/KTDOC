@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useT } from '@/lib/i18n/useT';
 
 export default function ChangePasswordCard() {
+  const t = useT();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,15 +18,15 @@ export default function ChangePasswordCard() {
     setSuccess('');
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('모든 항목을 입력해주세요.');
+      setError(t('admin.password.allRequired', '모든 항목을 입력해주세요.'));
       return;
     }
     if (newPassword.length < 8) {
-      setError('새 비밀번호는 최소 8자 이상이어야 합니다.');
+      setError(t('admin.password.tooShort', '새 비밀번호는 최소 8자 이상이어야 합니다.'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('새 비밀번호가 일치하지 않습니다.');
+      setError(t('admin.password.mismatch', '새 비밀번호가 일치하지 않습니다.'));
       return;
     }
 
@@ -38,16 +40,16 @@ export default function ChangePasswordCard() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || '변경에 실패했습니다.');
+        setError(data.error || t('admin.password.failed', '변경에 실패했습니다.'));
         return;
       }
 
-      setSuccess(data.message || '비밀번호가 변경되었습니다.');
+      setSuccess(data.message || t('admin.password.changed', '비밀번호가 변경되었습니다.'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch {
-      setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      setError(t('admin.common.serverErrorRetry', '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
     } finally {
       setSaving(false);
     }
@@ -55,14 +57,17 @@ export default function ChangePasswordCard() {
 
   return (
     <form className="admin-form-section admin-account-card" onSubmit={handleSubmit}>
-      <h2 className="admin-form-section-title">비밀번호 변경</h2>
+      <h2 className="admin-form-section-title">{t('admin.password.title', '비밀번호 변경')}</h2>
       <p className="admin-form-help">
-        현재 비밀번호를 확인한 뒤 새 비밀번호로 바로 변경합니다. 새 비밀번호는 최소 8자 이상이어야 해요.
+        {t(
+          'admin.password.help',
+          '현재 비밀번호를 확인한 뒤 새 비밀번호로 바로 변경합니다. 새 비밀번호는 최소 8자 이상이어야 해요.'
+        )}
       </p>
 
       <div className="admin-form-group">
         <label className="admin-form-label" htmlFor="current-password">
-          현재 비밀번호 <span className="required">*</span>
+          {t('admin.password.current', '현재 비밀번호')} <span className="required">*</span>
         </label>
         <input
           id="current-password"
@@ -77,7 +82,7 @@ export default function ChangePasswordCard() {
 
       <div className="admin-form-group">
         <label className="admin-form-label" htmlFor="new-password">
-          새 비밀번호 <span className="required">*</span>
+          {t('admin.password.new', '새 비밀번호')} <span className="required">*</span>
         </label>
         <input
           id="new-password"
@@ -93,7 +98,7 @@ export default function ChangePasswordCard() {
 
       <div className="admin-form-group">
         <label className="admin-form-label" htmlFor="confirm-password">
-          새 비밀번호 확인 <span className="required">*</span>
+          {t('admin.password.confirm', '새 비밀번호 확인')} <span className="required">*</span>
         </label>
         <input
           id="confirm-password"
@@ -120,7 +125,9 @@ export default function ChangePasswordCard() {
 
       <div className="admin-domain-actions">
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-          {saving ? '변경 중...' : '비밀번호 변경'}
+          {saving
+            ? t('admin.password.changing', '변경 중...')
+            : t('admin.password.title', '비밀번호 변경')}
         </button>
       </div>
     </form>

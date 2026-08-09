@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import Image from 'next/image';
 import type { EventVideo } from '@/types/gallery';
 
@@ -22,6 +23,7 @@ export default function VideoManager({
   onAdd,
   onDelete,
 }: VideoManagerProps) {
+  const t = useT();
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [title, setTitle] = useState('');
   const [adding, setAdding] = useState(false);
@@ -50,7 +52,7 @@ export default function VideoManager({
       const data = await res.json();
 
       if (!data.success) {
-        throw new Error(data.error || '영상 추가에 실패했습니다.');
+        throw new Error(data.error || t('admin.videos.addFailed', '영상 추가에 실패했습니다.'));
       }
 
       // Create video object for local state
@@ -68,14 +70,16 @@ export default function VideoManager({
       setYoutubeUrl('');
       setTitle('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '영상 추가에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.videos.addFailed', '영상 추가에 실패했습니다.')
+      );
     } finally {
       setAdding(false);
     }
   };
 
   const handleDelete = async (videoId: number) => {
-    if (!confirm('이 영상을 삭제하시겠습니까?')) return;
+    if (!confirm(t('admin.videos.deleteConfirm', '이 영상을 삭제하시겠습니까?'))) return;
 
     setDeleting(videoId);
     try {
@@ -87,12 +91,14 @@ export default function VideoManager({
       const data = await res.json();
 
       if (!data.success) {
-        throw new Error(data.error || '삭제에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
       }
 
       onDelete(videoId);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      alert(
+        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
+      );
     } finally {
       setDeleting(null);
     }
@@ -118,14 +124,14 @@ export default function VideoManager({
 
         <div className="admin-form-group">
           <label htmlFor="video_title" className="admin-form-label">
-            제목 (선택)
+            {t('admin.videos.titleOptional', '제목 (선택)')}
           </label>
           <input
             type="text"
             id="video_title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="영상 제목"
+            placeholder={t('admin.videos.titlePlaceholder', '영상 제목')}
             className="admin-form-input"
           />
         </div>
@@ -136,7 +142,7 @@ export default function VideoManager({
           disabled={adding || !youtubeUrl.trim()}
           onClick={handleAdd}
         >
-          {adding ? '추가 중...' : '영상 추가'}
+          {adding ? t('admin.videos.adding', '추가 중...') : t('admin.videos.add', '영상 추가')}
         </button>
       </div>
 
@@ -188,7 +194,7 @@ export default function VideoManager({
                 onClick={() => handleDelete(video.id)}
                 disabled={deleting === video.id}
               >
-                {deleting === video.id ? '...' : '삭제'}
+                {deleting === video.id ? '...' : t('admin.common.delete', '삭제')}
               </button>
             </div>
           ))}
@@ -196,7 +202,7 @@ export default function VideoManager({
       )}
 
       {videos.length === 0 && (
-        <p className="admin-empty-hint">등록된 영상이 없습니다.</p>
+        <p className="admin-empty-hint">{t('admin.videos.empty', '등록된 영상이 없습니다.')}</p>
       )}
     </div>
   );

@@ -14,14 +14,12 @@ import type {
   UpdateGlossarySongInput,
   SongLineInput,
 } from '@/types/glossary';
+import { useT } from '@/lib/i18n/useT';
+import LyricsEditor, { type LineRow } from './LyricsEditor';
 
 interface SongFormProps {
   song?: GlossarySongWithLines | null;
   isNew?: boolean;
-}
-
-interface LineRow extends SongLineInput {
-  _key: string;
 }
 
 let keySeq = 0;
@@ -33,6 +31,7 @@ function emptyLine(): LineRow {
 
 export default function SongForm({ song, isNew = false }: SongFormProps) {
   const router = useRouter();
+  const t = useT();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,7 +93,7 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
     setError(null);
 
     if (!meta.title_ko.trim()) {
-      setError('노래 제목(한글)은 필수입니다.');
+      setError(t('admin.songs.titleRequired', '노래 제목(한글)은 필수입니다.'));
       return;
     }
 
@@ -131,12 +130,16 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || '저장에 실패했습니다.');
+      if (!data.success) {
+        throw new Error(data.error || t('admin.common.saveFailed', '저장에 실패했습니다.'));
+      }
 
       router.push('/admin/glossary/songs');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.saveFailed', '저장에 실패했습니다.')
+      );
     } finally {
       setSaving(false);
     }
@@ -149,11 +152,11 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
       <div className="admin-form-grid">
         {/* 노래 정보 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">노래 정보</h3>
+          <h3 className="admin-form-section-title">{t('admin.songs.info', '노래 정보')}</h3>
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label htmlFor="title_ko" className="admin-form-label">
-                제목 (한글) <span className="required">*</span>
+                {t('admin.common.fieldTitleKo', '제목 (한글)')} <span className="required">*</span>
               </label>
               <input
                 type="text"
@@ -163,11 +166,13 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
                 onChange={handleMeta}
                 required
                 className="admin-form-input"
-                placeholder="별달거리"
+                placeholder={t('admin.songs.titlePlaceholder', '별달거리')}
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="title_en" className="admin-form-label">제목 (영문/의미)</label>
+              <label htmlFor="title_en" className="admin-form-label">
+                {t('admin.songs.titleEn', '제목 (영문/의미)')}
+              </label>
               <input
                 type="text"
                 id="title_en"
@@ -182,7 +187,9 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
 
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label htmlFor="romanization" className="admin-form-label">제목 로마자</label>
+              <label htmlFor="romanization" className="admin-form-label">
+                {t('admin.songs.titleRoman', '제목 로마자')}
+              </label>
               <input
                 type="text"
                 id="romanization"
@@ -194,7 +201,9 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="pronunciation" className="admin-form-label">제목 발음</label>
+              <label htmlFor="pronunciation" className="admin-form-label">
+                {t('admin.songs.titlePron', '제목 발음')}
+              </label>
               <input
                 type="text"
                 id="pronunciation"
@@ -208,7 +217,9 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="youtube_url" className="admin-form-label">유튜브/음원 링크</label>
+            <label htmlFor="youtube_url" className="admin-form-label">
+              {t('admin.songs.youtube', '유튜브/음원 링크')}
+            </label>
             <input
               type="url"
               id="youtube_url"
@@ -221,7 +232,9 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="description_ko" className="admin-form-label">노래 설명 (한글)</label>
+            <label htmlFor="description_ko" className="admin-form-label">
+              {t('admin.songs.descKo', '노래 설명 (한글)')}
+            </label>
             <textarea
               id="description_ko"
               name="description_ko"
@@ -229,11 +242,16 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
               onChange={handleMeta}
               rows={2}
               className="admin-form-textarea"
-              placeholder="어떤 노래인지, 어떤 무대에서 부르는지 짧게 소개하세요."
+              placeholder={t(
+                'admin.songs.descPlaceholder',
+                '어떤 노래인지, 어떤 무대에서 부르는지 짧게 소개하세요.'
+              )}
             />
           </div>
           <div className="admin-form-group">
-            <label htmlFor="description_en" className="admin-form-label">노래 설명 (영문)</label>
+            <label htmlFor="description_en" className="admin-form-label">
+              {t('admin.songs.descEn', '노래 설명 (영문)')}
+            </label>
             <textarea
               id="description_en"
               name="description_en"
@@ -245,101 +263,19 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
           </div>
         </div>
 
-        {/* 가사 */}
-        <div className="admin-form-section">
-          <h3 className="admin-form-section-title">가사 (줄 단위)</h3>
-          <p className="admin-form-help">
-            한 줄씩 입력하세요. 로마자·발음·영어 뜻은 선택입니다. 반복되는 후렴은 &lsquo;후렴&rsquo;에 체크하면
-            공개 화면에서 구분되어 표시됩니다. 위/아래 화살표로 순서를 바꿉니다.
-          </p>
-
-          <div className="song-line-editor">
-            {lines.map((line, idx) => (
-              <div key={line._key} className={`song-line-row${line.is_refrain ? ' is-refrain' : ''}`}>
-                <div className="song-line-order">
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn-sm admin-btn-outline"
-                    onClick={() => moveLine(line._key, -1)}
-                    disabled={idx === 0}
-                    aria-label="위로"
-                  >
-                    ↑
-                  </button>
-                  <span className="song-line-num">{idx + 1}</span>
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn-sm admin-btn-outline"
-                    onClick={() => moveLine(line._key, 1)}
-                    disabled={idx === lines.length - 1}
-                    aria-label="아래로"
-                  >
-                    ↓
-                  </button>
-                </div>
-
-                <div className="song-line-fields">
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={line.text_ko}
-                    onChange={(e) => updateLine(line._key, 'text_ko', e.target.value)}
-                    placeholder="한국어 가사"
-                  />
-                  <div className="admin-form-row">
-                    <input
-                      type="text"
-                      className="admin-form-input"
-                      value={line.romanization}
-                      onChange={(e) => updateLine(line._key, 'romanization', e.target.value)}
-                      placeholder="로마자 (선택)"
-                    />
-                    <input
-                      type="text"
-                      className="admin-form-input"
-                      value={line.pronunciation}
-                      onChange={(e) => updateLine(line._key, 'pronunciation', e.target.value)}
-                      placeholder="발음 (선택)"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    className="admin-form-input"
-                    value={line.text_en}
-                    onChange={(e) => updateLine(line._key, 'text_en', e.target.value)}
-                    placeholder="영어 뜻 (선택)"
-                  />
-                  <div className="song-line-controls">
-                    <label className="song-line-refrain">
-                      <input
-                        type="checkbox"
-                        checked={!!line.is_refrain}
-                        onChange={(e) => updateLine(line._key, 'is_refrain', e.target.checked)}
-                      />
-                      후렴
-                    </label>
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn-sm admin-btn-danger"
-                      onClick={() => removeLine(line._key)}
-                      disabled={lines.length <= 1}
-                    >
-                      줄 삭제
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={addLine}>
-            + 줄 추가
-          </button>
-        </div>
+        <LyricsEditor
+          lines={lines}
+          onUpdate={updateLine}
+          onMove={moveLine}
+          onRemove={removeLine}
+          onAdd={addLine}
+        />
 
         {/* 공개 설정 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">공개 설정</h3>
+          <h3 className="admin-form-section-title">
+            {t('admin.common.secVisibility', '공개 설정')}
+          </h3>
           <div className="admin-form-checkbox">
             <input
               type="checkbox"
@@ -348,7 +284,9 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
               checked={meta.is_published}
               onChange={handleMeta}
             />
-            <label htmlFor="is_published">공개 (체크하면 말모이 &lsquo;노래&rsquo; 탭에 표시됩니다)</label>
+            <label htmlFor="is_published">
+              {t('admin.songs.publishLabel', '공개 (체크하면 말모이 ‘노래’ 탭에 표시됩니다)')}
+            </label>
           </div>
         </div>
       </div>
@@ -360,10 +298,14 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
           onClick={() => router.push('/admin/glossary/songs')}
           disabled={saving}
         >
-          취소
+          {t('admin.common.cancel', '취소')}
         </button>
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-          {saving ? '저장 중...' : isNew ? '생성' : '저장'}
+          {saving
+            ? t('admin.common.saving', '저장 중...')
+            : isNew
+              ? t('admin.common.create', '생성')
+              : t('admin.common.save', '저장')}
         </button>
       </div>
     </form>

@@ -6,6 +6,7 @@
  */
 
 import { useState, useRef } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type {
@@ -23,6 +24,7 @@ interface SupplyFormProps {
 }
 
 export default function SupplyForm({ item, terms, isNew = false }: SupplyFormProps) {
+  const t = useT();
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
@@ -62,7 +64,9 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
       }>('/api/admin/supplies/upload', file);
       setFormData((prev) => ({ ...prev, image_url: res.data.url, image_r2_key: res.data.key }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : '업로드에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.uploadFailed', '업로드에 실패했습니다.')
+      );
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -75,7 +79,7 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
     e.preventDefault();
     setError(null);
     if (!formData.name_ko.trim()) {
-      setError('준비물 이름(한글)은 필수입니다.');
+      setError(t('admin.supplies.nameRequired', '준비물 이름(한글)은 필수입니다.'));
       return;
     }
 
@@ -101,12 +105,16 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || '저장에 실패했습니다.');
+      if (!data.success) {
+        throw new Error(data.error || t('admin.common.saveFailed', '저장에 실패했습니다.'));
+      }
 
       router.push('/admin/supplies');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.saveFailed', '저장에 실패했습니다.')
+      );
     } finally {
       setSaving(false);
     }
@@ -119,15 +127,18 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
       <div className="admin-form-grid">
         {/* 기본 정보 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">준비물 정보</h3>
+          <h3 className="admin-form-section-title">{t('admin.supplies.info', '준비물 정보')}</h3>
           <p className="admin-form-help">
-            한 번 등록하면 여러 공연·수업에서 재사용합니다. 공연별 수량·비고는 각 공연 편집에서 정합니다.
+            {t(
+              'admin.supplies.infoHelp',
+              '한 번 등록하면 여러 공연·수업에서 재사용합니다. 공연별 수량·비고는 각 공연 편집에서 정합니다.'
+            )}
           </p>
 
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label htmlFor="name_ko" className="admin-form-label">
-                이름 (한글) <span className="required">*</span>
+                {t('admin.supplies.nameKo', '이름 (한글)')} <span className="required">*</span>
               </label>
               <input
                 type="text"
@@ -137,11 +148,13 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
                 onChange={handleChange}
                 required
                 className="admin-form-input"
-                placeholder="한복"
+                placeholder={t('admin.supplies.namePlaceholder', '한복')}
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="name_en" className="admin-form-label">이름 (영문)</label>
+              <label htmlFor="name_en" className="admin-form-label">
+                {t('admin.supplies.nameEn', '이름 (영문)')}
+              </label>
               <input
                 type="text"
                 id="name_en"
@@ -155,7 +168,9 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="description_ko" className="admin-form-label">설명 (한글)</label>
+            <label htmlFor="description_ko" className="admin-form-label">
+              {t('admin.supplies.descKo', '설명 (한글)')}
+            </label>
             <textarea
               id="description_ko"
               name="description_ko"
@@ -163,11 +178,13 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
               onChange={handleChange}
               rows={2}
               className="admin-form-textarea"
-              placeholder="무엇인지, 어디서 준비하는지 안내하세요."
+              placeholder={t('admin.supplies.descPlaceholder', '무엇인지, 어디서 준비하는지 안내하세요.')}
             />
           </div>
           <div className="admin-form-group">
-            <label htmlFor="description_en" className="admin-form-label">설명 (영문)</label>
+            <label htmlFor="description_en" className="admin-form-label">
+              {t('admin.supplies.descEn', '설명 (영문)')}
+            </label>
             <textarea
               id="description_en"
               name="description_en"
@@ -181,16 +198,16 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
 
         {/* 사진 + 말모이 연결 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">사진 · 연결</h3>
+          <h3 className="admin-form-section-title">{t('admin.supplies.photoLink', '사진 · 연결')}</h3>
 
           <div className="admin-form-group">
-            <label className="admin-form-label">사진 / 아이콘</label>
+            <label className="admin-form-label">{t('admin.supplies.photo', '사진 / 아이콘')}</label>
             <div className="supply-image-upload">
               {formData.image_url ? (
                 <div className="supply-image-preview">
                   <Image src={formData.image_url} alt="" width={96} height={96} className="supply-image-thumb" />
                   <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={removeImage}>
-                    사진 제거
+                    {t('admin.supplies.removePhoto', '사진 제거')}
                   </button>
                 </div>
               ) : (
@@ -204,15 +221,17 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
                 />
               )}
               {uploading ? (
-                <p className="admin-form-help">업로드 중...</p>
+                <p className="admin-form-help">{t('admin.photos.uploadingShort', '업로드 중...')}</p>
               ) : (
-                !formData.image_url && <p className="admin-form-help">4MB 이하의 이미지 파일.</p>
+                !formData.image_url && <p className="admin-form-help">{t('admin.supplies.imageLimit', '4MB 이하의 이미지 파일.')}</p>
               )}
             </div>
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="glossary_term_id" className="admin-form-label">말모이 용어 연결</label>
+            <label htmlFor="glossary_term_id" className="admin-form-label">
+              {t('admin.supplies.glossaryLink', '말모이 용어 연결')}
+            </label>
             <select
               id="glossary_term_id"
               name="glossary_term_id"
@@ -220,7 +239,7 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
               onChange={handleChange}
               className="admin-form-select"
             >
-              <option value="">연결 안 함</option>
+              <option value="">{t('admin.supplies.noLink', '연결 안 함')}</option>
               {terms.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.term_ko}
@@ -229,7 +248,10 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
               ))}
             </select>
             <p className="admin-form-help">
-              연결하면 학생·학부모가 준비물에서 바로 이 용어의 발음·뜻을 볼 수 있습니다.
+              {t(
+                'admin.supplies.glossaryHelp',
+                '연결하면 학생·학부모가 준비물에서 바로 이 용어의 발음·뜻을 볼 수 있습니다.'
+              )}
             </p>
           </div>
 
@@ -241,7 +263,9 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
               checked={formData.is_active}
               onChange={handleChange}
             />
-            <label htmlFor="is_active">활성 (공연·수업에서 선택 가능)</label>
+            <label htmlFor="is_active">
+              {t('admin.supplies.activeLabel', '활성 (공연·수업에서 선택 가능)')}
+            </label>
           </div>
         </div>
       </div>
@@ -253,10 +277,14 @@ export default function SupplyForm({ item, terms, isNew = false }: SupplyFormPro
           onClick={() => router.push('/admin/supplies')}
           disabled={saving}
         >
-          취소
+          {t('admin.common.cancel', '취소')}
         </button>
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving || uploading}>
-          {saving ? '저장 중...' : isNew ? '생성' : '저장'}
+          {saving
+            ? t('admin.common.saving', '저장 중...')
+            : isNew
+              ? t('admin.common.create', '생성')
+              : t('admin.common.save', '저장')}
         </button>
       </div>
     </form>

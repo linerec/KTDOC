@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import type { EventWithCategory } from '@/types/gallery';
@@ -30,12 +31,15 @@ export default function EventPicker({
   value,
   valueLabel,
   onChange,
-  placeholder = '공연 선택',
+  placeholder,
   allowClear = false,
-  clearLabel = '선택 안 함',
+  clearLabel,
   disabled = false,
   buttonClassName = '',
 }: EventPickerProps) {
+  const t = useT();
+  const pickerPlaceholder = placeholder ?? t('admin.eventPicker.title', '공연 선택');
+  const pickerClearLabel = clearLabel ?? t('admin.eventPicker.clear', '선택 안 함');
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -71,19 +75,27 @@ export default function EventPicker({
 
         const res = await fetch(`/api/admin/gallery/events?${params.toString()}`);
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || '공연을 불러오지 못했습니다.');
+        if (!data.success) {
+          throw new Error(
+            data.error || t('admin.eventPicker.loadFailed', '공연을 불러오지 못했습니다.')
+          );
+        }
 
         setEvents(data.data.events);
         setTotal(data.data.total);
         if (Array.isArray(data.data.years)) setYears(data.data.years);
         setPage(targetPage);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '공연을 불러오지 못했습니다.');
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('admin.eventPicker.loadFailed', '공연을 불러오지 못했습니다.')
+        );
       } finally {
         setLoading(false);
       }
     },
-    [search, year]
+    [search, year, t]
   );
 
   // 열림 + 검색/연도 변경 시 1페이지부터 재조회
@@ -125,7 +137,7 @@ export default function EventPicker({
   };
 
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
-  const triggerText = value !== null ? valueLabel || `#${value}` : placeholder;
+  const triggerText = value !== null ? valueLabel || `#${value}` : pickerPlaceholder;
 
   return (
     <>
@@ -145,8 +157,14 @@ export default function EventPicker({
         <div className="event-picker-overlay" onClick={() => setOpen(false)}>
           <div className="event-picker-modal" onClick={(e) => e.stopPropagation()}>
             <div className="event-picker-header">
-              <h3>공연 선택</h3>
-              <button type="button" onClick={() => setOpen(false)} aria-label="닫기">&times;</button>
+              <h3>{t('admin.eventPicker.title', '공연 선택')}</h3>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label={t('admin.common.close', '닫기')}
+              >
+                &times;
+              </button>
             </div>
 
             <div className="event-picker-search">
@@ -155,16 +173,16 @@ export default function EventPicker({
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="제목·설명으로 검색"
+                placeholder={t('admin.eventPicker.searchPlaceholder', '제목·설명으로 검색')}
                 className="admin-filter-input"
               />
               <select
                 className="admin-filter-select"
                 value={year}
                 onChange={(e) => setYear(e.target.value ? Number(e.target.value) : '')}
-                aria-label="연도"
+                aria-label={t('admin.events.colYear', '연도')}
               >
-                <option value="">전체 연도</option>
+                <option value="">{t('admin.events.allYears', '전체 연도')}</option>
                 {years.map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
@@ -180,13 +198,17 @@ export default function EventPicker({
                   className={`event-picker-card event-picker-clear ${value === null ? 'is-current' : ''}`}
                   onClick={() => choose(null)}
                 >
-                  {clearLabel}
+                  {pickerClearLabel}
                 </button>
               )}
 
               {events.length === 0 && !loading ? (
                 <div className="admin-empty-state event-picker-empty">
-                  <p>{search || year !== '' ? '조건에 맞는 공연이 없습니다.' : '공연이 없습니다.'}</p>
+                  <p>
+                    {search || year !== ''
+                      ? t('admin.eventPicker.emptyFiltered', '조건에 맞는 공연이 없습니다.')
+                      : t('admin.eventPicker.empty', '공연이 없습니다.')}
+                  </p>
                 </div>
               ) : (
                 events.map((ev) => {
@@ -208,7 +230,7 @@ export default function EventPicker({
                       <span className="event-picker-info">
                         <span className="event-picker-title">
                           {ev.year} · {ev.title_ko}
-                          {ev.is_published === 0 && <span className="event-picker-badge">비공개</span>}
+                          {ev.is_published === 0 && <span className="event-picker-badge">{t('admin.common.unpublished', '비공개')}</span>}
                         </span>
                         <span className="event-picker-sub">
                           {ev.event_date}
@@ -223,7 +245,9 @@ export default function EventPicker({
 
             <div className="event-picker-footer">
               <Pagination page={page} totalPages={totalPages} onPageChange={load} disabled={loading} />
-              <span className="event-picker-count">{total > 0 ? `총 ${total}건` : ''}</span>
+              <span className="event-picker-count">
+                {total > 0 ? t('admin.eventPicker.count', '총 {n}건', { n: total }) : ''}
+              </span>
             </div>
           </div>
         </div>,

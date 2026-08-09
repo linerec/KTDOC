@@ -6,6 +6,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import AiSettingsManager from '@/components/admin/ai/AiSettingsManager';
@@ -23,14 +24,22 @@ export default async function AdminAiPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>AI 설정</span>
+            <span>
+              <T k="admin.nav.settings.ai">AI 설정</T>
+            </span>
           </div>
-          <h1 className="admin-title">AI 설정</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.settings.ai">AI 설정</T>
+          </h1>
           <p className="admin-subtitle">
-            사이트가 사용할 AI(LLM)를 설정합니다. 제공자 API 키를 저장하고, 모델 목록을
-            최신화한 뒤, 기능(용도)별로 어떤 모델을 쓸지 지정하세요.
+            <T k="admin.ai.pageSubtitle">
+              사이트가 사용할 AI(LLM)를 설정합니다. 제공자 API 키를 저장하고, 모델 목록을 최신화한
+              뒤, 기능(용도)별로 어떤 모델을 쓸지 지정하세요.
+            </T>
           </p>
         </div>
       </div>

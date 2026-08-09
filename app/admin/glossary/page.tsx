@@ -4,6 +4,8 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
+import GlossaryFilters from '@/components/admin/glossary/GlossaryFilters';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getGlossaryTerms, getGlossaryCategories, getGlossaryCounts } from '@/lib/d1';
@@ -41,21 +43,30 @@ export default async function AdminGlossaryPage({ searchParams }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>말모이</span>
+            <span>
+              <T k="admin.glossary.crumb">말모이</T>
+            </span>
           </div>
-          <h1 className="admin-title">말모이</h1>
+          <h1 className="admin-title">
+            <T k="admin.glossary.crumb">말모이</T>
+          </h1>
           <p className="admin-subtitle">
-            한국 전통무용 용어와 발음을 정리합니다. 공개된 용어는 학생·학부모가 말모이 페이지에서 검색·열람합니다.
+            <T k="admin.glossary.subtitle">
+              한국 전통무용 용어와 발음을 정리합니다. 공개된 용어는 학생·학부모가 말모이 페이지에서
+              검색·열람합니다.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/glossary" target="_blank" className="admin-btn admin-btn-outline">
-            공개 페이지 보기
+            <T k="admin.common.viewPublicPage">공개 페이지 보기</T>
           </Link>
           <Link href="/admin/glossary/new" className="admin-btn admin-btn-primary">
-            + 새 용어 추가
+            <T k="admin.glossary.new">+ 새 용어 추가</T>
           </Link>
         </div>
       </div>
@@ -64,32 +75,17 @@ export default async function AdminGlossaryPage({ searchParams }: PageProps) {
 
       <GlossaryCategoryManager categories={categories} />
 
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <select name="category" className="admin-filter-select" defaultValue={params.category || ''}>
-            <option value="">전체 분류</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name_ko} ({c.term_count})
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="search"
-            placeholder="용어·발음·뜻 검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-          <button type="submit" className="admin-btn admin-btn-sm">검색</button>
-          {(params.category || params.search) && (
-            <Link href="/admin/glossary" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-        </form>
-        <div className="admin-filter-info">총 {total}개의 용어</div>
-      </div>
+      <GlossaryFilters
+        categories={categories}
+        category={params.category || ''}
+        search={params.search || ''}
+        total={total}
+        resetHref="/admin/glossary"
+        countKey="admin.glossary.total"
+        countKo="총 {n}개의 용어"
+        searchPlaceholderKey="admin.glossary.searchPlaceholder"
+        searchPlaceholderKo="용어·발음·뜻 검색..."
+      />
 
       <GlossaryTable terms={terms} />
     </div>

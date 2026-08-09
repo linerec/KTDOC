@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import { useT } from '@/lib/i18n/useT';
 
 interface GlossaryViewTabsProps {
   active: 'terms' | 'songs';
@@ -12,14 +13,15 @@ interface GlossaryViewTabsProps {
 }
 
 export default function GlossaryViewTabs({ active, termCount, songCount }: GlossaryViewTabsProps) {
+  const t = useT();
   return (
-    <nav className="admin-seg-tabs" aria-label="말모이 보기 전환">
+    <nav className="admin-seg-tabs" aria-label={t('admin.glossary.tabsAria', '말모이 보기 전환')}>
       <Link
         href="/admin/glossary"
         className={`admin-seg-tab${active === 'terms' ? ' active' : ''}`}
         aria-current={active === 'terms' ? 'page' : undefined}
       >
-        용어
+        {t('admin.glossary.tabTerms', '용어')}
         <span className="admin-seg-tab-count">{termCount}</span>
       </Link>
       <Link
@@ -27,7 +29,7 @@ export default function GlossaryViewTabs({ active, termCount, songCount }: Gloss
         className={`admin-seg-tab${active === 'songs' ? ' active' : ''}`}
         aria-current={active === 'songs' ? 'page' : undefined}
       >
-        노래
+        {t('admin.glossary.tabSongs', '노래')}
         <span className="admin-seg-tab-count">{songCount}</span>
       </Link>
     </nav>

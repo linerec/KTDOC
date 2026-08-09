@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import type { GalleryPhoto } from '@/types/gallery';
 import PhotoUploadPanel from './PhotoUploadPanel';
 import PhotoOrganizeBoard from './PhotoOrganizeBoard';
@@ -23,6 +24,7 @@ export default function PhotoInboxManager({
   initialTotal,
   pageSize,
 }: PhotoInboxManagerProps) {
+  const t = useT();
   const [tab, setTab] = useState<Tab>('organize');
   const [reloadSignal, setReloadSignal] = useState(0);
 
@@ -41,7 +43,7 @@ export default function PhotoInboxManager({
           className={`photo-inbox-tab ${tab === 'upload' ? 'is-active' : ''}`}
           onClick={() => setTab('upload')}
         >
-          업로드
+          {t('admin.photos.tabUpload', '업로드')}
         </button>
         <button
           type="button"
@@ -50,7 +52,7 @@ export default function PhotoInboxManager({
           className={`photo-inbox-tab ${tab === 'organize' ? 'is-active' : ''}`}
           onClick={() => setTab('organize')}
         >
-          사진 정리
+          {t('admin.photos.tabOrganize', '사진 정리')}
         </button>
       </div>
 

@@ -6,6 +6,8 @@
  */
 
 import { useState } from 'react';
+import T from '@/components/common/T';
+import { useT } from '@/lib/i18n/useT';
 import { useRouter } from 'next/navigation';
 import type {
   SupplySetWithItems,
@@ -21,6 +23,7 @@ interface SetFormProps {
 }
 
 export default function SetForm({ set, items, isNew = false }: SetFormProps) {
+  const t = useT();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +57,11 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
     e.preventDefault();
     setError(null);
     if (!formData.name_ko.trim()) {
-      setError('세트 이름(한글)은 필수입니다.');
+      setError(t('admin.sets.nameRequired', '세트 이름(한글)은 필수입니다.'));
       return;
     }
     if (selected.length === 0) {
-      setError('세트에 포함할 준비물을 하나 이상 선택하세요.');
+      setError(t('admin.sets.needItems', '세트에 포함할 준비물을 하나 이상 선택하세요.'));
       return;
     }
 
@@ -80,11 +83,15 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || '저장에 실패했습니다.');
+      if (!data.success) {
+        throw new Error(data.error || t('admin.common.saveFailed', '저장에 실패했습니다.'));
+      }
       router.push('/admin/supplies/sets');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.saveFailed', '저장에 실패했습니다.')
+      );
     } finally {
       setSaving(false);
     }
@@ -96,14 +103,17 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
 
       <div className="admin-form-grid">
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">세트 정보</h3>
+          <h3 className="admin-form-section-title">{t('admin.sets.info', '세트 정보')}</h3>
           <p className="admin-form-help">
-            자주 함께 챙기는 준비물을 하나의 세트로 묶습니다. 공연·수업에서는 개별 항목과 세트를 섞어 지정할 수 있습니다.
+            {t(
+              'admin.sets.infoHelp',
+              '자주 함께 챙기는 준비물을 하나의 세트로 묶습니다. 공연·수업에서는 개별 항목과 세트를 섞어 지정할 수 있습니다.'
+            )}
           </p>
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label htmlFor="name_ko" className="admin-form-label">
-                세트 이름 (한글) <span className="required">*</span>
+                {t('admin.sets.nameKo', '세트 이름 (한글)')} <span className="required">*</span>
               </label>
               <input
                 type="text"
@@ -113,11 +123,13 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
                 onChange={handleChange}
                 required
                 className="admin-form-input"
-                placeholder="공연 기본 세트"
+                placeholder={t('admin.sets.namePlaceholder', '공연 기본 세트')}
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="name_en" className="admin-form-label">세트 이름 (영문)</label>
+              <label htmlFor="name_en" className="admin-form-label">
+                {t('admin.sets.nameEn', '세트 이름 (영문)')}
+              </label>
               <input
                 type="text"
                 id="name_en"
@@ -130,7 +142,9 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
             </div>
           </div>
           <div className="admin-form-group">
-            <label htmlFor="description_ko" className="admin-form-label">설명 (한글)</label>
+            <label htmlFor="description_ko" className="admin-form-label">
+              {t('admin.supplies.descKo', '설명 (한글)')}
+            </label>
             <textarea
               id="description_ko"
               name="description_ko"
@@ -138,7 +152,7 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
               onChange={handleChange}
               rows={2}
               className="admin-form-textarea"
-              placeholder="어떤 자리에 챙기는 묶음인지 안내하세요."
+              placeholder={t('admin.sets.descPlaceholder', '어떤 자리에 챙기는 묶음인지 안내하세요.')}
             />
           </div>
           <div className="admin-form-checkbox">
@@ -149,17 +163,33 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
               checked={formData.is_active}
               onChange={handleChange}
             />
-            <label htmlFor="is_active">활성 (공연·수업에서 선택 가능)</label>
+            <label htmlFor="is_active">
+              {t('admin.supplies.activeLabel', '활성 (공연·수업에서 선택 가능)')}
+            </label>
           </div>
         </div>
 
         <div className="admin-form-section">
           <h3 className="admin-form-section-title">
-            포함 준비물 <span className="admin-form-help" style={{ display: 'inline' }}>({selected.length}개 선택)</span>
+            {t('admin.sets.includedItems', '포함 준비물')}{' '}
+            <span className="admin-form-help" style={{ display: 'inline' }}>
+              {t('admin.sets.selectedCount', '({n}개 선택)', { n: selected.length })}
+            </span>
           </h3>
           {items.length === 0 ? (
             <p className="admin-form-help">
-              등록된 준비물이 없습니다. 먼저 <a href="/admin/supplies" target="_blank">준비물 카탈로그</a>에서 항목을 추가하세요.
+              <T
+                k="admin.supplies.emptyCatalogHint"
+                params={{
+                  link: (
+                    <a href="/admin/supplies" target="_blank">
+                      {t('admin.supplies.catalog', '준비물 카탈로그')}
+                    </a>
+                  ),
+                }}
+              >
+                {'등록된 준비물이 없습니다. 먼저 {link}에서 항목을 추가하세요.'}
+              </T>
             </p>
           ) : (
             <ul className="set-item-checklist">
@@ -190,10 +220,14 @@ export default function SetForm({ set, items, isNew = false }: SetFormProps) {
           onClick={() => router.push('/admin/supplies/sets')}
           disabled={saving}
         >
-          취소
+          {t('admin.common.cancel', '취소')}
         </button>
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-          {saving ? '저장 중...' : isNew ? '생성' : '저장'}
+          {saving
+            ? t('admin.common.saving', '저장 중...')
+            : isNew
+              ? t('admin.common.create', '생성')
+              : t('admin.common.save', '저장')}
         </button>
       </div>
     </form>

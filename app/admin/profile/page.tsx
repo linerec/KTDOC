@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { isAdmin, isStaff } from '@/lib/isAdmin';
 import { requireMenuAccess } from '@/lib/admin/permissions';
@@ -33,13 +34,21 @@ export default async function AdminProfilePage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>내 프로필</span>
+            <span>
+              <T k="admin.nav.profile">내 프로필</T>
+            </span>
           </div>
-          <h1 className="admin-title">내 프로필</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.profile">내 프로필</T>
+          </h1>
           <p className="admin-subtitle">
-            내 계정 정보를 확인하고, 이름·비밀번호와 이 기기의 알림 설정을 변경합니다.
+            <T k="admin.profile.pageSubtitle">
+              내 계정 정보를 확인하고, 이름·비밀번호와 이 기기의 알림 설정을 변경합니다.
+            </T>
           </p>
         </div>
       </div>

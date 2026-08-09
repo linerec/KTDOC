@@ -7,6 +7,8 @@
  */
 
 import { useMemo } from 'react';
+import T from '@/components/common/T';
+import { useT } from '@/lib/i18n/useT';
 import type { SupplyItem, SupplyLinkInput } from '@/types/supplies';
 
 export interface PickerRow extends SupplyLinkInput {
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export default function SupplyPicker({ items, value, onChange }: Props) {
+  const t = useT();
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const selectedIds = new Set(value.map((r) => r.supply_item_id));
   const available = items.filter((i) => !selectedIds.has(i.id));
@@ -40,14 +43,27 @@ export default function SupplyPicker({ items, value, onChange }: Props) {
   if (items.length === 0) {
     return (
       <p className="admin-form-help">
-        등록된 준비물이 없습니다. 먼저 <a href="/admin/supplies" target="_blank">준비물 카탈로그</a>에서 항목을 추가하세요.
+        <T
+          k="admin.supplies.emptyCatalogHint"
+          params={{
+            link: (
+              <a href="/admin/supplies" target="_blank">
+                {t('admin.supplies.catalog', '준비물 카탈로그')}
+              </a>
+            ),
+          }}
+        >
+          {'등록된 준비물이 없습니다. 먼저 {link}에서 항목을 추가하세요.'}
+        </T>
       </p>
     );
   }
 
   return (
     <div className="supply-picker">
-      {value.length === 0 && <p className="admin-form-help">아래에서 준비물을 선택해 추가하세요.</p>}
+      {value.length === 0 && <p className="admin-form-help">
+          {t('admin.supplies.pickHint', '아래에서 준비물을 선택해 추가하세요.')}
+        </p>}
 
       {value.length > 0 && (
         <ul className="supply-picker-list">
@@ -64,14 +80,14 @@ export default function SupplyPicker({ items, value, onChange }: Props) {
                   <input
                     type="text"
                     className="admin-form-input"
-                    placeholder="수량/비고 (예: 2개)"
+                    placeholder={t('admin.supplies.qtyPlaceholder', '수량/비고 (예: 2개)')}
                     value={row.quantity || ''}
                     onChange={(e) => updateRow(row.supply_item_id, { quantity: e.target.value })}
                   />
                   <input
                     type="text"
                     className="admin-form-input"
-                    placeholder="추가 안내 (한글, 선택)"
+                    placeholder={t('admin.supplies.notePlaceholder', '추가 안내 (한글, 선택)')}
                     value={row.note_ko || ''}
                     onChange={(e) => updateRow(row.supply_item_id, { note_ko: e.target.value })}
                   />
@@ -81,14 +97,14 @@ export default function SupplyPicker({ items, value, onChange }: Props) {
                       checked={row.is_required}
                       onChange={(e) => updateRow(row.supply_item_id, { is_required: e.target.checked })}
                     />
-                    필수
+                    {t('admin.supplies.required', '필수')}
                   </label>
                   <button
                     type="button"
                     className="admin-btn admin-btn-sm admin-btn-danger"
                     onClick={() => removeRow(row.supply_item_id)}
                   >
-                    제거
+                    {t('admin.supplies.remove', '제거')}
                   </button>
                 </div>
               </li>
@@ -107,7 +123,7 @@ export default function SupplyPicker({ items, value, onChange }: Props) {
               if (id) addItem(id);
             }}
           >
-            <option value="">+ 준비물 추가...</option>
+            <option value="">{t('admin.supplies.addItem', '+ 준비물 추가...')}</option>
             {available.map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name_ko}

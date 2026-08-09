@@ -3,6 +3,7 @@
  */
 
 import { notFound } from 'next/navigation';
+import T from '@/components/common/T';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
@@ -40,13 +41,19 @@ export default async function EditSupplyPage({ params }: PageProps) {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <Link href="/admin/supplies">준비물</Link>
+            <Link href="/admin/supplies">
+              <T k="admin.nav.supplies">준비물</T>
+            </Link>
             <span>/</span>
             <span>{item.name_ko}</span>
           </div>
-          <h1 className="admin-title">준비물 편집</h1>
+          <h1 className="admin-title">
+            <T k="admin.supplies.editTitle">준비물 편집</T>
+          </h1>
         </div>
       </div>
 

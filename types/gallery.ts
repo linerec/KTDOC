@@ -152,6 +152,7 @@ export interface CheckedInEvent extends EventWithCategory {
 export interface EventParticipation {
   event_id: number;
   title_ko: string;
+  title_en: string | null;
   year: number;
   event_date: string;
   is_published: number;

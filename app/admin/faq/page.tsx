@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getFaqItems, getEvents, adminAllEvents} from '@/lib/d1';
@@ -35,19 +36,27 @@ export default async function AdminFaqPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>Q&A 관리</span>
+            <span>
+              <T k="admin.nav.faq">Q&A 관리</T>
+            </span>
           </div>
-          <h1 className="admin-title">Q&A 관리</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.faq">Q&A 관리</T>
+          </h1>
           <p className="admin-subtitle">
-            공연·행사에 대해 자주 묻는 질문과 답변을 미리 등록합니다. 공개된 항목은
-            원생·학부모가 &lsquo;Q&A&rsquo; 메뉴에서 확인할 수 있습니다.
+            <T k="admin.faq.subtitle">
+              공연·행사에 대해 자주 묻는 질문과 답변을 미리 등록합니다. 공개된 항목은 원생·학부모가
+              ‘Q&A’ 메뉴에서 확인할 수 있습니다.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/admin/qna" className="admin-btn admin-btn-outline">
-            회원 화면 미리 보기
+            <T k="admin.faq.previewMember">회원 화면 미리 보기</T>
           </Link>
         </div>
       </div>

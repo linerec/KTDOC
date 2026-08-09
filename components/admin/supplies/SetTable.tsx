@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { SupplySetWithItems } from '@/types/supplies';
@@ -15,22 +16,36 @@ interface SetTableProps {
 }
 
 export default function SetTable({ sets }: SetTableProps) {
+  const t = useT();
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (set: SupplySetWithItems) => {
-    if (!confirm(`"${set.name_ko}" 세트를 삭제하시겠습니까? 공연·수업에 지정된 이 세트도 함께 해제됩니다.`)) return;
+    if (
+      !confirm(
+        t(
+          'admin.sets.deleteConfirm',
+          '"{name}" 세트를 삭제하시겠습니까? 공연·수업에 지정된 이 세트도 함께 해제됩니다.',
+          { name: set.name_ko }
+        )
+      )
+    )
+      return;
     setDeletingId(set.id);
     setError(null);
     try {
       const res = await fetch(`/api/admin/supplies/sets/${set.id}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || '삭제에 실패했습니다.');
+      if (!data.success) {
+        throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
+      }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
+      );
     } finally {
       setDeletingId(null);
     }
@@ -46,10 +61,16 @@ export default function SetTable({ sets }: SetTableProps) {
         body: JSON.stringify({ is_active: !set.is_active }),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || '상태 변경에 실패했습니다.');
+      if (!data.success) {
+        throw new Error(data.error || t('admin.common.toggleFailed', '상태 변경에 실패했습니다.'));
+      }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '상태 변경에 실패했습니다.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.common.toggleFailed', '상태 변경에 실패했습니다.')
+      );
     } finally {
       setTogglingId(null);
     }
@@ -58,9 +79,9 @@ export default function SetTable({ sets }: SetTableProps) {
   if (sets.length === 0) {
     return (
       <div className="admin-empty-state">
-        <p>아직 만든 세트가 없습니다.</p>
+        <p>{t('admin.sets.empty', '아직 만든 세트가 없습니다.')}</p>
         <Link href="/admin/supplies/sets/new" className="admin-btn admin-btn-primary">
-          첫 세트 만들기
+          {t('admin.sets.emptyCta', '첫 세트 만들기')}
         </Link>
       </div>
     );
@@ -73,10 +94,10 @@ export default function SetTable({ sets }: SetTableProps) {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>세트</th>
-              <th>포함 준비물</th>
-              <th style={{ width: '80px' }}>상태</th>
-              <th style={{ width: '180px' }}>작업</th>
+              <th>{t('admin.sets.colSet', '세트')}</th>
+              <th>{t('admin.sets.includedItems', '포함 준비물')}</th>
+              <th style={{ width: '80px' }}>{t('admin.members.colStatus', '상태')}</th>
+              <th style={{ width: '180px' }}>{t('admin.common.colActions', '작업')}</th>
             </tr>
           </thead>
           <tbody>
@@ -92,7 +113,7 @@ export default function SetTable({ sets }: SetTableProps) {
                   <span className="admin-table-subtitle">
                     {set.items.length > 0
                       ? set.items.map((i) => i.name_ko).join(', ')
-                      : '구성 없음'}
+                      : t('admin.sets.noItems', '구성 없음')}
                   </span>
                 </td>
                 <td>
@@ -102,13 +123,17 @@ export default function SetTable({ sets }: SetTableProps) {
                     onClick={() => handleToggleActive(set)}
                     disabled={togglingId === set.id}
                   >
-                    {togglingId === set.id ? '...' : set.is_active ? '활성' : '비활성'}
+                    {togglingId === set.id
+                      ? '...'
+                      : set.is_active
+                        ? t('admin.supplies.active', '활성')
+                        : t('admin.supplies.inactive', '비활성')}
                   </button>
                 </td>
                 <td>
                   <div className="admin-table-actions">
                     <Link href={`/admin/supplies/sets/${set.id}`} className="admin-btn admin-btn-sm">
-                      편집
+                      {t('admin.common.edit', '편집')}
                     </Link>
                     <button
                       type="button"
@@ -116,7 +141,7 @@ export default function SetTable({ sets }: SetTableProps) {
                       onClick={() => handleDelete(set)}
                       disabled={deletingId === set.id}
                     >
-                      {deletingId === set.id ? '...' : '삭제'}
+                      {deletingId === set.id ? '...' : t('admin.common.delete', '삭제')}
                     </button>
                   </div>
                 </td>

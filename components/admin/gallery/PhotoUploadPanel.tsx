@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import {
   pickImageFiles,
   uploadImageFiles,
@@ -19,6 +20,7 @@ interface PhotoUploadPanelProps {
  * publishNow 체크 시 공개 Gallery 사진 스트림에 즉시 노출된다.
  */
 export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) {
+  const t = useT();
   const [uploading, setUploading] = useState(false);
   const [publishNow, setPublishNow] = useState(true);
   const [dragActive, setDragActive] = useState(false);
@@ -37,7 +39,7 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
       try {
         const validFiles = pickImageFiles(files);
         if (validFiles.length === 0) {
-          setError('이미지 파일만 업로드할 수 있습니다.');
+          setError(t('admin.common.imageOnly', '이미지 파일만 업로드할 수 있습니다.'));
           return;
         }
 
@@ -46,7 +48,7 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
           validFiles,
           {
             fields: { publishNow: publishNow ? 'true' : 'false' },
-            failMessage: '사진 업로드에 실패했습니다.',
+            failMessage: t('admin.photos.uploadFailed', '사진 업로드에 실패했습니다.'),
           }
         );
 
@@ -54,13 +56,17 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
         setLastCount(uploaded > 0 ? uploaded : validFiles.length);
         onUploaded();
       } catch (err) {
-        setError(err instanceof Error ? err.message : '사진 업로드에 실패했습니다.');
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('admin.photos.uploadFailed', '사진 업로드에 실패했습니다.')
+        );
       } finally {
         setUploading(false);
         if (inputRef.current) inputRef.current.value = '';
       }
     },
-    [publishNow, onUploaded]
+    [publishNow, onUploaded, t]
   );
 
   const handleDrag = useCallback((event: React.DragEvent) => {
@@ -82,10 +88,12 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
   return (
     <section className="photo-upload-panel admin-card">
       <div className="photo-upload-copy">
-        <h2 className="admin-panel-title">사진 올리기</h2>
+        <h2 className="admin-panel-title">{t('admin.photoSubmit.button', '사진 올리기')}</h2>
         <p>
-          공연명이나 날짜를 아직 몰라도 사진을 먼저 올릴 수 있습니다. 여러 장을 한 번에 올린 뒤
-          &lsquo;사진 정리&rsquo; 탭에서 촬영일과 소속 공연을 지정합니다.
+          {t(
+            'admin.photos.uploadHelp',
+            '공연명이나 날짜를 아직 몰라도 사진을 먼저 올릴 수 있습니다. 여러 장을 한 번에 올린 뒤 ‘사진 정리’ 탭에서 촬영일과 소속 공연을 지정합니다.'
+          )}
         </p>
       </div>
 
@@ -95,7 +103,7 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
           checked={publishNow}
           onChange={(event) => setPublishNow(event.target.checked)}
         />
-        <span>업로드 즉시 공개 Gallery에 표시</span>
+        <span>{t('admin.photos.publishNow', '업로드 즉시 공개 Gallery에 표시')}</span>
       </label>
 
       <div
@@ -122,10 +130,16 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
             <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
           </svg>
           <p className="admin-dropzone-text">
-            {uploading ? '업로드 중...' : '사진을 드래그하거나 클릭하여 업로드'}
+            {uploading
+              ? t('admin.photos.uploadingShort', '업로드 중...')
+              : t('admin.photos.dropzone', '사진을 드래그하거나 클릭하여 업로드')}
           </p>
           <p className="admin-dropzone-hint">
-            JPG·PNG 등 이미지 파일을 여러 장 한 번에 올릴 수 있습니다. 장당 최대 {MAX_UPLOAD_FILE_MB}MB.
+            {t(
+              'admin.photos.dropzoneHint',
+              'JPG·PNG 등 이미지 파일을 여러 장 한 번에 올릴 수 있습니다. 장당 최대 {mb}MB.',
+              { mb: MAX_UPLOAD_FILE_MB }
+            )}
           </p>
         </div>
       </div>
@@ -133,7 +147,9 @@ export default function PhotoUploadPanel({ onUploaded }: PhotoUploadPanelProps) 
       {error && <div className="admin-alert admin-alert-error photo-upload-msg">{error}</div>}
       {lastCount !== null && !error && (
         <div className="admin-alert admin-alert-success photo-upload-msg">
-          {lastCount}장을 올렸습니다. &lsquo;사진 정리&rsquo; 탭에서 확인하세요.
+          {t('admin.photos.uploadDone', '{n}장을 올렸습니다. ‘사진 정리’ 탭에서 확인하세요.', {
+            n: lastCount,
+          })}
         </div>
       )}
     </section>

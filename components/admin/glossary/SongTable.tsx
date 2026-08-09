@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { GlossarySong } from '@/types/glossary';
@@ -15,22 +16,34 @@ interface SongTableProps {
 }
 
 export default function SongTable({ songs }: SongTableProps) {
+  const t = useT();
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (song: GlossarySong) => {
-    if (!confirm(`"${song.title_ko}" 노래를 삭제하시겠습니까? 가사도 함께 삭제됩니다.`)) return;
+    if (
+      !confirm(
+        t('admin.songs.deleteConfirm', '"{title}" 노래를 삭제하시겠습니까? 가사도 함께 삭제됩니다.', {
+          title: song.title_ko,
+        })
+      )
+    )
+      return;
     setDeletingId(song.id);
     setError(null);
     try {
       const res = await fetch(`/api/admin/glossary/songs/${song.id}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || '삭제에 실패했습니다.');
+      if (!data.success) {
+        throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
+      }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
+      );
     } finally {
       setDeletingId(null);
     }
@@ -46,10 +59,16 @@ export default function SongTable({ songs }: SongTableProps) {
         body: JSON.stringify({ is_published: !song.is_published }),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || '상태 변경에 실패했습니다.');
+      if (!data.success) {
+        throw new Error(data.error || t('admin.common.toggleFailed', '상태 변경에 실패했습니다.'));
+      }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '상태 변경에 실패했습니다.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.common.toggleFailed', '상태 변경에 실패했습니다.')
+      );
     } finally {
       setTogglingId(null);
     }
@@ -58,9 +77,9 @@ export default function SongTable({ songs }: SongTableProps) {
   if (songs.length === 0) {
     return (
       <div className="admin-empty-state">
-        <p>아직 등록된 노래가 없습니다.</p>
+        <p>{t('admin.songs.empty', '아직 등록된 노래가 없습니다.')}</p>
         <Link href="/admin/glossary/songs/new" className="admin-btn admin-btn-primary">
-          첫 노래 추가하기
+          {t('admin.songs.emptyCta', '첫 노래 추가하기')}
         </Link>
       </div>
     );
@@ -73,11 +92,11 @@ export default function SongTable({ songs }: SongTableProps) {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>노래</th>
-              <th style={{ width: '160px' }}>발음</th>
-              <th style={{ width: '80px' }}>음원</th>
-              <th style={{ width: '92px' }}>공개 상태</th>
-              <th style={{ width: '180px' }}>작업</th>
+              <th>{t('admin.songs.colSong', '노래')}</th>
+              <th style={{ width: '160px' }}>{t('admin.glossary.colPron', '발음')}</th>
+              <th style={{ width: '80px' }}>{t('admin.songs.colAudio', '음원')}</th>
+              <th style={{ width: '92px' }}>{t('admin.common.colPublished', '공개 상태')}</th>
+              <th style={{ width: '180px' }}>{t('admin.common.colActions', '작업')}</th>
             </tr>
           </thead>
           <tbody>
@@ -106,13 +125,17 @@ export default function SongTable({ songs }: SongTableProps) {
                     onClick={() => handleTogglePublish(song)}
                     disabled={togglingId === song.id}
                   >
-                    {togglingId === song.id ? '...' : song.is_published ? '공개' : '비공개'}
+                    {togglingId === song.id
+                      ? '...'
+                      : song.is_published
+                        ? t('admin.common.published', '공개')
+                        : t('admin.common.unpublished', '비공개')}
                   </button>
                 </td>
                 <td>
                   <div className="admin-table-actions">
                     <Link href={`/admin/glossary/songs/${song.id}`} className="admin-btn admin-btn-sm">
-                      편집
+                      {t('admin.common.edit', '편집')}
                     </Link>
                     <button
                       type="button"
@@ -120,7 +143,7 @@ export default function SongTable({ songs }: SongTableProps) {
                       onClick={() => handleDelete(song)}
                       disabled={deletingId === song.id}
                     >
-                      {deletingId === song.id ? '...' : '삭제'}
+                      {deletingId === song.id ? '...' : t('admin.common.delete', '삭제')}
                     </button>
                   </div>
                 </td>

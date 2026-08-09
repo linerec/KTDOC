@@ -9,7 +9,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ProgramDetail, CreateProgramInput, UpdateProgramInput, ProgramType } from '@/types/programs';
-import { PROGRAM_TYPES, PROGRAM_TYPE_LABELS } from '@/types/programs';
+import { PROGRAM_TYPES } from '@/types/programs';
+import { useT } from '@/lib/i18n/useT';
+import { programTypeLabel } from '@/lib/i18n/programLabels';
 import type { SupplyItem, SupplySetWithItems } from '@/types/supplies';
 import ProgramImageUploader from './ProgramImageUploader';
 import ProgramImageSortable from './ProgramImageSortable';
@@ -26,14 +28,15 @@ interface ProgramFormProps {
 }
 
 // 요일 칩(0=일 ~ 6=토). weekdays 컬럼은 선택된 값들의 쉼표 문자열로 저장된다.
-const WEEKDAY_LABELS: { v: string; l: string }[] = [
-  { v: '0', l: '일' },
-  { v: '1', l: '월' },
-  { v: '2', l: '화' },
-  { v: '3', l: '수' },
-  { v: '4', l: '목' },
-  { v: '5', l: '금' },
-  { v: '6', l: '토' },
+// 라벨은 한 글자(일·월·…)라 영어에서는 Sun·Mon으로 갈아끼운다 — 키코드로 뽑는다.
+const WEEKDAY_CHIPS: { v: string; ko: string }[] = [
+  { v: '0', ko: '일' },
+  { v: '1', ko: '월' },
+  { v: '2', ko: '화' },
+  { v: '3', ko: '수' },
+  { v: '4', ko: '목' },
+  { v: '5', ko: '금' },
+  { v: '6', ko: '토' },
 ];
 
 export default function ProgramForm({
@@ -45,6 +48,7 @@ export default function ProgramForm({
   initialSupplySets = [],
 }: ProgramFormProps) {
   const router = useRouter();
+  const t = useT();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supplies, setSupplies] = useState<PickerRow[]>(initialSupplies);
@@ -106,7 +110,9 @@ export default function ProgramForm({
     setError(null);
 
     if (isCamp && formData.start_date && formData.end_date && formData.end_date < formData.start_date) {
-      setError('캠프 종료일은 시작일보다 빠를 수 없습니다.');
+      setError(
+        t('admin.programs.campDateError', '캠프 종료일은 시작일보다 빠를 수 없습니다.')
+      );
       return;
     }
 
@@ -148,7 +154,7 @@ export default function ProgramForm({
       });
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || '저장에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.saveFailed', '저장에 실패했습니다.'));
       }
 
       if (isNew && data.data?.id) {
@@ -157,7 +163,9 @@ export default function ProgramForm({
         router.refresh();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+      setError(
+        err instanceof Error ? err.message : t('admin.common.saveFailed', '저장에 실패했습니다.')
+      );
     } finally {
       setSaving(false);
     }
@@ -170,14 +178,17 @@ export default function ProgramForm({
       <div className="admin-form-grid">
         {/* 기본 정보 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">기본 정보</h3>
+          <h3 className="admin-form-section-title">{t('admin.programs.secBasic', '기본 정보')}</h3>
           <p className="admin-form-help">
-            공개 페이지의 카드와 상세 페이지에 표시되는 정보입니다. 종류를 먼저 선택하세요.
+            {t(
+              'admin.programs.secBasicHelp',
+              '공개 페이지의 카드와 상세 페이지에 표시되는 정보입니다. 종류를 먼저 선택하세요.'
+            )}
           </p>
 
           <div className="admin-form-group">
             <label htmlFor="program_type" className="admin-form-label">
-              종류 <span className="required">*</span>
+              {t('admin.programs.fieldType', '종류')} <span className="required">*</span>
             </label>
             <select
               id="program_type"
@@ -186,9 +197,9 @@ export default function ProgramForm({
               onChange={handleChange}
               className="admin-form-select"
             >
-              {PROGRAM_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {PROGRAM_TYPE_LABELS[t].ko}
+              {PROGRAM_TYPES.map((pt) => (
+                <option key={pt} value={pt}>
+                  {programTypeLabel(t, pt)}
                 </option>
               ))}
             </select>
@@ -196,7 +207,7 @@ export default function ProgramForm({
 
           <div className="admin-form-group">
             <label htmlFor="title_ko" className="admin-form-label">
-              제목 (한글) <span className="required">*</span>
+              {t('admin.common.fieldTitleKo', '제목 (한글)')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -210,7 +221,9 @@ export default function ProgramForm({
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="title_en" className="admin-form-label">제목 (영문)</label>
+            <label htmlFor="title_en" className="admin-form-label">
+              {t('admin.common.fieldTitleEn', '제목 (영문)')}
+            </label>
             <input
               type="text"
               id="title_en"
@@ -222,7 +235,9 @@ export default function ProgramForm({
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="summary_ko" className="admin-form-label">한 줄 소개 (한글)</label>
+            <label htmlFor="summary_ko" className="admin-form-label">
+              {t('admin.programs.fieldSummaryKo', '한 줄 소개 (한글)')}
+            </label>
             <input
               type="text"
               id="summary_ko"
@@ -230,12 +245,14 @@ export default function ProgramForm({
               value={formData.summary_ko}
               onChange={handleChange}
               className="admin-form-input"
-              placeholder="카드에 표시되는 짧은 소개"
+              placeholder={t('admin.programs.summaryPlaceholder', '카드에 표시되는 짧은 소개')}
             />
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="summary_en" className="admin-form-label">한 줄 소개 (영문)</label>
+            <label htmlFor="summary_en" className="admin-form-label">
+              {t('admin.programs.fieldSummaryEn', '한 줄 소개 (영문)')}
+            </label>
             <input
               type="text"
               id="summary_en"
@@ -247,7 +264,9 @@ export default function ProgramForm({
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="description_ko" className="admin-form-label">상세 설명 (한글)</label>
+            <label htmlFor="description_ko" className="admin-form-label">
+              {t('admin.common.fieldDescKo', '상세 설명 (한글)')}
+            </label>
             <textarea
               id="description_ko"
               name="description_ko"
@@ -255,12 +274,17 @@ export default function ProgramForm({
               onChange={handleChange}
               rows={5}
               className="admin-form-textarea"
-              placeholder="수업 내용, 강사, 준비물, 포함 사항 등을 자유롭게 작성하세요."
+              placeholder={t(
+                'admin.programs.descPlaceholder',
+                '수업 내용, 강사, 준비물, 포함 사항 등을 자유롭게 작성하세요.'
+              )}
             />
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="description_en" className="admin-form-label">상세 설명 (영문)</label>
+            <label htmlFor="description_en" className="admin-form-label">
+              {t('admin.common.fieldDescEn', '상세 설명 (영문)')}
+            </label>
             <textarea
               id="description_en"
               name="description_en"
@@ -274,13 +298,22 @@ export default function ProgramForm({
 
         {/* 일정 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">일정 · 장소</h3>
+          <h3 className="admin-form-section-title">
+            {t('admin.programs.secSchedule', '일정 · 장소')}
+          </h3>
           {isCamp ? (
             <>
-              <p className="admin-form-help">캠프 기간을 선택하세요. 종료일은 시작일 이후여야 합니다.</p>
+              <p className="admin-form-help">
+                {t(
+                  'admin.programs.campHelp',
+                  '캠프 기간을 선택하세요. 종료일은 시작일 이후여야 합니다.'
+                )}
+              </p>
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="start_date" className="admin-form-label">캠프 시작일</label>
+                  <label htmlFor="start_date" className="admin-form-label">
+                    {t('admin.programs.fieldCampStart', '캠프 시작일')}
+                  </label>
                   <input
                     type="date"
                     id="start_date"
@@ -291,7 +324,9 @@ export default function ProgramForm({
                   />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="end_date" className="admin-form-label">캠프 종료일</label>
+                  <label htmlFor="end_date" className="admin-form-label">
+                    {t('admin.programs.fieldCampEnd', '캠프 종료일')}
+                  </label>
                   <input
                     type="date"
                     id="end_date"
@@ -306,13 +341,17 @@ export default function ProgramForm({
           ) : (
             <>
               <p className="admin-form-help">
-                요일·시간·학기 기간을 입력하면 원생·학부모 캘린더에 매주 자동으로 표시됩니다.
-                아래 &lsquo;수업 일정 안내&rsquo;는 공개 페이지에 보이는 보조 설명입니다.
+                {t(
+                  'admin.programs.classScheduleHelp',
+                  '요일·시간·학기 기간을 입력하면 원생·학부모 캘린더에 매주 자동으로 표시됩니다. 아래 ‘수업 일정 안내’는 공개 페이지에 보이는 보조 설명입니다.'
+                )}
               </p>
               <div className="admin-form-group">
-                <label className="admin-form-label">수업 요일</label>
+                <label className="admin-form-label">
+                  {t('admin.programs.fieldWeekdays', '수업 요일')}
+                </label>
                 <div className="admin-weekday-row">
-                  {WEEKDAY_LABELS.map((w) => (
+                  {WEEKDAY_CHIPS.map((w) => (
                     <button
                       type="button"
                       key={w.v}
@@ -320,14 +359,16 @@ export default function ProgramForm({
                       onClick={() => toggleWeekday(w.v)}
                       aria-pressed={selectedWeekdays.has(w.v)}
                     >
-                      {w.l}
+                      {t(`admin.weekday.short.${w.v}`, w.ko)}
                     </button>
                   ))}
                 </div>
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="class_start_time" className="admin-form-label">시작 시간</label>
+                  <label htmlFor="class_start_time" className="admin-form-label">
+                    {t('admin.programs.fieldStartTime', '시작 시간')}
+                  </label>
                   <input
                     type="time"
                     id="class_start_time"
@@ -338,7 +379,9 @@ export default function ProgramForm({
                   />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="class_end_time" className="admin-form-label">종료 시간</label>
+                  <label htmlFor="class_end_time" className="admin-form-label">
+                    {t('admin.programs.fieldEndTime', '종료 시간')}
+                  </label>
                   <input
                     type="time"
                     id="class_end_time"
@@ -351,7 +394,9 @@ export default function ProgramForm({
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="term_start_date" className="admin-form-label">학기 시작일 (선택)</label>
+                  <label htmlFor="term_start_date" className="admin-form-label">
+                    {t('admin.programs.fieldTermStart', '학기 시작일 (선택)')}
+                  </label>
                   <input
                     type="date"
                     id="term_start_date"
@@ -362,7 +407,9 @@ export default function ProgramForm({
                   />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="term_end_date" className="admin-form-label">학기 종료일 (선택)</label>
+                  <label htmlFor="term_end_date" className="admin-form-label">
+                    {t('admin.programs.fieldTermEnd', '학기 종료일 (선택)')}
+                  </label>
                   <input
                     type="date"
                     id="term_end_date"
@@ -374,10 +421,15 @@ export default function ProgramForm({
                 </div>
               </div>
               <p className="admin-form-help">
-                학기 기간을 비우면 상시 수업으로 보고 매월 해당 요일에 계속 표시합니다.
+                {t(
+                  'admin.programs.termHelp',
+                  '학기 기간을 비우면 상시 수업으로 보고 매월 해당 요일에 계속 표시합니다.'
+                )}
               </p>
               <div className="admin-form-group">
-                <label htmlFor="schedule_ko" className="admin-form-label">수업 일정 안내 (한글)</label>
+                <label htmlFor="schedule_ko" className="admin-form-label">
+                  {t('admin.programs.fieldScheduleKo', '수업 일정 안내 (한글)')}
+                </label>
                 <input
                   type="text"
                   id="schedule_ko"
@@ -389,7 +441,9 @@ export default function ProgramForm({
                 />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="schedule_en" className="admin-form-label">수업 일정 안내 (영문)</label>
+                <label htmlFor="schedule_en" className="admin-form-label">
+                  {t('admin.programs.fieldScheduleEn', '수업 일정 안내 (영문)')}
+                </label>
                 <input
                   type="text"
                   id="schedule_en"
@@ -405,7 +459,9 @@ export default function ProgramForm({
 
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label htmlFor="location_ko" className="admin-form-label">장소 (한글)</label>
+              <label htmlFor="location_ko" className="admin-form-label">
+                {t('admin.common.fieldLocationKo', '장소 (한글)')}
+              </label>
               <input
                 type="text"
                 id="location_ko"
@@ -416,7 +472,9 @@ export default function ProgramForm({
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="location_en" className="admin-form-label">장소 (영문)</label>
+              <label htmlFor="location_en" className="admin-form-label">
+                {t('admin.common.fieldLocationEn', '장소 (영문)')}
+              </label>
               <input
                 type="text"
                 id="location_en"
@@ -431,10 +489,17 @@ export default function ProgramForm({
 
         {/* 안내 정보 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">안내 정보</h3>
-          <p className="admin-form-help">금액은 자유 형식으로 입력하세요. 예: $250 / 2주, 문의, 무료</p>
+          <h3 className="admin-form-section-title">{t('admin.programs.secInfo', '안내 정보')}</h3>
+          <p className="admin-form-help">
+            {t(
+              'admin.programs.secInfoHelp',
+              '금액은 자유 형식으로 입력하세요. 예: $250 / 2주, 문의, 무료'
+            )}
+          </p>
           <div className="admin-form-group">
-            <label htmlFor="age_range" className="admin-form-label">대상 연령</label>
+            <label htmlFor="age_range" className="admin-form-label">
+              {t('admin.programs.fieldAge', '대상 연령')}
+            </label>
             <input
               type="text"
               id="age_range"
@@ -447,7 +512,9 @@ export default function ProgramForm({
           </div>
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label htmlFor="price_ko" className="admin-form-label">수강료/참가비 (한글)</label>
+              <label htmlFor="price_ko" className="admin-form-label">
+                {t('admin.programs.fieldPriceKo', '수강료/참가비 (한글)')}
+              </label>
               <input
                 type="text"
                 id="price_ko"
@@ -459,7 +526,9 @@ export default function ProgramForm({
               />
             </div>
             <div className="admin-form-group">
-              <label htmlFor="price_en" className="admin-form-label">수강료/참가비 (영문)</label>
+              <label htmlFor="price_en" className="admin-form-label">
+                {t('admin.programs.fieldPriceEn', '수강료/참가비 (영문)')}
+              </label>
               <input
                 type="text"
                 id="price_en"
@@ -475,14 +544,16 @@ export default function ProgramForm({
 
         {/* 준비물 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">준비물</h3>
+          <h3 className="admin-form-section-title">{t('admin.nav.supplies', '준비물')}</h3>
           <p className="admin-form-help">
-            이 수업·프로그램에 필요한 준비물을 카탈로그에서 골라 붙이세요. 개별 항목과 세트를 섞어 지정할 수 있습니다.
-            원생·학부모가 &lsquo;내 수업&rsquo;과 공개 상세에서 확인합니다.
+            {t(
+              'admin.programs.secSuppliesHelp',
+              '이 수업·프로그램에 필요한 준비물을 카탈로그에서 골라 붙이세요. 개별 항목과 세트를 섞어 지정할 수 있습니다. 원생·학부모가 ‘내 수업’과 공개 상세에서 확인합니다.'
+            )}
           </p>
           <SupplyPicker items={activeSupplies} value={supplies} onChange={setSupplies} />
           <div className="supply-picker-setblock">
-            <span className="admin-form-label">세트</span>
+            <span className="admin-form-label">{t('admin.programs.supplySets', '세트')}</span>
             <SetPicker sets={activeSupplySets} value={supplySets} onChange={setSupplySets} />
           </div>
         </div>
@@ -490,9 +561,12 @@ export default function ProgramForm({
         {/* 사진 (편집 시에만) */}
         {!isNew && program && (
           <div className="admin-form-section">
-            <h3 className="admin-form-section-title">사진</h3>
+            <h3 className="admin-form-section-title">{t('admin.common.colPhoto', '사진')}</h3>
             <p className="admin-form-help">
-              첫 번째 사진이 카드와 대표 이미지로 사용됩니다. 드래그로 순서를 바꿀 수 있습니다.
+              {t(
+                'admin.programs.photoHelp',
+                '첫 번째 사진이 카드와 대표 이미지로 사용됩니다. 드래그로 순서를 바꿀 수 있습니다.'
+              )}
             </p>
             <ProgramImageUploader
               programId={program.id}
@@ -513,7 +587,9 @@ export default function ProgramForm({
 
         {/* 공개 설정 */}
         <div className="admin-form-section">
-          <h3 className="admin-form-section-title">공개 설정</h3>
+          <h3 className="admin-form-section-title">
+            {t('admin.common.secVisibility', '공개 설정')}
+          </h3>
           <div className="admin-form-row">
             <div className="admin-form-checkbox">
               <input
@@ -523,7 +599,12 @@ export default function ProgramForm({
                 checked={formData.is_published}
                 onChange={handleChange}
               />
-              <label htmlFor="is_published">공개 (체크하면 사이트에 표시되고 신청을 받습니다)</label>
+              <label htmlFor="is_published">
+                {t(
+                  'admin.programs.publishLabel',
+                  '공개 (체크하면 사이트에 표시되고 신청을 받습니다)'
+                )}
+              </label>
             </div>
             <div className="admin-form-checkbox">
               <input
@@ -534,7 +615,8 @@ export default function ProgramForm({
                 onChange={handleChange}
               />
               <label htmlFor="is_featured">
-                대표로 강조{isCamp ? ' (수업 페이지 상단 캠프 배너)' : ''}
+                {t('admin.programs.featureLabel', '대표로 강조')}
+                {isCamp ? ` ${t('admin.programs.featureCampNote', '(수업 페이지 상단 캠프 배너)')}` : ''}
               </label>
             </div>
           </div>
@@ -543,7 +625,7 @@ export default function ProgramForm({
 
       {isNew && (
         <p className="admin-form-help" style={{ marginTop: '8px' }}>
-          저장하면 편집 화면으로 이동해 사진을 추가할 수 있습니다.
+          {t('admin.programs.newHint', '저장하면 편집 화면으로 이동해 사진을 추가할 수 있습니다.')}
         </p>
       )}
 
@@ -554,10 +636,14 @@ export default function ProgramForm({
           onClick={() => router.back()}
           disabled={saving}
         >
-          취소
+          {t('admin.common.cancel', '취소')}
         </button>
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-          {saving ? '저장 중...' : isNew ? '생성' : '저장'}
+          {saving
+            ? t('admin.common.saving', '저장 중...')
+            : isNew
+              ? t('admin.common.create', '생성')
+              : t('admin.common.save', '저장')}
         </button>
       </div>
     </form>

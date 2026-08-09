@@ -13,15 +13,15 @@ import {
   getMemberCounts,
   getStudentOptions,
   MEMBER_ROLES,
-  MEMBER_ROLE_LABELS,
   MEMBER_STATUSES,
-  MEMBER_STATUS_LABELS,
   type MemberRole,
   type MemberStatus,
 } from '@/lib/members';
 import { getDeviceCountsByUser } from '@/lib/push/tracking';
 import MemberTable from '@/components/admin/members/MemberTable';
-import { TEST_ACCOUNTS } from '@/lib/testAccounts';
+import MemberFilters from '@/components/admin/members/MemberFilters';
+import TestAccountsPanel from '@/components/admin/members/TestAccountsPanel';
+import T from '@/components/common/T';
 
 export const metadata = {
   title: '회원 관리 | KTDOC Admin',
@@ -61,109 +61,55 @@ export default async function AdminMembersPage({ searchParams }: PageProps) {
   // 조회가 실패해도 회원 관리 자체는 열려야 하므로 빈 값으로 흘린다.
   const pushDevices = await getDeviceCountsByUser(members.map((m) => m.id)).catch(() => ({}));
 
-  const hasFilter = Boolean(params.role || params.status || params.search);
-
   return (
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <span>회원 관리</span>
+            <span>
+              <T k="admin.nav.members">회원 관리</T>
+            </span>
           </div>
-          <h1 className="admin-title">회원 관리</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.members">회원 관리</T>
+          </h1>
           <p className="admin-subtitle">
-            가입한 원생·학부모를 확인하고 승인합니다. 승인해야 정회원으로 이용할 수 있습니다.
+            <T k="admin.members.subtitle">
+              가입한 원생·학부모를 확인하고 승인합니다. 승인해야 정회원으로 이용할 수 있습니다.
+            </T>
           </p>
         </div>
       </div>
 
-      {canManageRoles && (
-        <details className="admin-test-accounts">
-          <summary>
-            테스트 계정 <span className="admin-test-accounts-count">{TEST_ACCOUNTS.length}</span>
-            <span className="admin-test-accounts-hint">
-              각 역할의 관리 콘솔을 점검하기 위한 고정 계정입니다. 비밀번호는 관리자에게만 표시됩니다.
-            </span>
-          </summary>
-          <div className="admin-test-accounts-body">
-            <table>
-              <thead>
-                <tr>
-                  <th>역할</th>
-                  <th>이름</th>
-                  <th>이메일</th>
-                  <th>비밀번호</th>
-                </tr>
-              </thead>
-              <tbody>
-                {TEST_ACCOUNTS.map((acc) => (
-                  <tr key={acc.email}>
-                    <td>{MEMBER_ROLE_LABELS[acc.role]}</td>
-                    <td>{acc.name}</td>
-                    <td><code>{acc.email}</code></td>
-                    <td><code>{acc.password}</code></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="admin-test-accounts-note">
-              계정을 생성하거나 비밀번호를 위 값으로 초기화하려면 <code>npm run seed:test</code>를 실행합니다.
-            </p>
-          </div>
-        </details>
-      )}
+      {canManageRoles && <TestAccountsPanel />}
 
       {counts.pending > 0 && (
         <div className="admin-callout">
-          승인 대기 중인 회원이 <strong>{counts.pending}명</strong> 있습니다.
+          <T
+            k="admin.members.pendingCallout"
+            params={{ n: <strong>{counts.pending}</strong> }}
+          >
+            {'승인 대기 중인 회원이 {n}명 있습니다.'}
+          </T>
           {!statusFilter && (
             <Link href="/admin/members?status=pending" className="admin-callout-link">
-              대기 회원만 보기 →
+              <T k="admin.members.pendingOnly">대기 회원만 보기 →</T>
             </Link>
           )}
         </div>
       )}
 
-      <div className="admin-filters">
-        <form className="admin-filter-form" method="get">
-          <select name="status" className="admin-filter-select" defaultValue={params.status || ''}>
-            <option value="">전체 상태</option>
-            {MEMBER_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {MEMBER_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-          <select name="role" className="admin-filter-select" defaultValue={params.role || ''}>
-            <option value="">전체 역할</option>
-            {MEMBER_ROLES.map((r) => (
-              <option key={r} value={r}>
-                {MEMBER_ROLE_LABELS[r]}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="search"
-            placeholder="이름·이메일 검색..."
-            className="admin-filter-input"
-            defaultValue={params.search || ''}
-          />
-          <button type="submit" className="admin-btn admin-btn-sm">검색</button>
-          {hasFilter && (
-            <Link href="/admin/members" className="admin-btn admin-btn-sm admin-btn-outline">
-              초기화
-            </Link>
-          )}
-        </form>
-        <div className="admin-filter-info">
-          전체 {counts.total} · 대기 {counts.pending} · 원생 {counts.students} · 학부모 {counts.parents}
-          {' · '}선생님 {counts.teachers} · 관리자 {counts.admins}
-          {hasFilter ? ` · 현재 목록 ${total}` : ''}
-        </div>
-      </div>
+      <MemberFilters
+        counts={counts}
+        total={total}
+        status={params.status || ''}
+        role={params.role || ''}
+        search={params.search || ''}
+      />
 
       <MemberTable
         members={members}

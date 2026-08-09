@@ -8,6 +8,7 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ProgramImage } from '@/types/programs';
 import { pickImageFiles, uploadImageFiles, MAX_UPLOAD_FILE_MB } from '@/lib/uploadClient';
+import { useT } from '@/lib/i18n/useT';
 
 interface ProgramImageUploaderProps {
   programId: number;
@@ -18,6 +19,7 @@ export default function ProgramImageUploader({
   programId,
   onUploadComplete,
 }: ProgramImageUploaderProps) {
+  const t = useT();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
@@ -35,7 +37,7 @@ export default function ProgramImageUploader({
       try {
         const validFiles = pickImageFiles(files);
         if (validFiles.length === 0) {
-          throw new Error('이미지 파일만 업로드할 수 있습니다.');
+          throw new Error(t('admin.common.imageOnly', '이미지 파일만 업로드할 수 있습니다.'));
         }
 
         const results = await uploadImageFiles<{
@@ -48,7 +50,9 @@ export default function ProgramImageUploader({
         setProgress(100);
         onUploadComplete(results.flatMap((r) => r.data.images));
       } catch (err) {
-        setError(err instanceof Error ? err.message : '업로드에 실패했습니다.');
+        setError(
+          err instanceof Error ? err.message : t('admin.common.uploadFailed', '업로드에 실패했습니다.')
+        );
       } finally {
         setUploading(false);
         setProgress(0);
@@ -57,7 +61,7 @@ export default function ProgramImageUploader({
         }
       }
     },
-    [programId, onUploadComplete]
+    [programId, onUploadComplete, t]
   );
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -117,7 +121,9 @@ export default function ProgramImageUploader({
             <div className="admin-progress-bar">
               <div className="admin-progress-fill" style={{ width: `${progress}%` }} />
             </div>
-            <span className="admin-progress-text">업로드 중... {progress}%</span>
+            <span className="admin-progress-text">
+              {t('admin.common.uploading', '업로드 중... {p}%', { p: progress })}
+            </span>
           </div>
         ) : (
           <div className="admin-dropzone-content">
@@ -131,9 +137,15 @@ export default function ProgramImageUploader({
               <path d="M12 16V4m0 0l4 4m-4-4l-4 4" />
               <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
             </svg>
-            <p className="admin-dropzone-text">이미지를 드래그하거나 클릭하여 업로드</p>
+            <p className="admin-dropzone-text">
+              {t('admin.common.dropzone', '이미지를 드래그하거나 클릭하여 업로드')}
+            </p>
             <p className="admin-dropzone-hint">
-              여러 이미지를 한 번에 업로드할 수 있습니다 · 장당 최대 {MAX_UPLOAD_FILE_MB}MB
+              {t(
+                'admin.common.dropzoneHint',
+                '여러 이미지를 한 번에 업로드할 수 있습니다 · 장당 최대 {mb}MB',
+                { mb: MAX_UPLOAD_FILE_MB }
+              )}
             </p>
           </div>
         )}

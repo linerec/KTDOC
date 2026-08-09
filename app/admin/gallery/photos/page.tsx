@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getGalleryPhotos } from '@/lib/d1';
@@ -35,24 +36,35 @@ export default async function AdminGalleryPhotosPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">관리 홈</Link>
+            <Link href="/admin">
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
             <span>/</span>
-            <Link href="/admin/gallery">공연 관리</Link>
+            <Link href="/admin/gallery">
+              <T k="admin.home.galleryTitle">공연 관리</T>
+            </Link>
             <span>/</span>
-            <span>사진 보관함</span>
+            <span>
+              <T k="admin.nav.gallery.photos">사진 보관함</T>
+            </span>
           </div>
-          <h1 className="admin-title">사진 보관함</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.gallery.photos">사진 보관함</T>
+          </h1>
           <p className="admin-subtitle">
-            사진을 올리는 &lsquo;업로드&rsquo; 탭과 올라온 사진을 정리하는 &lsquo;사진 정리&rsquo; 탭으로 나뉩니다.
-            정리 탭에서는 여러 장을 한 번에 선택해 공개·공연 연결·삭제하고, 촬영일과 설명을 정리할 수 있습니다.
+            <T k="admin.photos.subtitle">
+              사진을 올리는 ‘업로드’ 탭과 올라온 사진을 정리하는 ‘사진 정리’ 탭으로 나뉩니다. 정리
+              탭에서는 여러 장을 한 번에 선택해 공개·공연 연결·삭제하고, 촬영일과 설명을 정리할 수
+              있습니다.
+            </T>
           </p>
         </div>
         <div className="admin-header-actions">
           <Link href="/admin/gallery" className="admin-btn admin-btn-outline">
-            공연 관리
+            <T k="admin.home.galleryTitle">공연 관리</T>
           </Link>
           <Link href="/gallery" className="admin-btn admin-btn-outline" target="_blank">
-            공개 갤러리
+            <T k="admin.photos.publicGallery">공개 갤러리</T>
           </Link>
         </div>
       </div>

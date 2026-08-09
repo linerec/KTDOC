@@ -6,6 +6,8 @@
  */
 
 import { useRef, useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
+import T from '@/components/common/T';
 import Image from 'next/image';
 import type { EventImage } from '@/types/gallery';
 
@@ -22,6 +24,7 @@ export default function ImageSortable({
   onReorder,
   onDelete,
 }: ImageSortableProps) {
+  const t = useT();
   const [deleting, setDeleting] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
@@ -49,19 +52,21 @@ export default function ImageSortable({
 
       const data = await res.json().catch(() => null);
       if (!data?.success) {
-        throw new Error(data?.error || '순서 저장에 실패했습니다.');
+        throw new Error(data?.error || t('admin.images.orderFailed', '순서 저장에 실패했습니다.'));
       }
     } catch (err) {
       console.error('Failed to save order:', err);
       onReorder(previous);
-      setOrderError('순서 저장에 실패했습니다. 화면을 이전 순서로 되돌렸습니다.');
+      setOrderError(
+        t('admin.images.orderReverted', '순서 저장에 실패했습니다. 화면을 이전 순서로 되돌렸습니다.')
+      );
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (imageId: number) => {
-    if (!confirm('이 이미지를 삭제하시겠습니까?')) return;
+    if (!confirm(t('admin.images.deleteConfirm', '이 이미지를 삭제하시겠습니까?'))) return;
 
     setDeleting(imageId);
     try {
@@ -73,12 +78,14 @@ export default function ImageSortable({
       const data = await res.json();
 
       if (!data.success) {
-        throw new Error(data.error || '삭제에 실패했습니다.');
+        throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
       }
 
       onDelete(imageId);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      alert(
+        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
+      );
     } finally {
       setDeleting(null);
     }
@@ -135,13 +142,16 @@ export default function ImageSortable({
     <div className="admin-image-sortable">
       <div className="admin-image-sortable-header">
         <span>
-          {images.length}개의 이미지 {saving && '(저장 중...)'}
+          {t('admin.images.count', '{n}개의 이미지', { n: images.length })}{' '}
+          {saving && `(${t('admin.common.saving', '저장 중...')})`}
         </span>
-        <span className="admin-hint">드래그하여 순서 변경</span>
+        <span className="admin-hint">{t('admin.common.dragToReorder', '드래그하여 순서 변경')}</span>
       </div>
 
       <p className="admin-image-sortable-note">
-        맨 앞 사진이 <strong>대표 사진</strong>입니다 — 공연 목록과 홈 카드에 이 사진이 쓰입니다.
+        <T k="admin.images.coverNote" params={{ cover: <strong>{t('admin.images.cover', '대표 사진')}</strong> }}>
+          {'맨 앞 사진이 {cover}입니다 — 공연 목록과 홈 카드에 이 사진이 쓰입니다.'}
+        </T>
       </p>
 
       {orderError && (
@@ -193,16 +203,20 @@ export default function ImageSortable({
               </div>
 
               {isCover ? (
-                <span className="admin-image-cover-tag">대표 사진</span>
+                <span className="admin-image-cover-tag">{t('admin.images.cover', '대표 사진')}</span>
               ) : (
                 <button
                   type="button"
                   className="admin-image-cover-btn"
                   onClick={() => handleSetCover(index)}
                   disabled={saving}
-                  aria-label={`${index + 1}번째 사진을 대표 사진으로 지정`}
+                  aria-label={t('admin.images.setCoverAria', '{n}번째 사진을 대표 사진으로 지정', {
+                    n: index + 1,
+                  })}
                 >
-                  {coverSaving === image.id ? '지정 중...' : '대표로 지정'}
+                  {coverSaving === image.id
+                    ? t('admin.images.settingCover', '지정 중...')
+                    : t('admin.images.setCover', '대표로 지정')}
                 </button>
               )}
 

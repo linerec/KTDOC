@@ -7,6 +7,8 @@
  */
 
 import { useMemo } from 'react';
+import T from '@/components/common/T';
+import { useT } from '@/lib/i18n/useT';
 import type { SupplySetWithItems, SupplySetLinkInput } from '@/types/supplies';
 
 export interface SetPickerRow extends SupplySetLinkInput {
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export default function SetPicker({ sets, value, onChange }: Props) {
+  const t = useT();
   const setById = useMemo(() => new Map(sets.map((s) => [s.id, s])), [sets]);
   const selectedIds = new Set(value.map((r) => r.supply_set_id));
   const available = sets.filter((s) => !selectedIds.has(s.id));
@@ -40,7 +43,18 @@ export default function SetPicker({ sets, value, onChange }: Props) {
   if (sets.length === 0) {
     return (
       <p className="admin-form-help">
-        만든 세트가 없습니다. <a href="/admin/supplies/sets" target="_blank">준비물 세트</a>에서 먼저 세트를 만드세요.
+        <T
+          k="admin.sets.emptyHint"
+          params={{
+            link: (
+              <a href="/admin/supplies/sets" target="_blank">
+                {t('admin.sets.catalog', '준비물 세트')}
+              </a>
+            ),
+          }}
+        >
+          {'만든 세트가 없습니다. {link}에서 먼저 세트를 만드세요.'}
+        </T>
       </p>
     );
   }
@@ -59,20 +73,21 @@ export default function SetPicker({ sets, value, onChange }: Props) {
                   {set.name_en && <span className="supply-picker-name-en">{set.name_en}</span>}
                 </div>
                 <p className="set-picker-members">
-                  {set.items.map((i) => i.name_ko).join(', ') || '구성 없음'}
+                  {set.items.map((i) => i.name_ko).join(', ') ||
+                    t('admin.sets.noItems', '구성 없음')}
                 </p>
                 <div className="supply-picker-fields">
                   <input
                     type="text"
                     className="admin-form-input"
-                    placeholder="수량/비고 (선택)"
+                    placeholder={t('admin.sets.qtyPlaceholder', '수량/비고 (선택)')}
                     value={row.quantity || ''}
                     onChange={(e) => updateRow(row.supply_set_id, { quantity: e.target.value })}
                   />
                   <input
                     type="text"
                     className="admin-form-input"
-                    placeholder="추가 안내 (한글, 선택)"
+                    placeholder={t('admin.supplies.notePlaceholder', '추가 안내 (한글, 선택)')}
                     value={row.note_ko || ''}
                     onChange={(e) => updateRow(row.supply_set_id, { note_ko: e.target.value })}
                   />
@@ -82,14 +97,14 @@ export default function SetPicker({ sets, value, onChange }: Props) {
                       checked={row.is_required}
                       onChange={(e) => updateRow(row.supply_set_id, { is_required: e.target.checked })}
                     />
-                    필수
+                    {t('admin.supplies.required', '필수')}
                   </label>
                   <button
                     type="button"
                     className="admin-btn admin-btn-sm admin-btn-danger"
                     onClick={() => removeRow(row.supply_set_id)}
                   >
-                    제거
+                    {t('admin.supplies.remove', '제거')}
                   </button>
                 </div>
               </li>
@@ -108,10 +123,10 @@ export default function SetPicker({ sets, value, onChange }: Props) {
               if (id) addSet(id);
             }}
           >
-            <option value="">+ 세트 추가...</option>
+            <option value="">{t('admin.sets.addSet', '+ 세트 추가...')}</option>
             {available.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name_ko} ({s.items.length}개)
+                {s.name_ko} {t('admin.sets.itemCount', '({n}개)', { n: s.items.length })}
               </option>
             ))}
           </select>

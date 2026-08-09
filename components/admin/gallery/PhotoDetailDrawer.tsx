@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { GalleryPhoto } from '@/types/gallery';
 import EventPicker from './EventPicker';
+import { useT } from '@/lib/i18n/useT';
 
 export interface PhotoDraftInput {
   caption_ko: string;
@@ -45,6 +46,7 @@ export default function PhotoDetailDrawer({
   onClose,
   onOpenLightbox,
 }: PhotoDetailDrawerProps) {
+  const t = useT();
   const [draft, setDraft] = useState<PhotoDraftInput>(() => toDraft(photo));
   const [eventLabel, setEventLabel] = useState<string | null>(() => eventLabelOf(photo));
 
@@ -71,10 +73,19 @@ export default function PhotoDetailDrawer({
   return (
     <>
       <div className="photo-drawer-scrim" onClick={onClose} />
-      <aside className="photo-drawer" role="dialog" aria-label="사진 상세 편집">
+      <aside
+        className="photo-drawer"
+        role="dialog"
+        aria-label={t('admin.photoDrawer.aria', '사진 상세 편집')}
+      >
         <header className="photo-drawer-header">
-          <h3>사진 정리</h3>
-          <button type="button" className="photo-drawer-close" onClick={onClose} aria-label="닫기">
+          <h3>{t('admin.photoDrawer.title', '사진 정리')}</h3>
+          <button
+            type="button"
+            className="photo-drawer-close"
+            onClick={onClose}
+            aria-label={t('admin.common.close', '닫기')}
+          >
             &times;
           </button>
         </header>
@@ -84,7 +95,7 @@ export default function PhotoDetailDrawer({
             type="button"
             className="photo-drawer-preview"
             onClick={onOpenLightbox}
-            title="확대해서 보기"
+            title={t('admin.photoDrawer.zoomTitle', '확대해서 보기')}
           >
             <Image
               src={photo.image_url}
@@ -93,22 +104,22 @@ export default function PhotoDetailDrawer({
               sizes="380px"
               className="photo-drawer-preview-img"
             />
-            <span className="photo-drawer-zoom">확대</span>
+            <span className="photo-drawer-zoom">{t('admin.photoDrawer.zoom', '확대')}</span>
           </button>
 
           <div className="photo-drawer-fields">
             <label>
-              한국어 설명
+              {t('admin.photoDrawer.captionKo', '한국어 설명')}
               <input
                 type="text"
                 value={draft.caption_ko}
                 onChange={(e) => setDraft((d) => ({ ...d, caption_ko: e.target.value }))}
-                placeholder="예: 부채춤 공연 리허설"
+                placeholder={t('admin.photoDrawer.captionKoPlaceholder', '예: 부채춤 공연 리허설')}
               />
             </label>
 
             <label>
-              영문 설명 (English)
+              {t('admin.photoDrawer.captionEn', '영문 설명 (English)')}
               <input
                 type="text"
                 value={draft.caption_en}
@@ -118,7 +129,7 @@ export default function PhotoDetailDrawer({
             </label>
 
             <label>
-              촬영일
+              {t('admin.photoDrawer.takenDate', '촬영일')}
               <input
                 type="date"
                 value={draft.taken_date ?? ''}
@@ -127,13 +138,13 @@ export default function PhotoDetailDrawer({
             </label>
 
             <label>
-              속한 공연
+              {t('admin.photoDrawer.eventOf', '속한 공연')}
               <EventPicker
                 value={draft.event_id}
                 valueLabel={eventLabel}
-                placeholder="아직 모름"
+                placeholder={t('admin.photoDrawer.unknownEvent', '아직 모름')}
                 allowClear
-                clearLabel="아직 모름 (공연에서 빼기)"
+                clearLabel={t('admin.photoDrawer.clearEvent', '아직 모름 (공연에서 빼기)')}
                 buttonClassName="photo-drawer-event-picker"
                 onChange={(id, ev) => {
                   setDraft((d) => ({ ...d, event_id: id }));
@@ -149,7 +160,7 @@ export default function PhotoDetailDrawer({
                   checked={draft.is_published}
                   onChange={(e) => setDraft((d) => ({ ...d, is_published: e.target.checked }))}
                 />
-                <span>공개</span>
+                <span>{t('admin.common.published', '공개')}</span>
               </label>
               <label className="admin-form-checkbox">
                 <input
@@ -157,20 +168,27 @@ export default function PhotoDetailDrawer({
                   checked={draft.is_featured}
                   onChange={(e) => setDraft((d) => ({ ...d, is_featured: e.target.checked }))}
                 />
-                <span>강조</span>
+                <span>{t('admin.photos.feature', '강조')}</span>
               </label>
             </div>
 
             <p className="photo-drawer-meta">
               {photo.event_image_id
-                ? '공연에 들어있음'
+                ? t('admin.photos.assigned', '공연에 들어있음')
                 : photo.event_id
-                  ? '공연 연결 대기 — 정리 저장을 누르면 공연 사진으로 게시됩니다'
-                  : '미분류'}
+                  ? t(
+                      'admin.photoDrawer.pendingNote',
+                      '공연 연결 대기 — 정리 저장을 누르면 공연 사진으로 게시됩니다'
+                    )
+                  : t('admin.photos.unassigned', '미분류')}
             </p>
             {photo.uploaded_by && (
               <p className="photo-drawer-meta photo-drawer-meta-submitted">
-                학생 제출{photo.uploader_name ? ` · ${photo.uploader_name}` : ''}
+                {photo.uploader_name
+                  ? t('admin.photos.fromStudentBy', '학생 제출 · {name}', {
+                      name: photo.uploader_name,
+                    })
+                  : t('admin.photos.fromStudent', '학생 제출')}
               </p>
             )}
           </div>
@@ -183,10 +201,12 @@ export default function PhotoDetailDrawer({
             onClick={() => onSave(photo.id, draft)}
             disabled={saving}
           >
-            {saving ? '저장 중...' : '정리 저장'}
+            {saving
+              ? t('admin.common.saving', '저장 중...')
+              : t('admin.photoDrawer.save', '정리 저장')}
           </button>
           <Link href={publicHref} className="admin-btn admin-btn-outline" target="_blank">
-            공개 화면
+            {t('admin.photoDrawer.publicView', '공개 화면')}
           </Link>
           <button
             type="button"
@@ -194,7 +214,7 @@ export default function PhotoDetailDrawer({
             onClick={() => onDelete(photo)}
             disabled={deleting}
           >
-            {deleting ? '삭제 중...' : '삭제'}
+            {deleting ? t('admin.common.deleting', '삭제 중...') : t('admin.common.delete', '삭제')}
           </button>
         </footer>
       </aside>

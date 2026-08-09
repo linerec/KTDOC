@@ -11,6 +11,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Member, MemberRole } from '@/types/members';
 import { useT, type TFunction } from '@/lib/i18n/useT';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatTimestampDate } from '@/lib/i18n/formatDate';
 import { roleLabel, statusLabel } from '@/lib/i18n/memberLabels';
 
 interface StudentOption {
@@ -33,13 +35,6 @@ interface MemberTableProps {
  */
 const ASSIGNABLE_ROLES: MemberRole[] = ['student', 'parent', 'teacher', 'staff'];
 
-function formatDate(value: string | null): string {
-  if (!value) return '-';
-  const d = new Date(value.includes('T') ? value : value.replace(' ', 'T') + 'Z');
-  if (Number.isNaN(d.getTime())) return value;
-  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`;
-}
-
 const STATUS_BADGE_CLASS: Record<string, string> = {
   pending: 'admin-badge-warning',
   active: 'admin-badge-success',
@@ -55,6 +50,7 @@ export default function MemberTable({
 }: MemberTableProps) {
   const router = useRouter();
   const t = useT();
+  const { locale } = useLanguage();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
   // 임시 비밀번호 발급 결과 — 평문은 이 모달에서 한 번만 표시된다
@@ -304,7 +300,7 @@ export default function MemberTable({
                   </td>
 
                   {/* 가입일 */}
-                  <td>{formatDate(member.created_at)}</td>
+                  <td>{formatTimestampDate(member.created_at, locale)}</td>
 
                   {/* 작업 */}
                   <td>

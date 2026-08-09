@@ -6,9 +6,11 @@
  */
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n/useT';
+import { applicationStatusLabel } from '@/lib/i18n/applicationLabels';
 import { useRouter } from 'next/navigation';
 import type { ApplicationStatus } from '@/types/programs';
-import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS } from '@/types/programs';
+import { APPLICATION_STATUSES } from '@/types/programs';
 
 interface ApplicationStatusControlProps {
   id: number;
@@ -16,6 +18,7 @@ interface ApplicationStatusControlProps {
 }
 
 export default function ApplicationStatusControl({ id, status }: ApplicationStatusControlProps) {
+  const t = useT();
   const router = useRouter();
   const [current, setCurrent] = useState<ApplicationStatus>(status);
   const [saving, setSaving] = useState(false);
@@ -36,7 +39,7 @@ export default function ApplicationStatusControl({ id, status }: ApplicationStat
       router.refresh();
     } catch {
       setCurrent(prev);
-      alert('상태 변경에 실패했습니다.');
+      alert(t('admin.common.toggleFailed', '상태 변경에 실패했습니다.'));
     } finally {
       setSaving(false);
     }
@@ -48,11 +51,11 @@ export default function ApplicationStatusControl({ id, status }: ApplicationStat
       value={current}
       onChange={handleChange}
       disabled={saving}
-      aria-label="신청 상태 변경"
+      aria-label={t('admin.applications.statusAria', '신청 상태 변경')}
     >
       {APPLICATION_STATUSES.map((s) => (
         <option key={s} value={s}>
-          {APPLICATION_STATUS_LABELS[s].ko}
+          {applicationStatusLabel(t, s)}
         </option>
       ))}
     </select>

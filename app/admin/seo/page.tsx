@@ -5,6 +5,7 @@
  */
 
 import Link from 'next/link';
+import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getSetting } from '@/lib/d1';
@@ -29,15 +30,23 @@ export default async function AdminSeoPage() {
       <div className="admin-header">
         <div className="admin-header-content">
           <div className="admin-breadcrumb">
-            <Link href="/admin">홈</Link>
+            <Link href="/admin">
+              <T k="admin.nav.home">홈</T>
+            </Link>
             <span>/</span>
-            <span>SEO · 사이트 정보</span>
+            <span>
+              <T k="admin.nav.settings.seo">SEO · 사이트 정보</T>
+            </span>
           </div>
-          <h1 className="admin-title">SEO · 사이트 정보</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.settings.seo">SEO · 사이트 정보</T>
+          </h1>
           <p className="admin-subtitle">
-            학원의 상호·주소·전화(NAP)·운영시간을 입력하면 모든 페이지 푸터와
-            검색엔진용 구조화 데이터(LocalBusiness)에 자동으로 반영됩니다.
-            구글 비즈니스 프로필과 글자 단위로 동일하게 입력하는 것이 지역 검색 순위의 핵심입니다.
+            <T k="admin.seo.pageSubtitle">
+              학원의 상호·주소·전화(NAP)·운영시간을 입력하면 모든 페이지 푸터와 검색엔진용 구조화
+              데이터(LocalBusiness)에 자동으로 반영됩니다. 구글 비즈니스 프로필과 글자 단위로
+              동일하게 입력하는 것이 지역 검색 순위의 핵심입니다.
+            </T>
           </p>
         </div>
       </div>

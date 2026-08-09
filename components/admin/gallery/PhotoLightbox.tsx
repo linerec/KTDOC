@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import Image from 'next/image';
 import type { GalleryPhoto } from '@/types/gallery';
 
@@ -16,6 +17,7 @@ interface PhotoLightboxProps {
  * 현재 페이지의 사진 배열을 좌/우/ESC로 넘기며 원본을 확대 확인한다.
  */
 export default function PhotoLightbox({ photos, index, onClose, onIndexChange }: PhotoLightboxProps) {
+  const t = useT();
   const photo = photos[index];
 
   const go = useCallback(
@@ -40,7 +42,7 @@ export default function PhotoLightbox({ photos, index, onClose, onIndexChange }:
 
   return (
     <div className="photo-lightbox" onClick={onClose}>
-      <button type="button" className="photo-lightbox-close" onClick={onClose} aria-label="닫기">
+      <button type="button" className="photo-lightbox-close" onClick={onClose} aria-label={t('admin.common.close', '닫기')}>
         &times;
       </button>
 
@@ -49,7 +51,7 @@ export default function PhotoLightbox({ photos, index, onClose, onIndexChange }:
           type="button"
           className="photo-lightbox-nav photo-lightbox-prev"
           onClick={(e) => { e.stopPropagation(); go(-1); }}
-          aria-label="이전 사진"
+          aria-label={t('admin.lightbox.prev', '이전 사진')}
         >
           ‹
         </button>
@@ -65,7 +67,7 @@ export default function PhotoLightbox({ photos, index, onClose, onIndexChange }:
           unoptimized
         />
         <div className="photo-lightbox-caption">
-          <span>{photo.caption_ko || '캡션 없음'}</span>
+          <span>{photo.caption_ko || t('admin.lightbox.noCaption', '캡션 없음')}</span>
           <span className="photo-lightbox-count">{index + 1} / {photos.length}</span>
         </div>
       </div>
@@ -75,7 +77,7 @@ export default function PhotoLightbox({ photos, index, onClose, onIndexChange }:
           type="button"
           className="photo-lightbox-nav photo-lightbox-next"
           onClick={(e) => { e.stopPropagation(); go(1); }}
-          aria-label="다음 사진"
+          aria-label={t('admin.lightbox.next', '다음 사진')}
         >
           ›
         </button>
