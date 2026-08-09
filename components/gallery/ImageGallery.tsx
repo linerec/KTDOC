@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 
 // 구조적 최소 타입 — EventImage / ProgramImage 모두 호환 (라이트박스 재사용용)
@@ -183,7 +184,12 @@ export default function ImageGallery({
       )}
 
       {/* Lightbox */}
-      {lightboxOpen && currentImage && (
+      {/* 라이트박스는 body에 포털로 붙인다. 갤러리가 놓인 자리에 그대로 그리면
+          조상이 만든 쌓임 맥락(예: main.program-detail의 isolation: isolate)에
+          갇혀, z-index가 아무리 높아도 헤더 아래로 깔린다. 그러면 스크림이 헤더를
+          덮지 못하고 우상단 닫기 버튼이 헤더에 가려 눌리지도 않는다. */}
+      {lightboxOpen && currentImage &&
+        createPortal(
         <div className="gallery-lightbox" onClick={closeLightbox}>
           <div
             className="gallery-lightbox-content"
@@ -253,7 +259,8 @@ export default function ImageGallery({
               </span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

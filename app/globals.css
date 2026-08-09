@@ -4510,11 +4510,21 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   right: 20px;
   width: 44px;
   height: 44px;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 사진 위에 놓이는 버튼이라 투명하면 밝은 사진에서 흰 ×가 묻힌다.
+     좌우 화살표와 같은 반투명 판을 깔아 어디서든 보이게 한다. */
+  background: rgba(255, 255, 255, 0.1);
   border: none;
+  border-radius: 50%;
   color: var(--text-color);
   cursor: pointer;
   z-index: 10;
+  transition: background 0.25s var(--ease-out-quart);
+}
+.gallery-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .gallery-lightbox-close svg {
