@@ -59,7 +59,10 @@ export default async function AdminProfilePage() {
       {/* 알림 설정 — 대시보드 카드는 켜고 나면 사라지므로 끄기·테스트는 여기가 집이다.
           구독은 기기(브라우저)마다 따로이므로 지금 보고 있는 기기의 상태를 보여준다. */}
       <div className="admin-profile-push">
-        <PushOptInCard lede="이 기기에서 알림을 받을지 설정합니다. 휴대폰과 컴퓨터는 따로 켜야 합니다." />
+        <PushOptInCard
+          placement="settings"
+          audience={role === 'teacher' || role === 'admin' ? 'staff' : 'member'}
+        />
       </div>
     </div>
   );

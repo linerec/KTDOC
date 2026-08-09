@@ -62,7 +62,7 @@ export default function StudentDashboard({
       <AddToHomeCard />
 
       {/* 1) 알림 받기 — 온보딩 핵심. 이 기기에서 켜고 나면 사라진다(끄기·테스트는 내 프로필). */}
-      <PushOptInCard hideWhenEnabled />
+      <PushOptInCard placement="dashboard" audience="member" />
 
       {/* 2) 수업·프로그램 신청 */}
       <section className="dash-cta">

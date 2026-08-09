@@ -139,10 +139,7 @@ export default async function AdminDashboardPage() {
       {/* 알림 받기 — 운영진도 받는 쪽이다. 새 가입 신청 알림(lib/push/system.ts)은
           이미 teacher·admin을 대상으로 발송되지만, 기기를 등록해 두지 않으면 도착할
           곳이 없어 알림함에만 쌓인다. 이 기기에서 켜고 나면 카드는 사라진다. */}
-      <PushOptInCard
-        hideWhenEnabled
-        lede="새 가입 신청 등 확인이 필요한 일을 휴대폰 알림으로 받아보세요. 기기마다 한 번씩 켜야 합니다."
-      />
+      <PushOptInCard placement="dashboard" audience="staff" />
 
       {/* 관리실 — 기존 기능 도메인 (항상 존재) */}
       <section className={`admin-workshop${isFreshSite ? ' admin-workshop--quiet' : ''}`}>

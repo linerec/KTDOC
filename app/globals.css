@@ -12949,6 +12949,134 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   background: rgba(212, 160, 23, 0.12);
   border: 1px solid rgba(212, 160, 23, 0.4);
 }
+/* ── 알림 가이드 모달 ─────────────────────────────────────────────────────
+   그림은 currentColor를 따라가고 강조만 금색이라 두 테마에서 따로 손댈 것이 없다.
+   글이 길어 읽는 폭(줄당 글자 수)을 우선한다. */
+.push-guide-open {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--soft-gold-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.push-guide-open:hover {
+  opacity: 0.8;
+}
+.push-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding-bottom: 4px;
+  color: var(--text-color);
+  line-height: 1.68;
+}
+.push-guide-h {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+.push-guide-p {
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--text-color);
+}
+.push-guide-note {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+.push-guide-list {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 0.94rem;
+}
+.push-guide-list li + li {
+  margin-top: 6px;
+}
+
+/* 그림을 옆에 세우는 단락(알림이 뭔가 · 기기마다 따로). */
+.push-guide-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(var(--fg-rgb), 0.04);
+}
+.push-guide-hero-art {
+  flex: 0 0 auto;
+  color: var(--text-color);
+}
+.push-guide-art {
+  width: 96px;
+  height: auto;
+}
+.push-guide-art--wide {
+  width: 116px;
+}
+
+/* 번호가 붙는 단계 목록 — 번호는 우리가 그린다(그림과 나란히 세우기 위해). */
+.push-guide-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: push-step;
+}
+.push-guide-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+  counter-increment: push-step;
+}
+.push-guide-step:first-child {
+  border-top: 0;
+}
+.push-guide-step-icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(var(--fg-rgb), 0.05);
+  color: var(--text-color);
+}
+.push-guide-step-art {
+  width: 30px;
+  height: 30px;
+}
+.push-guide-step-text {
+  flex: 1 1 auto;
+  font-size: 0.94rem;
+}
+/* 단계 번호 — 문장 앞에 붙여 읽는 순서를 못 놓치게. */
+.push-guide-step-text::before {
+  content: counter(push-step) '. ';
+  font-weight: 700;
+  color: var(--soft-gold-text);
+}
+.push-guide-close {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+@media (max-width: 560px) {
+  .push-guide-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
 .push-card-feedback--err {
   color: #ffb4b0;
   background: rgba(196, 48, 43, 0.14);
