@@ -17183,8 +17183,18 @@ html[data-admin-theme='light'] {
    쓰여 전역 플립이 불가능하므로 표면만 셀렉터로 보정한다) */
 html[data-admin-theme='light'] .admin-domain,
 html[data-admin-theme='light'] .admin-onboard-head,
-html[data-admin-theme='light'] .photo-modal {
+html[data-admin-theme='light'] .photo-modal,
+html[data-admin-theme='light'] .myclass-card {
   background: linear-gradient(180deg, #f9f4e9, #f1e9d9);
+}
+
+/* 내 수업 카드 — 썸네일 자리(사진 없을 때)도 함께 뒤집는다. 어두운 사각형만
+   남으면 한지 위에 구멍이 뚫린 것처럼 보인다. */
+html[data-admin-theme='light'] .myclass-card-thumb {
+  background: rgba(36, 27, 18, 0.06);
+}
+html[data-admin-theme='light'] .myclass-card-noimg {
+  color: rgba(119, 89, 10, 0.5);
 }
 
 /* 다크 고정색 모달·드로어 표면 → 종이 표면 */
@@ -17241,6 +17251,22 @@ html[data-admin-theme='light'] .notify-event-unsubscribed {
 html[data-admin-theme='light'] .notify-event-subscribed {
   color: #256c33;
   background: rgba(120, 190, 120, 0.16);
+}
+
+/* 내 수업 카드의 수강 상태 칩 — 어두운 카드 위에서 고른 파스텔이라
+   한지로 뒤집힌 카드에서는 글자가 뜬다. 짙은 톤으로 내린다. */
+html[data-admin-theme='light'] .myclass-status-active {
+  color: #1e6b39;
+}
+html[data-admin-theme='light'] .myclass-status-waitlist {
+  color: var(--soft-gold-text);
+}
+html[data-admin-theme='light'] .myclass-status-completed {
+  color: #4a5570;
+  border-color: rgba(74, 85, 112, 0.35);
+}
+html[data-admin-theme='light'] .myclass-status-cancelled {
+  color: #a02520;
 }
 
 html[data-admin-theme='light'] .admin-badge-success {
