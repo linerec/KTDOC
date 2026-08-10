@@ -324,6 +324,7 @@
   "glossary.empty.page": "아직 등록된 용어가 없습니다. 곧 채워집니다.",
   "glossary.search.placeholder": "용어, 발음, 뜻으로 검색…",
   "glossary.search.label": "용어 검색",
+  "glossary.search.clear": "검색어 지우기",
   "glossary.view.label": "보기",
   "glossary.view.all": "전체",
   "glossary.view.terms": "용어",

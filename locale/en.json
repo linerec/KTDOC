@@ -324,6 +324,7 @@
   "glossary.empty.page": "No terms yet. Check back soon.",
   "glossary.search.placeholder": "Search by term, sound, or meaning…",
   "glossary.search.label": "Search terms",
+  "glossary.search.clear": "Clear search",
   "glossary.view.label": "View",
   "glossary.view.all": "All",
   "glossary.view.terms": "Terms",

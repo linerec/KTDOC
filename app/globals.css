@@ -15366,11 +15366,29 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   top: var(--header-h-scrolled, 80px);
   z-index: 5;
   padding: 16px 0;
-  background: linear-gradient(180deg, rgba(10, 8, 6, 0.96) 70%, rgba(10, 8, 6, 0));
+  /* 스크롤될 때 카드가 검색창 뒤로 비쳐 지나가지 않도록 지면색으로 덮는다.
+     리터럴 먹을 쓰면 한지 테마에서 검은 띠가 되어 페이지에 구멍이 뚫린다. */
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.96) 70%, rgba(var(--bg-rgb), 0));
+}
+
+/* 아이콘·지우기 버튼을 입력칸 안에 얹기 위한 껍데기 */
+.glossary-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.glossary-search-icon {
+  position: absolute;
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 .glossary-search-input {
   width: 100%;
-  padding: 14px 18px;
+  /* 좌우 여백은 아이콘·지우기 버튼 자리를 비워 둔 값이다. */
+  padding: 14px 44px 14px 44px;
   font-size: 1rem;
   color: var(--warm-ivory);
   background: rgba(var(--fg-rgb),  0.05);
@@ -15385,6 +15403,31 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .glossary-search-input:focus {
   border-color: rgba(224, 184, 79, 0.6);
   background: rgba(224, 184, 79, 0.06);
+}
+/* 브라우저(크롬)가 넣는 기본 지우기 단추 — 테마를 따르지 않아 우리 것으로 대체한다 */
+.glossary-search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+.glossary-search-clear {
+  position: absolute;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.glossary-search-clear:hover {
+  color: var(--text-color);
+  background: rgba(var(--fg-rgb), 0.08);
 }
 
 /* 분류 필터 칩 */

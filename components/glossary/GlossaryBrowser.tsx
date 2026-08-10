@@ -265,17 +265,43 @@ export default function GlossaryBrowser({ terms, categories, songs }: Props) {
   return (
     <div className="glossary-browser">
       <div className="glossary-search">
-        <input
-          type="search"
-          className="glossary-search-input"
-          placeholder={t(
-            'glossary.search.placeholder',
-            '용어, 발음, 뜻으로 검색…  (Search by term, sound, or meaning)',
+        <div className="glossary-search-field">
+          {/* 돋보기는 장식이 아니라 "여기가 검색칸"이라는 표시다 — 읽을 것은 없으므로 숨긴다 */}
+          <svg
+            className="glossary-search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            className="glossary-search-input"
+            placeholder={t(
+              'glossary.search.placeholder',
+              '용어, 발음, 뜻으로 검색…  (Search by term, sound, or meaning)',
+            )}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label={t('glossary.search.label', '용어 검색')}
+          />
+          {/* 지우기 — 없으면 한 글자씩 지워야 한다. 빈 칸일 때는 자리만 차지하므로 감춘다. */}
+          {search && (
+            <button
+              type="button"
+              className="glossary-search-clear"
+              onClick={() => setSearch('')}
+              aria-label={t('glossary.search.clear', '검색어 지우기')}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
           )}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          aria-label={t('glossary.search.label', '용어 검색')}
-        />
+        </div>
       </div>
 
       {/* 1차 축 — 콘텐츠 타입 (노래가 있을 때만 노출) */}
