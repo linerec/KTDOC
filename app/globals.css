@@ -15365,10 +15365,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   position: sticky;
   top: var(--header-h-scrolled, 80px);
   z-index: 5;
-  padding: 16px 0;
-  /* 스크롤될 때 카드가 검색창 뒤로 비쳐 지나가지 않도록 지면색으로 덮는다.
-     리터럴 먹을 쓰면 한지 테마에서 검은 띠가 되어 페이지에 구멍이 뚫린다. */
-  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0.96) 70%, rgba(var(--bg-rgb), 0));
+  padding: 12px 0;
+  /* 배경을 칠하지 않는다 — 지면이 세로 그라디언트 + 한지 결이라 어떤 단색으로도
+     이어 붙일 수 없고, 덮는 순간 결이 끊긴 직사각형이 떠 보인다.
+     대신 뒤를 흐린다: 색과 결은 그대로 통과하므로 경계가 생기지 않으면서,
+     이 띠를 지나가는 카드 글자는 읽히지 않는다. */
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 /* 아이콘·지우기 버튼을 입력칸 안에 얹기 위한 껍데기 */
@@ -15391,18 +15394,25 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 14px 44px 14px 44px;
   font-size: 1rem;
   color: var(--warm-ivory);
-  background: rgba(var(--fg-rgb),  0.05);
+  /* sticky로 떠 있는 동안 뒤 카드가 글자에 겹치지 않도록 **불투명**해야 한다. */
+  background: var(--surface-2);
   border: 1px solid rgba(224, 184, 79, 0.3);
   border-radius: 12px;
   outline: none;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  /* 스크롤하면 카드가 이 칸 뒤로 지나간다. 그림자로 층을 갈라 두면 잘려 보이는 것이
+     아니라 '아래를 지나가는 것'으로 읽힌다. 배경을 칠해 덮는 대신 택한 방법이다
+     — 페이지 지면이 그라디언트 + 한지 결이라 어떤 단색으로도 이어 붙일 수 없다. */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .glossary-search-input::placeholder {
   color: var(--text-muted);
 }
+/* 포커스는 배경을 바꾸지 않는다 — 반투명으로 덮으면 뒤 카드가 다시 비친다.
+   테두리와 링으로 알린다(키보드 사용자에게도 또렷하다). */
 .glossary-search-input:focus {
   border-color: rgba(224, 184, 79, 0.6);
-  background: rgba(224, 184, 79, 0.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(224, 184, 79, 0.14);
 }
 /* 브라우저(크롬)가 넣는 기본 지우기 단추 — 테마를 따르지 않아 우리 것으로 대체한다 */
 .glossary-search-input::-webkit-search-cancel-button {
