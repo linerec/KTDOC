@@ -13,6 +13,8 @@
 import Link from 'next/link';
 import SiteViewLink from '@/components/common/SiteViewLink';
 import PushOptInCard from '@/components/push/PushOptInCard';
+import TodayEventBanner from '@/components/admin/TodayEventBanner';
+import type { EventWithCategory } from '@/types/gallery';
 import { useT } from '@/lib/i18n/useT';
 
 function IconCalendar() {
@@ -76,6 +78,8 @@ export interface StaffDashboardProps {
   loosePhotos: number;
   categoryCount: number;
   membersTotal: number;
+  /** 오늘 열리는 공개 행사. 없으면 빈 배열 — 배너가 스스로 사라진다. */
+  todayEvents: EventWithCategory[];
 }
 
 export default function StaffDashboard({
@@ -88,6 +92,7 @@ export default function StaffDashboard({
   loosePhotos,
   categoryCount,
   membersTotal,
+  todayEvents,
 }: StaffDashboardProps) {
   const t = useT();
 
@@ -126,6 +131,11 @@ export default function StaffDashboard({
           </SiteViewLink>
         </div>
       </header>
+
+      {/* 오늘 행사 — 처리할 일(아래 신청 알림)보다 먼저 온다. 오늘 어디서 몇 시에
+          서는지는 '언젠가 할 일'이 아니라 지금 알아야 하는 사실이고, 홈 화면
+          아이콘(PWA)으로 열면 이 화면이 첫 장면이기 때문이다. */}
+      <TodayEventBanner events={todayEvents} />
 
       {/* 긴급: 새 신청 (페이지 내 유일한 빨강 강조) */}
       {hasNewApps && (

@@ -19,6 +19,7 @@ import type { EventWithCategory } from '@/types/gallery';
 import { formatEventDateIntl, formatEventTimeRange } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/lib/i18n/useT';
+import { directionsHref } from '@/lib/maps/directions';
 
 function IconClock() {
   return (
@@ -38,6 +39,16 @@ function IconPin() {
   );
 }
 
+function IconRoute() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 17h6a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h6" />
+      <circle cx="18" cy="6" r="2.4" />
+      <circle cx="5.5" cy="18.5" r="1.8" />
+    </svg>
+  );
+}
+
 function StageCard({ event }: { event: EventWithCategory }) {
   const { locale } = useLanguage();
   const t = useT();
@@ -46,9 +57,21 @@ function StageCard({ event }: { event: EventWithCategory }) {
   const image = event.thumbnail_url || event.poster_url || event.first_image_url;
   // 집합 시각(call_time)은 출연자용이라 넘기지 않는다 — formatEventTimeRange 주석 참고.
   const time = formatEventTimeRange(event.start_time, event.end_time, locale);
+  const mapHref = directionsHref({
+    location: event.location,
+    address: event.location_address,
+    lat: event.location_lat,
+    lng: event.location_lng,
+    locationUrl: event.location_url,
+  });
 
+  /*
+   * 카드 전체를 <Link>로 감쌀 수 없다 — 안에 '오는 길' 링크가 하나 더 들어가는데
+   * <a> 안의 <a>는 유효하지 않다. 그래서 제목만 진짜 링크로 두고 그 ::after가
+   * 카드 전체를 덮게 한다(넓은 클릭 영역 유지). 길찾기 링크는 그 위로 올린다.
+   */
   return (
-    <Link href={`/gallery/${event.year}/${event.slug}`} className="today-stage-card">
+    <article className="today-stage-card">
       <div className="today-stage-media">
         {image ? (
           <>
@@ -81,7 +104,11 @@ function StageCard({ event }: { event: EventWithCategory }) {
 
       <div className="today-stage-body">
         <p className="today-stage-date">{formatEventDateIntl(event.event_date, locale)}</p>
-        <h3 className="today-stage-name">{title}</h3>
+        <h3 className="today-stage-name">
+          <Link href={`/gallery/${event.year}/${event.slug}`} className="today-stage-link">
+            {title}
+          </Link>
+        </h3>
 
         <dl className="today-stage-facts">
           {time && (
@@ -102,13 +129,27 @@ function StageCard({ event }: { event: EventWithCategory }) {
           )}
         </dl>
 
-        {/* 링크 안이라 <a>를 겹치지 않는다 — 보이기만 하는 표시다. */}
-        <span className="today-stage-cta">
-          {t('home.today.cta', '행사 자세히 보기')}
-          <span aria-hidden="true"> →</span>
-        </span>
+        <div className="today-stage-actions">
+          {/* 제목 링크의 클릭 영역이 카드 전체를 덮으므로 여기는 표시만 한다. */}
+          <span className="today-stage-cta">
+            {t('home.today.cta', '행사 자세히 보기')}
+            <span aria-hidden="true"> →</span>
+          </span>
+
+          {mapHref && (
+            <a
+              className="today-stage-map"
+              href={mapHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <IconRoute />
+              {t('home.today.directions', '오는 길')}
+            </a>
+          )}
+        </div>
       </div>
-    </Link>
+    </article>
   );
 }
 

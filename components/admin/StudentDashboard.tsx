@@ -16,7 +16,9 @@ import Link from 'next/link';
 import SiteViewLink from '@/components/common/SiteViewLink';
 import AddToHomeCard from '@/components/admin/AddToHomeCard';
 import PushOptInCard from '@/components/push/PushOptInCard';
+import TodayEventBanner from '@/components/admin/TodayEventBanner';
 import { useT } from '@/lib/i18n/useT';
+import type { EventWithCategory } from '@/types/gallery';
 
 interface QuickLink {
   href: string;
@@ -85,11 +87,14 @@ export default function StudentDashboard({
   userName,
   isParent,
   unreadCount,
+  todayEvents,
 }: {
   /** null이면 역할 이름(원생/학부모)으로 부른다 */
   userName: string | null;
   isParent: boolean;
   unreadCount: number;
+  /** 오늘 열리는 공개 행사. 없으면 빈 배열 — 배너가 스스로 사라진다. */
+  todayEvents: EventWithCategory[];
 }) {
   const t = useT();
   const displayName =
@@ -125,6 +130,9 @@ export default function StudentDashboard({
           </SiteViewLink>
         </div>
       </header>
+
+      {/* 오늘 행사 — PWA로 열면 여기가 첫 화면이라 무엇보다 먼저 온다. */}
+      <TodayEventBanner events={todayEvents} />
 
       {/* 0) 홈 화면에 추가 — 아이폰은 설치해야 알림 수신이 가능하므로 알림 카드보다 앞에.
           설치(standalone) 상태·'나중에'로 닫은 상태에서는 스스로 렌더하지 않는다. */}

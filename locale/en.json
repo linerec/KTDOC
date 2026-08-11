@@ -1552,5 +1552,11 @@
 
   "home.today.badge": "TODAY",
   "home.today.title": "On Stage Today",
-  "home.today.cta": "See event details"
+  "home.today.cta": "See event details",
+
+  "home.today.directions": "Directions",
+  "admin.home.todayBadge": "TODAY",
+  "admin.home.todayTitle": "Today's schedule",
+  "admin.home.todayDirections": "Directions",
+  "admin.home.todayDetail": "Event details"
 }
