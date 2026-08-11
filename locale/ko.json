@@ -1548,5 +1548,9 @@
   "push.guide.trouble3": "실수로 ‘차단’을 눌렀다면 — 아이폰은 [설정 → 알림 → KTDOC], 안드로이드·컴퓨터는 주소창 왼쪽 자물쇠 → 알림에서 ‘허용’으로 바꿔 주세요.",
   "push.guide.trouble4": "휴대폰이 방해금지 모드이거나 소리가 꺼져 있으면 조용히 들어옵니다. 알림 목록을 내려서 확인해 보세요.",
   "push.guide.troubleTail": "그래도 안 되면 학원으로 알려 주세요. 놓친 알림은 왼쪽 메뉴 ‘내 알림’에 그대로 남아 있으니 안심하셔도 됩니다.",
-  "push.guide.done": "알겠습니다"
+  "push.guide.done": "알겠습니다",
+
+  "home.today.badge": "오늘",
+  "home.today.title": "오늘의 무대",
+  "home.today.cta": "행사 자세히 보기"
 }

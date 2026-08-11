@@ -199,11 +199,18 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
 /**
  * 홈 "최근 발자취" — 이미 지난 공개 행사 최근 N건(공연·학내 행사 혼합).
  *
- * 예정된 행사를 섞으면 '발자취'라는 이름과 어긋나므로 오늘 이전만 가져온다.
+ * 예정된 행사를 섞으면 '발자취'라는 이름과 어긋나므로 기준일 **이전**만 가져온다.
  * 날짜가 지나면 자동으로 목록에 들어오므로 별도 큐레이션이 필요 없다.
- * (date('now')는 UTC 기준 — 당일 경계에서 하루 차이가 날 수 있으나 발자취 목록에서는 무해하다)
+ *
+ * 기준일(beforeDay)을 밖에서 받는다. 예전에는 `date('now')`(UTC)를 썼는데,
+ * 서버는 UTC로 돌고 학원은 뉴저지에 있어 매일 밤 몇 시간씩 날짜가 어긋났다.
+ * 오늘 행사는 여기 들어오지 않는다 — 오늘 것은 '발자취'가 아니라 '오늘의 무대'다
+ * (getPublishedEventsOnDay). 판단 기준은 lib/siteDay.ts 참고.
  */
-export async function getRecentPastEvents(limit = 3): Promise<EventWithCategory[]> {
+export async function getRecentPastEvents(
+  limit: number,
+  beforeDay: string
+): Promise<EventWithCategory[]> {
   return queryD1<EventWithCategory>(
     `SELECT e.*,
             c.name_ko AS category_name_ko,
@@ -212,10 +219,31 @@ export async function getRecentPastEvents(limit = 3): Promise<EventWithCategory[
             (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS first_image_url
      FROM events e
      LEFT JOIN event_categories c ON e.category_id = c.id
-     WHERE e.is_published = 1 AND e.event_date <= date('now')
+     WHERE e.is_published = 1 AND e.event_date < ?
      ORDER BY e.event_date DESC, e.id DESC
      LIMIT ?`,
-    [limit]
+    [beforeDay, limit]
+  );
+}
+
+/**
+ * 어느 하루에 열리는 공개 행사 — 홈의 '오늘의 무대'.
+ *
+ * getEventsOnDate와 달리 **게시된 것만** 본다. 저쪽은 운영용(리마인더)이라
+ * 미게시도 필요하지만, 이건 방문자에게 보이는 자리다.
+ */
+export async function getPublishedEventsOnDay(day: string): Promise<EventWithCategory[]> {
+  return queryD1<EventWithCategory>(
+    `SELECT e.*,
+            c.name_ko AS category_name_ko,
+            c.name_en AS category_name_en,
+            c.slug AS category_slug,
+            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS first_image_url
+     FROM events e
+     LEFT JOIN event_categories c ON e.category_id = c.id
+     WHERE e.is_published = 1 AND e.event_date = ?
+     ORDER BY e.start_time ASC, e.id ASC`,
+    [day]
   );
 }
 

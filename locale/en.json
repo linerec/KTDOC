@@ -1548,5 +1548,9 @@
   "push.guide.trouble3": "If you tapped “Block” by mistake — on iPhone go to Settings → Notifications → KTDOC; on Android or a computer, tap the lock at the left of the address bar → Notifications → Allow.",
   "push.guide.trouble4": "If your phone is on Do Not Disturb or silent, alerts arrive quietly. Swipe down to check your notification list.",
   "push.guide.troubleTail": "If it still doesn't work, please let the studio know. Nothing is lost — every alert also stays in “My alerts” in the left-hand menu.",
-  "push.guide.done": "Got it"
+  "push.guide.done": "Got it",
+
+  "home.today.badge": "TODAY",
+  "home.today.title": "On Stage Today",
+  "home.today.cta": "See event details"
 }

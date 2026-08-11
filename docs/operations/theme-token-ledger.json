@@ -1845,6 +1845,33 @@
    "replacement": "변경 없음",
    "reason": "같은 카드 위 보조 버튼. 배경이 rgba(224,184,79,0.06) 옅은 금 틴트라 사실상 카드 표면이 비친다. 붉은 배경을 가진 --primary 변형만 --on-media로 따로 고정했다.",
    "confidence": "high"
+  },
+  {
+   "line": 1409,
+   "selector": ".today-stage",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "오늘의 무대 섹션과 그 안의 제목·행사명. 자기 배경은 .today-stage의 지면 그라디언트(--ground-3 → --ground-2)뿐이라 라이트에서 한지로 뒤집힌다. 사진(.today-stage-media) 위가 아니라 본문 칸(.today-stage-body)이므로 on-media가 아니고, 금 배경도 없으므로 on-accent도 아니다. 바로 아래 .journey-section/.journey-title과 같은 지면·같은 판정(2026-08-11 신설).",
+   "confidence": "high"
+  },
+  {
+   "line": 1452,
+   "selector": ".today-stage-title",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "오늘의 무대 섹션과 그 안의 제목·행사명. 자기 배경은 .today-stage의 지면 그라디언트(--ground-3 → --ground-2)뿐이라 라이트에서 한지로 뒤집힌다. 사진(.today-stage-media) 위가 아니라 본문 칸(.today-stage-body)이므로 on-media가 아니고, 금 배경도 없으므로 on-accent도 아니다. 바로 아래 .journey-section/.journey-title과 같은 지면·같은 판정(2026-08-11 신설).",
+   "confidence": "high"
+  },
+  {
+   "line": 1504,
+   "selector": ".today-stage-name",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": "오늘의 무대 섹션과 그 안의 제목·행사명. 자기 배경은 .today-stage의 지면 그라디언트(--ground-3 → --ground-2)뿐이라 라이트에서 한지로 뒤집힌다. 사진(.today-stage-media) 위가 아니라 본문 칸(.today-stage-body)이므로 on-media가 아니고, 금 배경도 없으므로 on-accent도 아니다. 바로 아래 .journey-section/.journey-title과 같은 지면·같은 판정(2026-08-11 신설).",
+   "confidence": "high"
   }
  ],
  "감사": {

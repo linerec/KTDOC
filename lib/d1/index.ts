@@ -33,6 +33,7 @@ export {
   // Events
   getEvents,
   getRecentPastEvents,
+  getPublishedEventsOnDay,
   getEventsOnDate,
   getEventById,
   getEventBySlug,
