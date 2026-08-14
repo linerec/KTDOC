@@ -18445,3 +18445,206 @@ html[data-admin-theme='light'] .admin-sheet {
     padding: 20px 28px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   관리 콘솔 — 신청서(질문지) 관리
+   어두운 배경 위 전경은 채널 토큰으로. 금색은 텍스트/배경 역할을 구분해서 쓴다.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 목록 ───────────────────────────────────────────────── */
+.admin-callout-list {
+  margin: 10px 0 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.admin-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: clamp(32px, 6vw, 56px);
+}
+
+.admin-empty p {
+  margin: 0;
+}
+
+.admin-link-strong {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.admin-link-strong:hover {
+  color: var(--soft-gold-text);
+}
+
+.admin-cell-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.admin-cell-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  white-space: nowrap;
+}
+
+/* ── 새 신청서 ──────────────────────────────────────────── */
+.admin-form-new {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 640px;
+}
+
+.admin-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-fieldset legend {
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.preset-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preset-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'radio name'
+    '.     detail';
+  gap: 4px 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 8px;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.preset-card:hover {
+  border-color: rgba(var(--fg-rgb), 0.32);
+}
+
+.preset-card.is-picked {
+  border-color: var(--accent-color);
+}
+
+.preset-card input {
+  grid-area: radio;
+  margin: 0.2em 0 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+}
+
+.preset-card-name {
+  grid-area: name;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.preset-card-detail {
+  grid-area: detail;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.preset-card:focus-within {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* ── 관리 폼 필드 ───────────────────────────────────────── */
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-field > label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.admin-field input[type='text'],
+.admin-field input[type='date'],
+.admin-field textarea,
+.admin-field select {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  border-radius: 6px;
+}
+
+.admin-field input:focus-visible,
+.admin-field textarea:focus-visible,
+.admin-field select:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+}
+
+.admin-field-help {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.admin-slug-row {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.admin-slug-row:focus-within {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+}
+
+.admin-slug-prefix {
+  display: grid;
+  place-items: center;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: rgba(var(--fg-rgb), 0.06);
+  border-right: 1px solid rgba(var(--fg-rgb), 0.14);
+}
+
+.admin-slug-row input {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-slug-row input:focus-visible {
+  outline: none;
+}
