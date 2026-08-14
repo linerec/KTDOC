@@ -1493,6 +1493,15 @@
   "admin.schedule.subtitle": "See performances, events and your classes month by month. Tap a day and its schedule opens below.",
   "admin.schedule.subtitleCheckin": "Performances you're attending are marked with ✓.",
 
+
+  "forms.signedInAs": "Filling in as {name}. Your member details were pre-filled.",
+  "forms.submit.label": "Submit registration",
+  "forms.submit.sending": "Sending…",
+  "forms.submit.previewLabel": "Preview — nothing is submitted",
+  "forms.submit.previewOnly": "Nothing is submitted in preview. Publish the form to start accepting entries.",
+  "forms.submit.hasErrors": "Some required answers are missing. Please check the highlighted fields.",
+  "forms.submit.failed": "We couldn't submit your form. Please try again in a moment.",
+  "forms.submit.network": "The connection dropped. Please try again in a moment.",
   "push.card.onOk": "Alerts are on. We'll let you know on this device when there's news.",
   "push.card.onFail": "We couldn't turn alerts on.",
   "push.card.offOk": "Alerts are off.",

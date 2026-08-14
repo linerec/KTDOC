@@ -18032,3 +18032,416 @@ html[data-admin-theme='light'] .admin-sheet {
     z-index: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   공개 신청서 (/f/[slug]) — 히어로 없는 문서형 페이지
+   지면·전경은 전부 역할 토큰으로. 한지(라이트)가 기본이고 다크로 뒤집힌다.
+   ═══════════════════════════════════════════════════════════════ */
+
+.form-page {
+  padding-top: var(--page-offset-tight);
+  padding-bottom: clamp(64px, 10vw, 120px);
+  background: var(--ground);
+  min-height: 100vh;
+}
+
+.form-shell {
+  width: min(720px, calc(100% - 2.5rem));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 4vw, 40px);
+}
+
+/* ── 머리말 ─────────────────────────────────────────────── */
+.form-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: clamp(20px, 3vw, 28px);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+.form-season {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: var(--soft-gold-text);
+}
+
+.form-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 5vw, 2.4rem);
+  line-height: 1.3;
+  margin: 0;
+  color: var(--text-color);
+  text-wrap: balance;
+}
+
+.form-title-en {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.form-desc {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+/* ── 섹션 ───────────────────────────────────────────────── */
+.public-form {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(32px, 5vw, 48px);
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-section-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.35rem;
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(var(--fg-rgb), 0.14);
+  color: var(--text-color);
+}
+
+.form-section-body {
+  margin: 0;
+  color: var(--text-muted);
+  white-space: pre-line;
+}
+
+.form-section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* ── 문항 공통 ──────────────────────────────────────────── */
+.form-q-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+.form-q-label .required {
+  color: var(--accent-text);
+}
+
+.form-q-help {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  /* 원본 폼의 ※ 불릿들이 한 줄로 뭉치면 아무도 읽지 않는다 */
+  white-space: pre-line;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text-color);
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  border-radius: 6px;
+}
+
+.form-field input:focus-visible,
+.form-field textarea:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+  border-color: var(--accent-color);
+}
+
+.form-field input[aria-invalid='true'],
+.form-field textarea[aria-invalid='true'] {
+  border-color: var(--deep-red);
+}
+
+.form-error {
+  font-size: 0.84rem;
+  color: var(--deep-red);
+  font-weight: 600;
+}
+
+/* ── 선택지 ─────────────────────────────────────────────── */
+.form-choice {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-choice legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.form-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.form-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 6px;
+  background: var(--surface-2);
+  cursor: pointer;
+  line-height: 1.55;
+  color: var(--text-color);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.form-option:hover {
+  border-color: rgba(var(--fg-rgb), 0.32);
+}
+
+.form-option.is-picked {
+  border-color: var(--accent-color);
+  background: var(--ground-2);
+}
+
+.form-option input {
+  margin: 0.25em 0 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+  flex: none;
+}
+
+.form-option:focus-within {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* ── 동의 ───────────────────────────────────────────────── */
+.form-consent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-left: 3px solid var(--soft-gold);
+  border-radius: 6px;
+  background: var(--ground-2);
+}
+
+.form-consent .form-q-help {
+  font-size: 0.85rem;
+}
+
+.form-consent-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.form-consent-row input {
+  margin: 0.2em 0 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+  flex: none;
+}
+
+.form-consent-row label {
+  cursor: pointer;
+}
+
+.form-consent-error {
+  border-left-color: var(--deep-red);
+}
+
+/* ── 안내 블록 ──────────────────────────────────────────── */
+.form-info {
+  padding: 18px 20px;
+  border-radius: 6px;
+  background: var(--ground-3);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-info-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.05rem;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.form-info-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+  white-space: pre-line;
+}
+
+/* ── 제출 ───────────────────────────────────────────────── */
+.form-alert {
+  padding: 14px 16px;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  background: rgba(196, 48, 43, 0.12);
+  border: 1px solid rgba(196, 48, 43, 0.4);
+  color: var(--deep-red);
+}
+
+.form-submit {
+  padding: 16px 24px;
+  font: inherit;
+  font-size: 1.02rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--accent-color);
+  color: var(--on-accent);
+}
+
+.form-submit:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.form-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.form-signed-in {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  background: var(--ground-2);
+  color: var(--text-muted);
+}
+
+/* ── 미리 보기 배너 (운영진만 본다) ─────────────────────── */
+.form-preview-banner {
+  padding: 14px 18px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  background: var(--ground-3);
+  border: 1px dashed var(--soft-gold);
+  color: var(--text-color);
+}
+
+.form-preview-banner strong {
+  color: var(--soft-gold-text);
+}
+
+/* ── 안내·완료 화면 ─────────────────────────────────────── */
+.form-shell-notice,
+.form-shell-done {
+  gap: 20px;
+  padding: clamp(36px, 6vw, 56px) 0;
+  text-align: center;
+  align-items: center;
+}
+
+.form-notice-body {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.form-notice-link {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.form-done-mark {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: var(--soft-gold-text);
+}
+
+.form-receipt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px 40px;
+  border: 2px solid var(--accent-color);
+  border-radius: 8px;
+  background: var(--ground-2);
+}
+
+.form-receipt-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.form-receipt-no {
+  font-size: clamp(2.2rem, 8vw, 3rem);
+  font-family: var(--font-heading);
+  font-weight: 400;
+  color: var(--text-color);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.form-done-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 46ch;
+}
+
+.form-done-body p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.form-done-body strong {
+  color: var(--text-color);
+}
+
+@media (max-width: 640px) {
+  .form-shell {
+    width: calc(100% - 2rem);
+  }
+  .form-receipt {
+    padding: 20px 28px;
+  }
+}
