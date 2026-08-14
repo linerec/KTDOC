@@ -481,6 +481,48 @@ async function main() {
       roster.results.map((x) => `${x.student_name}(${x.period})`).join(' → '));
   }
 
+  // ── 8.5 임시 게시 — 다 해볼 수 있지만 아무것도 남지 않는다 ─────
+  console.log('\n8.5 임시 게시');
+  {
+    const before = await d1('SELECT COUNT(*) AS n FROM form_responses WHERE form_id = ?', [formId]);
+    const lockedBefore = await d1('SELECT locked_at FROM forms WHERE id = ?', [formId]);
+    await d1("UPDATE forms SET status = 'trial' WHERE id = ?", [formId]);
+
+    // 검증은 진짜와 똑같이 겪어야 한다 — 그래야 확인이 된다.
+    const bad = await submit(baseAnswers({ q2_student_name: '' }));
+    check('임시 게시에서도 검증은 그대로 돈다', bad.status === 400 && bad.body.fieldErrors?.q2_student_name,
+      `${bad.status}`);
+
+    const ok = await submit(baseAnswers({ q4_email: `trial@${TEST_EMAIL_DOMAIN}` }));
+    check('제출은 성공으로 답한다', ok.status === 200 && ok.body.success, ok.body.error);
+    check('임시 게시임을 응답에 밝힌다', ok.body.data?.trial === true, JSON.stringify(ok.body.data));
+    check('접수번호를 주지 않는다', ok.body.data?.responseId === 0, String(ok.body.data?.responseId));
+
+    const after = await d1('SELECT COUNT(*) AS n FROM form_responses WHERE form_id = ?', [formId]);
+    check('**아무것도 저장되지 않는다**', after.results[0].n === before.results[0].n,
+      `${before.results[0].n} → ${after.results[0].n}`);
+
+    // 가입도 일어나면 안 된다
+    const signup = await submit(
+      baseAnswers({ q4_email: `trialsignup@${TEST_EMAIL_DOMAIN}` }),
+      { account: { role: 'parent', password: 'testpass1234', agreed: true } }
+    );
+    check('임시 게시에서는 회원가입도 하지 않는다', signup.body.data?.trial === true);
+    const u = await sql('SELECT COUNT(*) AS n FROM users WHERE email = ?', [
+      `trialsignup@${TEST_EMAIL_DOMAIN}`,
+    ]);
+    check('계정이 만들어지지 않는다', u[0].n === 0, `${u[0].n}건`);
+
+    const lockedAfter = await d1('SELECT locked_at FROM forms WHERE id = ?', [formId]);
+    check(
+      '구조가 새로 잠기지 않는다 — 보고 나서 과목을 고칠 수 있어야 한다',
+      lockedAfter.results[0]?.locked_at === lockedBefore.results[0]?.locked_at,
+      `${lockedBefore.results[0]?.locked_at} → ${lockedAfter.results[0]?.locked_at}`
+    );
+
+    await d1("UPDATE forms SET status = 'open' WHERE id = ?", [formId]);
+  }
+
   // ── 9. 마감·초안 ────────────────────────────────────────────────
   console.log('\n9. 마감된 신청서');
   {

@@ -115,10 +115,13 @@ export default async function PublicFormPage({ params }: PageProps) {
 
   const session = await auth();
   const isOpen = form.status === 'open';
-  const canPreview = !isOpen && (await hasMenuAccess(session, 'forms'));
+  // 임시 게시 — 링크를 아는 누구나 열어 끝까지 작성해 볼 수 있지만 저장되지 않는다.
+  const isTrial = form.status === 'trial';
+  // 초안은 운영진만. 임시 게시는 계정이 없어도 열린다(원장께 링크로 보여드리는 자리다).
+  const canPreview = !isOpen && !isTrial && (await hasMenuAccess(session, 'forms'));
 
   // 마감·초안은 무슨 일인지 알려 준다. 404 로 내치면 링크를 받은 사람이 영문을 모른다.
-  if (!isOpen && !canPreview) return <ClosedNotice form={form} />;
+  if (!isOpen && !isTrial && !canPreview) return <ClosedNotice form={form} />;
 
   if (form.requires_login && !session?.user) {
     return (
@@ -143,10 +146,25 @@ export default async function PublicFormPage({ params }: PageProps) {
   return (
     <main className="form-page">
       <div className="form-shell">
+        {isTrial && (
+          <div className="form-trial-banner" role="status">
+            <p className="form-trial-title">임시 게시 · Preview only</p>
+            <p>
+              <strong>지금은 확인용으로 열어 둔 상태입니다.</strong> 끝까지 작성하고 제출까지
+              해보실 수 있지만, <strong>내용은 저장되지 않습니다.</strong> 실제 신청은 정식으로
+              접수를 연 뒤에 받습니다.
+            </p>
+            <p className="form-notice-alt">
+              This form is open for review only. You can fill it in and press submit, but nothing is
+              saved. Real registrations will be accepted once the form is officially opened.
+            </p>
+          </div>
+        )}
+
         {canPreview && (
           <div className="form-preview-banner" role="status">
             <strong>미리 보기</strong> — 아직 게시되지 않은 신청서입니다. 여기서 제출해도 접수되지
-            않습니다. 학부모님께는 보이지 않습니다.
+            않습니다. 운영진에게만 보입니다.
           </div>
         )}
 
@@ -163,6 +181,7 @@ export default async function PublicFormPage({ params }: PageProps) {
           schema={schema}
           prefill={prefill}
           preview={canPreview}
+          trial={isTrial}
           // 비회원 공개 제출에서만 로그인·가입 블록을 보인다.
           showAccount={!session?.user && !canPreview}
         />

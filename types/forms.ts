@@ -14,7 +14,17 @@ export interface Bilingual {
   en?: string;
 }
 
-export type FormStatus = 'draft' | 'open' | 'closed' | 'archived';
+/**
+ * draft   — 초안. 운영진만 미리 볼 수 있다.
+ * trial   — **임시 게시.** 링크를 아는 누구나 열어 끝까지 작성해 볼 수 있지만
+ *           **제출해도 저장되지 않는다.** 원장·관계자가 진짜 화면을 확인하는 자리다.
+ *           저장하지 않으므로 구조도 잠기지 않는다 — 보고 나서 과목을 고칠 수 있다.
+ * open    — 접수 중. 첫 제출이 들어오면 구조가 잠긴다.
+ * closed  — 마감. 응답은 그대로 남는다.
+ *
+ * ※ D1 스키마에 CHECK 제약을 걸지 않았기에 마이그레이션 없이 늘릴 수 있었다(0035 주석).
+ */
+export type FormStatus = 'draft' | 'trial' | 'open' | 'closed' | 'archived';
 export type FormKind = 'season' | 'workshop' | 'survey';
 
 export type ResponseStatus =

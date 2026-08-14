@@ -62,9 +62,11 @@ export default async function AdminFormEditPage({ params }: PageProps) {
             {form.season ? `${form.season} · ` : ''}
             {form.status === 'open'
               ? '접수 중입니다. 학부모님들이 작성할 수 있습니다.'
-              : form.status === 'closed'
-                ? '마감되었습니다. 응답은 그대로 남아 있습니다.'
-                : '초안입니다. 아직 아무에게도 보이지 않습니다.'}
+              : form.status === 'trial'
+                ? '임시 게시 상태입니다. 링크를 아는 분은 열어 볼 수 있지만 제출해도 저장되지 않습니다.'
+                : form.status === 'closed'
+                  ? '마감되었습니다. 응답은 그대로 남아 있습니다.'
+                  : '초안입니다. 아직 아무에게도 보이지 않습니다.'}
           </p>
         </div>
       </div>

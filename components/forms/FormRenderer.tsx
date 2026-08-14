@@ -34,8 +34,13 @@ interface FormRendererProps {
   schema: FormSchema;
   locale?: string;
   prefill?: FormPrefill;
-  /** 초안 미리보기 — 실제로 제출되지 않는다. */
+  /** 초안 미리보기(운영진 전용) — 제출 자체를 하지 않는다. */
   preview?: boolean;
+  /**
+   * 임시 게시 — 제출까지 진짜로 해보되 서버가 저장하지 않는다.
+   * preview 와 달리 검증·제출 흐름을 그대로 겪는다. 그것이 확인의 목적이다.
+   */
+  trial?: boolean;
   /**
    * 보낼 곳. 기본은 공개 제출이고, 대리 입력 화면이 관리 라우트를 준다.
    * 화면은 같은 것을 보여줘야 하므로(운영진이 학부모가 보는 것을 그대로 본다)
@@ -58,6 +63,7 @@ export default function FormRenderer({
   schema,
   prefill,
   preview = false,
+  trial = false,
   submitTo,
   doneHref,
   submitLabel,
@@ -230,7 +236,8 @@ export default function FormRenderer({
         doneHref
           ? doneHref(json.data.responseId)
           : `/f/${encodeURIComponent(slug)}/done?r=${json.data.responseId}` +
-            (json.data.account ? `&a=${json.data.account}` : '')
+            (json.data.account ? `&a=${json.data.account}` : '') +
+            (json.data.trial ? '&trial=1' : '')
       );
     } catch {
       setSubmitError({
@@ -350,7 +357,9 @@ export default function FormRenderer({
           ? t('forms.submit.sending', '보내는 중…')
           : preview
             ? t('forms.submit.previewLabel', '미리 보기 — 제출되지 않습니다')
-            : (submitLabel ?? t('forms.submit.label', '신청서 제출'))}
+              : trial
+              ? t('forms.submit.trialLabel', '제출해 보기 — 저장되지 않습니다')
+              : (submitLabel ?? t('forms.submit.label', '신청서 제출'))}
       </button>
     </form>
   );

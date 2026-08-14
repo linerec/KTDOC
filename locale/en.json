@@ -1578,6 +1578,8 @@
   "forms.account.pendingNote": "Your account request is submitted together with the form. New accounts are reviewed by the studio; your registration is received either way.",
   "forms.account.fixErrors": "Please check the account fields.",
   "forms.signedInAs": "Filling in as {name}. Your member details were pre-filled.",
+
+  "forms.submit.trialLabel": "Try submitting — nothing is saved",
   "forms.submit.label": "Submit registration",
   "forms.submit.sending": "Sending…",
   "forms.submit.previewLabel": "Preview — nothing is submitted",

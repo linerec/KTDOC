@@ -1578,6 +1578,8 @@
   "forms.account.pendingNote": "신청서를 제출하시면 가입도 함께 접수됩니다. 가입은 학원 확인 후 승인되며, 승인 전에도 신청서는 정상적으로 접수됩니다.",
   "forms.account.fixErrors": "회원가입 항목을 확인해 주세요.",
   "forms.signedInAs": "{name} 님으로 작성 중입니다. 회원 정보가 미리 채워졌습니다.",
+
+  "forms.submit.trialLabel": "제출해 보기 — 저장되지 않습니다",
   "forms.submit.label": "신청서 제출",
   "forms.submit.sending": "보내는 중…",
   "forms.submit.previewLabel": "미리 보기 — 제출되지 않습니다",

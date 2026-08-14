@@ -42,6 +42,19 @@ export async function getOpenFormBySlug(slug: string): Promise<FormRow | null> {
   return rows[0] ?? null;
 }
 
+/**
+ * 제출 화면을 열어 줄 수 있는 신청서 — 접수 중이거나 **임시 게시**.
+ * 임시 게시는 끝까지 작성해 볼 수 있어야 하므로 여기 포함되고,
+ * 저장하지 않는 판정은 제출 라우트가 status 로 다시 한다.
+ */
+export async function getSubmittableFormBySlug(slug: string): Promise<FormRow | null> {
+  const rows = await queryD1<FormRow>(
+    "SELECT * FROM forms WHERE slug = ? AND status IN ('open', 'trial')",
+    [slug]
+  );
+  return rows[0] ?? null;
+}
+
 /** 마감·초안 안내를 위해 상태와 무관하게 찾는다(공개 페이지가 "무슨 일인지" 말해야 한다). */
 export async function getFormBySlugAnyStatus(slug: string): Promise<FormRow | null> {
   const rows = await queryD1<FormRow>('SELECT * FROM forms WHERE slug = ?', [slug]);
@@ -217,6 +230,25 @@ export async function publishForm(formId: number): Promise<void> {
             published_at = COALESCE(published_at, datetime('now')),
             updated_at = datetime('now')
       WHERE id = ?`,
+    [formId]
+  );
+}
+
+/**
+ * 임시 게시 — 링크를 아는 누구나 열어 볼 수 있게 하되 저장은 하지 않는다.
+ * published_at 을 찍지 않는다: 아직 진짜로 연 것이 아니다.
+ */
+export async function startTrial(formId: number): Promise<void> {
+  await executeD1(
+    `UPDATE forms SET status = 'trial', updated_at = datetime('now') WHERE id = ?`,
+    [formId]
+  );
+}
+
+/** 임시 게시를 걷고 초안으로 되돌린다. */
+export async function endTrial(formId: number): Promise<void> {
+  await executeD1(
+    `UPDATE forms SET status = 'draft', updated_at = datetime('now') WHERE id = ?`,
     [formId]
   );
 }

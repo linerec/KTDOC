@@ -22,32 +22,56 @@ export const metadata: Metadata = {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ r?: string; a?: string }>;
+  searchParams: Promise<{ r?: string; a?: string; trial?: string }>;
 }
 
 export default async function FormDonePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { r, a } = await searchParams;
+  const { r, a, trial } = await searchParams;
   const form = await getFormBySlugAnyStatus(slug);
 
+  const isTrial = trial === '1';
   const receipt = Number(r);
   const receiptNo = Number.isInteger(receipt) && receipt > 0 ? String(receipt).padStart(4, '0') : null;
 
   return (
     <main className="form-page">
       <div className="form-shell form-shell-done">
-        <p className="form-done-mark" aria-hidden="true">
-          접수 완료 · RECEIVED
-        </p>
-        <h1 className="form-title">신청서가 접수되었습니다</h1>
+        {isTrial ? (
+          <>
+            <p className="form-done-mark form-done-mark-trial" aria-hidden="true">
+              임시 게시 · NOT SAVED
+            </p>
+            <h1 className="form-title">여기까지 정상적으로 작성되었습니다</h1>
+            <div className="done-account done-account-note">
+              <h2>다만 저장되지는 않았습니다</h2>
+              <p>
+                이 신청서는 <strong>확인용으로 열어 둔 상태</strong>라 방금 작성하신 내용이
+                남지 않습니다. 실제 접수는 정식으로 문을 연 뒤에 시작됩니다.
+              </p>
+              <p className="form-notice-alt">
+                This form is open for review only — what you just filled in was not saved. Real
+                registrations begin once the form is officially opened.
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="form-done-mark" aria-hidden="true">
+              접수 완료 · RECEIVED
+            </p>
+            <h1 className="form-title">신청서가 접수되었습니다</h1>
+          </>
+        )}
 
-        {receiptNo && (
+        {!isTrial && receiptNo && (
           <div className="form-receipt">
             <span className="form-receipt-label">접수번호 · Reference</span>
             <strong className="form-receipt-no">{receiptNo}</strong>
           </div>
         )}
 
+        {!isTrial && (
         <div className="form-done-body">
           <p>
             {form?.title_ko ?? '신청서'}를 잘 받았습니다.
@@ -63,8 +87,9 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
             with your reference number above — a screenshot of this page is handy.
           </p>
         </div>
+        )}
 
-        {a === 'created' && (
+        {!isTrial && a === 'created' && (
           <div className="done-account done-account-ok">
             <h2>회원가입도 함께 접수되었습니다</h2>
             <p>
@@ -80,7 +105,7 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
           </div>
         )}
 
-        {a === 'email_taken' && (
+        {!isTrial && a === 'email_taken' && (
           <div className="done-account done-account-note">
             <h2>이미 가입된 이메일입니다</h2>
             <p>
@@ -98,7 +123,7 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
           </div>
         )}
 
-        {a === 'failed' && (
+        {!isTrial && a === 'failed' && (
           <div className="done-account done-account-note">
             <h2>회원가입은 완료되지 않았습니다</h2>
             <p>

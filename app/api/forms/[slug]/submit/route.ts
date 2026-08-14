@@ -7,6 +7,7 @@
  *   2) 폼 상태·접수기간을 **서버에서 재확인** — 화면이 열려 있던 동안 마감됐을 수 있다
  *   3) requires_login 확인 (클라이언트를 믿지 않는다)
  *   4) 화면에서 사라진 문항의 답을 버리고 validateAnswers — 클라이언트 검증은 편의일 뿐이다
+ *   4.5) 임시 게시면 여기서 멈춘다 — 검증까지 겪게 하고 저장은 하지 않는다
  *   5) insertResponse (본체 단일 INSERT + 파생)
  *   6) 신청서 안에서의 회원가입 (선택) — 응답을 먼저 저장한 뒤에 만든다
  *   7) 운영진 통지 (실패해도 제출을 되돌리지 않는다)
@@ -18,7 +19,7 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { attachSubmitter, getOpenFormBySlug, insertResponse } from '@/lib/d1';
+import { attachSubmitter, getSubmittableFormBySlug, insertResponse } from '@/lib/d1';
 import { createMember, emailExists } from '@/lib/members/createMember';
 import { applyBindings, validateAnswers, visibleQuestions } from '@/lib/forms/schema';
 import { notifyStaffOfFormResponse } from '@/lib/push/system';
@@ -60,7 +61,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     // ── 2) 폼 상태를 서버에서 다시 본다
-    const form = await getOpenFormBySlug(slug);
+    const form = await getSubmittableFormBySlug(slug);
     if (!form) {
       return NextResponse.json(
         { success: false, code: 'notOpen', error: '접수가 마감되었거나 없는 신청서입니다.' },
@@ -101,6 +102,14 @@ export async function POST(request: Request, { params }: RouteParams) {
         { success: false, code: 'fieldErrors', error: '입력하지 않은 항목이 있습니다.', fieldErrors },
         { status: 400 }
       );
+    }
+
+    // ── 4.5) **임시 게시는 여기서 멈춘다.**
+    //     검증까지는 진짜와 똑같이 겪게 하고(그래야 확인이 된다) 저장만 하지 않는다.
+    //     회원가입도, 운영진 통지도, 구조 잠금도 일어나지 않는다 —
+    //     보고 나서 과목을 고칠 수 있어야 임시 게시의 뜻이 산다.
+    if (form.status === 'trial') {
+      return NextResponse.json({ success: true, data: { responseId: 0, trial: true } });
     }
 
     // ── 5) 저장. 원문 IP 는 남기지 않는다.

@@ -19441,3 +19441,34 @@ button.admin-page-tab {
   background: var(--ground-3);
   border-left: 3px solid var(--soft-gold);
 }
+
+/* ── 임시 게시 배너 ─────────────────────────────────────── */
+/* 운영진 전용 미리보기(.form-preview-banner)와 달리 **누구에게나** 보인다.
+   저장되지 않는다는 사실이 화면에서 가장 먼저 읽혀야 한다. */
+.form-trial-banner {
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: var(--ground-3);
+  border: 2px solid var(--accent-color);
+  border-left-width: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.7;
+  color: var(--text-color);
+}
+
+.form-trial-banner p {
+  margin: 0;
+}
+
+.form-trial-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.form-done-mark-trial {
+  color: var(--accent-text);
+}

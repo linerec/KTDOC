@@ -128,6 +128,32 @@ export default function FormEditor({
     setBusy(false);
   }
 
+  /** 임시 게시 시작·해제 — 저장 여부만 다르고 화면은 진짜와 같다. */
+  async function trial(on: boolean) {
+    if (busy) return;
+    if (dirty) {
+      setMessage({ kind: 'err', text: '저장하지 않은 변경이 있습니다. 먼저 저장해 주세요.' });
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/admin/forms/${form.id}/trial`, {
+        method: on ? 'POST' : 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setMessage({ kind: 'err', text: json.error || '처리하지 못했습니다.' });
+        setBusy(false);
+        return;
+      }
+      router.refresh();
+    } catch {
+      setMessage({ kind: 'err', text: '연결이 끊어졌습니다.' });
+    }
+    setBusy(false);
+  }
+
   async function act(path: 'publish' | 'close', confirmText: string) {
     if (busy) return;
     if (dirty) {
@@ -178,11 +204,44 @@ export default function FormEditor({
         {form.status === 'draft' && (
           <button
             type="button"
+            className="admin-btn admin-btn-outline"
+            onClick={() => trial(true)}
+            disabled={busy}
+            title="링크를 아는 사람이 열어 볼 수 있게 하되, 제출해도 저장되지 않습니다"
+          >
+            임시로 게시하기
+          </button>
+        )}
+
+        {form.status === 'trial' && (
+          <>
+            <a
+              href={`/f/${form.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="admin-btn admin-btn-outline"
+            >
+              임시 게시 화면 열기
+            </a>
+            <button
+              type="button"
+              className="admin-btn admin-btn-outline"
+              onClick={() => trial(false)}
+              disabled={busy}
+            >
+              임시 게시 해제
+            </button>
+          </>
+        )}
+
+        {(form.status === 'draft' || form.status === 'trial') && (
+          <button
+            type="button"
             className="admin-btn admin-btn-gold"
             onClick={() =>
               act(
                 'publish',
-                '지금 게시하면 학부모님들이 신청서를 작성할 수 있습니다.\n\n첫 신청이 들어오면 과목 항목을 나누거나 지울 수 없게 됩니다. 계속할까요?'
+                '지금 정식으로 게시하면 학부모님들의 신청이 실제로 저장되기 시작합니다.\n\n첫 신청이 들어오면 과목 항목을 나누거나 지울 수 없게 됩니다. 계속할까요?'
               )
             }
             disabled={busy}
@@ -212,7 +271,7 @@ export default function FormEditor({
           </>
         )}
 
-        {form.status !== 'open' && (
+        {form.status === 'draft' && (
           <a
             href={`/f/${form.slug}`}
             target="_blank"

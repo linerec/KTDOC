@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 
 const STATUS_LABEL: Record<FormStatus, { ko: string; cls: string }> = {
   draft: { ko: '초안', cls: 'admin-badge-muted' },
+  trial: { ko: '임시 게시', cls: 'admin-badge-warning' },
   open: { ko: '접수 중', cls: 'admin-badge-success' },
   closed: { ko: '마감', cls: 'admin-badge-warning' },
   archived: { ko: '보관', cls: 'admin-badge-muted' },
@@ -124,7 +125,7 @@ export default async function AdminFormsPage() {
                       )}
                     </td>
                     <td>
-                      {f.status === 'open' ? (
+                      {f.status === 'open' || f.status === 'trial' ? (
                         <a href={`/f/${f.slug}`} target="_blank" rel="noreferrer">
                           /f/{f.slug}
                         </a>
