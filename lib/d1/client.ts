@@ -142,3 +142,21 @@ export async function checkD1Connection(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * 여러 문장을 순차 실행한다.
+ *
+ * ⚠️ **롤백이 없다.** D1은 BEGIN/COMMIT을 거부하므로(실측: "use state.storage.transaction()")
+ * 중간에 실패하면 앞의 문장은 이미 반영된 상태로 남는다. 그래서 이 함수의 호출부는
+ * "실패해도 재계산으로 복구되는 쓰기"로 제한한다 — 지금은 신청서 파생 테이블
+ * INSERT 한 곳뿐이다(lib/d1/formResponses.ts).
+ *
+ * 응답 본체처럼 원자성이 필요한 쓰기에는 절대 쓰지 말 것. 단일 INSERT로 착지시킨다.
+ */
+export async function batchD1(
+  statements: Array<{ sql: string; params?: unknown[] }>
+): Promise<void> {
+  for (const s of statements) {
+    await executeD1(s.sql, s.params ?? []);
+  }
+}

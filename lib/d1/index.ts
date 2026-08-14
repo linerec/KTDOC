@@ -2,7 +2,7 @@
  * D1 Module Exports
  */
 
-export { queryD1, executeD1, checkD1Connection } from './client';
+export { queryD1, executeD1, checkD1Connection, batchD1 } from './client';
 export {
   getLocaleMessages,
   getAllLocaleMessages,
@@ -229,3 +229,54 @@ export {
   adminAllEvents,
 } from './eventViews';
 export type { BrowseParams } from './eventViews';
+
+// ── 신청서(질문지) 시스템 ──────────────────────────────────────
+export { chunkParams } from './chunk';
+
+// 응답 목록의 '관점' — eventViews 와 같은 규칙
+export { publicFormBySlug, adminResponseList, rosterView } from './formViews';
+export type { PublicFormView, AdminResponseListView, RosterView } from './formViews';
+
+export {
+  LOCKED_ERROR_PREFIX,
+  getForms,
+  getFormById,
+  getOpenFormBySlug,
+  getFormBySlugAnyStatus,
+  getFormSlugById,
+  slugExists,
+  createForm,
+  snapshotSchemaVersion,
+  getSchemaVersion,
+  getSchemaVersionList,
+  updateFormSchema,
+  updateFormMeta,
+  publishForm,
+  closeForm,
+  lockFormOnFirstResponse,
+  duplicateForm,
+  deleteForm,
+} from './forms';
+export type { CreateFormInput } from './forms';
+
+export {
+  insertResponse,
+  rebuildDerived,
+  rebuildDirtyForForm,
+  countDirty,
+  getResponseById,
+  getSelections,
+  getConsents,
+  getResponses,
+  getResponseCountsByForm,
+  getPendingResponseCounts,
+  updateResponseStatus,
+  addResponseNote,
+  getResponseNotes,
+  recordSensitiveView,
+  linkResponseToMember,
+  markPromoted,
+  getRoster,
+  getSelectionCounts,
+} from './formResponses';
+export type { InsertResponseInput, RosterRow } from './formResponses';
