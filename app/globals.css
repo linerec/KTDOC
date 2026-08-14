@@ -19472,3 +19472,14 @@ button.admin-page-tab {
 .form-done-mark-trial {
   color: var(--accent-text);
 }
+
+/* 공유 탭 — 임시 게시 QR 안내 */
+.share-trial-note {
+  padding: 14px 16px;
+  border-radius: 6px;
+  background: var(--ground-3);
+  border-left: 3px solid var(--accent-color);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-color);
+}

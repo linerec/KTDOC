@@ -1496,6 +1496,8 @@
 
 
 
+
+  "admin.forms.qrHintTrial": "Scan with a phone to open the preview form",
   "admin.forms.qrHint": "Scan with a phone to open the form",
 
   "admin.home.urgentForms": "{n} new form entries have come in",

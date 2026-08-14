@@ -640,22 +640,42 @@ export default function FormEditor({
       {/* ── 공유 ───────────────────────────────────────── */}
       {tab === 'share' && (
         <div className="admin-card form-editor-panel">
-          {form.status === 'open' ? (
+          {/* 임시 게시에서도 QR을 만든다. 확인을 부탁드리는 자리에서 주소를 손으로
+              옮겨 적게 하면 아무도 열어 보지 않는다 — 휴대폰으로 바로 열리는 것이 요점이다.
+              주소는 정식 게시와 같으므로, 나중에 정식으로 열어도 같은 QR이 그대로 산다. */}
+          {form.status === 'open' || form.status === 'trial' ? (
             <>
+              {form.status === 'trial' && (
+                <div className="share-trial-note">
+                  <strong>임시 게시 중입니다.</strong> 이 QR로 들어오면 신청서를 끝까지 작성하고
+                  제출까지 해볼 수 있지만 <strong>내용은 저장되지 않습니다.</strong> 확인을
+                  부탁드릴 때 쓰세요.
+                  <br />
+                  주소는 정식 게시 뒤에도 그대로이므로, <strong>이 QR을 그대로 다시 쓰실 수
+                  있습니다.</strong>
+                </div>
+              )}
               <p className="admin-field-help">
                 아래 QR을 저장하거나 주소를 복사해 카톡·문자로 보내세요. 휴대폰으로 스캔하면 바로
                 신청서가 열립니다.
               </p>
               <ShareQrCard
-                title={form.title_ko}
+                title={
+                  form.status === 'trial' ? `[확인용] ${form.title_ko}` : form.title_ko
+                }
                 path={`/f/${form.slug}`}
-                hint={t('admin.forms.qrHint', '휴대폰으로 스캔하면 신청서가 열립니다')}
+                hint={
+                  form.status === 'trial'
+                    ? t('admin.forms.qrHintTrial', '휴대폰으로 스캔하면 확인용 신청서가 열립니다')
+                    : t('admin.forms.qrHint', '휴대폰으로 스캔하면 신청서가 열립니다')
+                }
               />
             </>
           ) : (
             <p className="admin-field-help">
-              아직 게시하지 않아 공유 주소가 열려 있지 않습니다. <strong>게시하기</strong>를 누르면
-              QR과 링크가 만들어집니다.
+              아직 열지 않아 공유 주소가 닫혀 있습니다. <strong>임시로 게시하기</strong>를 누르면
+              저장되지 않는 확인용 QR이, <strong>게시하기</strong>를 누르면 실제 신청용 QR이
+              만들어집니다. 주소는 둘 다 같습니다.
             </p>
           )}
         </div>

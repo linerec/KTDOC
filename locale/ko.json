@@ -1496,6 +1496,8 @@
 
 
 
+
+  "admin.forms.qrHintTrial": "휴대폰으로 스캔하면 확인용 신청서가 열립니다",
   "admin.forms.qrHint": "휴대폰으로 스캔하면 신청서가 열립니다",
 
   "admin.home.urgentForms": "신청서로 새 신청 {n}건이 들어왔습니다",
