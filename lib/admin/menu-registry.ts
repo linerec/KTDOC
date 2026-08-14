@@ -85,6 +85,11 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 선생님도 수업에 배정된다(함께 서는 무대·연수) — 배정만 되고 볼 곳이 없으면 안 된다.
   { key: 'my-classes', href: '/admin/my-classes', label: '내 수업', iconKey: 'calendar', group: 'lesson', defaultRoles: ['student', 'parent', 'teacher'] },
   { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램 관리', iconKey: 'calendar', group: 'lesson', defaultRoles: ['teacher', 'admin'] },
+  // 신청서: 질문지를 만들어 QR·링크로 뿌리고, 들어온 응답을 확인해 수강 배정까지 잇는다.
+  // 구글폼을 대체하는 자리라 하위 화면(응답 목록·상세·명단)이 여럿이지만, 메뉴는 하나로 족하다 —
+  // resolveMenuKey가 세그먼트 longest-match라 /admin/forms/* 가 이 키를 상속한다.
+  // 의료정보·연락처가 놓이는 화면이므로 fail-closed로 admin부터 연다(선생님 열람은 2단계).
+  { key: 'forms', href: '/admin/forms', label: '신청서 관리', iconKey: 'inbox', group: 'lesson', defaultRoles: ['admin'] },
   // 신청 현황: 공개 신청 폼으로 들어온 신청자를 확인·응대(admin 전용).
   // 수업을 관리하다 신청자를 보는 흐름이라 메뉴를 세우지 않고 '수업 · 프로그램 관리'의 버튼으로 연다.
   { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', parentKey: 'programs', hidden: true, group: 'lesson', defaultRoles: ['admin'] },
