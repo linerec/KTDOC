@@ -1500,6 +1500,11 @@
 
   "admin.home.urgentForms": "{n} new form entries have come in",
   "admin.home.viewFormResponses": "View forms",
+
+  "admin.programs.secApply": "Taking registrations",
+  "admin.programs.applyForm": "Registration form",
+  "admin.programs.applyFormNone": "Not linked (use the old inline form)",
+  "admin.programs.applyFormHelp": "Linking a form makes this class’s Apply button open it. If the linked form isn’t published yet, the button keeps working the old way.",
   "admin.forms.subtitle": "Create registration forms, share them by link or QR, and review the entries that come in.",
   "admin.forms.new": "+ New form",
   "admin.forms.provisionalTitle": "Some decisions still need the director’s confirmation",

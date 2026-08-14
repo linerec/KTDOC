@@ -17,6 +17,7 @@ import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
 import { getFormBySlugAnyStatus } from '@/lib/d1';
 import { allQuestions } from '@/lib/forms/schema';
+import FormHead from '@/components/forms/FormHead';
 import FormRenderer, { type FormPrefill } from '@/components/forms/FormRenderer';
 import type { Answers, FormRow, FormSchema } from '@/types/forms';
 
@@ -75,8 +76,13 @@ function ClosedNotice({ form }: { form: FormRow }) {
             ? '접수가 마감되었습니다. 문의가 있으시면 학원으로 연락 주세요.'
             : '아직 접수가 시작되지 않았습니다. 잠시 후 다시 확인해 주세요.'}
         </p>
+        <p className="form-notice-body form-notice-alt">
+          {closed
+            ? 'Registration is closed. Please contact the studio if you have questions.'
+            : 'Registration has not opened yet. Please check back a little later.'}
+        </p>
         <Link href="/" className="form-notice-link">
-          KTDOC 홈으로
+          KTDOC 홈으로 / Home
         </Link>
       </div>
     </main>
@@ -95,8 +101,12 @@ export default async function PublicFormPage({ params }: PageProps) {
           <p className="form-notice-body">
             주소가 바뀌었거나 삭제된 신청서입니다. 받으신 링크를 다시 확인해 주세요.
           </p>
+          <p className="form-notice-body form-notice-alt">
+            We couldn&rsquo;t find this form. The address may have changed — please check the link
+            you received.
+          </p>
           <Link href="/" className="form-notice-link">
-            KTDOC 홈으로
+            KTDOC 홈으로 / Home
           </Link>
         </div>
       </main>
@@ -116,8 +126,11 @@ export default async function PublicFormPage({ params }: PageProps) {
         <div className="form-shell form-shell-notice">
           <h1 className="form-title">{form.title_ko}</h1>
           <p className="form-notice-body">이 신청서는 로그인 후 작성하실 수 있습니다.</p>
+          <p className="form-notice-body form-notice-alt">
+            Please sign in to fill out this form.
+          </p>
           <Link href={`/login?callbackUrl=/f/${encodeURIComponent(slug)}`} className="form-notice-link">
-            로그인하고 작성하기
+            로그인하고 작성하기 / Sign in
           </Link>
         </div>
       </main>
@@ -137,12 +150,13 @@ export default async function PublicFormPage({ params }: PageProps) {
           </div>
         )}
 
-        <header className="form-head">
-          {form.season && <p className="form-season">{form.season}</p>}
-          <h1 className="form-title">{form.title_ko}</h1>
-          {form.title_en && <p className="form-title-en">{form.title_en}</p>}
-          {form.description_ko && <p className="form-desc">{form.description_ko}</p>}
-        </header>
+        <FormHead
+          season={form.season}
+          titleKo={form.title_ko}
+          titleEn={form.title_en}
+          descriptionKo={form.description_ko}
+          descriptionEn={form.description_en}
+        />
 
         <FormRenderer slug={form.slug} schema={schema} prefill={prefill} preview={canPreview} />
       </div>

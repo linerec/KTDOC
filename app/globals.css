@@ -19193,3 +19193,51 @@ button.admin-page-tab {
   font-size: 1rem;
   font-weight: 600;
 }
+
+/* ── 신청서 언어 전환 ───────────────────────────────────── */
+/* 헤더에도 전환이 있지만 이 페이지는 링크·QR로 처음 들어오는 자리라
+   폼 안에 다시 세운다. 'ko/en'이 아니라 '한국어 / English'로 적는 이유:
+   자기 말을 읽을 줄 알아야 자기 말을 찾을 수 있다. */
+.form-lang {
+  display: flex;
+  gap: 0;
+  align-self: flex-end;
+  border: 1px solid rgba(var(--fg-rgb), 0.22);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.form-lang-btn {
+  padding: 7px 16px;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.form-lang-btn:hover {
+  color: var(--text-color);
+}
+
+.form-lang-btn.is-active {
+  background: var(--accent-color);
+  color: var(--on-accent);
+}
+
+.form-lang-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -2px;
+}
+
+/* 안내·완료 화면의 영문 병기 — 한국어 아래에 한 단 낮춰 둔다 */
+.form-notice-alt {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.12);
+}

@@ -37,13 +37,13 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
     <main className="form-page">
       <div className="form-shell form-shell-done">
         <p className="form-done-mark" aria-hidden="true">
-          접수 완료
+          접수 완료 · RECEIVED
         </p>
         <h1 className="form-title">신청서가 접수되었습니다</h1>
 
         {receiptNo && (
           <div className="form-receipt">
-            <span className="form-receipt-label">접수번호</span>
+            <span className="form-receipt-label">접수번호 · Reference</span>
             <strong className="form-receipt-no">{receiptNo}</strong>
           </div>
         )}
@@ -57,10 +57,15 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
             문의가 있으시면 접수번호와 함께 학원으로 연락 주세요.
             이 화면을 캡처해 두시면 편합니다.
           </p>
+          <p className="form-notice-alt">
+            Your registration has been received. We will review it and contact you individually with
+            the final tuition and payment details. If you have questions, please contact the studio
+            with your reference number above — a screenshot of this page is handy.
+          </p>
         </div>
 
         <Link href="/" className="form-notice-link">
-          KTDOC 홈으로
+          KTDOC 홈으로 / Home
         </Link>
       </div>
     </main>

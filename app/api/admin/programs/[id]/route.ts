@@ -108,6 +108,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.is_published !== undefined) input.is_published = body.is_published;
     if (body.is_featured !== undefined) input.is_featured = body.is_featured;
     if (body.sort_order !== undefined) input.sort_order = body.sort_order;
+    // 신청서 연결. null 은 '연결 끊기'라는 뜻이라 undefined 와 구분해서 받는다.
+    if (body.active_form_id !== undefined) {
+      input.active_form_id =
+        body.active_form_id === null ? null : Number(body.active_form_id) || null;
+    }
 
     // 포스터 교체 시 기존 R2 파일 삭제
     if (input.poster_r2_key && program.poster_r2_key && program.poster_r2_key !== input.poster_r2_key) {
