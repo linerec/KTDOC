@@ -43,9 +43,14 @@ export default async function AdminCalendarPage() {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
+          {/* 사이드바에 이 화면의 메뉴는 없다 — 돌아갈 곳(캘린더)을 빵부스러기가 대신 짚어 준다. */}
           <div className="admin-breadcrumb">
             <Link href="/admin">
-              <T k="admin.nav.home">홈</T>
+              <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
+            <span>/</span>
+            <Link href="/admin/schedule">
+              <T k="admin.nav.schedule">캘린더</T>
             </Link>
             <span>/</span>
             <span>

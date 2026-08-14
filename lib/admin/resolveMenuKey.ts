@@ -9,8 +9,9 @@
  * DB 의존성 없음 — 미들웨어·서버 레이아웃·클라이언트가 공유한다.
  */
 
-import { MENU_REGISTRY } from '@/lib/admin/menu-registry';
-import type { MenuKey } from '@/types/permissions';
+// node --test가 별칭(@/)을 풀지 못하므로 상대 경로로 쓴다 — 이 파일은 시험 대상이다.
+import { MENU_REGISTRY } from './menu-registry.ts';
+import type { MenuKey } from '../../types/permissions.ts';
 
 export function resolveMenuKey(pathname: string | null | undefined): MenuKey | null {
   if (!pathname) return null;

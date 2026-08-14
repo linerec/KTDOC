@@ -68,6 +68,13 @@ export interface MenuNode {
   group: MenuGroupKey;
   /** 서브메뉴 그룹핑(상위 메뉴 key) */
   parentKey?: MenuKey;
+  /**
+   * 사이드바·하단바에서 감춘다(권한·라우팅은 그대로).
+   * 목록에서 빼는 것이지 문을 여는 게 아니다 — 페이지는 계속 requireMenuAccess로
+   * 스스로를 지키고, 권한 관리 툴에도 행으로 남는다. 진입은 parentKey 페이지 안의
+   * 버튼으로 하므로 hidden 노드는 parentKey를 반드시 가진다(menuNav.test.ts).
+   */
+  hidden?: boolean;
   /** /admin 처럼 정확히 일치할 때만 활성화 */
   exact?: boolean;
   /** DB에 권한 행이 없을 때(미설정) 적용되는 폴백. 신규 메뉴는 fail-closed로 ['admin'] 권장 */
@@ -91,6 +98,12 @@ export interface NavMenu {
   labelKey: string;
   /** 서브메뉴 들여쓰기 여부 */
   sub: boolean;
+  /**
+   * 이 항목이 대신 켜져야 하는 경로들 — 사이드바에서 감춘(hidden) 자식 페이지.
+   * 자식이 목록에 없으니, 거기 서 있는 동안 부모가 활성 표시를 넘겨받는다.
+   * 자식 권한이 없는 사람에게는 빈 배열이다.
+   */
+  alsoActiveFor: string[];
   /** 소속 섹션 키(헤더 삽입 판정용) */
   group: MenuGroupKey;
   /** 섹션 소제목('' = 헤더 미표시) */
@@ -119,6 +132,8 @@ export interface ToolRow {
   label: string;
   href: string;
   sub: boolean;
+  /** 사이드바에 없는 메뉴(상위 페이지 안에서 진입) — 권한은 여기서 그대로 다룬다 */
+  hidden: boolean;
   fixed: boolean;
   requireRole?: MemberRole;
   cells: Record<MemberRole, ToolCell>;

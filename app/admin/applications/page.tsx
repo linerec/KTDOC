@@ -45,9 +45,14 @@ export default async function AdminApplicationsPage({ searchParams }: PageProps)
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
+          {/* 사이드바에 이 화면의 메뉴는 없다 — 돌아갈 곳(수업 관리)을 빵부스러기가 대신 짚어 준다. */}
           <div className="admin-breadcrumb">
             <Link href="/admin">
               <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
+            <span>/</span>
+            <Link href="/admin/programs">
+              <T k="admin.nav.programs">수업 · 프로그램 관리</T>
             </Link>
             <span>/</span>
             <span>
@@ -63,11 +68,6 @@ export default async function AdminApplicationsPage({ searchParams }: PageProps)
               연락하세요.
             </T>
           </p>
-        </div>
-        <div className="admin-header-actions">
-          <Link href="/admin/programs" className="admin-btn admin-btn-outline">
-            <T k="admin.home.programsManage">프로그램 관리</T>
-          </Link>
         </div>
       </div>
 

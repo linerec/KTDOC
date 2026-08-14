@@ -11,9 +11,10 @@
  */
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { auth } from '@/auth';
 import { canSelfCheckIn } from '@/lib/isAdmin';
-import { requireMenuAccess } from '@/lib/admin/permissions';
+import { hasMenuAccess, requireMenuAccess } from '@/lib/admin/permissions';
 import {
   getEvents,
   getUserCheckedInEventIds,
@@ -26,6 +27,8 @@ import { expandClassesForMonth } from '@/lib/programSchedule';
 import ScheduleCalendar, { type CalendarItem } from '@/components/admin/schedule/ScheduleCalendar';
 import type { MemberRole } from '@/types/members';
 import type { MyEnrollment } from '@/types/programs';
+import { PROGRAM_TYPE_LABELS } from '@/types/programs';
+import T from '@/components/common/T';
 
 export const metadata: Metadata = {
   title: '캘린더 | KTDOC Admin',
@@ -59,6 +62,10 @@ function timeRange(start: string | null, end: string | null): string | null {
 export default async function AdminSchedulePage({ searchParams }: PageProps) {
   const session = await auth();
   await requireMenuAccess(session, 'schedule');
+
+  // 구독 피드 설정은 사이드바에 없다 — 달력을 보다 "이걸 내 폰에 넣고 싶다"가 되는
+  // 자리라 여기 버튼으로 연다. 노출과 접근이 같은 판정(menu_key 'calendar')을 쓴다.
+  const canManageFeed = await hasMenuAccess(session, 'calendar');
 
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? null;
@@ -99,11 +106,14 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
       date,
       type: e.kind === 'school' ? 'school' : 'performance',
       title: e.title_ko,
+      titleEn: e.title_en,
       time: timeRange(e.start_time, e.end_time),
       href: `/admin/library/${e.id}`,
       isMine: canCheckIn && checkedInIds.has(e.id),
       isDraft: e.is_published === 0,
+      // 장소는 한 벌뿐이라 두 언어가 같은 값을 쓴다 — 분류만 언어를 탄다.
       note: e.location || e.category_name_ko || null,
+      noteEn: e.location || e.category_name_en || null,
     });
   }
 
@@ -116,9 +126,11 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
         date,
         type: 'class',
         title: c.title_ko,
+        titleEn: c.title_en,
         time: c.time,
         href: `/admin/my-classes/${c.programId}`,
-        note: c.isCamp ? '캠프' : null,
+        note: c.isCamp ? PROGRAM_TYPE_LABELS.camp.ko : null,
+        noteEn: c.isCamp ? PROGRAM_TYPE_LABELS.camp.en : null,
       });
     });
   }
@@ -131,12 +143,31 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
-          <h1 className="admin-title">캘린더</h1>
+          <h1 className="admin-title">
+            <T k="admin.nav.schedule">캘린더</T>
+          </h1>
           <p className="admin-subtitle">
-            공연·행사와 내 수업 일정을 월별로 확인합니다. 날짜를 누르면 그 날 일정이 아래에 펼쳐집니다.
-            {canCheckIn && ' 내가 참여하는 공연은 ✓로 표시됩니다.'}
+            <T k="admin.schedule.subtitle">
+              공연·행사와 내 수업 일정을 월별로 확인합니다. 날짜를 누르면 그 날 일정이 아래에
+              펼쳐집니다.
+            </T>
+            {canCheckIn && (
+              <>
+                {' '}
+                <T k="admin.schedule.subtitleCheckin">
+                  내가 참여하는 공연은 ✓로 표시됩니다.
+                </T>
+              </>
+            )}
           </p>
         </div>
+        {canManageFeed && (
+          <div className="admin-header-actions">
+            <Link href="/admin/calendar" className="admin-btn admin-btn-outline">
+              <T k="admin.nav.calendar">캘린더 구독</T>
+            </Link>
+          </div>
+        )}
       </div>
 
       <ScheduleCalendar

@@ -15,6 +15,8 @@ export interface ClassOccurrence {
   programId: number;
   slug: string;
   title_ko: string;
+  /** 영문 제목(비어 있으면 null) — 캘린더가 언어에 맞춰 고른다 */
+  title_en: string | null;
   time: string | null; // "HH:MM" 또는 "HH:MM~HH:MM" (캠프는 null=종일)
   isCamp: boolean;
 }
@@ -63,6 +65,7 @@ export function expandClassesForMonth(
             programId: p.id,
             slug: p.slug,
             title_ko: p.title_ko,
+            title_en: p.title_en,
             time: null,
             isCamp: true,
           });
@@ -90,6 +93,7 @@ export function expandClassesForMonth(
         programId: p.id,
         slug: p.slug,
         title_ko: p.title_ko,
+        title_en: p.title_en,
         time,
         isCamp: false,
       });

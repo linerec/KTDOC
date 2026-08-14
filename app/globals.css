@@ -7146,6 +7146,13 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: var(--text-muted);
 }
 
+/* 사이드바에 없는 메뉴(상위 페이지의 버튼으로 진입) — 잠김 표시와 같은 톤의 보조 문구 */
+.perm-hidden-tag {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .perm-cell {
   text-align: center;
 }

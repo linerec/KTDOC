@@ -227,6 +227,12 @@ export default function PermissionMatrix({
                         {t('admin.perm.locked', '관리자 전용 · 잠김')}
                       </span>
                     )}
+                    {/* 사이드바에 없는 메뉴 — 여기서 권한을 거두면 상위 페이지의 버튼도 사라진다 */}
+                    {row.hidden && (
+                      <span className="perm-hidden-tag">
+                        {t('admin.perm.navHidden', '메뉴 없음 · 상위 페이지에서 진입')}
+                      </span>
+                    )}
                   </div>
                 </td>
                 {roles.map((role) => {

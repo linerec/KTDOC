@@ -5,7 +5,7 @@
 
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { requireMenuAccess } from '@/lib/admin/permissions';
+import { hasMenuAccess, requireMenuAccess } from '@/lib/admin/permissions';
 import { getEvents, getCategories, getYears, adminAllEvents} from '@/lib/d1';
 import EventTable from '@/components/admin/gallery/EventTable';
 import CategoryManagerModal from '@/components/admin/gallery/CategoryManagerModal';
@@ -28,6 +28,10 @@ interface PageProps {
 export default async function AdminGalleryPage({ searchParams }: PageProps) {
   const session = await auth();
   await requireMenuAccess(session, 'gallery');
+
+  // 사진 보관함은 사이드바에 없다 — 여기 버튼이 유일한 진입점이라 권한을 함께 본다
+  // (선생님에게 보이기만 하고 누르면 튕기던 버튼이었다).
+  const canSeePhotos = await hasMenuAccess(session, 'gallery.photos');
 
   const params = await searchParams;
   const [eventsResult, categories, years] = await Promise.all([
@@ -70,9 +74,11 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
         </div>
         <div className="admin-header-actions">
           <CategoryManagerModal initialCategories={categories} />
-          <Link href="/admin/gallery/photos" className="admin-btn admin-btn-outline">
-            <T k="admin.nav.gallery.photos">사진 보관함</T>
-          </Link>
+          {canSeePhotos && (
+            <Link href="/admin/gallery/photos" className="admin-btn admin-btn-outline">
+              <T k="admin.nav.gallery.photos">사진 보관함</T>
+            </Link>
+          )}
           <Link href="/admin/gallery/new" className="admin-btn admin-btn-primary">
             <T k="admin.events.new">+ 새로 만들기</T>
           </Link>

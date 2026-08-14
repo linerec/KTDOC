@@ -66,15 +66,22 @@ export default function AdminShell({
     }
   }, [moreOpen]);
 
-  // 현재 경로에 가장 길게 일치하는 메뉴 하나만 활성화 (상·하위 메뉴 중복 방지)
+  // 현재 경로에 가장 길게 일치하는 메뉴 하나만 활성화 (상·하위 메뉴 중복 방지).
+  // 사이드바에서 감춘 자식 페이지(alsoActiveFor, 예: Q&A 관리)에 서 있으면 부모가 켜진다.
   const activeHref = useMemo(() => {
     let best = '';
+    let bestLen = 0;
     for (const item of menus) {
-      const matched =
-        item.href === '/admin'
-          ? pathname === '/admin'
-          : pathname === item.href || pathname.startsWith(item.href + '/');
-      if (matched && item.href.length > best.length) best = item.href;
+      for (const href of [item.href, ...item.alsoActiveFor]) {
+        const matched =
+          href === '/admin'
+            ? pathname === '/admin'
+            : pathname === href || pathname.startsWith(href + '/');
+        if (matched && href.length > bestLen) {
+          best = item.href; // 켜지는 것은 언제나 목록에 있는 항목이다
+          bestLen = href.length;
+        }
+      }
     }
     return best;
   }, [pathname, menus]);

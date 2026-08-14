@@ -18,24 +18,17 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import type { Session } from 'next-auth';
 import { query } from '@/lib/db';
-import {
-  MENU_REGISTRY,
-  getGroupLabel,
-  getGroupLabelKey,
-  getMenuLabelKey,
-  isKnownMenuKey,
-  isStaffOnlyMenu,
-} from '@/lib/admin/menu-registry';
+import { MENU_REGISTRY, isKnownMenuKey } from '@/lib/admin/menu-registry';
 import {
   viewerOf,
   effectiveAllowed,
   effectiveAllowedByKey,
+  getAllowedMenus,
   type MenuViewer,
 } from '@/lib/admin/menuAccess';
 import { MEMBER_ROLES, type MemberRole } from '@/types/members';
 import type {
   MenuKey,
-  NavMenu,
   PermMatrix,
   ToolRow,
   ToolCell,
@@ -45,8 +38,8 @@ import type {
 // 레거시 'admin'은 여기 없다 — 관리 권한은 열이 아니라 플래그다.
 const ALL_ROLES: MemberRole[] = MEMBER_ROLES;
 
-// 판정 자체는 순수 모듈(menuAccess)에 있다 — 여기서 재수출해 호출부는 그대로 둔다.
-export { viewerOf, effectiveAllowed, effectiveAllowedByKey };
+// 판정·네비 계산은 순수 모듈(menuAccess)에 있다 — 여기서 재수출해 호출부는 그대로 둔다.
+export { viewerOf, effectiveAllowed, effectiveAllowedByKey, getAllowedMenus };
 export type { MenuViewer };
 
 /**
@@ -96,24 +89,6 @@ export const getPermMatrix = cache(async (): Promise<PermMatrix> => {
     throw err;
   }
 });
-
-/** 주체가 볼 수 있는 네비 메뉴(직렬화 가능) */
-export function getAllowedMenus(viewer: MenuViewer, matrix: PermMatrix): NavMenu[] {
-  return MENU_REGISTRY.filter((node) => effectiveAllowed(node, viewer, matrix)).map(
-    (node) => ({
-      key: node.key,
-      href: node.href,
-      label: node.label,
-      labelKey: getMenuLabelKey(node.key),
-      iconKey: node.iconKey,
-      sub: !!node.parentKey,
-      group: node.group,
-      groupLabel: getGroupLabel(node.group),
-      groupLabelKey: getGroupLabelKey(node.group),
-      staffOnly: isStaffOnlyMenu(node),
-    })
-  );
-}
 
 /**
  * 메뉴 접근 강제. 권한 없으면 redirect (절대 /admin 하위로 보내지 않음 → 무한루프 방지).
@@ -179,6 +154,8 @@ export function buildToolMatrix(matrix: PermMatrix): ToolRow[] {
       label: node.label,
       href: node.href,
       sub: !!node.parentKey,
+      // 사이드바에 없는 메뉴도 여기서는 다룬다 — 권한을 거둘 곳이 여기뿐이다.
+      hidden: !!node.hidden,
       fixed: !!node.fixed,
       requireRole: node.requireRole,
       cells,

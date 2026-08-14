@@ -1087,7 +1087,6 @@
   "admin.news.category.press": "Press",
   "admin.news.category.video": "Video",
   "admin.faq.subtitle": "Write up the questions that come up often about performances and events. Published ones show under 'Q&A' for students and parents.",
-  "admin.faq.previewMember": "Preview the member view",
   "admin.faq.allTargets": "All targets",
   "admin.faq.target": "Target",
   "admin.faq.targetGeneral": "General",
@@ -1418,6 +1417,7 @@
   "admin.perm.colMenu": "Menu",
   "admin.perm.colPreset": "Quick set",
   "admin.perm.locked": "Admin only · locked",
+  "admin.perm.navHidden": "Not in the menu · opened from its parent page",
   "admin.perm.presetPrompt": "Preset...",
   "admin.perm.preset.public": "Everyone",
   "admin.perm.preset.studentParent": "Students + parents",
@@ -1488,6 +1488,9 @@
   "admin.notFound.title": "Page not found",
   "admin.notFound.text": "That screen doesn't exist, or its address changed. Pick something from the menu on the left, or use the button below to start over.",
   "admin.notFound.home": "Start over",
+
+  "admin.schedule.subtitle": "See performances, events and your classes month by month. Tap a day and its schedule opens below.",
+  "admin.schedule.subtitleCheckin": "Performances you're attending are marked with ✓.",
 
   "push.card.onOk": "Alerts are on. We'll let you know on this device when there's news.",
   "push.card.onFail": "We couldn't turn alerts on.",

@@ -5,7 +5,7 @@
 
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { requireMenuAccess } from '@/lib/admin/permissions';
+import { hasMenuAccess, requireMenuAccess } from '@/lib/admin/permissions';
 import { getPrograms } from '@/lib/d1';
 import ProgramTable from '@/components/admin/programs/ProgramTable';
 import ProgramFilters from '@/components/admin/programs/ProgramFilters';
@@ -23,6 +23,10 @@ interface PageProps {
 export default async function AdminProgramsPage({ searchParams }: PageProps) {
   const session = await auth();
   await requireMenuAccess(session, 'programs');
+
+  // 신청 현황은 사이드바에 없다 — 여기 버튼이 유일한 진입점이라 권한을 함께 본다
+  // (선생님에게 보이기만 하고 누르면 튕기던 버튼이었다).
+  const canSeeApplications = await hasMenuAccess(session, 'applications');
 
   const params = await searchParams;
   const typeFilter =
@@ -61,9 +65,11 @@ export default async function AdminProgramsPage({ searchParams }: PageProps) {
           </p>
         </div>
         <div className="admin-header-actions">
-          <Link href="/admin/applications" className="admin-btn admin-btn-outline">
-            <T k="admin.programs.manageApplicants">신청자 관리</T>
-          </Link>
+          {canSeeApplications && (
+            <Link href="/admin/applications" className="admin-btn admin-btn-outline">
+              <T k="admin.programs.manageApplicants">신청자 관리</T>
+            </Link>
+          )}
           <Link href="/admin/programs/new" className="admin-btn admin-btn-primary">
             <T k="admin.programs.new">+ 새 프로그램 만들기</T>
           </Link>

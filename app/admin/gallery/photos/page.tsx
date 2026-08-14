@@ -60,9 +60,7 @@ export default async function AdminGalleryPhotosPage() {
           </p>
         </div>
         <div className="admin-header-actions">
-          <Link href="/admin/gallery" className="admin-btn admin-btn-outline">
-            <T k="admin.home.galleryTitle">공연 관리</T>
-          </Link>
+          {/* 공연 관리로 돌아가는 길은 빵부스러기가 맡는다 — 같은 곳에 버튼을 겹치지 않는다. */}
           <Link href="/gallery" className="admin-btn admin-btn-outline" target="_blank">
             <T k="admin.photos.publicGallery">공개 갤러리</T>
           </Link>

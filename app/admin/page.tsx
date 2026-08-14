@@ -9,7 +9,7 @@
 
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
-import { requireMenuAccess } from '@/lib/admin/permissions';
+import { hasMenuAccess, requireMenuAccess } from '@/lib/admin/permissions';
 import {
   getCategories,
   getEvents,
@@ -25,10 +25,6 @@ import type { MemberRole } from '@/types/members';
 import StudentDashboard from '@/components/admin/StudentDashboard';
 import StaffDashboard from '@/components/admin/StaffDashboard';
 import { countUnread } from '@/lib/push/notifications';
-
-export const metadata: Metadata = {
-  title: '관리 홈 | KTDOC Admin',
-};
 
 /**
  * 오늘 열리는 공개 행사 — 두 대시보드가 함께 쓴다.
@@ -46,6 +42,10 @@ async function getTodayEvents() {
     return [];
   }
 }
+
+export const metadata: Metadata = {
+  title: '관리 홈 | KTDOC Admin',
+};
 
 export default async function AdminDashboardPage() {
   const session = await auth();
@@ -93,6 +93,13 @@ export default async function AdminDashboardPage() {
     getTodayEvents(),
   ]);
 
+  // 신청 현황·사진 보관함은 사이드바에서 뺀 화면이라 이 대시보드가 사실상의 진입점이다.
+  // 카드 노출과 페이지 접근이 같은 판정(menu_key)을 쓰게 해, 눌러야 막히는 문을 없앤다.
+  const [canSeeApplications, canSeePhotos] = await Promise.all([
+    hasMenuAccess(session, 'applications'),
+    hasMenuAccess(session, 'gallery.photos'),
+  ]);
+
   const adminName = session?.user?.name || session?.user?.email?.split('@')[0] || '관리자';
 
   return (
@@ -107,6 +114,8 @@ export default async function AdminDashboardPage() {
       categoryCount={categories.length}
       membersTotal={memberCounts.total}
       todayEvents={todayEvents}
+      canSeeApplications={canSeeApplications}
+      canSeePhotos={canSeePhotos}
     />
   );
 }

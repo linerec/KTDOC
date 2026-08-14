@@ -85,10 +85,12 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 선생님도 수업에 배정된다(함께 서는 무대·연수) — 배정만 되고 볼 곳이 없으면 안 된다.
   { key: 'my-classes', href: '/admin/my-classes', label: '내 수업', iconKey: 'calendar', group: 'lesson', defaultRoles: ['student', 'parent', 'teacher'] },
   { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램 관리', iconKey: 'calendar', group: 'lesson', defaultRoles: ['teacher', 'admin'] },
-  // 신청 현황: '수업 · 프로그램 관리'의 하위 메뉴. 공개 신청 폼으로 들어온 신청자를 확인·응대(admin 전용).
-  { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', parentKey: 'programs', group: 'lesson', defaultRoles: ['admin'] },
+  // 신청 현황: 공개 신청 폼으로 들어온 신청자를 확인·응대(admin 전용).
+  // 수업을 관리하다 신청자를 보는 흐름이라 메뉴를 세우지 않고 '수업 · 프로그램 관리'의 버튼으로 연다.
+  { key: 'applications', href: '/admin/applications', label: '신청 현황', iconKey: 'inbox', parentKey: 'programs', hidden: true, group: 'lesson', defaultRoles: ['admin'] },
   // 캘린더 구독 피드: 공개 .ics 피드를 켜고(이름/설명/타임존/포함범위) 구독 주소를 공유한다.
-  { key: 'calendar', href: '/admin/calendar', label: '캘린더 구독', iconKey: 'calendar', group: 'lesson', defaultRoles: ['admin'] },
+  // 한 번 켜 두면 다시 올 일이 드문 설정 화면이라, 캘린더 페이지의 버튼으로 들어간다.
+  { key: 'calendar', href: '/admin/calendar', label: '캘린더 구독', iconKey: 'calendar', parentKey: 'schedule', hidden: true, group: 'lesson', defaultRoles: ['admin'] },
 
   // ── 공연 · 참여: 둘러보기·내 아카이브(회원)와 공연 관리·참여 집계(운영진).
   // 학생·학부모용 둘러보기(읽기 전용): 공개된 공연·행사를 검색·열람.
@@ -97,7 +99,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'archive', href: '/admin/archive', label: '내 참여 아카이브', iconKey: 'gallery', group: 'show', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
   // 공연과 학내 행사(수료식·발표회)를 함께 관리한다 — 구분은 events.kind 축.
   { key: 'gallery', href: '/admin/gallery', label: '공연 · 행사 관리', iconKey: 'gallery', group: 'show', defaultRoles: ['teacher', 'admin'] },
-  { key: 'gallery.photos', href: '/admin/gallery/photos', label: '사진 보관함', iconKey: 'photo', parentKey: 'gallery', group: 'show', defaultRoles: ['admin'] },
+  // 사진 보관함: 공연에 아직 붙지 않은 사진을 정리하는 작업대. '공연 · 행사 관리'의 버튼으로 연다.
+  { key: 'gallery.photos', href: '/admin/gallery/photos', label: '사진 보관함', iconKey: 'photo', parentKey: 'gallery', hidden: true, group: 'show', defaultRoles: ['admin'] },
   // 공연 카테고리는 별도 메뉴/페이지 없이 '공연 관리' 페이지의 모달(버튼)에서 관리한다.
   // 참여 현황: 공연별 참가자 수·명단(체크인 집계). 운영진·관계자 검증용.
   { key: 'participation', href: '/admin/participation', label: '참여 현황', iconKey: 'calendar', group: 'show', defaultRoles: ['teacher', 'admin'] },
@@ -105,8 +108,11 @@ export const MENU_REGISTRY: MenuNode[] = [
   // ── 자료실: Q&A 열람(회원)과 편집(운영진), 용어집·미디어·준비물 카탈로그.
   // Q&A(읽기 전용): 선생님이 미리 등록한 공통·공연별 질문/답변을 열람 — 질문하지 않아도 중요한 정보를 확인.
   { key: 'qna', href: '/admin/qna', label: 'Q&A', iconKey: 'question', group: 'resource', defaultRoles: ['student', 'parent', 'teacher', 'admin'] },
-  // Q&A 관리: 공연·행사에 대해 자주 묻는 질문/답변을 선생님이 미리 등록. 회원은 'Q&A' 메뉴에서 열람.
-  { key: 'faq', href: '/admin/faq', label: 'Q&A 관리', iconKey: 'question', group: 'resource', defaultRoles: ['teacher', 'admin'] },
+  // Q&A 관리: 같은 Q&A를 편집하는 화면이라 메뉴를 따로 세우지 않는다(hidden).
+  // 운영진은 'Q&A' 페이지 우상단 버튼으로 들어간다 — 사이드바에는 Q&A 하나만 선다.
+  // 목록에서 뺐을 뿐 권한은 그대로다: 페이지가 requireMenuAccess('faq')로 스스로를 지키고
+  // 권한 관리 툴에도 행으로 남아 여기서 선생님의 편집 권한을 거둘 수 있다.
+  { key: 'faq', href: '/admin/faq', label: 'Q&A 관리', iconKey: 'question', parentKey: 'qna', hidden: true, group: 'resource', defaultRoles: ['teacher', 'admin'] },
   // 말모이(용어집): 한국 전통무용 용어·발음을 운영진이 편집. 원생·학부모는 공개 페이지(/glossary)에서 열람.
   { key: 'glossary', href: '/admin/glossary', label: '말모이 (용어집)', iconKey: 'compass', group: 'resource', defaultRoles: ['teacher', 'admin'] },
   // 뉴스·미디어: 공개 /media 페이지 게시물(소식·언론 보도·영상) 관리. 관리자와 선생님이 게시한다.

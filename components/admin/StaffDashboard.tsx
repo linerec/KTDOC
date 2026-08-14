@@ -80,6 +80,13 @@ export interface StaffDashboardProps {
   membersTotal: number;
   /** 오늘 열리는 공개 행사. 없으면 빈 배열 — 배너가 스스로 사라진다. */
   todayEvents: EventWithCategory[];
+  /**
+   * 신청 현황·사진 보관함을 이 사람이 열 수 있는가(서버가 menu_key로 판정해 넘긴다).
+   * 둘 다 사이드바에 없는 화면이라 여기 카드가 사실상의 진입점이다 — 갈 수 없는 곳으로
+   * 부르지 않는다. 신청은 카드째 감춘다: 링크만 빼면 못 여는 집계만 남아 더 답답하다.
+   */
+  canSeeApplications: boolean;
+  canSeePhotos: boolean;
 }
 
 export default function StaffDashboard({
@@ -93,11 +100,13 @@ export default function StaffDashboard({
   categoryCount,
   membersTotal,
   todayEvents,
+  canSeeApplications,
+  canSeePhotos,
 }: StaffDashboardProps) {
   const t = useT();
 
   const isFreshSite = programsTotal === 0 && eventsPublished === 0 && appsTotal === 0;
-  const hasNewApps = appsNew > 0;
+  const hasNewApps = appsNew > 0 && canSeeApplications;
 
   return (
     <div className="admin-page admin-console">
@@ -202,6 +211,7 @@ export default function StaffDashboard({
             </div>
           </section>
 
+          {canSeeApplications && (
           <section className={`admin-domain${appsNew > 0 ? ' admin-domain--alert' : ''}`}>
             <div className="admin-domain-top">
               <span className="admin-domain-icon">
@@ -237,6 +247,7 @@ export default function StaffDashboard({
               </Link>
             </div>
           </section>
+          )}
 
           <section className="admin-domain">
             <div className="admin-domain-top">
@@ -296,9 +307,11 @@ export default function StaffDashboard({
               <Link href="/admin/gallery/new" className="admin-btn admin-btn-outline">
                 {t('admin.home.galleryNew', '+ 새 공연')}
               </Link>
-              <Link href="/admin/gallery/photos" className="admin-btn admin-btn-outline">
-                {t('admin.nav.gallery.photos', '사진 보관함')}
-              </Link>
+              {canSeePhotos && (
+                <Link href="/admin/gallery/photos" className="admin-btn admin-btn-outline">
+                  {t('admin.nav.gallery.photos', '사진 보관함')}
+                </Link>
+              )}
             </div>
           </section>
         </div>

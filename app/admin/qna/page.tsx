@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import T from '@/components/common/T';
 import { auth } from '@/auth';
-import { requireMenuAccess } from '@/lib/admin/permissions';
+import { hasMenuAccess, requireMenuAccess } from '@/lib/admin/permissions';
 import { getFaqItems } from '@/lib/d1';
 import QnaBrowser from '@/components/admin/faq/QnaBrowser';
 import ContactChannels from '@/components/common/ContactChannels';
@@ -18,6 +18,10 @@ export const metadata = {
 export default async function AdminQnaPage() {
   const session = await auth();
   await requireMenuAccess(session, 'qna');
+
+  // 편집 화면은 사이드바에 세우지 않고 여기서만 연다(메뉴 하나로 통합).
+  // 버튼 노출과 페이지 접근이 같은 판정(menu_key 'faq')을 쓰므로 어긋날 수 없다.
+  const canManage = await hasMenuAccess(session, 'faq');
 
   const items = await getFaqItems({ published: true });
 
@@ -44,6 +48,13 @@ export default async function AdminQnaPage() {
             </T>
           </p>
         </div>
+        {canManage && (
+          <div className="admin-header-actions">
+            <Link href="/admin/faq" className="admin-btn admin-btn-outline">
+              <T k="admin.nav.faq">Q&A 관리</T>
+            </Link>
+          </div>
+        )}
       </div>
 
       <QnaBrowser items={items} />

@@ -18,9 +18,16 @@
 
 // node --test가 별칭(@/)을 풀지 못하므로 상대 경로로 쓴다 — 이 파일은 시험 대상이다.
 import type { Session } from 'next-auth';
-import { getMenuNode } from './menu-registry.ts';
+import {
+  MENU_REGISTRY,
+  getGroupLabel,
+  getGroupLabelKey,
+  getMenuLabelKey,
+  getMenuNode,
+  isStaffOnlyMenu,
+} from './menu-registry.ts';
 import type { MemberRole } from '../../types/members.ts';
-import type { MenuNode, PermMatrix } from '../../types/permissions.ts';
+import type { MenuNode, NavMenu, PermMatrix } from '../../types/permissions.ts';
 
 /**
  * 메뉴를 보는 주체 — 신분과 관리 권한을 함께 들고 다닌다.
@@ -65,4 +72,37 @@ export function effectiveAllowedByKey(
   const node = getMenuNode(key);
   if (!node) return false;
   return effectiveAllowed(node, viewer, matrix);
+}
+
+/**
+ * 주체가 볼 수 있는 네비 메뉴(직렬화 가능).
+ *
+ * 사이드바에서 감춘(hidden) 노드는 목록에서 빠지고, 대신 그 경로가 부모의
+ * alsoActiveFor로 올라간다 — 감춘 페이지에 서 있는 동안 부모가 켜지도록.
+ * 감춤은 표시의 문제이지 권한의 문제가 아니므로, 자식 경로를 넘길지는
+ * 여기서도 접근 판정으로 정한다(권한 없는 사람에게는 빈 배열).
+ */
+export function getAllowedMenus(viewer: MenuViewer, matrix: PermMatrix): NavMenu[] {
+  const visible = MENU_REGISTRY.filter(
+    (node) => !node.hidden && effectiveAllowed(node, viewer, matrix)
+  );
+  const hiddenChildren = MENU_REGISTRY.filter(
+    (node) => node.hidden && effectiveAllowed(node, viewer, matrix)
+  );
+
+  return visible.map((node) => ({
+    key: node.key,
+    href: node.href,
+    label: node.label,
+    labelKey: getMenuLabelKey(node.key),
+    iconKey: node.iconKey,
+    sub: !!node.parentKey,
+    group: node.group,
+    groupLabel: getGroupLabel(node.group),
+    groupLabelKey: getGroupLabelKey(node.group),
+    staffOnly: isStaffOnlyMenu(node),
+    alsoActiveFor: hiddenChildren
+      .filter((child) => child.parentKey === node.key)
+      .map((child) => child.href),
+  }));
 }

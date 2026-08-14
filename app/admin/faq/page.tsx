@@ -35,9 +35,14 @@ export default async function AdminFaqPage() {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-header-content">
+          {/* 사이드바에 이 화면의 메뉴는 없다 — 돌아갈 곳(Q&A)을 빵부스러기가 대신 짚어 준다. */}
           <div className="admin-breadcrumb">
             <Link href="/admin">
               <T k="admin.common.breadcrumbHome">관리 홈</T>
+            </Link>
+            <span>/</span>
+            <Link href="/admin/qna">
+              <T k="admin.nav.qna">Q&A</T>
             </Link>
             <span>/</span>
             <span>
@@ -54,11 +59,7 @@ export default async function AdminFaqPage() {
             </T>
           </p>
         </div>
-        <div className="admin-header-actions">
-          <Link href="/admin/qna" className="admin-btn admin-btn-outline">
-            <T k="admin.faq.previewMember">회원 화면 미리 보기</T>
-          </Link>
-        </div>
+        {/* '회원 화면 미리 보기' 버튼은 두지 않는다 — 빵부스러기의 Q&A가 곧 그 화면이다. */}
       </div>
 
       <FaqManager items={items} events={eventOptions} />

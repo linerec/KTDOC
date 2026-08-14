@@ -17,6 +17,7 @@
  */
 
 import { useMemo, useRef, useState } from 'react';
+import { useLocaleText } from '@/components/common/LocaleText';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT, type TFunction } from '@/lib/i18n/useT';
@@ -27,12 +28,15 @@ export interface CalendarItem {
   key: string;
   date: string; // YYYY-MM-DD
   type: CalendarItemType;
+  /** 제목·비고는 운영진이 입력한 콘텐츠라 두 벌로 받는다(영문이 비면 한국어로 물러선다) */
   title: string;
+  titleEn?: string | null;
   time: string | null; // "19:00" 또는 "10:00~12:00", null=종일
   href: string;
   isMine?: boolean; // 체크인한 공연
   isDraft?: boolean; // 비공개(운영진 작성 중)
   note?: string | null; // 장소·분류 등 보조 정보
+  noteEn?: string | null;
 }
 
 interface ScheduleCalendarProps {
@@ -89,6 +93,7 @@ export default function ScheduleCalendar({
 }: ScheduleCalendarProps) {
   const t = useT();
   const { locale } = useLanguage();
+  const pick = useLocaleText();
   const [selected, setSelected] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -270,7 +275,7 @@ export default function ScheduleCalendar({
                             </span>
                           )}
                           {it.time && <span className="cal-chip-time">{it.time.slice(0, 5)}</span>}
-                          <span className="cal-chip-title">{it.title}</span>
+                          <span className="cal-chip-title">{pick(it.title, it.titleEn)}</span>
                         </span>
                       ))}
                       {rest > 0 && <span className="cal-more">+{rest}</span>}
@@ -348,8 +353,8 @@ export default function ScheduleCalendar({
                           {it.time ?? t('admin.schedule.allDay', '종일')}
                         </span>
                         <span className="cal-agenda-body">
-                          <span className="cal-agenda-title">{it.title}</span>
-                          {it.note && <span className="cal-agenda-note">{it.note}</span>}
+                          <span className="cal-agenda-title">{pick(it.title, it.titleEn)}</span>
+                          {it.note && <span className="cal-agenda-note">{pick(it.note, it.noteEn)}</span>}
                         </span>
                         <span className="cal-agenda-tags">
                           {it.isMine && (
