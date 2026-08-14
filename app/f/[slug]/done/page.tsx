@@ -15,7 +15,8 @@ import { getFormBySlugAnyStatus } from '@/lib/d1';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '신청서 접수 완료 | KTDOC',
+  // 루트 레이아웃이 template '%s | KTDOC' 을 붙인다.
+  title: '신청서 접수 완료',
   robots: { index: false, follow: false },
 };
 

@@ -29,10 +29,11 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const form = await getFormBySlugAnyStatus(slug);
-  if (!form) return { title: '신청서 | KTDOC', robots: { index: false, follow: false } };
+  // 루트 레이아웃이 template '%s | KTDOC' 을 붙인다 — 여기서 또 붙이면 두 번 나온다.
+  if (!form) return { title: '신청서', robots: { index: false, follow: false } };
 
   return {
-    title: `${form.title_ko} | KTDOC`,
+    title: form.title_ko,
     description: form.description_ko?.split('\n')[0] ?? undefined,
     robots: { index: false, follow: false },
     openGraph: {
