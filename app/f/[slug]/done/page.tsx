@@ -22,12 +22,12 @@ export const metadata: Metadata = {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ r?: string }>;
+  searchParams: Promise<{ r?: string; a?: string }>;
 }
 
 export default async function FormDonePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { r } = await searchParams;
+  const { r, a } = await searchParams;
   const form = await getFormBySlugAnyStatus(slug);
 
   const receipt = Number(r);
@@ -63,6 +63,57 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
             with your reference number above — a screenshot of this page is handy.
           </p>
         </div>
+
+        {a === 'created' && (
+          <div className="done-account done-account-ok">
+            <h2>회원가입도 함께 접수되었습니다</h2>
+            <p>
+              학원에서 확인한 뒤 승인되면 로그인하실 수 있습니다. 승인되면 알림으로 알려드립니다.
+              로그인하시면 신청 내역과 수업 일정을 확인하실 수 있습니다.
+            </p>
+            <p className="form-notice-alt">
+              Your account request was submitted too. You can sign in once the studio approves it.
+            </p>
+            <Link href="/login" className="form-notice-link">
+              로그인 화면으로 / Sign in
+            </Link>
+          </div>
+        )}
+
+        {a === 'email_taken' && (
+          <div className="done-account done-account-note">
+            <h2>이미 가입된 이메일입니다</h2>
+            <p>
+              적어주신 이메일로 이미 계정이 있어 새로 만들지 않았습니다.
+              <strong> 신청서는 정상적으로 접수되었습니다.</strong> 로그인하시면 신청 내역을
+              확인하실 수 있고, 다음부터는 정보가 자동으로 채워집니다.
+            </p>
+            <p className="form-notice-alt">
+              An account already exists for that email, so we didn&rsquo;t create a new one. Your
+              registration was received — sign in to see it.
+            </p>
+            <Link href="/login" className="form-notice-link">
+              로그인 화면으로 / Sign in
+            </Link>
+          </div>
+        )}
+
+        {a === 'failed' && (
+          <div className="done-account done-account-note">
+            <h2>회원가입은 완료되지 않았습니다</h2>
+            <p>
+              <strong>신청서는 정상적으로 접수되었습니다.</strong> 다만 회원 계정을 만드는 과정에서
+              문제가 있었습니다. 회원가입 화면에서 다시 시도하시거나, 학원으로 문의해 주세요.
+            </p>
+            <p className="form-notice-alt">
+              Your registration was received, but we couldn&rsquo;t create the account. Please try
+              signing up again or contact the studio.
+            </p>
+            <Link href="/register" className="form-notice-link">
+              회원가입 하러 가기 / Sign up
+            </Link>
+          </div>
+        )}
 
         <Link href="/" className="form-notice-link">
           KTDOC 홈으로 / Home

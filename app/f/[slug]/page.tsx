@@ -158,7 +158,14 @@ export default async function PublicFormPage({ params }: PageProps) {
           descriptionEn={form.description_en}
         />
 
-        <FormRenderer slug={form.slug} schema={schema} prefill={prefill} preview={canPreview} />
+        <FormRenderer
+          slug={form.slug}
+          schema={schema}
+          prefill={prefill}
+          preview={canPreview}
+          // 비회원 공개 제출에서만 로그인·가입 블록을 보인다.
+          showAccount={!session?.user && !canPreview}
+        />
       </div>
     </main>
   );

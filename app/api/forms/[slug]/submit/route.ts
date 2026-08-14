@@ -8,7 +8,8 @@
  *   3) requires_login 확인 (클라이언트를 믿지 않는다)
  *   4) 화면에서 사라진 문항의 답을 버리고 validateAnswers — 클라이언트 검증은 편의일 뿐이다
  *   5) insertResponse (본체 단일 INSERT + 파생)
- *   6) 운영진 통지 (실패해도 제출을 되돌리지 않는다)
+ *   6) 신청서 안에서의 회원가입 (선택) — 응답을 먼저 저장한 뒤에 만든다
+ *   7) 운영진 통지 (실패해도 제출을 되돌리지 않는다)
  *
  * 미들웨어가 /api 를 타지 않으므로 이 라우트가 스스로 auth() 를 부른다.
  * 클라이언트가 보낸 user_id 는 절대 신뢰하지 않는다 — 세션에서만 읽는다.
@@ -17,8 +18,9 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getOpenFormBySlug, insertResponse } from '@/lib/d1';
-import { validateAnswers, visibleQuestions } from '@/lib/forms/schema';
+import { attachSubmitter, getOpenFormBySlug, insertResponse } from '@/lib/d1';
+import { createMember, emailExists } from '@/lib/members/createMember';
+import { applyBindings, validateAnswers, visibleQuestions } from '@/lib/forms/schema';
 import { notifyStaffOfFormResponse } from '@/lib/push/system';
 import type { Answers, FormSchema, LinkSource } from '@/types/forms';
 
@@ -130,7 +132,61 @@ export async function POST(request: Request, { params }: RouteParams) {
       submitIpHash,
     });
 
-    // ── 6) 통지. 실패해도 접수를 되돌리지 않는다.
+    // ── 6) 신청서 안에서의 회원가입 (선택).
+    //     **응답을 먼저 저장한 뒤에 만든다** — 신청이 목적이므로 그쪽이 먼저 안전해야 한다.
+    //     계정 생성이 실패해도 접수는 그대로 남고, 화면이 무슨 일이 있었는지 알려 준다.
+    let accountResult: 'created' | 'email_taken' | 'failed' | null = null;
+    const wantsAccount =
+      !userId && body.account && typeof body.account === 'object' && body.account.password;
+
+    if (wantsAccount) {
+      try {
+        const { core } = applyBindings(schema, answers, form.schema_version);
+        const role = body.account.role === 'student' ? 'student' : 'parent';
+        // 학부모로 가입하면 보호자 이름이 계정 이름이고, 없으면 학생 이름으로 대신한다.
+        const accountName =
+          role === 'parent'
+            ? core.guardian_name?.trim() || core.student_name
+            : core.student_name;
+
+        if (!core.email) {
+          accountResult = 'failed';
+        } else if (await emailExists(core.email)) {
+          // 미검증 이메일로 남의 계정에 신청을 이어 붙이지 않는다. 로그인을 권한다.
+          accountResult = 'email_taken';
+        } else {
+          const created = await createMember({
+            role,
+            email: core.email,
+            password: String(body.account.password),
+            name: accountName,
+            phone: core.phone,
+            agreed: body.account.agreed === true,
+            childName: role === 'parent' ? core.student_name : null,
+            // 신규 가족은 자녀도 아직 가입 전이다 — 여기서 막으면 아무도 가입할 수 없다.
+            requireExistingChild: false,
+          });
+
+          if (created.ok) {
+            accountResult = 'created';
+            await attachSubmitter({
+              responseId,
+              submittedByUserId: created.userId,
+              // 학부모 계정을 대상 학생으로 넣으면 나중에 학부모가 수업에 배정된다.
+              studentUserId: role === 'student' ? created.userId : null,
+              linkSource: 'signup',
+            });
+          } else {
+            accountResult = created.code === 'email_taken' ? 'email_taken' : 'failed';
+          }
+        }
+      } catch (error) {
+        console.error('inline signup failed:', error);
+        accountResult = 'failed';
+      }
+    }
+
+    // ── 7) 통지. 실패해도 접수를 되돌리지 않는다.
     try {
       const nameKey = visibleQuestions(schema, answers).find((q) => q.bind === 'student_name')?.key;
       const named = nameKey ? answers[nameKey] : null;
@@ -143,7 +199,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       console.error('form response notify failed:', error);
     }
 
-    return NextResponse.json({ success: true, data: { responseId } });
+    return NextResponse.json({ success: true, data: { responseId, account: accountResult } });
   } catch (error) {
     console.error('Form submit error:', error);
     return NextResponse.json(

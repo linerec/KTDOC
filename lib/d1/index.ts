@@ -279,5 +279,6 @@ export {
   getRoster,
   getSelectionCounts,
   getResponsesForExport,
+  attachSubmitter,
 } from './formResponses';
 export type { InsertResponseInput, RosterRow } from './formResponses';

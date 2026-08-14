@@ -466,3 +466,28 @@ export async function getResponsesForExport(
     [formId, limit]
   );
 }
+
+/**
+ * 제출자·대상 학생을 나중에 붙인다.
+ *
+ * 신청서 안에서 가입할 때 쓴다: 응답을 **먼저** 저장하고(신청이 목적이다)
+ * 계정을 만든 뒤 그 결과를 여기서 얹는다. 순서를 뒤집으면 응답 저장이 실패했을 때
+ * 계정만 덩그러니 남는다.
+ */
+export async function attachSubmitter(input: {
+  responseId: number;
+  submittedByUserId: string;
+  /** 학생 본인이 가입한 경우에만 채운다. 학부모 계정을 여기 넣으면 수업에 학부모가 배정된다. */
+  studentUserId: string | null;
+  linkSource: LinkSource;
+}): Promise<void> {
+  await executeD1(
+    `UPDATE form_responses
+        SET submitted_by_user_id = ?,
+            student_user_id = COALESCE(?, student_user_id),
+            link_source = ?,
+            updated_at = datetime('now')
+      WHERE id = ?`,
+    [input.submittedByUserId, input.studentUserId, input.linkSource, input.responseId]
+  );
+}

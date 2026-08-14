@@ -19241,3 +19241,203 @@ button.admin-page-tab {
   padding-top: 4px;
   border-top: 1px solid rgba(var(--fg-rgb), 0.12);
 }
+
+/* ── 신청서 안의 로그인 · 회원가입 ──────────────────────── */
+.account-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(20px, 4vw, 28px);
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 8px;
+  background: var(--ground-2);
+}
+
+.account-signin {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.account-signin p {
+  margin: 0;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.account-signin-btn {
+  display: inline-block;
+  padding: 11px 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--accent-color);
+  color: var(--accent-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.account-signin-btn:hover {
+  background: var(--accent-color);
+  color: var(--on-accent);
+}
+
+.account-signin-note {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  font-weight: 400 !important;
+}
+
+.account-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.account-divider::before,
+.account-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(var(--fg-rgb), 0.14);
+}
+
+.account-optin {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  cursor: pointer;
+}
+
+.account-optin input {
+  margin: 0.2em 0 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+}
+
+.account-optin > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-color);
+}
+
+.account-optin-sub {
+  font-size: 0.87rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.account-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(var(--fg-rgb), 0.18);
+}
+
+.account-echo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--soft-gold);
+}
+
+.account-echo-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.account-echo-value {
+  font-size: 1rem;
+  color: var(--text-color);
+  word-break: break-all;
+}
+
+.account-echo-value em {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.account-name-note {
+  margin: 0;
+  font-size: 0.87rem;
+  color: var(--text-muted);
+}
+
+.account-link {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
+
+.account-benefits {
+  margin: 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.account-pending-note {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+}
+
+/* ── 완료 화면의 가입 결과 ──────────────────────────────── */
+.done-account {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px;
+  border-radius: 8px;
+  max-width: 46ch;
+  text-align: left;
+}
+
+.done-account h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.15rem;
+  color: var(--text-color);
+}
+
+.done-account p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.done-account strong {
+  color: var(--text-color);
+}
+
+.done-account-ok {
+  background: var(--ground-2);
+  border-left: 3px solid var(--accent-color);
+}
+
+.done-account-note {
+  background: var(--ground-3);
+  border-left: 3px solid var(--soft-gold);
+}

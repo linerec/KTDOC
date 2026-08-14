@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/lib/i18n/useT';
 import { validateAnswers, visibleQuestions } from '@/lib/forms/schema';
+import AccountBlock, { EMPTY_ACCOUNT, type AccountDraft } from './AccountBlock';
 import FormField, { pick } from './FormField';
 import type { AnswerValue, Answers, FormSchema } from '@/types/forms';
 
@@ -45,6 +46,11 @@ interface FormRendererProps {
   doneHref?: (responseId: number) => string;
   /** 제출 버튼 문구를 바꿀 때(대리 입력) */
   submitLabel?: string;
+  /**
+   * 로그인·가입 블록을 보일지. 비회원 공개 제출에서만 켠다 —
+   * 로그인한 사람에게는 필요 없고, 대리 입력은 운영진이 남의 계정을 만드는 자리가 아니다.
+   */
+  showAccount?: boolean;
 }
 
 export default function FormRenderer({
@@ -55,6 +61,7 @@ export default function FormRenderer({
   submitTo,
   doneHref,
   submitLabel,
+  showAccount = false,
 }: FormRendererProps) {
   const t = useT();
   const router = useRouter();
@@ -65,6 +72,8 @@ export default function FormRenderer({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [account, setAccount] = useState<AccountDraft>(EMPTY_ACCOUNT);
+  const [accountErrors, setAccountErrors] = useState<Record<string, string>>({});
 
   const formRef = useRef<HTMLFormElement>(null);
   // 스팸 방어 1: 사람은 이 칸을 채울 수 없다(화면에서 숨겨져 있다).
@@ -136,6 +145,23 @@ export default function FormRenderer({
       return;
     }
 
+    // 가입을 원하면 계정 항목도 여기서 막는다 — 서버가 다시 보지만,
+    // 폼을 다 채운 뒤 비밀번호 하나 때문에 되돌아오는 일을 줄인다.
+    if (showAccount && account.wants) {
+      const acctErrors: Record<string, string> = {};
+      if (account.password.length < 8) acctErrors.password = '비밀번호는 8자 이상이어야 합니다.';
+      if (!account.agreed) acctErrors.agreed = '이용약관과 개인정보처리방침에 동의해 주세요.';
+      if (Object.keys(acctErrors).length > 0) {
+        setAccountErrors(acctErrors);
+        setSubmitError(
+          t('forms.account.fixErrors', '회원가입 항목을 확인해 주세요.')
+        );
+        document.getElementById('acct-pw')?.focus();
+        return;
+      }
+      setAccountErrors({});
+    }
+
     if (preview) {
       setSubmitError(
         t('forms.submit.previewOnly', '미리 보기에서는 제출되지 않습니다. 게시한 뒤에 실제로 접수됩니다.')
@@ -154,6 +180,10 @@ export default function FormRenderer({
           locale,
           renderedAt: renderedAt.current ?? Date.now(),
           website: honeypot,
+          account:
+            showAccount && account.wants
+              ? { role: account.role, password: account.password, agreed: account.agreed }
+              : undefined,
         }),
       });
       const json = await res.json();
@@ -171,7 +201,8 @@ export default function FormRenderer({
       router.push(
         doneHref
           ? doneHref(json.data.responseId)
-          : `/f/${encodeURIComponent(slug)}/done?r=${json.data.responseId}`
+          : `/f/${encodeURIComponent(slug)}/done?r=${json.data.responseId}` +
+            (json.data.account ? `&a=${json.data.account}` : '')
       );
     } catch {
       setSubmitError(t('forms.submit.network', '연결이 끊어졌습니다. 잠시 후 다시 시도해 주세요.'));
@@ -180,6 +211,16 @@ export default function FormRenderer({
   }
 
   const visibleKeys = new Set(visible.map((q) => q.key));
+
+  /** 계정 블록에 보여줄 값 — 문항의 bind 지시자로 찾는다(문항 키에 기대지 않는다). */
+  const boundValue = (bind: string): string => {
+    const q = visible.find((x) => x.bind === bind);
+    const v = q ? answers[q.key] : null;
+    return typeof v === 'string' ? v : '';
+  };
+  const emailValue = boundValue('email');
+  const studentNameValue = boundValue('student_name');
+  const guardianNameValue = boundValue('guardian_name');
 
   return (
     <form ref={formRef} className="public-form" onSubmit={handleSubmit} noValidate>
@@ -232,6 +273,18 @@ export default function FormRenderer({
           onChange={(e) => setHoneypot(e.target.value)}
         />
       </div>
+
+      {showAccount && (
+        <AccountBlock
+          email={emailValue}
+          studentName={studentNameValue}
+          guardianName={guardianNameValue}
+          value={account}
+          onChange={setAccount}
+          loginHref={`/login?callbackUrl=${encodeURIComponent(`/f/${slug}`)}`}
+          errors={accountErrors}
+        />
+      )}
 
       {submitError && (
         <div className="form-alert" role="alert">
