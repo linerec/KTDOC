@@ -18,8 +18,16 @@ import ProgramImageSortable from './ProgramImageSortable';
 import SupplyPicker, { type PickerRow } from '@/components/admin/supplies/SupplyPicker';
 import SetPicker, { type SetPickerRow } from '@/components/admin/supplies/SetPicker';
 
+export interface FormChoice {
+  id: number;
+  title_ko: string;
+  status: string;
+}
+
 interface ProgramFormProps {
   program?: ProgramDetail | null;
+  /** 이 수업에 붙일 수 있는 신청서 목록(신청서 관리에서 만든 것들) */
+  forms?: FormChoice[];
   isNew?: boolean;
   activeSupplies?: SupplyItem[];
   initialSupplies?: PickerRow[];
@@ -41,6 +49,7 @@ const WEEKDAY_CHIPS: { v: string; ko: string }[] = [
 
 export default function ProgramForm({
   program,
+  forms = [],
   isNew = false,
   activeSupplies = [],
   initialSupplies = [],
@@ -78,6 +87,8 @@ export default function ProgramForm({
     term_end_date: program?.term_end_date?.split('T')[0] || '',
     is_published: program?.is_published === 1,
     is_featured: program?.is_featured === 1,
+    // 빈 문자열 = 연결 없음. 셀렉트의 값이므로 문자열로 다룬다.
+    active_form_id: program?.active_form_id != null ? String(program.active_form_id) : '',
   });
 
   const [images, setImages] = useState(program?.images || []);
@@ -145,6 +156,8 @@ export default function ProgramForm({
         location_en: formData.location_en || undefined,
         is_published: formData.is_published,
         is_featured: formData.is_featured,
+        // null 을 보내야 '연결 끊기'가 된다 — undefined 는 '건드리지 않음'이다.
+        active_form_id: formData.active_form_id ? Number(formData.active_form_id) : null,
       };
 
       const res = await fetch(url, {
@@ -584,6 +597,41 @@ export default function ProgramForm({
             )}
           </div>
         )}
+
+        {/* 신청 방법 — 신청서를 붙이면 상세 페이지의 신청 버튼이 그 신청서로 간다.
+            붙이지 않으면 예전 신청 모달이 그대로 열린다(둘 중 하나만 동작한다). */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">
+            {t('admin.programs.secApply', '신청 받기')}
+          </h3>
+          <div className="admin-field">
+            <label htmlFor="active_form_id">
+              {t('admin.programs.applyForm', '연결할 신청서')}
+            </label>
+            <select
+              id="active_form_id"
+              name="active_form_id"
+              value={formData.active_form_id}
+              onChange={handleChange}
+            >
+              <option value="">
+                {t('admin.programs.applyFormNone', '연결 안 함 (예전 신청 모달 사용)')}
+              </option>
+              {forms.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.title_ko}
+                  {f.status !== 'open' ? ' — 아직 게시 전' : ''}
+                </option>
+              ))}
+            </select>
+            <p className="admin-field-help">
+              {t(
+                'admin.programs.applyFormHelp',
+                '신청서를 연결하면 이 수업 상세의 신청 버튼이 그 신청서를 엽니다. 게시하지 않은 신청서를 연결하면 버튼은 예전 방식 그대로 동작합니다.'
+              )}
+            </p>
+          </div>
+        </div>
 
         {/* 공개 설정 */}
         <div className="admin-form-section">

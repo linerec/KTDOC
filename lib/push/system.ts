@@ -87,3 +87,29 @@ export async function notifyMemberApproved(
     `member:${memberId}`
   );
 }
+
+/**
+ * 신청서 응답 접수 → 운영진(관리자)에게 알림.
+ *
+ * **본문에 의료정보·연락처를 넣지 않는다.** 알림은 잠금화면에도 뜨고 기록으로 남는다 —
+ * 학생 이름과 신청서 제목까지가 안전선이다. 나머지는 열어서 본다.
+ * 보낸이가 없는 알림이라(비회원 제출) senderId 는 첫 수신자로 둔다.
+ */
+export async function notifyStaffOfFormResponse(input: {
+  formId: number;
+  formTitle: string;
+  studentName: string;
+}): Promise<void> {
+  const staffIds = await getMemberIdsByRoles(['admin']);
+  if (staffIds.length === 0) return;
+  await notifyUsers(
+    staffIds[0],
+    staffIds,
+    {
+      title: '새 신청서 접수',
+      body: `${input.studentName} 학생이 "${input.formTitle}"을 제출했습니다.`,
+      url: `/admin/forms/${input.formId}/responses`,
+    },
+    'staff:formResponse'
+  );
+}

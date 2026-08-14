@@ -65,6 +65,8 @@ export interface Program {
   thumbnail_r2_key: string | null;
   is_featured: number;
   is_published: number;
+  /** 이 수업의 신청을 받는 신청서(forms.id). NULL이면 옛 신청 모달을 쓴다. */
+  active_form_id: number | null;
   sort_order: number;
   view_count: number;
   created_at: string;
@@ -241,6 +243,8 @@ export interface CreateProgramInput {
 }
 
 export interface UpdateProgramInput extends Partial<CreateProgramInput> {
+  /** 신청서 연결. null 을 넘기면 연결을 끊는다(undefined 는 '건드리지 않음'). */
+  active_form_id?: number | null;
   poster_url?: string;
   poster_r2_key?: string;
   thumbnail_url?: string;

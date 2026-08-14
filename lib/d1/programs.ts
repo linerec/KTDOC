@@ -197,6 +197,12 @@ export async function updateProgram(id: number, input: UpdateProgramInput): Prom
   setText('poster_r2_key');
   setText('thumbnail_url');
   setText('thumbnail_r2_key');
+  // 숫자 컬럼이라 setText 로 다룰 수 없다. null 은 '연결 끊기'라는 뜻이므로
+  // undefined(건드리지 않음)와 반드시 구분한다.
+  if (input.active_form_id !== undefined) {
+    updates.push('active_form_id = ?');
+    params.push(input.active_form_id ?? null);
+  }
   if (input.slug !== undefined) {
     updates.push('slug = ?');
     params.push(input.slug);

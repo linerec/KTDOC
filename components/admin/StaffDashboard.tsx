@@ -74,6 +74,9 @@ export interface StaffDashboardProps {
   programsPublished: number;
   appsTotal: number;
   appsNew: number;
+  /** 신청서(질문지)로 들어온 처리 대기 응답 수 */
+  formResponsesNew: number;
+  canSeeForms: boolean;
   eventsPublished: number;
   loosePhotos: number;
   categoryCount: number;
@@ -95,6 +98,8 @@ export default function StaffDashboard({
   programsPublished,
   appsTotal,
   appsNew,
+  formResponsesNew,
+  canSeeForms,
   eventsPublished,
   loosePhotos,
   categoryCount,
@@ -107,6 +112,7 @@ export default function StaffDashboard({
 
   const isFreshSite = programsTotal === 0 && eventsPublished === 0 && appsTotal === 0;
   const hasNewApps = appsNew > 0 && canSeeApplications;
+  const hasNewFormResponses = formResponsesNew > 0 && canSeeForms;
 
   return (
     <div className="admin-page admin-console">
@@ -158,6 +164,23 @@ export default function StaffDashboard({
           </p>
           <Link href="/admin/applications" className="admin-btn admin-btn-danger">
             {t('admin.home.viewApplicants', '신청자 보기')}
+          </Link>
+        </section>
+      )}
+
+      {/* 신청서(질문지)로 들어온 응답 — 옛 /classes 신청과 축이 다르므로 따로 세운다.
+          한 줄에 합치면 어느 경로로 온 신청인지 알 수 없어 찾으러 두 곳을 뒤지게 된다. */}
+      {hasNewFormResponses && (
+        <section className="admin-callout admin-callout-urgent">
+          <p>
+            {t(
+              'admin.home.urgentForms',
+              '신청서로 새 신청 {n}건이 들어왔습니다',
+              { n: formResponsesNew }
+            )}
+          </p>
+          <Link href="/admin/forms" className="admin-btn admin-btn-danger">
+            {t('admin.home.viewFormResponses', '신청서 보기')}
           </Link>
         </section>
       )}

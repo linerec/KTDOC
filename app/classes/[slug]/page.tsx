@@ -11,11 +11,12 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import IntlObject from '@/components/common/IntlObject';
 import ImageGallery from '@/components/gallery/ImageGallery';
+import Link from 'next/link';
 import { ApplyModalProvider, ApplyButton } from '@/components/classes/ApplyModal';
 import ProgramDetailFacts from '@/components/classes/ProgramDetailFacts';
 import ShareQrCard from '@/components/share/ShareQrCard';
 import SupplyList from '@/components/supplies/SupplyList';
-import { getProgramBySlug, incrementProgramViewCount, getProgramSupplies, getProgramSupplySets } from '@/lib/d1';
+import { getProgramBySlug, incrementProgramViewCount, getProgramSupplies, getProgramSupplySets, getFormSlugById } from '@/lib/d1';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +65,10 @@ export default async function ProgramDetailPage({ params }: PageProps) {
   ]);
   const heroImage = program.poster_url || program.first_image_url || program.thumbnail_url;
 
+  // 이 수업에 신청서가 붙어 있고 그 신청서가 접수 중이면, 신청 버튼이 그리로 간다.
+  // 붙지 않았거나 아직 게시 전이면 예전 신청 모달이 그대로 열린다 — 둘 중 하나만 동작한다.
+  const formSlug = program.active_form_id ? await getFormSlugById(program.active_form_id) : null;
+
   return (
     <>
       <Header />
@@ -84,9 +89,15 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               <h1 className="program-detail-title">{program.title_ko}</h1>
               {program.title_en && <p className="program-detail-title-en">{program.title_en}</p>}
               {program.summary_ko && <p className="program-detail-lede">{program.summary_ko}</p>}
-              <ApplyButton className="btn-ink-primary program-detail-apply-cta">
-                <IntlObject keycode="programs.detail.applyCta" />
-              </ApplyButton>
+              {formSlug ? (
+                <Link href={`/f/${formSlug}`} className="btn-ink-primary program-detail-apply-cta">
+                  <IntlObject keycode="programs.detail.applyCta" />
+                </Link>
+              ) : (
+                <ApplyButton className="btn-ink-primary program-detail-apply-cta">
+                  <IntlObject keycode="programs.detail.applyCta" />
+                </ApplyButton>
+              )}
             </div>
           </section>
 

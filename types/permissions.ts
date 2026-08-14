@@ -18,6 +18,7 @@ export type MenuKey =
   | 'schedule'
   | 'my-classes'
   | 'programs'
+  | 'forms'
   | 'applications'
   | 'glossary'
   | 'supplies'

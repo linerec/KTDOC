@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getProgramById, getProgramEnrollments, getActiveSupplyItems, getProgramSupplies, getActiveSupplySets, getProgramSupplySets } from '@/lib/d1';
+import { getProgramById, getProgramEnrollments, getActiveSupplyItems, getProgramSupplies, getActiveSupplySets, getProgramSupplySets, getForms } from '@/lib/d1';
 import { getEnrollableMembers, getUserNamesByIds } from '@/lib/members';
 import { isStaff } from '@/lib/isAdmin';
 import ProgramForm from '@/components/admin/programs/ProgramForm';
@@ -36,6 +36,12 @@ export default async function EditProgramPage({ params }: PageProps) {
   }
 
   const program = await getProgramById(programId);
+  // 붙일 수 있는 신청서 — 초안도 보여준다(연결해 두고 나중에 게시하는 순서가 자연스럽다).
+  const forms = (await getForms()).map((f) => ({
+    id: f.id,
+    title_ko: f.title_ko,
+    status: f.status,
+  }));
   if (!program) {
     notFound();
   }
@@ -109,6 +115,7 @@ export default async function EditProgramPage({ params }: PageProps) {
 
       <ProgramForm
         program={program}
+        forms={forms}
         activeSupplies={activeSupplies}
         initialSupplies={initialSupplies}
         activeSupplySets={activeSupplySets}
