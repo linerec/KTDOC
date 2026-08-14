@@ -10,6 +10,9 @@
  * **위에 적은 이메일이 그대로 계정 이메일이 된다는 것을 화면에 못박는다.**
  * 비밀번호만 정하면 끝이라는 사실이 보이지 않으면 아무도 열지 않는다.
  *
+ * **신청서 맨 앞에 둔다.** 로그인은 무엇을 쓰기 전에 정해야 하는 일이다 —
+ * 다 쓴 뒤에 로그인하러 가면 페이지를 떠나면서 쓴 내용이 사라진다.
+ *
  * 이미 그 이메일로 계정이 있으면 **여기서 자동으로 잇지 않는다.** 이 사이트는
  * 가입 시 이메일을 확인하지 않으므로, 이메일이 같다는 것만으로 같은 사람이라고
  * 볼 수 없다. 그때는 로그인을 권한다.
@@ -78,7 +81,7 @@ export default function AccountBlock({
           {t('forms.account.loginCta', '로그인하고 이어서 작성하기')}
         </Link>
         <p className="account-signin-note">
-          {t('forms.account.loginNote', '로그인하시면 이름·이메일이 자동으로 채워지고, 이 신청이 회원 계정에 남습니다. 지금까지 쓰신 내용은 그대로 있습니다.')}
+          {t('forms.account.loginNote', '먼저 로그인하시면 이름·이메일이 자동으로 채워지고, 이 신청이 회원 계정에 남습니다.')}
         </p>
       </div>
 
@@ -97,7 +100,7 @@ export default function AccountBlock({
             {t('forms.account.optIn', '회원으로 가입하겠습니다')}
           </strong>
           <span className="account-optin-sub">
-            {t('forms.account.optInSub', '비밀번호만 정하시면 됩니다. 위에 적으신 이메일이 그대로 로그인 아이디가 됩니다.')}
+            {t('forms.account.optInSub', '비밀번호만 정하시면 됩니다. 아래 신청서에 적으실 이메일이 그대로 로그인 아이디가 됩니다.')}
           </span>
         </span>
       </label>
@@ -111,7 +114,7 @@ export default function AccountBlock({
             <strong className="account-echo-value">
               {email.trim() || (
                 <em>
-                  {t('forms.account.emailMissing', '위 이메일 문항을 먼저 적어 주세요')}
+                  {t('forms.account.emailMissing', '아래 이메일 문항을 적으시면 여기에 표시됩니다')}
                 </em>
               )}
             </strong>
@@ -246,7 +249,7 @@ export default function AccountBlock({
           </ul>
 
           <p className="account-pending-note">
-            {t('forms.account.pendingNote', '가입은 학원 확인 후 승인됩니다. 승인 전에도 신청서는 정상적으로 접수됩니다.')}
+            {t('forms.account.pendingNote', '신청서를 제출하시면 가입도 함께 접수됩니다. 가입은 학원 확인 후 승인되며, 승인 전에도 신청서는 정상적으로 접수됩니다.')}
           </p>
         </div>
       )}

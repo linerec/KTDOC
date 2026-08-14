@@ -232,6 +232,18 @@ export default function FormRenderer({
         </p>
       )}
 
+      {showAccount && (
+        <AccountBlock
+          email={emailValue}
+          studentName={studentNameValue}
+          guardianName={guardianNameValue}
+          value={account}
+          onChange={setAccount}
+          loginHref={`/login?callbackUrl=${encodeURIComponent(`/f/${slug}`)}`}
+          errors={accountErrors}
+        />
+      )}
+
       {schema.sections.map((section) => {
         const shown = section.questions.filter((q) => visibleKeys.has(q.key));
         if (shown.length === 0) return null;
@@ -273,18 +285,6 @@ export default function FormRenderer({
           onChange={(e) => setHoneypot(e.target.value)}
         />
       </div>
-
-      {showAccount && (
-        <AccountBlock
-          email={emailValue}
-          studentName={studentNameValue}
-          guardianName={guardianNameValue}
-          value={account}
-          onChange={setAccount}
-          loginHref={`/login?callbackUrl=${encodeURIComponent(`/f/${slug}`)}`}
-          errors={accountErrors}
-        />
-      )}
 
       {submitError && (
         <div className="form-alert" role="alert">
