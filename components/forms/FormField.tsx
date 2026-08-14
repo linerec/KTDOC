@@ -11,7 +11,43 @@
  * ※ 불릿들이 한 줄로 뭉치면 아무도 읽지 않는다.
  */
 
+import { useT } from '@/lib/i18n/useT';
+import type { AnswerError } from '@/lib/forms/schema';
 import type { AnswerValue, Bilingual, FormQuestion } from '@/types/forms';
+
+/**
+ * 오류 코드를 사람이 읽는 문장으로.
+ * 검증 함수는 서버·클라이언트가 함께 쓰므로 문장을 만들지 않는다 —
+ * 문장은 화면의 언어를 아는 여기서만 만든다.
+ */
+export function useAnswerErrorText(): (err?: AnswerError) => string | undefined {
+  const t = useT();
+  return (err) => {
+    if (!err) return undefined;
+    switch (err.code) {
+      case 'required':
+        return t('forms.err.required', '입력해 주세요.');
+      case 'selectRequired':
+        return t('forms.err.selectRequired', '선택해 주세요.');
+      case 'consentRequired':
+        return t('forms.err.consentRequired', '동의가 필요합니다.');
+      case 'pickOne':
+        return t('forms.err.pickOne', '하나 이상 선택해 주세요.');
+      case 'pickAtLeast':
+        return t('forms.err.pickAtLeast', '{min}개 이상 선택해 주세요.', { min: err.min ?? 1 });
+      case 'badOption':
+        return t('forms.err.badOption', '선택할 수 없는 항목입니다.');
+      case 'badOptions':
+        return t('forms.err.badOptions', '선택할 수 없는 항목이 포함되어 있습니다.');
+      case 'badEmail':
+        return t('forms.err.badEmail', '이메일 형식이 올바르지 않습니다.');
+      case 'badTel':
+        return t('forms.err.badTel', '전화번호를 확인해 주세요.');
+      default:
+        return t('forms.err.generic', '다시 확인해 주세요.');
+    }
+  };
+}
 
 /** en 이 비면 ko 로 폴백한다 — 번역이 덜 된 문항이 빈칸으로 보이면 안 된다. */
 export function pick(text: Bilingual | undefined, locale: string): string {
@@ -22,7 +58,7 @@ export function pick(text: Bilingual | undefined, locale: string): string {
 interface FormFieldProps {
   question: FormQuestion;
   value: AnswerValue;
-  error?: string;
+  error?: AnswerError;
   locale: string;
   onChange: (key: string, value: AnswerValue) => void;
   onBlur: (key: string) => void;
@@ -36,6 +72,7 @@ export default function FormField({
   onChange,
   onBlur,
 }: FormFieldProps) {
+  const errorText = useAnswerErrorText()(error);
   const id = `f-${q.key}`;
   const errId = `err-${q.key}`;
   const label = pick(q.label, locale);
@@ -68,9 +105,9 @@ export default function FormField({
     .filter(Boolean)
     .join(' ') || undefined;
 
-  const errorNode = error ? (
+  const errorNode = errorText ? (
     <span className="form-error" id={errId}>
-      {error}
+      {errorText}
     </span>
   ) : null;
 
@@ -183,6 +220,9 @@ export default function FormField({
             <label key={o.key} className={`form-option${on ? ' is-picked' : ''}`}>
               <input
                 type="checkbox"
+                // name 이 있어야 제출 오류 때 이 문항으로 포커스가 옮겨간다
+                // (FormRenderer.focusFirstError 가 [name="키"] 로 찾는다).
+                name={q.key}
                 value={o.key}
                 checked={on}
                 onChange={() => {

@@ -46,7 +46,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     const renderedAt = Number(body.renderedAt);
     if (!Number.isFinite(renderedAt) || Date.now() - renderedAt < MIN_SUBMIT_MS) {
       return NextResponse.json(
-        { success: false, error: '잠시 후 다시 시도해 주세요.' },
+        { success: false, code: 'tooFast', error: '잠시 후 다시 시도해 주세요.' },
         { status: 429 }
       );
     }
@@ -54,7 +54,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     const rawAnswers = (body.answers ?? {}) as Answers;
     if (JSON.stringify(rawAnswers).length > MAX_ANSWERS_BYTES) {
       return NextResponse.json(
-        { success: false, error: '입력이 너무 깁니다. 내용을 줄여 주세요.' },
+        { success: false, code: 'tooLong', error: '입력이 너무 깁니다. 내용을 줄여 주세요.' },
         { status: 413 }
       );
     }
@@ -63,7 +63,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     const form = await getOpenFormBySlug(slug);
     if (!form) {
       return NextResponse.json(
-        { success: false, error: '접수가 마감되었거나 없는 신청서입니다.' },
+        { success: false, code: 'notOpen', error: '접수가 마감되었거나 없는 신청서입니다.' },
         { status: 404 }
       );
     }
@@ -71,19 +71,19 @@ export async function POST(request: Request, { params }: RouteParams) {
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     if (form.opens_at && now < form.opens_at) {
       return NextResponse.json(
-        { success: false, error: '아직 접수가 시작되지 않았습니다.' },
+        { success: false, code: 'notOpenYet', error: '아직 접수가 시작되지 않았습니다.' },
         { status: 400 }
       );
     }
     if (form.closes_at && now > form.closes_at) {
-      return NextResponse.json({ success: false, error: '접수가 마감되었습니다.' }, { status: 400 });
+      return NextResponse.json({ success: false, code: 'closed', error: '접수가 마감되었습니다.' }, { status: 400 });
     }
 
     // ── 3) 로그인 요구
     const session = await auth();
     if (form.requires_login && !session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: '로그인 후 작성하실 수 있습니다.' },
+        { success: false, code: 'loginRequired', error: '로그인 후 작성하실 수 있습니다.' },
         { status: 401 }
       );
     }
@@ -98,7 +98,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     const fieldErrors = validateAnswers(schema, answers);
     if (Object.keys(fieldErrors).length > 0) {
       return NextResponse.json(
-        { success: false, error: '입력하지 않은 항목이 있습니다.', fieldErrors },
+        { success: false, code: 'fieldErrors', error: '입력하지 않은 항목이 있습니다.', fieldErrors },
         { status: 400 }
       );
     }
@@ -203,7 +203,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   } catch (error) {
     console.error('Form submit error:', error);
     return NextResponse.json(
-      { success: false, error: '제출에 실패했습니다. 잠시 후 다시 시도해 주세요.' },
+      { success: false, code: 'serverError', error: '제출에 실패했습니다. 잠시 후 다시 시도해 주세요.' },
       { status: 500 }
     );
   }

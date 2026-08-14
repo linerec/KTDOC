@@ -144,6 +144,29 @@ export function warnSchema(schema: FormSchema): string[] {
   return warnings;
 }
 
+/**
+ * 답변 오류 코드. 화면이 forms.err.<code> 키로 번역한다.
+ * 문장을 여기서 만들지 않는 이유는 validateAnswers 주석 참고.
+ */
+export type AnswerErrorCode =
+  | 'required'          // 입력해 주세요
+  | 'selectRequired'    // 선택해 주세요
+  | 'consentRequired'   // 동의가 필요합니다
+  | 'pickOne'           // 하나 이상 선택해 주세요
+  | 'pickAtLeast'       // {min}개 이상 선택해 주세요
+  | 'badOption'         // 선택할 수 없는 항목입니다
+  | 'badOptions'        // 선택할 수 없는 항목이 포함되어 있습니다
+  | 'badEmail'          // 이메일 형식이 올바르지 않습니다
+  | 'badTel';           // 전화번호를 확인해 주세요
+
+export interface AnswerError {
+  code: AnswerErrorCode;
+  /** pickAtLeast 전용 */
+  min?: number;
+}
+
+export type AnswerErrors = Record<string, AnswerError>;
+
 /** 이 문항이 지금 답변 상태에서 보이는가. 조건이 없으면 항상 보인다. */
 export function evaluateShowIf(q: FormQuestion, answers: Answers): boolean {
   if (q.retired) return false;
@@ -167,13 +190,17 @@ export function visibleQuestions(schema: FormSchema, answers: Answers): FormQues
 }
 
 /**
- * 답변 검증. 문항키 → 한국어 오류 메시지.
+ * 답변 검증. 문항키 → **오류 코드**.
+ *
+ * 문장이 아니라 코드를 돌려주는 이유: 이 함수는 서버와 클라이언트가 함께 쓰는데,
+ * 여기서 한국어 문장을 만들면 영문 화면에도 한국어 경고가 뜬다.
+ * 문장으로 바꾸는 일은 화면이 한다(lib/i18n 의 t + forms.err.* 키).
  *
  * **숨겨진 문항은 검증하지 않는다** — 이것이 조건부 노출의 핵심이고,
  * 구글폼이 못 해서 감수하던 것(공연에 참가해도 미참가 사유가 필수로 뜨던 것)을 고치는 자리다.
  */
-export function validateAnswers(schema: FormSchema, answers: Answers): Record<string, string> {
-  const errors: Record<string, string> = {};
+export function validateAnswers(schema: FormSchema, answers: Answers): AnswerErrors {
+  const errors: AnswerErrors = {};
 
   for (const q of visibleQuestions(schema, answers)) {
     if (q.type === 'info') continue;
@@ -183,40 +210,40 @@ export function validateAnswers(schema: FormSchema, answers: Answers): Record<st
       const arr = Array.isArray(v) ? v : [];
       const min = q.minSelect ?? (q.required ? 1 : 0);
       if (arr.length < min) {
-        errors[q.key] = min === 1 ? '하나 이상 선택해 주세요.' : `${min}개 이상 선택해 주세요.`;
+        errors[q.key] = min === 1 ? { code: 'pickOne' } : { code: 'pickAtLeast', min };
         continue;
       }
       const valid = new Set((q.options ?? []).map((o) => o.key));
-      if (arr.some((k) => !valid.has(k))) errors[q.key] = '선택할 수 없는 항목이 포함되어 있습니다.';
+      if (arr.some((k) => !valid.has(k))) errors[q.key] = { code: 'badOptions' };
       continue;
     }
 
     if (q.type === 'consent') {
-      if (q.required && v !== true) errors[q.key] = '동의가 필요합니다.';
+      if (q.required && v !== true) errors[q.key] = { code: 'consentRequired' };
       continue;
     }
 
     if (q.type === 'single') {
       if (v == null || v === '') {
-        if (q.required) errors[q.key] = '선택해 주세요.';
+        if (q.required) errors[q.key] = { code: 'selectRequired' };
         continue;
       }
       const valid = new Set((q.options ?? []).map((o) => o.key));
-      if (typeof v !== 'string' || !valid.has(v)) errors[q.key] = '선택할 수 없는 항목입니다.';
+      if (typeof v !== 'string' || !valid.has(v)) errors[q.key] = { code: 'badOption' };
       continue;
     }
 
     // short | long
     const s = typeof v === 'string' ? v.trim() : '';
     if (!s) {
-      if (q.required) errors[q.key] = '입력해 주세요.';
+      if (q.required) errors[q.key] = { code: 'required' };
       continue;
     }
     if (q.format === 'email' && !EMAIL_RE.test(s)) {
-      errors[q.key] = '이메일 형식이 올바르지 않습니다.';
+      errors[q.key] = { code: 'badEmail' };
     }
     if (q.format === 'tel' && s.replace(/\D/g, '').length < 7) {
-      errors[q.key] = '전화번호를 확인해 주세요.';
+      errors[q.key] = { code: 'badTel' };
     }
   }
 

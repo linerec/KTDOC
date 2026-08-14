@@ -46,7 +46,8 @@ interface AccountBlockProps {
   value: AccountDraft;
   onChange: (next: AccountDraft) => void;
   loginHref: string;
-  errors?: Record<string, string>;
+  /** 번역된 문장이 아니라 키를 받는다 — 언어를 바꾸면 함께 바뀌어야 한다. */
+  errors?: Record<string, { key: string; fallback: string }>;
 }
 
 export default function AccountBlock({
@@ -181,7 +182,7 @@ export default function AccountBlock({
             />
             {errors.password && (
               <span className="form-error" id="err-acct-pw">
-                {errors.password}
+                {t(errors.password.key, errors.password.fallback)}
               </span>
             )}
           </div>
@@ -233,7 +234,9 @@ export default function AccountBlock({
                 </span>
               </label>
             </div>
-            {errors.agreed && <span className="form-error">{errors.agreed}</span>}
+            {errors.agreed && (
+              <span className="form-error">{t(errors.agreed.key, errors.agreed.fallback)}</span>
+            )}
           </div>
 
           <ul className="account-benefits">

@@ -392,3 +392,51 @@ test('retired 문항은 화면에서도 사라진다 — 툼스톤은 렌더 대
   ]);
   assert.deepEqual(visibleQuestions(s, {}).map((q) => q.key), ['q2']);
 });
+
+// ── 오류는 문장이 아니라 코드다 ──────────────────────────────────
+
+test('검증 오류는 문장이 아니라 코드를 돌려준다 — 영문 화면이 스스로 번역해야 한다', () => {
+  const s = baseSchema([
+    { key: 'name', type: 'short', required: true, label: { ko: '이름' } },
+    { key: 'mail', type: 'short', required: true, label: { ko: '메일' }, format: 'email' },
+    { key: 'tel', type: 'short', required: true, label: { ko: '전화' }, format: 'tel' },
+    { key: 'pick', type: 'single', required: true, label: { ko: '고르기' },
+      options: [{ key: 'a', label: { ko: 'A' } }] },
+    { key: 'many', type: 'multi', required: true, minSelect: 2, label: { ko: '여럿' },
+      options: [{ key: 'x', label: { ko: 'X' } }, { key: 'y', label: { ko: 'Y' } }] },
+    { key: 'ok', type: 'consent', required: true, label: { ko: '동의' } },
+  ]);
+
+  const errs = validateAnswers(s, { mail: 'nope', tel: '1', many: ['x'] });
+  assert.equal(errs.name.code, 'required');
+  assert.equal(errs.mail.code, 'badEmail');
+  assert.equal(errs.tel.code, 'badTel');
+  assert.equal(errs.pick.code, 'selectRequired');
+  assert.equal(errs.many.code, 'pickAtLeast');
+  assert.equal(errs.many.min, 2, '몇 개가 필요한지 함께 넘겨야 문장을 만들 수 있다');
+  assert.equal(errs.ok.code, 'consentRequired');
+
+  // 어느 값에도 한국어가 섞여 있으면 안 된다 — 그게 영문 화면을 깨뜨렸다.
+  const dump = JSON.stringify(errs);
+  assert.ok(!/[가-힣]/.test(dump), `오류 값에 한국어가 남아 있다: ${dump}`);
+});
+
+test('하나만 필요할 때는 pickOne, 여럿일 때는 pickAtLeast', () => {
+  const one = baseSchema([
+    { key: 'm', type: 'multi', required: true, label: { ko: 'M' },
+      options: [{ key: 'a', label: { ko: 'A' } }] },
+  ]);
+  assert.equal(validateAnswers(one, {}).m.code, 'pickOne');
+});
+
+test('없는 선택지를 보내면 badOption / badOptions', () => {
+  const s = baseSchema([
+    { key: 'one', type: 'single', required: true, label: { ko: '단일' },
+      options: [{ key: 'a', label: { ko: 'A' } }] },
+    { key: 'many', type: 'multi', required: true, label: { ko: '다중' },
+      options: [{ key: 'a', label: { ko: 'A' } }] },
+  ]);
+  const errs = validateAnswers(s, { one: 'zzz', many: ['zzz'] });
+  assert.equal(errs.one.code, 'badOption');
+  assert.equal(errs.many.code, 'badOptions');
+});

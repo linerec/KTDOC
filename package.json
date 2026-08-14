@@ -11,6 +11,8 @@
     "lint:i18n": "node scripts/lintI18n.mjs",
     "test": "node --test \"lib/**/*.test.ts\"",
     "icons": "node scripts/generateIcons.mjs",
+    "test:forms": "node scripts/e2eRegistrationForm.mjs",
+    "test:forms:cleanup": "node scripts/e2eRegistrationForm.mjs --cleanup-only",
     "seed:test": "node scripts/seedTestAccounts.mjs",
     "seed:sample-events": "node scripts/seedSampleEvents.mjs",
     "seed:supplies": "node scripts/seedSupplies.mjs",

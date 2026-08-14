@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/lib/i18n/useT';
-import { validateAnswers, visibleQuestions } from '@/lib/forms/schema';
+import { validateAnswers, visibleQuestions, type AnswerErrors } from '@/lib/forms/schema';
 import AccountBlock, { EMPTY_ACCOUNT, type AccountDraft } from './AccountBlock';
 import FormField, { pick } from './FormField';
 import type { AnswerValue, Answers, FormSchema } from '@/types/forms';
@@ -68,12 +68,18 @@ export default function FormRenderer({
   const { locale } = useLanguage();
 
   const [answers, setAnswers] = useState<Answers>(prefill?.values ?? {});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<AnswerErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  /**
+   * 번역된 문장이 아니라 **무엇이 잘못됐는가**를 담는다.
+   * 문장을 담아 두면 언어를 바꿔도 그 문장이 그대로 남는다 — 실제로 그랬다.
+   * key 를 아는 오류는 그릴 때 번역하고, 서버가 준 모르는 문장만 text 로 든다.
+   */
+  const [submitError, setSubmitError] = useState<
+    { key: string; fallback: string } | { text: string } | null
+  >(null);
   const [account, setAccount] = useState<AccountDraft>(EMPTY_ACCOUNT);
-  const [accountErrors, setAccountErrors] = useState<Record<string, string>>({});
+  const [accountErrors, setAccountErrors] = useState<Record<string, { key: string; fallback: string }>>({});
 
   const formRef = useRef<HTMLFormElement>(null);
   // 스팸 방어 1: 사람은 이 칸을 채울 수 없다(화면에서 숨겨져 있다).
@@ -90,15 +96,24 @@ export default function FormRenderer({
   const handleChange = useCallback((key: string, value: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
     // 고치는 중에는 오류를 지워 준다 — 타이핑하는 내내 빨간 글씨가 떠 있으면 성가시다.
-    setErrors((prev) => (prev[key] ? { ...prev, [key]: '' } : prev));
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }, []);
 
   const handleBlur = useCallback(
     (key: string) => {
-      setTouched((prev) => ({ ...prev, [key]: true }));
       setAnswers((current) => {
         const found = validateAnswers(schema, current)[key];
-        setErrors((prev) => ({ ...prev, [key]: found ?? '' }));
+        setErrors((prev) => {
+          const next = { ...prev };
+          if (found) next[key] = found;
+          else delete next[key];
+          return next;
+        });
         return current;
       });
     },
@@ -137,10 +152,10 @@ export default function FormRenderer({
 
     if (keys.length > 0) {
       setErrors(found);
-      setTouched(Object.fromEntries(keys.map((k) => [k, true])));
-      setSubmitError(
-        t('forms.submit.hasErrors', '아직 채우지 않은 항목이 있습니다. 표시된 곳을 확인해 주세요.')
-      );
+      setSubmitError({
+        key: 'forms.submit.hasErrors',
+        fallback: '아직 채우지 않은 항목이 있습니다. 표시된 곳을 확인해 주세요.',
+      });
       focusFirstError(visible.map((q) => q.key).filter((k) => keys.includes(k)));
       return;
     }
@@ -148,14 +163,22 @@ export default function FormRenderer({
     // 가입을 원하면 계정 항목도 여기서 막는다 — 서버가 다시 보지만,
     // 폼을 다 채운 뒤 비밀번호 하나 때문에 되돌아오는 일을 줄인다.
     if (showAccount && account.wants) {
-      const acctErrors: Record<string, string> = {};
-      if (account.password.length < 8) acctErrors.password = '비밀번호는 8자 이상이어야 합니다.';
-      if (!account.agreed) acctErrors.agreed = '이용약관과 개인정보처리방침에 동의해 주세요.';
+      const acctErrors: Record<string, { key: string; fallback: string }> = {};
+      if (account.password.length < 8) {
+        acctErrors.password = {
+          key: 'forms.err.passwordShort',
+          fallback: '비밀번호는 8자 이상이어야 합니다.',
+        };
+      }
+      if (!account.agreed) {
+        acctErrors.agreed = {
+          key: 'forms.err.termsRequired',
+          fallback: '이용약관과 개인정보처리방침에 동의해 주세요.',
+        };
+      }
       if (Object.keys(acctErrors).length > 0) {
         setAccountErrors(acctErrors);
-        setSubmitError(
-          t('forms.account.fixErrors', '회원가입 항목을 확인해 주세요.')
-        );
+        setSubmitError({ key: 'forms.account.fixErrors', fallback: '회원가입 항목을 확인해 주세요.' });
         document.getElementById('acct-pw')?.focus();
         return;
       }
@@ -163,9 +186,10 @@ export default function FormRenderer({
     }
 
     if (preview) {
-      setSubmitError(
-        t('forms.submit.previewOnly', '미리 보기에서는 제출되지 않습니다. 게시한 뒤에 실제로 접수됩니다.')
-      );
+      setSubmitError({
+        key: 'forms.submit.previewOnly',
+        fallback: '미리 보기에서는 제출되지 않습니다. 게시한 뒤에 실제로 접수됩니다.',
+      });
       return;
     }
 
@@ -178,7 +202,9 @@ export default function FormRenderer({
         body: JSON.stringify({
           answers: pruned,
           locale,
-          renderedAt: renderedAt.current ?? Date.now(),
+          // 마운트 이펙트가 이미 찍었다. 아직 없다면(있을 수 없지만) 0 을 보내
+          // 서버가 '오래 머물렀다'로 보게 한다 — 진짜 사람을 막는 쪽으로 실패하지 않는다.
+          renderedAt: renderedAt.current ?? 0,
           website: honeypot,
           account:
             showAccount && account.wants
@@ -193,7 +219,9 @@ export default function FormRenderer({
           setErrors(json.fieldErrors);
           focusFirstError(Object.keys(json.fieldErrors));
         }
-        setSubmitError(json.error || t('forms.submit.failed', '제출에 실패했습니다. 잠시 후 다시 시도해 주세요.'));
+        // 서버 메시지는 한국어 고정이다. 아는 코드는 화면의 언어로 옮기고,
+        // 모르는 코드일 때만 서버 문장을 그대로 보여준다.
+        setSubmitError(serverError(json.code, json.error));
         setSubmitting(false);
         return;
       }
@@ -205,9 +233,34 @@ export default function FormRenderer({
             (json.data.account ? `&a=${json.data.account}` : '')
       );
     } catch {
-      setSubmitError(t('forms.submit.network', '연결이 끊어졌습니다. 잠시 후 다시 시도해 주세요.'));
+      setSubmitError({
+        key: 'forms.submit.network',
+        fallback: '연결이 끊어졌습니다. 잠시 후 다시 시도해 주세요.',
+      });
       setSubmitting(false);
     }
+  }
+
+  /** 서버 오류 코드 → 번역할 키. 모르는 코드는 서버 문장을 그대로 든다. */
+  function serverError(
+    code: unknown,
+    serverText: unknown
+  ): { key: string; fallback: string } | { text: string } {
+    const known: Record<string, [string, string]> = {
+      tooFast: ['forms.err.tooFast', '너무 빨리 제출되었습니다. 잠시 후 다시 시도해 주세요.'],
+      tooLong: ['forms.err.tooLong', '입력이 너무 깁니다. 내용을 줄여 주세요.'],
+      notOpen: ['forms.err.notOpen', '접수가 마감되었거나 없는 신청서입니다.'],
+      notOpenYet: ['forms.err.notOpenYet', '아직 접수가 시작되지 않았습니다.'],
+      closed: ['forms.err.closed', '접수가 마감되었습니다.'],
+      loginRequired: ['forms.err.loginRequired', '로그인 후 작성하실 수 있습니다.'],
+      fieldErrors: ['forms.submit.hasErrors', '아직 채우지 않은 항목이 있습니다. 표시된 곳을 확인해 주세요.'],
+      serverError: ['forms.submit.failed', '제출에 실패했습니다. 잠시 후 다시 시도해 주세요.'],
+    };
+    const hit = typeof code === 'string' ? known[code] : undefined;
+    if (hit) return { key: hit[0], fallback: hit[1] };
+    return typeof serverText === 'string' && serverText
+      ? { text: serverText }
+      : { key: 'forms.submit.failed', fallback: '제출에 실패했습니다. 잠시 후 다시 시도해 주세요.' };
   }
 
   const visibleKeys = new Set(visible.map((q) => q.key));
@@ -261,7 +314,7 @@ export default function FormRenderer({
                   key={q.key}
                   question={q}
                   value={answers[q.key] ?? null}
-                  error={touched[q.key] ? errors[q.key] || undefined : errors[q.key] || undefined}
+                  error={errors[q.key]}
                   locale={locale}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -288,7 +341,7 @@ export default function FormRenderer({
 
       {submitError && (
         <div className="form-alert" role="alert">
-          {submitError}
+          {'key' in submitError ? t(submitError.key, submitError.fallback) : submitError.text}
         </div>
       )}
 
