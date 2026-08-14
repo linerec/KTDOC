@@ -1497,6 +1497,9 @@
 
 
   "admin.forms.qrHint": "Scan with a phone to open the form",
+
+  "admin.home.urgentForms": "{n} new form entries have come in",
+  "admin.home.viewFormResponses": "View forms",
   "admin.forms.subtitle": "Create registration forms, share them by link or QR, and review the entries that come in.",
   "admin.forms.new": "+ New form",
   "admin.forms.provisionalTitle": "Some decisions still need the director’s confirmation",

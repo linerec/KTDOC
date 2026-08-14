@@ -448,3 +448,21 @@ export async function getSelectionCounts(formId: number): Promise<Record<string,
   );
   return Object.fromEntries(rows.map((r) => [r.option_key, r.n]));
 }
+
+/**
+ * 내보내기용 전체 응답 — 페이지를 나누지 않는다.
+ * 취소본과 옛 재제출본은 뺀다(운영이 쓰는 것은 살아 있는 최신본이다).
+ * 상한을 두는 이유: 실수로 수만 건을 한 번에 긁어 원격 D1을 때리지 않기 위해서다.
+ */
+export async function getResponsesForExport(
+  formId: number,
+  limit = 2000
+): Promise<FormResponseRow[]> {
+  return queryD1<FormResponseRow>(
+    `SELECT * FROM form_responses
+      WHERE form_id = ? AND is_latest = 1 AND status != 'cancelled'
+      ORDER BY submitted_at, id
+      LIMIT ?`,
+    [formId, limit]
+  );
+}

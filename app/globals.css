@@ -18925,3 +18925,271 @@ button.admin-page-tab {
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* ── 응답 목록 ──────────────────────────────────────────── */
+.resp-filters {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.resp-filters .admin-field {
+  flex: 1;
+  min-width: 180px;
+}
+
+.resp-filters-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding-bottom: 10px;
+  margin-left: auto;
+}
+
+.resp-medical {
+  margin-left: 6px;
+}
+
+.resp-picks {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* ── 응답 상세 ──────────────────────────────────────────── */
+.resp-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .resp-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+.resp-detail-main,
+.resp-detail-side,
+.resp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.resp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resp-panel-title {
+  margin: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.resp-pick-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resp-pick-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  color: var(--text-color);
+  font-size: 0.92rem;
+}
+
+.resp-tuition {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  border-left: 3px solid var(--soft-gold);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resp-tuition-none {
+  border-left-color: rgba(var(--fg-rgb), 0.2);
+  color: var(--text-muted);
+}
+
+.resp-answers {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.resp-answers > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.resp-answer-label {
+  margin: 0;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.resp-answer-value {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  white-space: pre-line;
+}
+
+.resp-answer-hidden {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.resp-medical-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  border-left: 3px solid var(--deep-red);
+}
+
+.resp-consents {
+  font-size: 0.88rem;
+}
+
+.resp-history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.resp-history li {
+  padding-left: 14px;
+  border-left: 2px solid rgba(var(--fg-rgb), 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.resp-history-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.resp-history-move,
+.resp-history-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.resp-history-move strong {
+  color: var(--soft-gold-text);
+}
+
+.resp-hits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resp-hit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.resp-hit .admin-cell-sub {
+  display: block;
+}
+
+/* ── 과목별 명단 ────────────────────────────────────────── */
+.roster {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.roster-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.roster-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.roster-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.roster-count {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--soft-gold-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.roster-count.is-over {
+  color: var(--deep-red);
+}
+
+.roster-no {
+  width: 3rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 대리 입력 ──────────────────────────────────────────── */
+.staff-entry .public-form {
+  gap: 28px;
+}
+
+.staff-entry .form-section-title {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+}

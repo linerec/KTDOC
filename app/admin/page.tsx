@@ -16,6 +16,7 @@ import {
   getGalleryPhotos,
   getPrograms,
   getApplicationCounts,
+  getPendingResponseCounts,
   getPublishedEventsOnDay,
 } from '@/lib/d1';
 import { getMemberCounts } from '@/lib/members';
@@ -79,6 +80,7 @@ export default async function AdminDashboardPage() {
     categories,
     memberCounts,
     todayEvents,
+    formResponseCounts,
   ] = await Promise.all([
     getPrograms({ published: 'all', limit: 1 }),
     getPrograms({ published: true, limit: 1 }),
@@ -91,6 +93,8 @@ export default async function AdminDashboardPage() {
     // 회원 수는 MySQL에서 조회 — 장애 시에도 대시보드가 깨지지 않도록 폴백.
     getMemberCounts().catch(() => ({ total: 0, admins: 0, users: 0, verified: 0 })),
     getTodayEvents(),
+    // 신청서(질문지)로 들어온 응답 — 옛 /classes 신청과는 별개 축이다.
+    getPendingResponseCounts().catch(() => ({ total: 0 })),
   ]);
 
   // 신청 현황·사진 보관함은 사이드바에서 뺀 화면이라 이 대시보드가 사실상의 진입점이다.
@@ -99,6 +103,8 @@ export default async function AdminDashboardPage() {
     hasMenuAccess(session, 'applications'),
     hasMenuAccess(session, 'gallery.photos'),
   ]);
+
+  const canSeeForms = await hasMenuAccess(session, 'forms');
 
   const adminName = session?.user?.name || session?.user?.email?.split('@')[0] || '관리자';
 
@@ -114,6 +120,8 @@ export default async function AdminDashboardPage() {
       categoryCount={categories.length}
       membersTotal={memberCounts.total}
       todayEvents={todayEvents}
+      formResponsesNew={formResponseCounts.total}
+      canSeeForms={canSeeForms}
       canSeeApplications={canSeeApplications}
       canSeePhotos={canSeePhotos}
     />

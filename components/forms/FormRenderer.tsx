@@ -35,6 +35,16 @@ interface FormRendererProps {
   prefill?: FormPrefill;
   /** 초안 미리보기 — 실제로 제출되지 않는다. */
   preview?: boolean;
+  /**
+   * 보낼 곳. 기본은 공개 제출이고, 대리 입력 화면이 관리 라우트를 준다.
+   * 화면은 같은 것을 보여줘야 하므로(운영진이 학부모가 보는 것을 그대로 본다)
+   * 렌더러를 복제하지 않고 보내는 곳만 바꾼다.
+   */
+  submitTo?: string;
+  /** 제출 후 갈 곳. 기본은 완료 화면. */
+  doneHref?: (responseId: number) => string;
+  /** 제출 버튼 문구를 바꿀 때(대리 입력) */
+  submitLabel?: string;
 }
 
 export default function FormRenderer({
@@ -42,6 +52,9 @@ export default function FormRenderer({
   schema,
   prefill,
   preview = false,
+  submitTo,
+  doneHref,
+  submitLabel,
 }: FormRendererProps) {
   const t = useT();
   const router = useRouter();
@@ -133,7 +146,7 @@ export default function FormRenderer({
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch(`/api/forms/${encodeURIComponent(slug)}/submit`, {
+      const res = await fetch(submitTo ?? `/api/forms/${encodeURIComponent(slug)}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -155,7 +168,11 @@ export default function FormRenderer({
         return;
       }
 
-      router.push(`/f/${encodeURIComponent(slug)}/done?r=${json.data.responseId}`);
+      router.push(
+        doneHref
+          ? doneHref(json.data.responseId)
+          : `/f/${encodeURIComponent(slug)}/done?r=${json.data.responseId}`
+      );
     } catch {
       setSubmitError(t('forms.submit.network', '연결이 끊어졌습니다. 잠시 후 다시 시도해 주세요.'));
       setSubmitting(false);
@@ -227,7 +244,7 @@ export default function FormRenderer({
           ? t('forms.submit.sending', '보내는 중…')
           : preview
             ? t('forms.submit.previewLabel', '미리 보기 — 제출되지 않습니다')
-            : t('forms.submit.label', '신청서 제출')}
+            : (submitLabel ?? t('forms.submit.label', '신청서 제출'))}
       </button>
     </form>
   );

@@ -278,5 +278,6 @@ export {
   markPromoted,
   getRoster,
   getSelectionCounts,
+  getResponsesForExport,
 } from './formResponses';
 export type { InsertResponseInput, RosterRow } from './formResponses';
