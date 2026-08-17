@@ -285,3 +285,14 @@ export {
   attachSubmitter,
 } from './formResponses';
 export type { InsertResponseInput, RosterRow } from './formResponses';
+
+export {
+  insertMailLogs,
+  getUsageCounts,
+  wasEventSentToday,
+  searchMailLog,
+  getMailLogById,
+  getBatchBody,
+  purgeMailLogOlderThan,
+} from './mailLog';
+export type { MailLogInsert, MailLogSearch } from './mailLog';
