@@ -10,6 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { isAdmin } from '@/lib/isAdmin';
 import { getPermMatrix, effectiveAllowedByKey, viewerOf } from '@/lib/admin/permissions';
 import {
@@ -94,6 +95,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         await notifyMemberApproved(session!.user.id, id).catch((err) =>
           console.error('승인 알림 발송 실패:', err)
         );
+        // 메일도 함께 — 로그인하지 않아도 승인 사실을 알 수 있어야 한다.
+        // 이름은 승인 뒤에 읽는다(위 락아웃 검사의 target은 reject·suspend 전용 스코프).
+        notifyEventAfterResponse('member.approved', {
+          userIds: [id],
+          data: {
+            name: (await getMemberById(id))?.name ?? '',
+            url: process.env.AUTH_URL ?? '',
+          },
+        });
         break;
       }
       case 'reject': {
@@ -177,6 +187,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         }
         const tempPassword = generateTempPassword();
         await setTempPassword(id, await hashPassword(tempPassword), session.user.id);
+        // 회원에게 메일로도 보낸다 — 지금까지는 전달 수단이 없어 구두·메신저로
+        // 알려야 했다. 본문에 평문이 실리므로 발송 내역에는 본문을 남기지 않는다
+        // (lib/mail/events.ts의 redactBody).
+        notifyEventAfterResponse('member.temp_password', {
+          userIds: [id],
+          data: { name: target.name ?? '', tempPassword, url: process.env.AUTH_URL ?? '' },
+        });
         // 임시 비밀번호 평문은 이 응답에서 한 번만 노출된다(저장은 해시만).
         return NextResponse.json({
           success: true,

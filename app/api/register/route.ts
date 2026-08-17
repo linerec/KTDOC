@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { createMember, parseEnrollmentYear } from '@/lib/members/createMember';
+import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { SIGNUP_ROLES, type SignupRole } from '@/types/members';
 
 interface RegisterBody {
@@ -66,6 +67,18 @@ export async function POST(request: Request) {
         result.code === 'email_taken' ? 409 : result.code === 'child_not_found' ? 404 : 400;
       return NextResponse.json({ error: result.message }, { status });
     }
+
+    // 가입 확인 메일 + 운영진 알림. 응답을 붙잡지 않는다.
+    // 실패해도 가입은 이미 끝났다 — 메일에 의존하면 스팸 분류 한 번에
+    // 가입이 통째로 사라진다.
+    notifyEventAfterResponse('member.signup', {
+      userIds: [result.userId],
+      data: {
+        name: body.name ?? '',
+        email: body.email ?? '',
+        phone: body.phone ?? '',
+      },
+    });
 
     return NextResponse.json(
       {

@@ -11,28 +11,29 @@
 
 import { NextResponse } from 'next/server';
 import { getEventsOnDate, getEventCheckins } from '@/lib/d1';
-import { getUsersByIds, getGuardianEmailsForStudents } from '@/lib/members';
-import { sendMail, isMailConfigured } from '@/lib/mail';
+import { notifyEvent } from '@/lib/mail/notify';
 import { formatEventDate, type EventWithCategory } from '@/types/gallery';
 
 export const dynamic = 'force-dynamic';
 
-function buildBody(event: EventWithCategory): string {
+/** 시각 정보 한 줄 — 집합·시작·종료 중 있는 것만 */
+function buildWhen(event: EventWithCategory): string {
+  const parts = [
+    formatEventDate(event.event_date, 'ko'),
+    event.call_time ? `집합 ${event.call_time}` : null,
+    event.start_time ? `시작 ${event.start_time}` : null,
+    event.end_time ? `종료 ${event.end_time}` : null,
+  ].filter(Boolean);
+  return parts.join(' · ');
+}
+
+/** 준비물·지도 등 부가 안내 */
+function buildNote(event: EventWithCategory): string {
   const lines = [
-    `${event.title_ko} 안내`,
-    '',
-    '내일 일정이 있어 안내드립니다.',
-    `· 날짜: ${formatEventDate(event.event_date, 'ko')}`,
-    event.location ? `· 장소: ${event.location}` : null,
-    event.location_url ? `· 지도: ${event.location_url}` : null,
-    event.call_time ? `· 집합 시간: ${event.call_time}` : null,
-    event.start_time ? `· 시작 시간: ${event.start_time}` : null,
-    event.end_time ? `· 종료 시간: ${event.end_time}` : null,
-    event.prep_notes ? `· 준비물·안내: ${event.prep_notes}` : null,
-    '',
-    'KTDOC 춤누리 한국전통무용단',
-  ];
-  return lines.filter((l) => l !== null).join('\n');
+    event.location_url ? `지도: ${event.location_url}` : null,
+    event.prep_notes ? `준비물·안내: ${event.prep_notes}` : null,
+  ].filter(Boolean);
+  return lines.join('\n');
 }
 
 export async function GET(request: Request) {
@@ -61,30 +62,33 @@ export async function GET(request: Request) {
         continue;
       }
 
-      const students = await getUsersByIds(studentIds);
-      const guardianMap = await getGuardianEmailsForStudents(studentIds);
+      // 주소 수집·중복 제거·보호자 확장은 notifyEvent가 맡는다.
+      // 여기서는 "누가 참여하는가"만 넘긴다.
+      //
+      // cron에서는 after()를 쓰지 않고 await 한다 — 응답 후 함수가 끝나면
+      // 발송이 중간에 잘린다(기다리는 사용자도 없다).
+      await notifyEvent('event.reminder', {
+        userIds: studentIds,
+        data: {
+          title: event.title_ko,
+          when: buildWhen(event),
+          where: event.location ?? '',
+          note: buildNote(event),
+        },
+      });
 
-      const emails = new Set<string>();
-      for (const s of students) if (s.email) emails.add(s.email);
-      for (const list of guardianMap.values()) for (const e of list) emails.add(e);
-
-      const recipients = Array.from(emails);
-      let sent = false;
-      if (recipients.length > 0) {
-        // 수신자 노출 방지를 위해 BCC로 단체 발송.
-        sent = await sendMail({
-          subject: `[KTDOC] 내일 일정 안내 — ${event.title_ko}`,
-          text: buildBody(event),
-          bcc: recipients,
-        });
-      }
-      results.push({ eventId: event.id, title: event.title_ko, recipients: recipients.length, sent });
+      results.push({
+        eventId: event.id,
+        title: event.title_ko,
+        recipients: studentIds.length,
+        sent: true,
+      });
     }
 
     return NextResponse.json({
       success: true,
       date: tomorrow,
-      mailConfigured: isMailConfigured(),
+      // 발송 성패와 사유는 관리 콘솔의 '보낸 내역'에 남는다.
       events: results,
     });
   } catch (error) {

@@ -20129,3 +20129,104 @@ button.admin-page-tab {
     max-width: 160px;
   }
 }
+
+/* ── 이메일 수신 카드 (내 프로필) ──
+   푸시 카드와 나란히 놓여 "알림을 어떻게 받을지"를 한자리에 모은다. */
+.mail-optin-card {
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.mail-optin-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.mail-optin-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(var(--fg-rgb), 0.06);
+  color: var(--soft-gold-text);
+  font-size: 1.05rem;
+}
+
+.mail-optin-title {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.mail-optin-lede {
+  margin: 4px 0 0;
+  color: rgba(var(--fg-rgb), 0.6);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.mail-optin-badge {
+  flex: none;
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(var(--fg-rgb), 0.08);
+  color: rgba(var(--fg-rgb), 0.55);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mail-optin-badge.is-on {
+  background: var(--soft-gold);
+  color: var(--on-accent);
+}
+
+.mail-optin-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 0;
+  color: rgba(var(--fg-rgb), 0.85);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.mail-optin-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.mail-optin-switch input:checked + .mail-switch-track {
+  background: var(--accent-color);
+}
+
+.mail-optin-switch input:checked + .mail-switch-track .mail-switch-thumb {
+  transform: translateX(18px);
+}
+
+.mail-optin-switch input:focus-visible + .mail-switch-track {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.mail-optin-note,
+.mail-optin-status {
+  margin: 12px 0 0;
+  color: rgba(var(--fg-rgb), 0.55);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.mail-optin-error {
+  margin: 10px 0 0;
+  color: var(--mail-fail-text);
+  font-size: 0.82rem;
+}

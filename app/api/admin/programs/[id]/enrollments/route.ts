@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
 import { getProgramById, createEnrollment } from '@/lib/d1';
+import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { getMemberById } from '@/lib/members';
 import type { MemberRole } from '@/types/members';
 import { ENROLLMENT_STATUSES, type EnrollmentStatus } from '@/types/programs';
@@ -91,6 +92,21 @@ export async function POST(request: Request, { params }: RouteParams) {
       note,
       enrolled_by: session!.user!.id,
     });
+
+    // 등록 안내 — 원생이면 보호자에게도 함께 간다(notifyEvent가 붙인다).
+    // 실제로 수강하게 된 경우에만 알린다: 대기·취소 상태를 등록 완료로
+    // 안내하면 원생과 보호자가 잘못 알게 된다.
+    if (status === 'active') {
+      const member = await getMemberById(userId).catch(() => null);
+      notifyEventAfterResponse('enrollment.created', {
+        userIds: [userId],
+        data: {
+          name: member?.name ?? '',
+          title: program.title_ko,
+          schedule: program.schedule_ko ?? '',
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

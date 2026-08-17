@@ -12,6 +12,7 @@ import { getMemberById, type MemberRole } from '@/lib/members';
 import ProfileForm from '@/components/admin/profile/ProfileForm';
 import ChangePasswordCard from '@/components/admin/ChangePasswordCard';
 import PushOptInCard from '@/components/push/PushOptInCard';
+import EmailOptInCard from '@/components/admin/mail/EmailOptInCard';
 
 export const metadata = {
   title: '내 프로필 | KTDOC Admin',
@@ -66,12 +67,15 @@ export default async function AdminProfilePage() {
       </div>
 
       {/* 알림 설정 — 대시보드 카드는 켜고 나면 사라지므로 끄기·테스트는 여기가 집이다.
-          구독은 기기(브라우저)마다 따로이므로 지금 보고 있는 기기의 상태를 보여준다. */}
+          구독은 기기(브라우저)마다 따로이므로 지금 보고 있는 기기의 상태를 보여준다.
+          이메일은 기기와 무관한 계정 단위 설정이라 바로 옆에 나란히 둔다 —
+          "알림을 어떻게 받을지"가 한자리에 모여야 무엇을 껐는지 헷갈리지 않는다. */}
       <div className="admin-profile-push">
         <PushOptInCard
           placement="settings"
           audience={isStaff(session) ? 'staff' : 'member'}
         />
+        <EmailOptInCard />
       </div>
     </div>
   );

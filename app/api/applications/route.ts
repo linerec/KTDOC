@@ -4,12 +4,13 @@
  *
  * 1) 검증(필수값·이메일·동의·허니팟·최소제출시간·길이제한)
  * 2) 프로그램 확인(존재 + 공개) 후 D1에 신청 저장 (source of truth)
- * 3) 관리자에게 알림 메일 발송 (실패해도 신청은 유효 — try/catch)
+ * 3) 알림 메일 (신청자 확인 + 운영진 알림) — 실패해도 신청은 유효하다.
+ *    누구에게 보낼지는 관리 콘솔의 이메일 설정을 따른다(lib/mail).
  */
 
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 import { getProgramById, createApplication } from '@/lib/d1';
+import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import type { CreateApplicationInput } from '@/types/programs';
 
 export const runtime = 'nodejs';
@@ -21,7 +22,6 @@ const MESSAGE_MAX = 5000;
 const EMAIL_MAX = 254;
 const SHORT_MAX = 40;
 const MAX_BODY_BYTES = 64 * 1024;
-const FALLBACK_RECIPIENT = 'owenkdev@gmail.com';
 
 export async function POST(request: Request) {
   try {
@@ -125,8 +125,18 @@ export async function POST(request: Request) {
       program_title_snapshot: program.title_ko,
     });
 
-    // 관리자 알림 메일 (실패해도 신청은 저장됨)
-    void sendAdminNotification(id, input, program.title_ko);
+    // 알림 메일 — 응답을 붙잡지 않는다(메일 서버가 느려도 신청 화면이 기다리지 않는다).
+    // 실패해도 신청은 이미 저장됐다: 저장이 성공이면 접수 완료다.
+    notifyEventAfterResponse('application.created', {
+      directEmails: [input.email],
+      replyTo: input.email,
+      data: {
+        name: input.applicant_name,
+        title: program.title_ko,
+        email: input.email,
+        phone: input.phone ?? '',
+      },
+    });
 
     return NextResponse.json({ success: true, data: { id } });
   } catch (error) {
@@ -135,51 +145,5 @@ export async function POST(request: Request) {
       { success: false, error: '신청 접수에 실패했습니다. 다시 시도해 주세요.' },
       { status: 500 }
     );
-  }
-}
-
-async function sendAdminNotification(
-  id: number,
-  input: CreateApplicationInput,
-  programTitle: string
-): Promise<void> {
-  try {
-    const user = process.env.GMAIL_USER;
-    const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, '');
-    if (!user || !password) {
-      console.warn('[applications] GMAIL credentials missing — skipping admin email. Application #' + id + ' saved.');
-      return;
-    }
-
-    const recipient = process.env.ADMIN_NOTIFY_EMAIL || user || FALLBACK_RECIPIENT;
-
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: { user, pass: password },
-    });
-
-    const lines = [
-      `프로그램: ${programTitle}`,
-      `신청자: ${input.applicant_name}`,
-      input.guardian_name ? `보호자: ${input.guardian_name}` : null,
-      `이메일: ${input.email}`,
-      input.phone ? `전화번호: ${input.phone}` : null,
-      input.participant_age ? `참가자 나이: ${input.participant_age}` : null,
-      input.message ? `요청 사항: ${input.message}` : null,
-      '',
-      `관리자 화면에서 확인: /admin/applications`,
-    ].filter(Boolean);
-
-    await transporter.sendMail({
-      from: `"KTDOC 신청 알림" <${user}>`,
-      to: recipient,
-      replyTo: input.email,
-      subject: `[KTDOC 신청] ${programTitle} — ${input.applicant_name}`,
-      text: lines.join('\n'),
-    });
-  } catch (e) {
-    console.error('[applications] admin notification email failed (application still saved):', e);
   }
 }

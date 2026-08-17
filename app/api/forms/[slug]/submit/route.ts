@@ -20,6 +20,7 @@ import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { attachSubmitter, getSubmittableFormBySlug, insertResponse } from '@/lib/d1';
+import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { createMember, emailExists } from '@/lib/members/createMember';
 import { applyBindings, validateAnswers, visibleQuestions } from '@/lib/forms/schema';
 import { notifyStaffOfFormResponse } from '@/lib/push/system';
@@ -196,17 +197,30 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     // ── 7) 통지. 실패해도 접수를 되돌리지 않는다.
+    const nameKey = visibleQuestions(schema, answers).find((q) => q.bind === 'student_name')?.key;
+    const namedRaw = nameKey ? answers[nameKey] : null;
+    const studentName =
+      typeof namedRaw === 'string' && namedRaw.trim() ? namedRaw.trim() : '이름 미상';
+
     try {
-      const nameKey = visibleQuestions(schema, answers).find((q) => q.bind === 'student_name')?.key;
-      const named = nameKey ? answers[nameKey] : null;
       await notifyStaffOfFormResponse({
         formId: form.id,
         formTitle: form.title_ko,
-        studentName: typeof named === 'string' && named.trim() ? named.trim() : '이름 미상',
+        studentName,
       });
     } catch (error) {
       console.error('form response notify failed:', error);
     }
+
+    // 접수 확인 메일 — 제출자에게, 그리고 운영진 주소로.
+    // 비회원도 낼 수 있는 신청서라 답변에 적힌 이메일을 직접 쓴다.
+    const { core: bound } = applyBindings(schema, answers, form.schema_version);
+    notifyEventAfterResponse('form.submitted', {
+      userIds: userId ? [userId] : [],
+      directEmails: !userId && bound.email ? [bound.email] : [],
+      replyTo: bound.email || undefined,
+      data: { name: studentName, title: form.title_ko },
+    });
 
     return NextResponse.json({ success: true, data: { responseId, account: accountResult } });
   } catch (error) {

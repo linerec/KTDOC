@@ -11,6 +11,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { auth } from '@/auth';
 import { isApproved } from '@/lib/isAdmin';
 import {
@@ -108,6 +109,13 @@ export async function POST(request: Request) {
     }
 
     await checkInEvent(eventId, target.userId);
+
+    // 참여 확정 안내. 기본은 꺼져 있다(빈도가 높다) — 관리 콘솔에서 켜면 나간다.
+    notifyEventAfterResponse('checkin.created', {
+      userIds: [target.userId],
+      data: { title: state.title ?? '', name: '' },
+    });
+
     return NextResponse.json({ success: true, data: { eventId, checkedIn: true } });
   } catch (error) {
     console.error('Checkin error:', error);

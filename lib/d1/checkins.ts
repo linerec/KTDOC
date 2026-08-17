@@ -53,13 +53,19 @@ export async function checkOutEvent(eventId: number, userId: string): Promise<bo
  */
 export async function getCheckinEventState(
   eventId: number
-): Promise<{ exists: boolean; published: boolean }> {
-  const rows = await queryD1<{ is_published: number }>(
-    'SELECT is_published FROM events WHERE id = ?',
+): Promise<{ exists: boolean; published: boolean; title: string | null }> {
+  // 제목까지 함께 읽는다 — 체크인 안내 메일이 "무슨 공연인지"를 말해야 한다.
+  // 어차피 이 행을 읽으므로 컬럼 하나가 더 드는 비용은 없다.
+  const rows = await queryD1<{ is_published: number; title_ko: string | null }>(
+    'SELECT is_published, title_ko FROM events WHERE id = ?',
     [eventId]
   );
-  if (rows.length === 0) return { exists: false, published: false };
-  return { exists: true, published: rows[0].is_published === 1 };
+  if (rows.length === 0) return { exists: false, published: false, title: null };
+  return {
+    exists: true,
+    published: rows[0].is_published === 1,
+    title: rows[0].title_ko ?? null,
+  };
 }
 
 /** 특정 사용자가 이 이벤트에 체크인했는지 */

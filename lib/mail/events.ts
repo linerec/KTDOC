@@ -113,15 +113,9 @@ export const MAIL_EVENTS: readonly MailEventDef[] = [
     defaultOn: { user: true, staff: true },
     allowNonMember: true,
   },
-  {
-    key: 'feedback.created',
-    label: '문의 접수',
-    description: '홈페이지 문의가 접수되었을 때.',
-    group: 'ops',
-    audiences: ['user', 'staff'],
-    defaultOn: { user: true, staff: true },
-    allowNonMember: true,
-  },
+  // 공개 문의 폼이 아직 사이트에 없어 '문의 접수' 이벤트는 두지 않는다.
+  // (/api/feedback은 관리자 전용 요구사항 폼이라 성격이 다르다)
+  // 문의 폼이 생기면 여기 한 줄 + 본문 하나면 관리 화면에 저절로 나타난다.
   {
     key: 'event.reminder',
     label: '공연 전날 안내',
