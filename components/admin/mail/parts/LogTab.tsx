@@ -36,8 +36,20 @@ const SKIP_REASON: Record<string, string> = {
   'monthly-limit': '한 달 한도 초과',
 };
 
+/**
+ * 레지스트리에 없는 시스템 발송의 이름.
+ * 이벤트가 아니라 운영자가 직접 일으킨 발송이라 레지스트리에 두지 않지만,
+ * 내역에는 남는다 — 화면에 내부 키가 그대로 보이면 안 된다.
+ */
+const SYSTEM_EVENT_LABEL: Record<string, string> = {
+  'system.test': '테스트 발송',
+  'system.feedback': '요구사항 폼',
+};
+
 function eventLabel(key: string): string {
-  return MAIL_EVENTS.find((e) => e.key === key)?.label ?? key;
+  return (
+    MAIL_EVENTS.find((e) => e.key === key)?.label ?? SYSTEM_EVENT_LABEL[key] ?? key
+  );
 }
 
 function pct(sent: number, limit: number): number {
@@ -111,6 +123,13 @@ export default function LogTab({
   useEffect(() => {
     void load();
   }, [load]);
+
+  // 탭을 열 때 사용량도 다시 읽는다. 방금 테스트 발송을 하고 이 탭으로 오면
+  // 게이지가 0으로 보이는데, 그건 페이지를 처음 열 때의 값이다 — 내역에는
+  // 1건이 있는데 게이지가 0이면 둘 중 하나가 고장 난 것처럼 보인다.
+  useEffect(() => {
+    onReload();
+  }, [onReload]);
 
   const openDetail = async (id: number) => {
     const res = await fetch(`/api/admin/mail/log?id=${id}`, { cache: 'no-store' });

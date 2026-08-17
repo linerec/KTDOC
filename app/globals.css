@@ -19500,7 +19500,7 @@ button.admin-page-tab {
    탭 넷(발송 방법·발신 정보·무엇을 보낼지·보낸 내역)을 한 폭에 둔다.
    이벤트 표는 레지스트리를 순회해 그리므로 행 수가 늘어도 레이아웃이 버틴다.
    ============================================ */
-
+.mail-settings {
   display: flex;
   flex-direction: column;
   gap: 20px;
