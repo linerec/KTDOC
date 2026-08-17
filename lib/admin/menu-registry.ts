@@ -131,6 +131,9 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'settings.seo', href: '/admin/seo', label: 'SEO · 사이트 정보', iconKey: 'globe', group: 'ops', defaultRoles: ['admin'] },
   // AI 설정: LLM 제공자 API 키(D1 저장)·모델 목록 최신화·용도별 모델 지정. 사이트 기능들이 askAI(lib/ai)로 사용한다.
   { key: 'settings.ai', href: '/admin/ai', label: 'AI 설정', iconKey: 'spark', group: 'ops', defaultRoles: ['admin'] },
+  // 이메일 설정: 발송 방법(Resend·SMTP)·발신 정보·어떤 일에 메일을 보낼지·발송 내역.
+  // API 키와 SMTP 비밀번호를 다루므로 admin 전용으로 fail-closed.
+  { key: 'settings.mail', href: '/admin/mail', label: '이메일 설정', iconKey: 'inbox', group: 'ops', defaultRoles: ['admin'] },
   // 권한 관리 툴: 관리자 전용 하드플로어(매트릭스로 자기 자신을 잠그는 사고 방지)
   { key: 'settings.permissions', href: '/admin/permissions', label: '권한 관리', iconKey: 'shield', requireRole: 'admin', fixed: true, group: 'ops', defaultRoles: ['admin'] },
 

@@ -419,6 +419,7 @@
   "admin.nav.members": "회원 관리",
   "admin.nav.settings.seo": "SEO · 사이트 정보",
   "admin.nav.settings.ai": "AI 설정",
+  "admin.nav.settings.mail": "이메일 설정",
   "admin.nav.settings.permissions": "권한 관리",
   "admin.nav.profile": "내 프로필",
 

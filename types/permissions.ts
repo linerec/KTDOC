@@ -36,6 +36,7 @@ export type MenuKey =
   | 'profile'
   | 'settings.seo'
   | 'settings.ai'
+  | 'settings.mail'
   | 'settings.permissions';
 
 /**
