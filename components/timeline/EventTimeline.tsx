@@ -15,12 +15,19 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { EventWithCategory, EventKind } from '@/types/gallery';
-import { formatEventDateIntl } from '@/types/gallery';
+import { formatEventDateIntl, formatEventDateMonthDay } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
 
 interface EventTimelineProps {
   events: EventWithCategory[];
+  /**
+   * 이 연도 미만의 그룹은 카드 대신 압축 행으로 그린다.
+   * 오래된 기록은 이미지가 거의 없어 카드 이미지 슬롯이 전부 플레이스홀더로
+   * 반복되고 스크롤만 길어진다 — 최근만 카드, 과거는 밀도로 보여준다.
+   * 서버(page.tsx)가 계산해 내려준다(하이드레이션 불일치 방지).
+   */
+  compactBeforeYear?: number;
 }
 
 function formatEventCount(count: number, locale: 'ko' | 'en'): string {
@@ -91,7 +98,41 @@ function TimelineEventCard({ event, index }: { event: EventWithCategory; index: 
   );
 }
 
-export default function EventTimeline({ events }: EventTimelineProps) {
+/** 압축 행 — 오래된 연도용. 날짜·제목·칩 한 줄, 목적지는 카드와 동일한 상세 페이지 */
+function TimelineCompactRow({ event, index }: { event: EventWithCategory; index: number }) {
+  const { locale, messages } = useLanguage();
+  const title = locale === 'ko' ? event.title_ko : event.title_en || event.title_ko;
+  const categoryName =
+    locale === 'ko' ? event.category_name_ko : event.category_name_en || event.category_name_ko;
+
+  // 연도만 아는 오래된 기록은 1월 1일로 저장돼 있다(2022년 이전 게시분 전부가 01-01).
+  // 가짜 날짜를 49번 반복하는 건 소음이므로 실제 날짜가 있을 때만 표시한다.
+  const hasRealDate = event.event_date.slice(5, 10) !== '01-01';
+
+  return (
+    <Link
+      href={`/gallery/${event.year}/${event.slug}`}
+      className="timeline-compact-row reveal reveal--up"
+      style={{ '--reveal-delay': `${Math.min(index, 5) * 40}ms` } as React.CSSProperties}
+    >
+      {hasRealDate && (
+        <span className="timeline-compact-date">
+          {formatEventDateMonthDay(event.event_date, locale)}
+        </span>
+      )}
+      <span className="timeline-compact-title">{title}</span>
+      {/* 카드와 같은 규칙: 학내 행사만 표시, 공연에는 붙이지 않는다 */}
+      {event.kind === 'school' && (
+        <span className="timeline-event-card-kind">
+          {messages['timeline.kind.school'] || '학내 행사'}
+        </span>
+      )}
+      {categoryName && <span className="timeline-event-card-category">{categoryName}</span>}
+    </Link>
+  );
+}
+
+export default function EventTimeline({ events, compactBeforeYear }: EventTimelineProps) {
   const { locale, messages } = useLanguage();
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -229,7 +270,10 @@ export default function EventTimeline({ events }: EventTimelineProps) {
           <div className="timeline-beam" />
         </div>
 
-      {yearGroups.map(([year, list]) => (
+      {yearGroups.map(([year, list]) => {
+        // 연도 단위로 끊는다 — 같은 연도 안에서 카드·압축 행이 섞이면 더 난잡하다
+        const isCompact = compactBeforeYear !== undefined && year < compactBeforeYear;
+        return (
         <section className="timeline-entry" key={year} id={`timeline-${year}`}>
           {/* 데스크톱: 노드 + 연도 sticky. 모바일: 노드만 남고 연도는 본문 위로 */}
           <div className="timeline-entry-side">
@@ -251,14 +295,23 @@ export default function EventTimeline({ events }: EventTimelineProps) {
                 {formatEventCount(list.length, locale)}
               </span>
             </div>
-            <div className="timeline-events">
-              {list.map((event, i) => (
-                <TimelineEventCard key={event.id} event={event} index={i} />
-              ))}
-            </div>
+            {isCompact ? (
+              <div className="timeline-compact-list">
+                {list.map((event, i) => (
+                  <TimelineCompactRow key={event.id} event={event} index={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="timeline-events">
+                {list.map((event, i) => (
+                  <TimelineEventCard key={event.id} event={event} index={i} />
+                ))}
+              </div>
+            )}
           </div>
         </section>
-      ))}
+        );
+      })}
       </div>
     </>
   );

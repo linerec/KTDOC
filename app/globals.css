@@ -15430,6 +15430,59 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   color: var(--accent-text);
 }
 
+/* 압축 행 — compactBeforeYear 이전 연도. 카드 대신 얇은 표면 하나에 행을 쌓는다.
+   오래된 기록은 이미지가 없어 카드 이미지 슬롯이 전부 플레이스홀더가 되므로
+   밀도(꾸준함)를 보여주는 리스트가 낫다. */
+.timeline-compact-list {
+  display: flex;
+  flex-direction: column;
+  background: rgba(var(--ivory-rgb), 0.035);
+  border: 1px solid rgba(var(--ivory-rgb), 0.13);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.timeline-compact-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 18px;
+  transition: background 0.2s;
+}
+
+.timeline-compact-row + .timeline-compact-row {
+  border-top: 1px solid rgba(var(--ivory-rgb), 0.08);
+}
+
+.timeline-compact-row:hover {
+  background: rgba(var(--ivory-rgb), 0.07);
+}
+
+.timeline-compact-date {
+  flex: none;
+  /* 고정 폭으로 제목 시작선을 맞춘다 — ko "12월 31일" / en "Sep 30" 기준 */
+  width: 8em;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: var(--accent-text);
+}
+
+.timeline-compact-title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  color: var(--text-color);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-compact-row:hover .timeline-compact-title {
+  color: var(--accent-text);
+}
+
 /* 모바일: 사이드는 노드만 남기고 연도는 본문 위로 */
 @media (max-width: 768px) {
   .timeline-hero-title {
@@ -15462,6 +15515,22 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
   .timeline-events {
     grid-template-columns: 1fr;
+  }
+
+  /* 압축 행: 좁은 화면에선 날짜가 윗줄, 제목은 줄바꿈 허용 */
+  .timeline-compact-row {
+    flex-wrap: wrap;
+    gap: 3px 10px;
+    padding: 10px 14px;
+  }
+
+  .timeline-compact-date {
+    width: 100%;
+  }
+
+  .timeline-compact-title {
+    flex: 1 1 100%;
+    white-space: normal;
   }
 }
 

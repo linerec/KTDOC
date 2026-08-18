@@ -368,6 +368,18 @@ export function formatEventDateIntl(dateStr: string, locale: 'ko' | 'en' = 'ko')
 }
 
 /**
+ * 연도 없는 월·일 — 연도가 이미 그룹 헤딩에 있는 자리용(타임라인 압축 행).
+ * 한국어: 5월 12일 / 영어: Sep 30 (짧은 월 — 고정 폭 칼럼에 들어가야 한다)
+ */
+export function formatEventDateMonthDay(dateStr: string, locale: 'ko' | 'en' = 'ko'): string {
+  const date = parseLocalDate(dateStr);
+  return new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
+    month: locale === 'ko' ? 'long' : 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
+/**
  * 공연 시각을 공개 화면용 문구로 만든다. 시각이 없으면 빈 문자열.
  *
  * `HH:MM`(24시간)으로 저장된 값을 읽는 사람 기준으로 옮긴다 —

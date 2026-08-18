@@ -39,6 +39,10 @@ export const metadata: Metadata = {
 export default async function TimelinePage() {
   const { events } = await getEvents(allKindsChronological());
 
+  // 최근 5개 연도만 카드, 그 이전은 압축 행. 서버에서 계산해 내려야
+  // 클라이언트와 기준이 어긋나지 않는다(ISR 5분이라 연도 전환도 곧 따라온다).
+  const compactBeforeYear = new Date().getFullYear() - 4;
+
   return (
     <main className="timeline-page">
       {/* Hero Section */}
@@ -61,7 +65,7 @@ export default async function TimelinePage() {
       {/* Timeline Content */}
       <section className="timeline-main">
         <div className="container">
-          <EventTimeline events={events} />
+          <EventTimeline events={events} compactBeforeYear={compactBeforeYear} />
         </div>
       </section>
     </main>
