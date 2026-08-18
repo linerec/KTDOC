@@ -15257,6 +15257,12 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding-top: 28px;
 }
 
+/* 카드 없이 연혁 줄만 있는 해 — 카드용 여백(72px)은 텍스트엔 과하다.
+   간격이 벌어질수록 18년이 촘촘하다는 인상이 흐려진다. */
+.timeline-entry--lines-only {
+  padding-top: 44px;
+}
+
 .timeline-entry-side {
   position: sticky;
   /* sticky는 스크롤 중 보이는 요소 — 축소된(스크롤 후) 헤더 실높이 기준 */
@@ -15284,8 +15290,10 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .timeline-node span {
-  width: 12px;
-  height: 12px;
+  /* 그 해의 항목 수가 점 크기로 드러난다(--node-scale: 1~1.4).
+     쭉 훑을 때 활동이 짙어지는 흐름이 몸으로 읽히도록 범위를 좁게 잡았다. */
+  width: calc(12px * var(--node-scale, 1));
+  height: calc(12px * var(--node-scale, 1));
   border-radius: 50%;
   background: var(--accent-color);
   box-shadow: 0 0 12px rgba(212, 160, 23, 0.55);
@@ -15324,6 +15332,67 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+}
+
+/* ── 연혁층 ───────────────────────────────────────────────────────────────
+   제목뿐인 연혁 항목. 링크가 아니고 hover 반응도 없다 — 누르는 것이 아님을
+   손이 먼저 알아야 한다. 판정은 lib/events/chronicle.ts 한 곳에서 한다. */
+.timeline-chronicle {
+  margin-top: 26px;
+}
+
+/* 카드 묶음과 줄 묶음 사이의 경계. 카드가 없는 해에는 렌더링되지 않는다. */
+.timeline-chronicle-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--soft-gold-text);
+  margin: 0 0 12px;
+}
+
+.timeline-chronicle-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline-chronicle-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  /* 78줄이 이어져도 답답하지 않게 — 이 줄 간격이 '오래 했다'는 인상을 만든다 */
+  line-height: 1.85;
+}
+
+/* 불릿 점보다 붓 획에 가까운 짧은 먹 대시.
+   첫 줄 글자의 중간 높이에 맞춰 떠 보이지 않게 한다. */
+.timeline-chronicle-dash {
+  flex-shrink: 0;
+  width: 9px;
+  height: 1px;
+  /* 제목 첫 줄의 중간 높이. em 은 대시 자신의 폰트 크기로 풀리므로 쓰지 않고,
+     제목의 실제 값(0.95rem × line-height 1.85)의 절반을 직접 계산한다. */
+  margin-top: calc(0.95rem * 1.85 / 2);
+  background: rgba(var(--fg-rgb), 0.32);
+}
+
+.timeline-chronicle-title {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .timeline-chronicle {
+    margin-top: 20px;
+  }
+
+  .timeline-chronicle-title {
+    font-size: 0.9rem;
+  }
+
+  .timeline-chronicle-dash {
+    margin-top: calc(0.9rem * 1.85 / 2);
+  }
 }
 
 /* Event Card */

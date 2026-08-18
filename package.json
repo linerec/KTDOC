@@ -18,7 +18,8 @@
     "seed:supplies": "node scripts/seedSupplies.mjs",
     "cleanup:sample-events": "node scripts/cleanupSampleEvents.mjs",
     "d1:migrate": "node scripts/d1Migrate.mjs",
-    "mysql:migrate": "node scripts/mysqlMigrate.mjs"
+    "mysql:migrate": "node scripts/mysqlMigrate.mjs",
+    "seed:chronicle": "node scripts/seedChronicle.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",

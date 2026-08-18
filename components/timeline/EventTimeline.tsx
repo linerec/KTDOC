@@ -16,6 +16,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { EventWithCategory, EventKind } from '@/types/gallery';
 import { formatEventDateIntl } from '@/types/gallery';
+import { splitByLayer } from '@/lib/events/chronicle';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
 
@@ -88,6 +89,22 @@ function TimelineEventCard({ event, index }: { event: EventWithCategory; index: 
         </span>
       </div>
     </Link>
+  );
+}
+
+/**
+ * 연혁층 한 줄 — 제목만 있는 항목.
+ * 링크가 아니다: 열어도 볼 게 없는 상세로 보내지 않고, 78개의 무의미한 탭 정거장도
+ * 만들지 않는다. hover 반응도 주지 않아 '누르는 것이 아님'을 손이 먼저 알게 한다.
+ */
+function TimelineChronicleLine({ event }: { event: EventWithCategory }) {
+  const { locale } = useLanguage();
+  const title = locale === 'ko' ? event.title_ko : event.title_en || event.title_ko;
+  return (
+    <li className="timeline-chronicle-line">
+      <span className="timeline-chronicle-dash" aria-hidden="true" />
+      <span className="timeline-chronicle-title">{title}</span>
+    </li>
   );
 }
 
@@ -229,8 +246,23 @@ export default function EventTimeline({ events }: EventTimelineProps) {
           <div className="timeline-beam" />
         </div>
 
-      {yearGroups.map(([year, list]) => (
-        <section className="timeline-entry" key={year} id={`timeline-${year}`}>
+      {yearGroups.map(([year, list]) => {
+        // 카드(기록층)를 먼저, 한 줄(연혁층)을 그 아래에 — 뒤섞으면 리듬이 깨진다
+        const { records, lines: rawLines } = splitByLayer(list);
+        // 연혁 항목은 연도만 알아 event_date 가 모두 YYYY-01-01 이다. 날짜로 정렬하면
+        // 원장님이 정하신 원문 순서(2008년이면 '설립'이 먼저)가 깨지므로, 순번이 박힌
+        // slug(chronicle-YYYY-NN)로 정렬해 원문 순서를 그대로 지킨다.
+        const lines = [...rawLines].sort((a, b) => a.slug.localeCompare(b.slug));
+        // 그 해의 활동량이 노드 크기로 드러난다. 범위를 좁게(1~1.4) 잡아,
+        // 눈치채지 못할 정도로 미묘하되 쭉 훑으면 짙어지는 흐름이 읽히게 한다.
+        const nodeScale = Math.min(1.4, 1 + Math.max(0, list.length - 2) * 0.05);
+        return (
+        <section
+          className={`timeline-entry${records.length === 0 ? ' timeline-entry--lines-only' : ''}`}
+          key={year}
+          id={`timeline-${year}`}
+          style={{ '--node-scale': nodeScale.toFixed(2) } as React.CSSProperties}
+        >
           {/* 데스크톱: 노드 + 연도 sticky. 모바일: 노드만 남고 연도는 본문 위로 */}
           <div className="timeline-entry-side">
             <div className="timeline-node">
@@ -251,14 +283,33 @@ export default function EventTimeline({ events }: EventTimelineProps) {
                 {formatEventCount(list.length, locale)}
               </span>
             </div>
-            <div className="timeline-events">
-              {list.map((event, i) => (
-                <TimelineEventCard key={event.id} event={event} index={i} />
-              ))}
-            </div>
+            {records.length > 0 && (
+              <div className="timeline-events">
+                {records.map((event, i) => (
+                  <TimelineEventCard key={event.id} event={event} index={i} />
+                ))}
+              </div>
+            )}
+
+            {lines.length > 0 && (
+              <div className="timeline-chronicle">
+                {/* 카드가 있을 때만 경계를 만든다 — 줄만 있는 해에는 라벨이 군더더기다 */}
+                {records.length > 0 && (
+                  <h3 className="timeline-chronicle-label">
+                    {messages['timeline.chronicle.label'] || '그 밖의 기록'}
+                  </h3>
+                )}
+                <ul className="timeline-chronicle-list">
+                  {lines.map((event) => (
+                    <TimelineChronicleLine key={event.id} event={event} />
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
-      ))}
+        );
+      })}
       </div>
     </>
   );
