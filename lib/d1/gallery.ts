@@ -114,6 +114,7 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
     published = true,
     showcase,
     kind,
+    withContentOnly,
   } = filters;
 
   // Build WHERE clause
@@ -154,6 +155,18 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
   if (kind && kind !== 'all') {
     conditions.push('e.kind = ?');
     params.push(kind);
+  }
+
+  // isChronicle(lib/events/chronicle.ts)과 같은 판정을 SQL 로 옮긴 것.
+  // 두 곳이 어긋나면 목록과 총계가 맞지 않으므로 함께 고쳐야 한다.
+  if (withContentOnly) {
+    conditions.push(`(
+      COALESCE(TRIM(e.description_ko), '') <> ''
+      OR COALESCE(TRIM(e.description_en), '') <> ''
+      OR COALESCE(TRIM(e.thumbnail_url), '') <> ''
+      OR COALESCE(TRIM(e.poster_url), '') <> ''
+      OR EXISTS (SELECT 1 FROM event_images WHERE event_id = e.id)
+    )`);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

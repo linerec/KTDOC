@@ -53,6 +53,10 @@ export function publicArchive(params: BrowseParams & { kind?: string }): EventFi
   const kind = params.kind === 'performance' || params.kind === 'school' ? params.kind : undefined;
   return {
     published: true,
+    // 여기는 사진 아카이브다. 2026-08-17 에 들어온 연혁 83건은 제목 한 줄뿐이라
+    // 그대로 두면 플레이스홀더 카드가 아카이브를 덮고, 눌러도 빈 상세로 떨어진다.
+    // 연혁의 자리는 /timeline 이고 여기가 아니다.
+    withContentOnly: true,
     ...(kind ? { kind } : {}),
     year: params.year,
     category: params.category,

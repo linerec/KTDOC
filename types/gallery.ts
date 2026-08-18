@@ -174,6 +174,13 @@ export interface EventImagesResponse {
 
 // API Request/Response 타입
 export interface EventFilters {
+  /**
+   * 볼 것이 있는 항목만 — 설명이나 사진(썸네일·포스터·첨부)이 하나라도 있어야 한다.
+   * 연혁 항목(제목 한 줄)을 사진 아카이브에서 걸러낼 때 쓴다. 판정 기준은
+   * lib/events/chronicle.ts 의 isChronicle 과 같고, 여기는 SQL 로 같은 말을 한다 —
+   * 페이지네이션 총계가 맞으려면 걸러내기가 DB 안에서 일어나야 하기 때문이다.
+   */
+  withContentOnly?: boolean;
   year?: number;
   category?: string;
   search?: string;
