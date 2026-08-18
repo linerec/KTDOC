@@ -191,6 +191,41 @@ export default function About() {
                 </div>
               </div>
             </article>
+
+            <article className="about-staff-card">
+              <div className="about-staff-portrait reveal reveal--up" style={revealDelay(120)}>
+                <ImageObject
+                  keycode="image.about.staff.han.portrait"
+                  width={752}
+                  height={940}
+                  className="about-staff-portrait-img"
+                  containerClassName="about-staff-portrait-fill"
+                  fallbackSrc="/assets/images/staff_han_portrait.jpg"
+                  alt="한진선 선생 - Jinseon Han, Assistant Instructor"
+                  imageStyle={{ width: '100%', height: 'auto' }}
+                />
+              </div>
+
+              <div className="about-staff-info reveal reveal--up" style={revealDelay(200)}>
+                <div className="about-staff-title">
+                  <IntlObject
+                    keycode="about.staff.han.name"
+                    returnType="h3"
+                    className="about-staff-name"
+                  />
+                  <IntlObject
+                    keycode="about.staff.han.role"
+                    returnType="p"
+                    className="about-staff-role"
+                  />
+                </div>
+
+                <div className="about-staff-bio">
+                  <IntlObject keycode="about.staff.han.bio1" returnType="p" />
+                  <IntlObject keycode="about.staff.han.bio2" returnType="p" />
+                </div>
+              </div>
+            </article>
           </div>
         </section>
       </main>

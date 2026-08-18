@@ -11012,6 +11012,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   align-items: start;
 }
 
+/* 선생님이 여럿일 때 카드 사이 구분 — 헤어라인 + 여백 */
+.about-staff-card + .about-staff-card {
+  margin-top: clamp(36px, 5vw, 56px);
+  padding-top: clamp(36px, 5vw, 56px);
+  border-top: 1px solid rgba(var(--ivory-rgb), 0.14);
+}
+
 .about-staff-portrait {
   width: min(100%, 280px);
   padding: 10px;
