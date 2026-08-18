@@ -265,7 +265,10 @@ export default function EventTimeline({ events, compactBeforeYear }: EventTimeli
       )}
 
       <div className="timeline-track" ref={trackRef}>
-        <ScrollReveal />
+        {/* key 재마운트로 관찰 목록을 갱신한다 — 필터를 바꾸면 걸러졌던 이벤트가
+            새 DOM 노드로 재생성되는데, 최초 마운트 때 만든 관찰자는 그 노드를 모르므로
+            is-revealed를 영영 못 받아 opacity 0으로 남는다(실측: 필터 순회 후 복귀 시). */}
+        <ScrollReveal key={`${kindFilter}-${sortOrder}`} />
         <div className="timeline-line" aria-hidden="true">
           <div className="timeline-beam" />
         </div>
