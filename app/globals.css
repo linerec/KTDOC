@@ -10674,104 +10674,365 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin-bottom: 0;
 }
 
-/* About Director Section */
-/* 금색 상단 라인으로 hero 레일과 하나의 따뜻한 재질 시스템으로 연결 */
-.about-director {
-  border-top: 2px solid rgba(212, 160, 23, 0.35);
-  background:
-    radial-gradient(circle at 18% 0%, rgba(224, 184, 79, 0.08), transparent 32%),
-    linear-gradient(180deg, var(--ground-2) 0%, var(--ground-3) 100%);
-  color: var(--warm-ivory);
-  padding: clamp(40px, 6vw, 80px) 0;
+/* ── About 공통 섹션 골격 ─────────────────────────────────────────────── */
+.about-section-eyebrow {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--soft-gold-text);
+  margin-bottom: 14px;
 }
 
-.about-director-container {
+.about-section-title {
+  /* IntlObject 가 그린 요소는 전역 .intl-object{display:inline} 을 물려받는다.
+     블록으로 되돌리지 않으면 max-width·margin 이 통째로 무시된다. */
+  display: block;
+  font-family: var(--font-heading);
+  font-size: clamp(1.9rem, 3.4vw, 2.7rem);
+  font-weight: 300;
+  line-height: 1.25;
+  color: var(--text-color);
+  margin: 0 0 18px;
+}
+
+.about-section-lede {
+  display: block;
+  /* 한 줄이 65~75자를 넘지 않게 — 넘으면 눈이 다음 줄 첫 글자를 놓친다 */
+  max-width: 62ch;
+  color: var(--text-muted);
+  margin: 0 0 34px;
+}
+
+/* ── 단체 소개 ───────────────────────────────────────────────────────── */
+.about-org {
+  border-top: 2px solid rgba(212, 160, 23, 0.35);
+  background: linear-gradient(180deg, var(--ground-2) 0%, var(--ground-3) 100%);
+  padding: clamp(52px, 7vw, 96px) 0;
+}
+
+.about-org-inner {
   max-width: var(--container-width);
   margin: 0 auto;
   padding: 0 40px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center;
 }
 
-/* Left Column (text + portrait) - moved to right side */
-.about-director-left {
-  grid-column: 2;
-  grid-row: 1;
+.about-org-body p {
+  display: block;
+  max-width: 66ch;
+  color: var(--text-color);
+  line-height: 1.85;
+  margin: 0 0 18px;
+}
+
+/* 재단은 곁다리 정보다 — 본문과 같은 무게로 놓지 않고 형태로 한 발 물러나게 한다 */
+.about-foundation {
+  margin-top: 38px;
+  max-width: 66ch;
+  padding: 22px 26px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent-color);
+  border-radius: 0 8px 8px 0;
+}
+
+.about-foundation-label {
+  display: block;
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin: 0 0 2px;
+}
+
+.about-foundation-name {
+  display: block;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--soft-gold-text);
+  margin: 0 0 12px;
+}
+
+.about-foundation-body {
+  display: block;
+  font-size: 0.94rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── 인물 ────────────────────────────────────────────────────────────── */
+.about-people {
+  background: var(--ground-3);
+  padding: clamp(52px, 7vw, 96px) 0;
+}
+
+.about-people > .container {
   display: flex;
   flex-direction: column;
-  padding: 60px 0 80px;
+  gap: clamp(56px, 7vw, 96px);
 }
 
-.about-director-title {
-  margin-bottom: 30px;
+/* 원장(lead)과 강사(support)는 골격이 같고 사진 폭·제목 크기만 다르다.
+   나란히 같은 크기로 놓으면 위계가 사라지고, 아예 다른 모양이면 남의 집처럼 보인다. */
+.about-person {
+  display: grid;
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
 }
 
-.about-director-title-ko {
-  font-family: var(--font-heading);
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 400;
-  color: var(--soft-gold-text);
-  margin-bottom: 8px;
+.about-person--lead {
+  grid-template-columns: minmax(240px, 340px) 1fr;
 }
 
-.about-director-title-en {
-  font-family: var(--font-body);
-  font-size: 1.1rem;
-  color: rgba(var(--ivory-rgb),  0.78);
-  font-style: italic;
-  margin-bottom: 0;
+.about-person--support {
+  grid-template-columns: minmax(180px, 240px) 1fr;
 }
 
-.about-director-portrait {
-  width: min(100%, 280px);
-  max-width: 280px;
-  margin-bottom: 30px;
-  padding: 10px;
-  background: rgba(var(--ivory-rgb),  0.06);
-  border: 1px solid rgba(var(--ivory-rgb),  0.14);
-  border-radius: 8px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+.about-person-portrait {
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-2);
 }
 
-.about-director-portrait img {
-  border-radius: 6px;
-}
-
-.about-director-bio {
-  text-align: left;
-  max-width: 400px;
-}
-
-.about-director-bio p {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  line-height: 1.9;
-  color: rgba(var(--ivory-rgb),  0.82);
-  margin-bottom: 20px;
-}
-
-.about-director-bio .highlight {
-  color: var(--accent-text);
-  font-weight: 500;
-}
-
-/* Right Column (dance photo) - moved to left side */
-.about-director-right {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 40px 0;
-}
-
-.about-director-right img {
-  max-width: 440px;
+.about-person-portrait img {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.3));
+  display: block;
+  transition: transform 0.7s var(--ease-out-quart), filter 0.7s var(--ease-out-quart);
+}
+
+.about-person-portrait:hover img {
+  transform: scale(1.04);
+  filter: brightness(1.05);
+}
+
+.about-person-name {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--text-color);
+  margin: 0 0 6px;
+}
+
+.about-person--lead .about-person-name {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.about-person--support .about-person-name {
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+}
+
+.about-person-role {
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  color: var(--soft-gold-text);
+  margin: 0 0 4px;
+}
+
+.about-person-affiliations {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+}
+
+.about-person-greeting {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--text-color);
+  margin: 0 0 22px;
+}
+
+.about-person-bio {
+  max-width: 62ch;
+  line-height: 1.85;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+.about-person-block {
+  margin-top: 26px;
+}
+
+.about-person-block-label {
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--soft-gold-text);
+  margin: 0 0 10px;
+}
+
+.about-person-block-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text-color);
+}
+
+/* 주요 무대는 이름만 가로로 흐르게 한다. 문장에 묻거나 세로로 길게 늘어놓으면
+   스캔하는 눈에 안 걸린다 — 이름이 나란히 놓여야 한눈에 읽힌다. */
+.about-person-block--stages .about-person-block-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  font-size: 1.02rem;
+}
+
+.about-person-block--stages .about-person-block-list li {
+  padding: 0 14px;
+  border-right: 1px solid rgba(var(--fg-rgb), 0.22);
+  line-height: 1.35;
+}
+
+.about-person-block--stages .about-person-block-list li:first-child {
+  padding-left: 0;
+}
+
+.about-person-block--stages .about-person-block-list li:last-child {
+  border-right: 0;
+}
+
+.about-person-block--awards .about-person-block-list li,
+.about-person-block--career .about-person-block-list li {
+  position: relative;
+  padding-left: 16px;
+  line-height: 1.9;
+  font-size: 0.94rem;
+  color: var(--text-muted);
+}
+
+.about-person-block--awards .about-person-block-list li::before,
+.about-person-block--career .about-person-block-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.92em;
+  width: 8px;
+  height: 1px;
+  background: rgba(var(--fg-rgb), 0.32);
+}
+
+/* 전문은 접어 둔다 — <details> 라 JS 없이 열리고 접힌 내용도 검색엔진이 읽는다 */
+.about-person-more {
+  margin-top: 28px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.12);
+  padding-top: 16px;
+}
+
+.about-person-more-summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  color: var(--soft-gold-text);
+}
+
+.about-person-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.about-person-more-summary::after {
+  content: ' ▾';
+  font-size: 0.8em;
+}
+
+.about-person-more[open] .about-person-more-summary::after {
+  content: ' ▴';
+}
+
+.about-person-more-body p {
+  max-width: 62ch;
+  margin: 14px 0 0;
+  font-size: 0.94rem;
+  line-height: 1.85;
+  color: var(--text-muted);
+}
+
+/* ── 연혁 요약 ───────────────────────────────────────────────────────── */
+.about-chronicle {
+  background: linear-gradient(180deg, var(--ground-3) 0%, var(--ground-2) 100%);
+  padding: clamp(52px, 7vw, 96px) 0;
+}
+
+.about-chronicle-inner {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.about-chronicle-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 76ch;
+}
+
+.about-chronicle-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+}
+
+.about-chronicle-year {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 300;
+  color: var(--soft-gold-text);
+  line-height: 1.5;
+}
+
+.about-chronicle-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.about-chronicle-item {
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.about-chronicle-more {
+  margin-top: 26px;
+}
+
+.about-chronicle-more-link {
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--soft-gold-text);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(212, 160, 23, 0.45);
+  padding-bottom: 2px;
+  transition: opacity 0.25s;
+}
+
+.about-chronicle-more-link:hover {
+  opacity: 0.75;
+}
+
+@media (max-width: 768px) {
+  .about-org-inner,
+  .about-chronicle-inner {
+    padding: 0 22px;
+  }
+
+  /* 좁은 화면에선 사진을 위로 올리고 폭을 제한한다 — 전신으로 늘리면 얼굴이 작아진다 */
+  .about-person--lead,
+  .about-person--support {
+    grid-template-columns: 1fr;
+  }
+
+  .about-person-portrait {
+    max-width: 260px;
+  }
+
+  .about-chronicle-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 
 /* ── About 은은한 마감 효과 ─────────────────────────────────────────────
@@ -10787,30 +11048,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   to { transform: scale(1.07); }
 }
 
-/* 인물 프레임: 호버 시 안쪽 이미지가 부드럽게 확대 (프레임 밖으로 새지 않게 clip) */
-.about-director-portrait {
-  overflow: hidden;
-}
-
-.about-director-portrait img {
-  transition: transform 0.7s var(--ease-out-quart), filter 0.7s var(--ease-out-quart);
-}
-
-.about-director-portrait:hover img {
-  transform: scale(1.04);
-  filter: brightness(1.05);
-}
-
-/* 전신 공연 사진: 호버 시 살짝 떠오르며 그림자가 깊어짐 */
-.about-director-right img {
-  transition: transform 0.7s var(--ease-out-quart), filter 0.7s var(--ease-out-quart);
-}
-
-.about-director-right:hover img {
-  transform: translateY(-8px);
-  filter: drop-shadow(0 34px 46px rgba(0, 0, 0, 0.42)) brightness(1.03);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .about-hero-content-wrapper::after { animation: none; transform: scaleY(1); }
   .about-hero-bg-img { animation: none; }
@@ -10824,25 +11061,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
     padding: 0 28px 240px;
   }
 
-  .about-director-container {
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-
-  .about-director-left {
-    grid-column: 2;
-    padding: 40px 0;
-  }
-
-  .about-director-right {
-    grid-column: 1;
-    justify-content: center;
-    padding-top: 40px;
-  }
-
-  .about-director-right img {
-    max-width: 320px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -10889,38 +11107,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
     margin-bottom: 40px;
   }
 
-  .about-director-container {
-    padding: 0 20px;
-    grid-template-columns: 1fr;
-  }
-
-  .about-director-left {
-    grid-column: 1;
-    grid-row: auto;
-    padding: 40px 0 40px;
-    align-items: center;
-    text-align: center;
-  }
-
-  .about-director-portrait {
-    margin: 0 auto 30px;
-  }
-
-  .about-director-bio {
-    text-align: center;
-    max-width: 100%;
-  }
-
-  .about-director-right {
-    grid-column: 1;
-    grid-row: auto;
-    justify-content: center;
-    order: -1;
-  }
-
-  .about-director-right img {
-    max-width: 280px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -10958,17 +11144,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
     line-height: 1.85;
   }
 
-  .about-director-title-ko {
-    font-size: 1.5rem;
-  }
-
-  .about-director-portrait img {
-    max-width: 200px;
-  }
-
-  .about-director-right img {
-    max-width: 220px;
-  }
 }
 
 /* =========================================
@@ -11579,18 +11754,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .about-hero-bg .about-hero-bg-fill {
   position: absolute;
   inset: 0;
-}
-
-/* About 원장 인물사진 / 전신 사진 - 래퍼 크기 보존 */
-.about-director-portrait .about-director-portrait-fill {
-  width: 100%;
-}
-
-.about-director-right .about-director-right-fill {
-  width: 100%;
-  max-width: 440px;
-  display: flex;
-  justify-content: center;
 }
 
 /* ========================================

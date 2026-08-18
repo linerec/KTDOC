@@ -184,5 +184,43 @@ for (const r of rows) {
 }
 
 console.log(`\n투입 완료 — 새로 넣음 ${inserted}건, 이미 있어 건너뜀 ${rows.length - inserted}건`);
+
+// ── 소개 페이지용 대표 항목 표시 ──────────────────────────────────────────
+// /about 의 연혁 요약이 읽는 목록(lib/d1/eventViews.ts 의 chronicleHighlights).
+// 전체 83건을 소개 페이지에 쏟으면 아무도 안 읽으므로 여기서 추린다.
+// 고르는 기준은 **장소 이름이 센 것** — 이 분야를 모르는 방문자도
+// 케네디센터·UN·NBC·타임스퀘어는 안다.
+// 운영자가 관리 콘솔 공연 편집에서 '대표' 체크로 바꿀 수 있으므로, 이 스크립트는
+// 이미 표시된 것을 지우지 않고 목록에 있는 것만 켠다.
+const HIGHLIGHTS = [
+  [2008, 'KTDOC) 설립'],
+  [2008, '케네디센터 60주년'],
+  [2012, 'Yale University'],
+  [2016, 'UN 초청 문화행사'],
+  [2017, 'NBC TODAY Show'],
+  [2018, 'Kennedy Center 한국문화의 밤'],
+  [2019, '아리랑 판타지'],
+  [2019, 'Lincoln Center 한국문화의 밤'],
+  [2022, '희망을 잇다'],
+  [2023, 'UN 세계시민교육 행사 오프닝'],
+  [2023, '우수 개인안무가상'],
+  [2025, '제4회 춤누리 한국문화공연'],
+  [2026, '타임스퀘어 광장 대한민국 국가유산청'],
+];
+
+let marked = 0;
+const missed = [];
+for (const [year, needle] of HIGHLIGHTS) {
+  const res = await d1(
+    // LIKE 대신 instr() — D1 이 한글이 섞인 LIKE 패턴을 'too complex' 로 거절한다
+    `UPDATE events SET is_featured = 1
+      WHERE substr(slug, 1, 10) = 'chronicle-' AND year = ? AND instr(title_ko, ?) > 0`,
+    [year, needle]
+  );
+  if (res.meta?.changes) marked += res.meta.changes;
+  else missed.push(`${year} "${needle}"`);
+}
+console.log(`대표 항목 ${marked}건 표시${missed.length ? ` — 못 찾음: ${missed.join(', ')}` : ''}`);
+
 const total = await d1('SELECT COUNT(*) AS n FROM events');
 console.log(`events 총 ${total.results[0].n}건`);

@@ -112,3 +112,24 @@ export function adminAllEvents(params: BrowseParams = {}): EventFilters {
     limit: params.limit ?? 50,
   };
 }
+
+/**
+ * 소개 페이지의 연혁 요약 (/about)
+ *
+ * 연혁 전체는 83건이라 소개 페이지에 다 쏟으면 아무도 읽지 않는다. 여기서는
+ * `is_featured` 로 골라 둔 대표 항목만 본다. 고르는 기준은 **장소 이름이 센 것** —
+ * 이 분야를 모르는 방문자도 케네디센터·UN·NBC·타임스퀘어는 안다.
+ *
+ * `is_featured` 를 재사용하는 이유: 관리 콘솔의 공연 편집 화면에 이미 체크박스가
+ * 있어 운영자가 목록을 바꿀 수 있고, 공개 페이지 중 이 플래그를 읽는 곳이
+ * 여기뿐이라 다른 화면에 새어 나가지 않는다.
+ *
+ * 전체는 /timeline 이 맡는다 — 여기 끝의 '전체 연대표 보기'가 그리로 보낸다.
+ */
+export function chronicleHighlights(opts: { limit?: number } = {}): EventFilters {
+  return {
+    published: true,
+    featured: true,
+    limit: opts.limit ?? 20,
+  };
+}

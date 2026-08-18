@@ -225,6 +225,7 @@ export {
   publicPerformances,
   publicArchive,
   allKindsChronological,
+  chronicleHighlights,
   memberLibrary,
   adminAllEvents,
 } from './eventViews';

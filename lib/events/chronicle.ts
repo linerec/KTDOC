@@ -43,3 +43,15 @@ export function splitByLayer<T extends ChronicleInput>(events: T[]): { records: 
   for (const event of events) (isChronicle(event) ? lines : records).push(event);
   return { records, lines };
 }
+
+/**
+ * 연혁 항목을 원문 순서로 정렬한다.
+ *
+ * 연혁은 연도만 알아 event_date 가 모두 YYYY-01-01 이다. 날짜로 정렬하면 원장님이
+ * 정하신 원문 순서가 깨져 2008년 첫 줄이 '설립'이 아니라 케네디센터가 된다.
+ * 시더가 slug 에 순번을 박아 두므로(chronicle-YYYY-NN) 그걸로 되돌린다.
+ * 연혁이 아닌 항목은 slug 규칙이 없어 원래 순서를 그대로 둔다.
+ */
+export function sortChronicle<T extends { slug: string }>(events: T[]): T[] {
+  return [...events].sort((a, b) => a.slug.localeCompare(b.slug));
+}

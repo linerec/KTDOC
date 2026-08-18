@@ -16,7 +16,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { EventWithCategory, EventKind } from '@/types/gallery';
 import { formatEventDateIntl } from '@/types/gallery';
-import { splitByLayer } from '@/lib/events/chronicle';
+import { splitByLayer, sortChronicle } from '@/lib/events/chronicle';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
 
@@ -249,10 +249,7 @@ export default function EventTimeline({ events }: EventTimelineProps) {
       {yearGroups.map(([year, list]) => {
         // 카드(기록층)를 먼저, 한 줄(연혁층)을 그 아래에 — 뒤섞으면 리듬이 깨진다
         const { records, lines: rawLines } = splitByLayer(list);
-        // 연혁 항목은 연도만 알아 event_date 가 모두 YYYY-01-01 이다. 날짜로 정렬하면
-        // 원장님이 정하신 원문 순서(2008년이면 '설립'이 먼저)가 깨지므로, 순번이 박힌
-        // slug(chronicle-YYYY-NN)로 정렬해 원문 순서를 그대로 지킨다.
-        const lines = [...rawLines].sort((a, b) => a.slug.localeCompare(b.slug));
+        const lines = sortChronicle(rawLines);
         // 그 해의 활동량이 노드 크기로 드러난다. 범위를 좁게(1~1.4) 잡아,
         // 눈치채지 못할 정도로 미묘하되 쭉 훑으면 짙어지는 흐름이 읽히게 한다.
         const nodeScale = Math.min(1.4, 1 + Math.max(0, list.length - 2) * 0.05);
