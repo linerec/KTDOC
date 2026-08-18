@@ -53,3 +53,6 @@ next-env.d.ts
 /docs/pictures/
 /docs/screenshots/
 public/guide/login-mockup.html
+
+# 원장님이 메일로 보내신 원문 첨부(49MB) — 문서는 커밋하되 바이너리는 로컬 보관
+docs/content/choomnoori/attachments/
