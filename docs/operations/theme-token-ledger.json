@@ -806,6 +806,15 @@
    "confidence": "medium"
   },
   {
+   "line": 10981,
+   "selector": ".about-staff",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".about-director와 동형 — 배경이 지면 토큰 그라디언트(var(--ground-3)→var(--ground-2))라 라이트에서 종이 섹션이 되고, --warm-ivory가 먹으로 함께 뒤집히는 것이 정답이다. 하위 텍스트는 전부 rgba(var(--ivory-rgb), α)·--soft-gold-text 채널/역할 토큰만 쓴다.",
+   "confidence": "high"
+  },
+  {
    "line": 10111,
    "selector": ".about-director-title-ko",
    "token": "soft-gold",

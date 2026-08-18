@@ -132,6 +132,67 @@ export default function About() {
             </div>
           </div>
         </section>
+
+        {/* Staff Section - 함께하는 선생님들 */}
+        <section id="about-staff" className="about-staff">
+          <div className="about-staff-container">
+            <IntlObject
+              keycode="about.staff.heading"
+              returnType="h2"
+              className="about-staff-heading reveal reveal--up"
+            />
+
+            <article className="about-staff-card">
+              <div className="about-staff-portrait reveal reveal--up" style={revealDelay(120)}>
+                <ImageObject
+                  keycode="image.about.staff.baek.portrait"
+                  width={752}
+                  height={940}
+                  className="about-staff-portrait-img"
+                  containerClassName="about-staff-portrait-fill"
+                  fallbackSrc="/assets/images/staff_baek_portrait.jpg"
+                  alt="백수경 선생 - Soo Gyung Baek, Administrative Director & Instructor"
+                  imageStyle={{ width: '100%', height: 'auto' }}
+                />
+              </div>
+
+              <div className="about-staff-info reveal reveal--up" style={revealDelay(200)}>
+                <div className="about-staff-title">
+                  <IntlObject
+                    keycode="about.staff.baek.name"
+                    returnType="h3"
+                    className="about-staff-name"
+                  />
+                  <IntlObject
+                    keycode="about.staff.baek.role"
+                    returnType="p"
+                    className="about-staff-role"
+                  />
+                </div>
+
+                <div className="about-staff-bio">
+                  <IntlObject keycode="about.staff.baek.bio1" returnType="p" />
+                  <IntlObject keycode="about.staff.baek.bio2" returnType="p" />
+                </div>
+
+                <div className="about-staff-career">
+                  <IntlObject
+                    keycode="about.staff.baek.career.title"
+                    returnType="p"
+                    className="about-staff-career-title"
+                  />
+                  <ul>
+                    <li><IntlObject keycode="about.staff.baek.career.1" /></li>
+                    <li><IntlObject keycode="about.staff.baek.career.2" /></li>
+                    <li><IntlObject keycode="about.staff.baek.career.3" /></li>
+                    <li><IntlObject keycode="about.staff.baek.career.4" /></li>
+                    <li><IntlObject keycode="about.staff.baek.career.5" /></li>
+                  </ul>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

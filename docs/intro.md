@@ -36,3 +36,33 @@ Her honors include the Grand Prize at the World Korean Traditional Music Competi
 Ahn has presented Korean traditional performing arts at major venues including Carnegie Hall, Lincoln Center, the Kennedy Center, and NBC’s Today Show. Her international and diplomatic performances include appearances at the Embassy of the Republic of Korea in Washington, D.C., as well as invitation performances for the Embassies of Trinidad and Tobago, Nicaragua, and Honduras. She has also participated in cultural performances connected to the PyeongChang Winter Olympics, the Korea Heritage Administration cultural arts project in Times Square, invitation performances at the National Folk Museum of Korea, and performances in the Kremlin Palace in Russia and Tashkent.
 
 In addition to her performance career, Ahn has actively promoted Korean traditional arts through public school residency programs in partnership with the Korean Cultural Center New York, university lectures including Eastern Connecticut State University, and multicultural community arts programs throughout the United States. Through her work, she continues to connect artistic excellence, cultural preservation, and intergenerational transmission of Korean traditional performing arts.
+
+---
+
+백수경 Administration Director & Instructor, 춤누리 한국전통무용단 (KTDOC)
+(출처: 2026-08-17 choomnoori@gmail.com 메일 "백수경 선생 프로필". 요구사항 초안의 '부원장 오선생'과 동일인.
+사진 원본은 docs/received/백수경-프로필사진-원본.png, 웹용은 public/assets/images/staff_baek_portrait.jpg)
+
+경성대학교 예술대학 무용학과를 졸업하고, 한국에서 무용학원을 운영하며 무용 교육과 지도 경험을 쌓았습니다. 현재 Korean Traditional Dance of Choomnoori (KTDOC)의 행정디렉터 및 강사로 활동하며 학생 지도와 교육 프로그램 운영을 담당하고 있습니다.
+
+또한 한국 전통 타악과 난타 교육을 통해 차세대 학생들이 한국의 전통문화와 예술을 자연스럽게 배우고 경험할 수 있도록 지도하고 있습니다.
+
+주요 경력
+- 경성대학교 예술대학 무용학과 졸업
+- 한국 무용학원 원장 및 운영 (1993–1996)
+- KTDOC 행정디렉터 및 강사
+- Pilgrim Korean School 난타·한국북 강사
+- 한국무용 및 전통 타악 교육
+
+Soo Gyung Baek | Administrative Director & Instructor
+
+Soo Gyung Baek earned her degree in Dance from the College of Arts at Kyungsung University in Korea. She brings extensive experience in dance education and arts administration, including serving as the owner and director of a dance academy in Korea from 1993 to 1996.
+
+She currently serves as the Administrative Director and Instructor at Korean Traditional Dance of Choomnoori (KTDOC), where she supports educational programs, student development, and organizational operations. She also teaches Korean percussion and Nanta, sharing the energy and cultural heritage of Korean traditional performing arts with the next generation.
+
+Professional Background
+- B.A. in Dance, College of Arts, Kyungsung University, Korea
+- Dance Academy Owner & Director, Korea (1993–1996)
+- Administrative Director & Instructor, KTDOC
+- Nanta & Korean Drum Instructor, Pilgrim Korean School
+- Korean Dance & Traditional Percussion Education

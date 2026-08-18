@@ -10972,6 +10972,157 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 /* =========================================
+   ABOUT STAFF SECTION — 함께하는 선생님들 (지도진)
+   ========================================= */
+
+.about-staff {
+  border-top: 1px solid rgba(212, 160, 23, 0.25);
+  background: linear-gradient(180deg, var(--ground-3) 0%, var(--ground-2) 100%);
+  color: var(--warm-ivory);
+  padding: clamp(40px, 6vw, 80px) 0;
+}
+
+.about-staff-container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.about-staff-heading {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 400;
+  color: var(--soft-gold-text);
+  margin-bottom: clamp(28px, 4vw, 44px);
+}
+
+/* IntlObject 전역 규칙(.intl-object{display:inline})을 이름·직함·문단에서 블록으로 복원 */
+.about-staff-name.intl-object,
+.about-staff-role.intl-object,
+.about-staff-career-title.intl-object,
+.about-staff-bio .intl-object {
+  display: block;
+}
+
+.about-staff-card {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) 1fr;
+  gap: clamp(30px, 5vw, 60px);
+  align-items: start;
+}
+
+.about-staff-portrait {
+  width: min(100%, 280px);
+  padding: 10px;
+  background: rgba(var(--ivory-rgb), 0.06);
+  border: 1px solid rgba(var(--ivory-rgb), 0.14);
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.about-staff-portrait img {
+  border-radius: 6px;
+  transition: transform 0.7s var(--ease-out-quart), filter 0.7s var(--ease-out-quart);
+}
+
+.about-staff-portrait:hover img {
+  transform: scale(1.04);
+  filter: brightness(1.05);
+}
+
+.about-staff-name {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  font-weight: 400;
+  color: var(--soft-gold-text);
+  margin-bottom: 8px;
+}
+
+.about-staff-role {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: rgba(var(--ivory-rgb), 0.78);
+  font-style: italic;
+  margin-bottom: 24px;
+}
+
+.about-staff-bio {
+  max-width: 560px;
+}
+
+.about-staff-bio p {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: rgba(var(--ivory-rgb), 0.82);
+  margin-bottom: 20px;
+}
+
+.about-staff-career-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: rgba(var(--ivory-rgb), 0.9);
+  margin: 4px 0 12px;
+}
+
+.about-staff-career ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.about-staff-career li {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: rgba(var(--ivory-rgb), 0.75);
+  padding-left: 18px;
+  position: relative;
+}
+
+.about-staff-career li::before {
+  content: '·';
+  position: absolute;
+  left: 2px;
+  color: var(--soft-gold-text);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .about-staff-container {
+    padding: 0 20px;
+  }
+
+  .about-staff-card {
+    grid-template-columns: 1fr;
+  }
+
+  .about-staff-heading {
+    text-align: center;
+  }
+
+  .about-staff-portrait {
+    margin: 0 auto;
+  }
+
+  .about-staff-title {
+    text-align: center;
+  }
+
+  .about-staff-bio {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-staff-portrait {
+    width: min(100%, 220px);
+  }
+}
+
+/* =========================================
    PLACEHOLDER PAGE STYLES
    ========================================= */
 
