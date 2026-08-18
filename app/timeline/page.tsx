@@ -8,6 +8,10 @@ import { getEvents, allKindsChronological} from '@/lib/d1';
 import EventTimeline from '@/components/timeline/EventTimeline';
 import IntlObject from '@/components/common/IntlObject';
 
+// 선언이 없으면 빌드 시점 스냅샷으로 정적 프리렌더돼 배포 전까지 새 이벤트가 안 보인다.
+// 연혁은 실시간성이 필요 없으므로 홈과 같은 ISR 5분(D1 REST 왕복 3회를 캐시로 흡수).
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   // 루트 레이아웃의 title 템플릿('%s | KTDOC')이 접미사를 붙인다
   title: 'Timeline',
