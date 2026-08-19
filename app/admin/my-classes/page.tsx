@@ -11,7 +11,7 @@ import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getEnrollmentsForUser, getEnrollmentsForUsers } from '@/lib/d1';
-import { getGuardianChildren } from '@/lib/members';
+import { getGuardianView } from '@/lib/members';
 import type { MemberRole } from '@/types/members';
 import type { MyEnrollment } from '@/types/programs';
 import ClassCard from '@/components/admin/ClassCard';
@@ -48,13 +48,11 @@ export default async function MyClassesPage() {
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session!.user!.id;
 
-  // 학부모: 연결된 자녀별로 묶어서 보여준다.
+  // 학부모: 연결된 자녀별로 묶어서 보여준다. 자녀 범위는 GuardianView 관점.
   if (role === 'parent') {
-    const children = await getGuardianChildren(userId);
+    const { children, childIds } = await getGuardianView(role, userId);
     const all =
-      children.length > 0
-        ? await getEnrollmentsForUsers(children.map((c) => c.studentId))
-        : [];
+      childIds.length > 0 ? await getEnrollmentsForUsers(childIds) : [];
     const byChild = new Map<string, MyEnrollment[]>();
     for (const item of all) {
       const list = byChild.get(item.user_id) ?? [];

@@ -396,6 +396,53 @@ export async function getProfilePhotoUrl(userId: string): Promise<string | null>
   return rows[0]?.profile_photo_url ?? null;
 }
 
+/**
+ * 학부모 화면의 자녀 범위(관점) — 조회·이름표 규칙을 한 곳에 모은다.
+ *
+ * 캘린더·아카이브·둘러보기·수업 상세가 저마다 getGuardianChildren + 이름 Map +
+ * join을 손으로 복제하다 이름표 노출 조건이 페이지마다 어긋났다(eventViews의
+ * "필터가 아니라 관점" 규약이 막으려던 바로 그 패턴). 학부모 화면을 새로 만들면
+ * 이 관점을 쓸 것 — 자녀 범위 규칙이 바뀔 때 고칠 곳이 여기 하나가 된다.
+ */
+export interface GuardianView {
+  /** 학부모 세션인가(자녀가 없어도 true) */
+  isParent: boolean;
+  children: { studentId: string; studentName: string | null }[];
+  childIds: string[];
+  /** user id → 자녀 이름(연결 확정분만). 자녀가 아니면 null. */
+  nameOf(userId: string | null | undefined): string | null;
+  /**
+   * 소유자 id 목록 → "지우 · 서준" 이름표.
+   * **자녀가 둘 이상일 때만** 만든다 — 하나뿐이면 화면 전체가 그 아이의
+   * 기록이라 이름표가 소음이다. 이 규칙이 모든 학부모 화면에서 같아야 한다.
+   */
+  ownerLabel(ownerIds: (string | null | undefined)[]): string | null;
+}
+
+export async function getGuardianView(
+  role: string | null | undefined,
+  userId: string | null | undefined
+): Promise<GuardianView> {
+  const isParent = role === 'parent' && !!userId;
+  const children = isParent ? await getGuardianChildren(userId!) : [];
+  const names = new Map(children.map((c) => [c.studentId, c.studentName]));
+  return {
+    isParent,
+    children,
+    childIds: children.map((c) => c.studentId),
+    nameOf: (id) => (id ? (names.get(id) ?? null) : null),
+    ownerLabel(ownerIds) {
+      if (children.length < 2) return null;
+      const out: string[] = [];
+      for (const id of ownerIds) {
+        const n = id ? names.get(id) : null;
+        if (n && !out.includes(n)) out.push(n);
+      }
+      return out.length > 0 ? out.join(' · ') : null;
+    },
+  };
+}
+
 /** 학부모의 (연결 확정된) 자녀 목록 — 대행 체크인 대상. student_id 미해결 자녀는 제외. */
 export async function getGuardianChildren(
   guardianId: string
@@ -588,11 +635,30 @@ export async function setMemberAdmin(id: string, isAdmin: boolean): Promise<void
   await query(`UPDATE users SET is_admin = ? WHERE id = ?`, [isAdmin ? 1 : 0, id]);
 }
 
-/** 미해결 학부모 연결에 실제 원생을 지정. */
+/**
+ * 미해결 학부모 연결에 실제 원생을 지정.
+ * 같은 (학부모, 원생) 확정 연결이 이미 있으면 이 미해결 행은 중복이므로
+ * 확정하는 대신 지운다 — 자녀가 두 번 나오고 해제해도 한 행이 남는 사고를 막는다.
+ * (경쟁 조건의 최종 방어선은 0038의 UNIQUE(guardian_id, student_id).)
+ */
 export async function linkGuardianToStudent(
   linkId: string,
   studentId: string
 ): Promise<void> {
+  const link = await query<{ guardian_id: string }[]>(
+    `SELECT guardian_id FROM student_guardians WHERE id = ? LIMIT 1`,
+    [linkId]
+  );
+  if (!link[0]) return;
+  const dup = await query<{ one: number }[]>(
+    `SELECT 1 AS one FROM student_guardians
+     WHERE guardian_id = ? AND student_id = ? AND id <> ? LIMIT 1`,
+    [link[0].guardian_id, studentId, linkId]
+  );
+  if (dup.length > 0) {
+    await query(`DELETE FROM student_guardians WHERE id = ?`, [linkId]);
+    return;
+  }
   await query(`UPDATE student_guardians SET student_id = ? WHERE id = ?`, [
     studentId,
     linkId,

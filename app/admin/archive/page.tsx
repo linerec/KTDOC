@@ -17,7 +17,7 @@ import {
   getEnrollmentsForUser,
   getEnrollmentsForUsers,
 } from '@/lib/d1';
-import { getGuardianChildren } from '@/lib/members';
+import { getGuardianView } from '@/lib/members';
 import type { CheckedInEvent, EventImage } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import type { MyEnrollment } from '@/types/programs';
@@ -47,72 +47,61 @@ export default async function AdminArchivePage() {
 
   // 학부모는 자녀들의 기록을 본다 — 체크인도 배정도 자녀 id 로 저장돼 있다.
   // (본인 id 로 체크인을 조회하면 대행 체크인을 아무리 해도 영원히 0건이다.)
-  const isParent = role === 'parent';
-  const children = isParent && userId ? await getGuardianChildren(userId) : [];
-  const childIds = children.map((c) => c.studentId);
-  const childName = new Map<string, string>(
-    children.map((c) => [c.studentId, c.studentName ?? ''])
-  );
+  // 자녀 범위·이름표 규칙은 GuardianView 한 곳의 것을 쓴다.
+  const guardian = await getGuardianView(role, userId);
+  const isParent = guardian.isParent;
 
   const [rawCheckins, rawEnrollments] = await Promise.all([
     !userId
       ? Promise.resolve([] as (CheckedInEvent & { user_id?: string })[])
       : isParent
-        ? getUserCheckinsForUsers(childIds)
+        ? getUserCheckinsForUsers(guardian.childIds)
         : getUserCheckins(userId),
     !userId
       ? Promise.resolve([] as MyEnrollment[])
       : isParent
-        ? childIds.length > 0
-          ? getEnrollmentsForUsers(childIds)
+        ? guardian.childIds.length > 0
+          ? getEnrollmentsForUsers(guardian.childIds)
           : Promise.resolve([] as MyEnrollment[])
         : getEnrollmentsForUser(userId),
   ]);
 
   // 형제가 같은 공연·수업에 참여하면 행이 자녀 수만큼 온다 — 카드 하나로 접고
-  // 소유자(자녀 이름)를 함께 단다. "누구의 기록인지"가 학부모 화면의 핵심 정보다.
-  const eventOwnerNames = new Map<number, string[]>();
+  // 소유자(자녀) id를 모아 이름표를 단다. "누구의 기록인지"가 학부모 화면의 핵심 정보다.
+  const eventOwnerIds = new Map<number, string[]>();
   const mergedEvents = new Map<number, CheckedInEvent>();
   const checkins: CheckedInEvent[] = [];
   for (const ev of rawCheckins) {
-    const rawOwnerId = (ev as { user_id?: string }).user_id;
-    const owner = isParent && rawOwnerId ? (childName.get(rawOwnerId) ?? null) : null;
+    const ownerId = (ev as { user_id?: string }).user_id ?? null;
     const merged = mergedEvents.get(ev.id);
     if (merged) {
-      const names = eventOwnerNames.get(ev.id)!;
-      if (owner && !names.includes(owner)) names.push(owner);
+      const ids = eventOwnerIds.get(ev.id)!;
+      if (ownerId && !ids.includes(ownerId)) ids.push(ownerId);
       // 병합 카드의 체크인 일시는 가장 이른 것으로 — 첫 행이 어느 자녀 것인지는
       // 정렬이 보장하지 않으므로, 임의의 한 자녀 값이 대표가 되지 않게 한다.
       if (ev.checked_in_at < merged.checked_in_at) merged.checked_in_at = ev.checked_in_at;
       continue;
     }
     mergedEvents.set(ev.id, ev);
-    eventOwnerNames.set(ev.id, owner ? [owner] : []);
+    eventOwnerIds.set(ev.id, ownerId ? [ownerId] : []);
     checkins.push(ev);
   }
 
   // 수업은 상태까지 같을 때만 접는다 — 한 아이는 수강 중, 다른 아이는 대기인
   // 수업을 한 카드로 합치면 상태 배지가 거짓말을 한다.
   const classKey = (en: MyEnrollment) => `${en.program.id}:${en.status}`;
-  const classOwnerNames = new Map<string, string[]>();
+  const classOwnerIds = new Map<string, string[]>();
   const enrollments: MyEnrollment[] = [];
   for (const en of rawEnrollments) {
     if (en.status === 'cancelled') continue;
-    const owner = isParent ? childName.get(en.user_id) : null;
-    const names = classOwnerNames.get(classKey(en));
-    if (names) {
-      if (owner && !names.includes(owner)) names.push(owner);
+    const ids = classOwnerIds.get(classKey(en));
+    if (ids) {
+      if (!ids.includes(en.user_id)) ids.push(en.user_id);
       continue;
     }
-    classOwnerNames.set(classKey(en), owner ? [owner] : []);
+    classOwnerIds.set(classKey(en), [en.user_id]);
     enrollments.push(en);
   }
-
-  // 이름표는 자녀가 둘 이상일 때만 — 하나뿐이면 페이지 전체가 그 아이의 기록이라 소음이다.
-  const ownerLabel = (names: string[] | undefined): string | null =>
-    isParent && children.length > 1 && names && names.length > 0
-      ? names.filter(Boolean).join(' · ')
-      : null;
 
   const previews: Map<number, EventImage[]> =
     checkins.length > 0
@@ -203,7 +192,7 @@ export default async function AdminArchivePage() {
                         <ClassCard
                           key={`cls-${en.enrollment_id}`}
                           item={en}
-                          ownerLabel={ownerLabel(classOwnerNames.get(classKey(en)))}
+                          ownerLabel={guardian.ownerLabel(classOwnerIds.get(classKey(en)) ?? [])}
                         />
                       ))}
                     </div>
@@ -216,7 +205,7 @@ export default async function AdminArchivePage() {
                           key={`ev-${event.id}`}
                           event={event}
                           strip={previews.get(event.id) ?? []}
-                          ownerLabel={ownerLabel(eventOwnerNames.get(event.id))}
+                          ownerLabel={guardian.ownerLabel(eventOwnerIds.get(event.id) ?? [])}
                         />
                       ))}
                     </div>

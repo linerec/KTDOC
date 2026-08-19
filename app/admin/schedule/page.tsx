@@ -23,7 +23,7 @@ import {
   getEnrollmentsForUsers,
   memberLibrary
 } from '@/lib/d1';
-import { getGuardianChildren } from '@/lib/members';
+import { getGuardianView } from '@/lib/members';
 import { expandClassesForMonth } from '@/lib/programSchedule';
 import ScheduleCalendar, { type CalendarItem } from '@/components/admin/schedule/ScheduleCalendar';
 import type { MemberRole } from '@/types/members';
@@ -74,16 +74,15 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
   // 체크인할 수 있는 사람은 비공개 공연도 본다 — 참여 대상일 수 있기 때문이다.
   const memberView = (canCheckIn || role === 'parent') && !!userId;
 
-  // 학부모: 자녀 목록을 한 번 읽어 수업 조회·참여 표시·이름표에 모두 쓴다.
-  const isParent = role === 'parent';
-  const children = isParent && userId ? await getGuardianChildren(userId) : [];
-  const childIds = children.map((c) => c.studentId);
-  const childName = new Map<string, string>(
-    children.map((c) => [c.studentId, c.studentName ?? ''])
-  );
+  // 학부모 관점(자녀 범위·이름표)은 getGuardianView 한 곳의 규칙을 쓴다.
+  // 자녀 조회(MySQL)와 무관한 공연 조회(D1)는 먼저 출발시킨다 — 차례로 await하면
+  // MySQL 왕복만큼 원격 D1 조회 시작이 늦어져 그대로 TTFB에 얹힌다.
+  const guardianPromise = getGuardianView(role, userId);
+  const eventsPromise = getEvents(memberLibrary({ limit: 500, canSeeUnpublished: memberView }));
+  const guardian = await guardianPromise;
   // 학부모의 참여 표시: 자녀 중 누구라도 체크인한 공연에 ✓ — 대행 체크인은
   // 자녀 id 로 저장되므로 본인 id 로는 아무것도 걸리지 않는다.
-  const parentMarks = isParent && childIds.length > 0;
+  const parentMarks = guardian.isParent && guardian.childIds.length > 0;
 
   const { month: monthParam } = await searchParams;
   const { year, month } = parseMonth(monthParam);
@@ -92,18 +91,18 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
   // 내 수업(배정) 조회: 학생=본인, 학부모=자녀들. 운영진은 배정이 없어 빈 배열.
   async function loadEnrollments(): Promise<MyEnrollment[]> {
     if (!userId) return [];
-    if (isParent) {
-      return childIds.length > 0 ? getEnrollmentsForUsers(childIds) : [];
+    if (guardian.isParent) {
+      return guardian.childIds.length > 0 ? getEnrollmentsForUsers(guardian.childIds) : [];
     }
     return getEnrollmentsForUser(userId);
   }
 
   const [eventsResult, checkedInIds, enrollments] = await Promise.all([
-    getEvents(memberLibrary({ limit: 500, canSeeUnpublished: memberView })),
+    eventsPromise,
     canCheckIn
       ? getUserCheckedInEventIds(userId)
       : parentMarks
-        ? getCheckedInEventIdsForUsers(childIds)
+        ? getCheckedInEventIdsForUsers(guardian.childIds)
         : Promise.resolve(new Set<number>()),
     loadEnrollments(),
   ]);
@@ -133,17 +132,11 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
 
   // 내 수업(요일 반복·캠프 기간 전개) → 캘린더 항목.
   // 형제가 같은 수업이면 전개 단계에서 한 항목으로 접혀 온다(owners 병합) —
-  // 자녀가 둘 이상일 때만 이름표를 달아 "누구의 수업인지"를 보인다.
+  // 이름표 노출 규칙(자녀 둘 이상일 때만)은 GuardianView가 정한다.
   const classesByDate = expandClassesForMonth(enrollments, year, month);
   for (const [date, list] of classesByDate) {
     for (const c of list) {
-      const ownerLabel =
-        isParent && children.length > 1
-          ? c.owners
-              .map((id) => childName.get(id))
-              .filter(Boolean)
-              .join(' · ') || null
-          : null;
+      const ownerLabel = guardian.ownerLabel(c.owners);
       items.push({
         key: `cl-${c.programId}-${date}`,
         date,

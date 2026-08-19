@@ -18,6 +18,15 @@ export interface ChildEntry {
  */
 export const MAX_CHILDREN = 6;
 
+/**
+ * 입학년도 선택지: 올해부터 과거 12년치 — 가입 폼·프로필 자녀 추가 공용.
+ * 화면마다 따로 만들면 범위가 어긋나 "UI가 준 연도를 서버가 거부"하는 조합이 생긴다.
+ */
+export function enrollmentYearOptions(): number[] {
+  const current = new Date().getFullYear();
+  return Array.from({ length: 13 }, (_, i) => current - i);
+}
+
 /** 입학년도 파싱·검증 (1990 ~ 올해+1 사이의 정수만) */
 export function parseEnrollmentYear(
   value: number | string | null | undefined

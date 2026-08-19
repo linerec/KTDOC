@@ -58,8 +58,13 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+      // 공백뿐인 이름은 조용히 버리지 않고 거부한다 — 그냥 걸러 버리면 자녀가
+      // 제출한 것보다 적게 가입돼도 학부모가 알 길이 없다(HTML required는 공백을 통과시킨다).
+      const hasBlankName = raw.some(
+        (c) => typeof c?.name !== 'string' || !c.name.trim()
+      );
       children = normalizeChildEntries(raw);
-      if (children.length === 0) {
+      if (hasBlankName || children.length === 0) {
         return NextResponse.json(
           { error: '자녀(원생)의 이름을 입력해주세요.' },
           { status: 400 }

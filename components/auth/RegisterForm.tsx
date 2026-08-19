@@ -8,19 +8,13 @@ import IntlObject from '@/components/common/IntlObject';
 import ContactChannels from '@/components/common/ContactChannels';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/lib/i18n/useT';
-import { MAX_CHILDREN } from '@/lib/members/childEntries';
+import { MAX_CHILDREN, enrollmentYearOptions } from '@/lib/members/childEntries';
 import type { SignupRole } from '@/types/members';
 
 /** 자녀 입력 한 줄 — 형제자매면 줄이 늘어난다 */
 interface ChildDraft {
   name: string;
   year: string;
-}
-
-/** 입학년도 선택지: 올해부터 과거 12년치 */
-function enrollmentYears(): number[] {
-  const current = new Date().getFullYear();
-  return Array.from({ length: 13 }, (_, i) => current - i);
 }
 
 export default function RegisterForm() {
@@ -45,7 +39,7 @@ export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const years = enrollmentYears();
+  const years = enrollmentYearOptions();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

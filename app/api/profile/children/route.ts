@@ -70,10 +70,19 @@ export async function POST(request: Request) {
     // 상한은 서버가 지킨다 — 화면 버튼만 믿으면 API 직접 호출로 무제한 신청
     // + 신청마다 운영진 알림이 나가 스팸이 된다.
     const current = await getMemberById(user.id!);
-    if ((current?.children ?? []).length >= MAX_CHILDREN) {
+    const existing = current?.children ?? [];
+    if (existing.length >= MAX_CHILDREN) {
       return NextResponse.json(
         { success: false, error: `자녀 연결은 최대 ${MAX_CHILDREN}명까지 가능합니다. 그 이상은 학원에 문의해 주세요.` },
         { status: 400 }
+      );
+    }
+    // 이미 연결(확정)됐거나 신청 중인 이름은 다시 받지 않는다 — 같은 자녀의
+    // 확정 행이 둘 생기는 경로(신청→운영진 확정)를 입구에서 막는다.
+    if (existing.some((c) => (c.studentName ?? c.claimedName).trim() === name)) {
+      return NextResponse.json(
+        { success: false, error: '이미 연결되었거나 신청 중인 자녀입니다.' },
+        { status: 409 }
       );
     }
 
@@ -89,8 +98,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 운영진이 확정해야 화면에 나타난다 — 알림이 실패해도 신청은 되돌리지 않는다.
-    await notifyStaffOfChildLinkRequest({
+    // 운영진이 확정해야 화면에 나타난다 — 알림은 응답을 붙잡지 않는다(fire-and-forget).
+    // 푸시 팬아웃(운영진×기기)이 순차 HTTPS 호출이라 await하면 만료된 엔드포인트
+    // 하나에 신청 버튼이 수 초씩 묶인다. 실패해도 신청은 되돌리지 않는다.
+    notifyStaffOfChildLinkRequest({
       id: user.id!,
       name: user.name ?? '',
       childName: name,

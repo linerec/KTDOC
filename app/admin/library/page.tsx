@@ -20,7 +20,7 @@ import {
   getCheckedInEventIdsForUsers,
   memberLibrary,
 } from '@/lib/d1';
-import { getGuardianChildren } from '@/lib/members';
+import { getGuardianView } from '@/lib/members';
 import type { EventWithCategory } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import T from '@/components/common/T';
@@ -69,28 +69,32 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
 
   // 학부모: 자녀들의 체크인을 합쳐 참여 표시(✓)·필터에 쓴다. 대행 체크인은
   // 자녀 id 로 저장되므로 본인 id 로 조회하면 아무것도 걸리지 않는다.
-  const children =
-    role === 'parent' && userId ? await getGuardianChildren(userId) : [];
-  const parentMarks = children.length > 0;
+  // 자녀 조회(MySQL)와 무관한 공연·카테고리 조회(D1)는 먼저 출발시킨다.
+  const guardianPromise = getGuardianView(role, userId);
+  const params = await searchParams;
+  const eventsPromise = getEvents(
+    memberLibrary({
+      year: params.year ? parseInt(params.year) : undefined,
+      category: params.category || undefined,
+      search: params.search || undefined,
+      // 멤버(학생·학부모)는 비공개 포함 전체, 그 외 역할은 공개 아카이브만
+      canSeeUnpublished: memberView,
+    })
+  );
+  const categoriesPromise = getCategories();
+
+  const guardian = await guardianPromise;
+  const parentMarks = guardian.isParent && guardian.childIds.length > 0;
   // 참여 표시(✓)를 볼 수 있는가 — 본인 체크인(학생·운영진) 또는 자녀 체크인(학부모)
   const showMarks = canCheckIn || parentMarks;
 
-  const params = await searchParams;
   const [eventsResult, categories, checkedInIds] = await Promise.all([
-    getEvents(
-      memberLibrary({
-        year: params.year ? parseInt(params.year) : undefined,
-        category: params.category || undefined,
-        search: params.search || undefined,
-        // 멤버(학생·학부모)는 비공개 포함 전체, 그 외 역할은 공개 아카이브만
-        canSeeUnpublished: memberView,
-      })
-    ),
-    getCategories(),
+    eventsPromise,
+    categoriesPromise,
     canCheckIn
       ? getUserCheckedInEventIds(userId)
       : parentMarks
-        ? getCheckedInEventIdsForUsers(children.map((c) => c.studentId))
+        ? getCheckedInEventIdsForUsers(guardian.childIds)
         : Promise.resolve(new Set<number>()),
   ]);
 

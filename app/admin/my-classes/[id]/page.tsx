@@ -21,7 +21,7 @@ import {
   getProgramSupplies,
   getProgramSupplySets,
 } from '@/lib/d1';
-import { getGuardianChildren } from '@/lib/members';
+import { getGuardianView } from '@/lib/members';
 import { isStaff } from '@/lib/isAdmin';
 import SupplyList from '@/components/supplies/SupplyList';
 import { getCommentThreads } from '@/lib/comments/thread';
@@ -55,7 +55,8 @@ export default async function MyClassDetailPage({ params }: PageProps) {
   const program = await getProgramById(programId);
   if (!program) notFound();
 
-  // 배정 검증 — 본인(학생) 또는 자녀(학부모)에 배정된 수업만. 관리 권한자는 통과.
+  // 배정 검증 — 본인(학생) 또는 자녀(학부모)의 **살아 있는** 배정만. 관리 권한자는 통과.
+  // 취소(cancelled)는 목록·아카이브가 숨기는 배정이므로 접근 근거도 되지 않는다.
   // 학부모: 이 수업이 어느 자녀의 것인지 이름표(childLabel)도 여기서 얻는다 —
   // 목록에서는 자녀별 섹션으로 보이던 맥락이 상세에서 끊기지 않게.
   let allowed = isAdmin(session);
@@ -63,22 +64,22 @@ export default async function MyClassDetailPage({ params }: PageProps) {
   if (!allowed && userId) {
     let enrollments;
     if (role === 'parent') {
-      const children = await getGuardianChildren(userId);
-      enrollments = children.length > 0
-        ? await getEnrollmentsForUsers(children.map((c) => c.studentId))
-        : [];
-      const childName = new Map<string, string>(
-        children.map((c) => [c.studentId, c.studentName ?? ''])
+      const guardian = await getGuardianView(role, userId);
+      enrollments =
+        guardian.childIds.length > 0
+          ? await getEnrollmentsForUsers(guardian.childIds)
+          : [];
+      childLabel = guardian.ownerLabel(
+        enrollments
+          .filter((e) => e.program.id === programId && e.status !== 'cancelled')
+          .map((e) => e.user_id)
       );
-      const owners = enrollments
-        .filter((e) => e.program.id === programId && e.status !== 'cancelled')
-        .map((e) => childName.get(e.user_id))
-        .filter(Boolean);
-      childLabel = owners.length > 0 ? owners.join(' · ') : null;
     } else {
       enrollments = await getEnrollmentsForUser(userId);
     }
-    allowed = enrollments.some((e) => e.program.id === programId);
+    allowed = enrollments.some(
+      (e) => e.program.id === programId && e.status !== 'cancelled'
+    );
   }
   if (!allowed) notFound();
 
