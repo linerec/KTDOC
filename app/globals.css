@@ -3109,6 +3109,14 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   font-weight: 600;
 }
 
+.auth-hint-link {
+  align-self: flex-start;
+  font-weight: 600;
+  color: var(--soft-gold-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* 입학년도 등 select은 입력 필드와 동일한 모양으로 */
 .auth-field select {
   width: 100%;
@@ -14752,6 +14760,287 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.85rem;
   color: var(--text-muted);
   text-align: right;
+}
+
+/* ============================================================
+   형제자매 등록 안내 — /guide/siblings
+   ------------------------------------------------------------
+   학부모에게 링크로 직접 전하는 한 장짜리 가이드. legal 계열과 같은
+   본문형(지면 히어로 + 좁은 본문) 골격에, 스텝 번호·스크린샷 액자를 얹는다.
+   제목 전경은 지면 위이므로 --text-color 역할 토큰을 쓴다.
+============================================================ */
+.sibguide-page {
+  background: var(--ground);
+  min-height: 100vh;
+}
+
+.sibguide-hero {
+  padding: var(--page-offset-tight) 0 48px;
+  text-align: center;
+  background:
+    var(--hero-wash),
+    var(--hero-ground);
+}
+
+.sibguide-hero-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.sibguide-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--soft-gold-text);
+  margin-bottom: 16px;
+}
+
+/* IntlObject(returnType)로 만든 요소는 .intl-object 가 inline 이라
+   블록 표시를 되찾아 줘야 한다 — 안 하면 제목·문단이 한 줄로 이어 붙는다. */
+.sibguide-title,
+.sibguide-desc,
+.sibguide-step-body,
+.sibguide-feat-body,
+.sibguide-cta-lead,
+.sibguide-contact-lead {
+  display: block;
+}
+
+.sibguide-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  line-height: 1.2;
+  color: var(--text-color);
+}
+
+.sibguide-desc {
+  margin: 20px auto 0;
+  max-width: 600px;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--text-muted);
+}
+
+.sibguide-body {
+  padding: 44px 0 110px;
+}
+
+.sibguide-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
+
+.sibguide-step-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.sibguide-step-num {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--on-accent);
+  background: var(--accent-color);
+}
+
+.sibguide-step-title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  color: var(--text-color);
+}
+
+.sibguide-step-body {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+
+/* 스크린샷 액자 — 실제 화면임을 알리는 테두리·그림자 */
+.sibguide-shot {
+  margin: 0;
+}
+
+.sibguide-shot img {
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 10px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.1); /* theme-exempt: 그림자는 두 테마 모두 어두운 쪽이 자연스럽다 */
+  background: var(--surface-2);
+}
+
+.sibguide-shot-narrow img {
+  max-width: 340px;
+  display: block;
+  margin: 0 auto;
+}
+
+.sibguide-shot figcaption {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.sibguide-feats {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.sibguide-feat {
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
+  border-radius: 12px;
+  background: rgba(var(--fg-rgb), 0.03);
+}
+
+.sibguide-feat-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 6px;
+}
+
+.sibguide-feat-title::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent-color);
+  margin-right: 9px;
+  vertical-align: 1px;
+}
+
+.sibguide-feat-body {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.sibguide-feat-body:last-child {
+  margin-bottom: 0;
+}
+
+.sibguide-faq-title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.3rem;
+  color: var(--text-color);
+  margin-bottom: 18px;
+}
+
+.sibguide-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+}
+
+.sibguide-faq-item {
+  padding: 16px 20px;
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
+  border-radius: 12px;
+}
+
+.sibguide-faq-item dt {
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 6px;
+}
+
+.sibguide-faq-item dt::before {
+  content: 'Q. ';
+  color: var(--soft-gold-text);
+}
+
+.sibguide-faq-item dd {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+.sibguide-cta {
+  text-align: center;
+  padding: 34px 24px 8px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.12);
+}
+
+.sibguide-cta-lead {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--text-color);
+  margin-bottom: 18px;
+}
+
+.sibguide-cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.sibguide-btn {
+  display: inline-block;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid rgba(var(--fg-rgb), 0.25);
+  color: var(--text-color);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.sibguide-btn:hover {
+  border-color: rgba(var(--fg-rgb), 0.5);
+}
+
+.sibguide-btn-primary {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--on-accent);
+}
+
+.sibguide-btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.sibguide-contact-lead {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.contact-channels--sibguide {
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .sibguide-inner {
+    gap: 40px;
+  }
+  .sibguide-body {
+    padding-bottom: 80px;
+  }
 }
 
 .cal-sub {

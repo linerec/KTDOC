@@ -218,6 +218,9 @@ export default function RegisterForm() {
             <strong>{messages['auth.parent.guideTitle']}</strong>
             <span>{messages['auth.parent.guide']}</span>
             <span>{t('auth.parent.siblingGuide', '자녀가 여러 명이면 아래 ‘자녀 추가’로 모두 적어 주세요.')}</span>
+            <Link href="/guide/siblings" target="_blank" className="auth-hint-link">
+              {t('auth.parent.guideLink', '형제자매 등록 안내 보기 →')}
+            </Link>
           </div>
           {children.map((child, i) => (
             <fieldset key={i} className="auth-child">

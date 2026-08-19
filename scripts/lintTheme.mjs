@@ -67,6 +67,7 @@ const GROUND_HEROES = [
   '.rsvp-hero',
   '.legal-hero',
   '.classes-loading-hero',
+  '.sibguide-hero',
 ];
 
 /**
