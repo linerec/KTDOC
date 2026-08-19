@@ -21,7 +21,7 @@ import {
   getMemberById,
   removeGuardianChildLink,
 } from '@/lib/members';
-import { parseEnrollmentYear } from '@/lib/members/childEntries';
+import { MAX_CHILDREN, parseEnrollmentYear } from '@/lib/members/childEntries';
 import { notifyStaffOfChildLinkRequest } from '@/lib/push/system';
 
 function unauthorized() {
@@ -63,6 +63,16 @@ export async function POST(request: Request) {
     if (year === null) {
       return NextResponse.json(
         { success: false, error: '자녀(원생)의 입학년도를 올바르게 선택해주세요.' },
+        { status: 400 }
+      );
+    }
+
+    // 상한은 서버가 지킨다 — 화면 버튼만 믿으면 API 직접 호출로 무제한 신청
+    // + 신청마다 운영진 알림이 나가 스팸이 된다.
+    const current = await getMemberById(user.id!);
+    if ((current?.children ?? []).length >= MAX_CHILDREN) {
+      return NextResponse.json(
+        { success: false, error: `자녀 연결은 최대 ${MAX_CHILDREN}명까지 가능합니다. 그 이상은 학원에 문의해 주세요.` },
         { status: 400 }
       );
     }

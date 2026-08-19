@@ -643,6 +643,22 @@ export async function addGuardianChildLink(input: {
     );
     if (!student[0]) return { ok: false, code: 'student_not_found' };
 
+    // 같은 이름의 미해결 신청(셀프 신청 등)이 있으면 새 행 대신 그 행을 확정한다 —
+    // 두 경로(학부모 신청 + 운영진 추가)가 만나 유령 '미연결' 행이 남는 것을 막는다.
+    const pending = await query<{ id: string }[]>(
+      `SELECT id FROM student_guardians
+       WHERE guardian_id = ? AND student_id IS NULL AND claimed_student_name = ?
+       LIMIT 1`,
+      [guardianId, student[0].name ?? '']
+    );
+    if (pending[0]) {
+      await query(
+        `UPDATE student_guardians SET student_id = ?, claimed_enrollment_year = ? WHERE id = ?`,
+        [input.studentId, student[0].enrollment_year, pending[0].id]
+      );
+      return { ok: true, linkId: pending[0].id };
+    }
+
     const linkId = randomUUID();
     await query(
       `INSERT INTO student_guardians

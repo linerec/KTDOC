@@ -56,9 +56,14 @@ function buildPrefill(
 
   // 학부모의 연결(확정) 자녀 — 학생 이름 문항이 셀렉트로 바뀌고, 고르면
   // 응답↔학생 연결이 제출 시점에 확정된다(운영진 수작업 연결이 필요 없어진다).
-  const childOptions = children
-    .filter((c) => c.studentName)
-    .map((c) => ({ id: c.studentId, name: c.studentName! }));
+  // **학생 이름 문항이 없는 신청서에는 자녀 개념을 붙이지 않는다** — 붙이면
+  // 대상 학생을 묻지도 않은 응답이 자녀에게 귀속된다(예: 보호자 대상 설문).
+  const hasStudentNameQ = allQuestions(schema).some((q) => q.bind === 'student_name');
+  const childOptions = hasStudentNameQ
+    ? children
+        .filter((c) => c.studentName)
+        .map((c) => ({ id: c.studentId, name: c.studentName! }))
+    : [];
   const defaultChildId = childOptions.length === 1 ? childOptions[0].id : null;
 
   const values: Answers = {};

@@ -72,30 +72,39 @@ export default async function AdminArchivePage() {
   // 형제가 같은 공연·수업에 참여하면 행이 자녀 수만큼 온다 — 카드 하나로 접고
   // 소유자(자녀 이름)를 함께 단다. "누구의 기록인지"가 학부모 화면의 핵심 정보다.
   const eventOwnerNames = new Map<number, string[]>();
+  const mergedEvents = new Map<number, CheckedInEvent>();
   const checkins: CheckedInEvent[] = [];
   for (const ev of rawCheckins) {
     const rawOwnerId = (ev as { user_id?: string }).user_id;
     const owner = isParent && rawOwnerId ? (childName.get(rawOwnerId) ?? null) : null;
-    const names = eventOwnerNames.get(ev.id);
-    if (names) {
+    const merged = mergedEvents.get(ev.id);
+    if (merged) {
+      const names = eventOwnerNames.get(ev.id)!;
       if (owner && !names.includes(owner)) names.push(owner);
+      // 병합 카드의 체크인 일시는 가장 이른 것으로 — 첫 행이 어느 자녀 것인지는
+      // 정렬이 보장하지 않으므로, 임의의 한 자녀 값이 대표가 되지 않게 한다.
+      if (ev.checked_in_at < merged.checked_in_at) merged.checked_in_at = ev.checked_in_at;
       continue;
     }
+    mergedEvents.set(ev.id, ev);
     eventOwnerNames.set(ev.id, owner ? [owner] : []);
     checkins.push(ev);
   }
 
-  const classOwnerNames = new Map<number, string[]>();
+  // 수업은 상태까지 같을 때만 접는다 — 한 아이는 수강 중, 다른 아이는 대기인
+  // 수업을 한 카드로 합치면 상태 배지가 거짓말을 한다.
+  const classKey = (en: MyEnrollment) => `${en.program.id}:${en.status}`;
+  const classOwnerNames = new Map<string, string[]>();
   const enrollments: MyEnrollment[] = [];
   for (const en of rawEnrollments) {
     if (en.status === 'cancelled') continue;
     const owner = isParent ? childName.get(en.user_id) : null;
-    const names = classOwnerNames.get(en.program.id);
+    const names = classOwnerNames.get(classKey(en));
     if (names) {
       if (owner && !names.includes(owner)) names.push(owner);
       continue;
     }
-    classOwnerNames.set(en.program.id, owner ? [owner] : []);
+    classOwnerNames.set(classKey(en), owner ? [owner] : []);
     enrollments.push(en);
   }
 
@@ -194,7 +203,7 @@ export default async function AdminArchivePage() {
                         <ClassCard
                           key={`cls-${en.enrollment_id}`}
                           item={en}
-                          ownerLabel={ownerLabel(classOwnerNames.get(en.program.id))}
+                          ownerLabel={ownerLabel(classOwnerNames.get(classKey(en)))}
                         />
                       ))}
                     </div>
