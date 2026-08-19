@@ -246,6 +246,28 @@ export default function MemberTable({
                                 {t('admin.members.child', '자녀: {name}', {
                                   name: c.studentName || c.claimedName,
                                 })}
+                                <button
+                                  type="button"
+                                  className="admin-conn-unlink"
+                                  disabled={busy}
+                                  title={t('admin.members.unlinkTitle', '자녀 연결 해제')}
+                                  onClick={() => {
+                                    const ok = window.confirm(
+                                      t(
+                                        'admin.members.unlinkConfirm',
+                                        '{name} 자녀 연결을 해제할까요?\n학부모의 캘린더·체크인 대행에서 이 자녀가 빠집니다.',
+                                        { name: c.studentName || c.claimedName }
+                                      )
+                                    );
+                                    if (ok)
+                                      runAction(member.id, {
+                                        action: 'unlinkChild',
+                                        linkId: c.linkId,
+                                      });
+                                  }}
+                                >
+                                  ×
+                                </button>
                               </span>
                             ) : (
                               <div className="admin-conn-unresolved">
@@ -258,6 +280,28 @@ export default function MemberTable({
                                         y: c.claimedEnrollmentYear,
                                       })}`
                                     : ''}
+                                  <button
+                                    type="button"
+                                    className="admin-conn-unlink"
+                                    disabled={busy}
+                                    title={t('admin.members.unlinkPendingTitle', '신청 삭제')}
+                                    onClick={() => {
+                                      const ok = window.confirm(
+                                        t(
+                                          'admin.members.unlinkPendingConfirm',
+                                          '{name} 연결 신청을 삭제할까요?',
+                                          { name: c.claimedName }
+                                        )
+                                      );
+                                      if (ok)
+                                        runAction(member.id, {
+                                          action: 'unlinkChild',
+                                          linkId: c.linkId,
+                                        });
+                                    }}
+                                  >
+                                    ×
+                                  </button>
                                 </span>
                                 <ResolveStudent
                                   t={t}
@@ -275,9 +319,15 @@ export default function MemberTable({
                             )}
                           </div>
                         ))}
-                        {(member.children ?? []).length === 0 && (
-                          <span className="admin-table-muted">-</span>
-                        )}
+                        {/* 형제자매: 이미 연결이 있어도 자녀를 더 이을 수 있어야 한다 */}
+                        <AddChildLink
+                          t={t}
+                          students={students}
+                          disabled={busy}
+                          onAdd={(studentId) =>
+                            runAction(member.id, { action: 'addChildLink', studentId })
+                          }
+                        />
                       </div>
                     )}
                     {member.role === 'student' && (
@@ -454,6 +504,79 @@ export default function MemberTable({
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * 학부모에게 자녀 연결을 추가하는 접이식 셀렉트 — 형제자매 지원의 관리자 입구.
+ * 평소엔 버튼 하나로 접어 두어 표를 어지럽히지 않는다.
+ */
+function AddChildLink({
+  t,
+  students,
+  disabled,
+  onAdd,
+}: {
+  t: TFunction;
+  students: StudentOption[];
+  disabled: boolean;
+  onAdd: (studentId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState('');
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="admin-btn admin-btn-sm admin-btn-outline admin-conn-add"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+      >
+        + {t('admin.members.addChild', '자녀 추가')}
+      </button>
+    );
+  }
+  return (
+    <div className="admin-conn-resolve">
+      <select
+        className="admin-filter-select"
+        value={value}
+        disabled={disabled}
+        onChange={(e) => setValue(e.target.value)}
+      >
+        <option value="">{t('admin.members.pickStudent', '원생 선택...')}</option>
+        {students.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name || t('admin.common.noName', '(이름없음)')}
+            {s.enrollment_year
+              ? ` · ${t('admin.members.yearSuffix', '{y}년', { y: s.enrollment_year })}`
+              : ''}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        className="admin-btn admin-btn-sm"
+        disabled={disabled || !value}
+        onClick={() => {
+          if (!value) return;
+          onAdd(value);
+          setOpen(false);
+          setValue('');
+        }}
+      >
+        {t('admin.members.link', '연결')}
+      </button>
+      <button
+        type="button"
+        className="admin-btn admin-btn-sm admin-btn-outline"
+        disabled={disabled}
+        onClick={() => setOpen(false)}
+      >
+        {t('admin.common.cancel', '취소')}
+      </button>
+    </div>
   );
 }
 

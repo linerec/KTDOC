@@ -13,7 +13,14 @@ import { cookies } from 'next/headers';
 import { auth } from '@/auth';
 import { canSelfCheckIn } from '@/lib/isAdmin';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getEvents, getCategories, getUserCheckedInEventIds, memberLibrary } from '@/lib/d1';
+import {
+  getEvents,
+  getCategories,
+  getUserCheckedInEventIds,
+  getCheckedInEventIdsForUsers,
+  memberLibrary,
+} from '@/lib/d1';
+import { getGuardianChildren } from '@/lib/members';
 import type { EventWithCategory } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
 import T from '@/components/common/T';
@@ -60,6 +67,14 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const canCheckIn = canSelfCheckIn(session) && !!userId;
   const memberView = (canCheckIn || role === 'parent') && !!userId;
 
+  // 학부모: 자녀들의 체크인을 합쳐 참여 표시(✓)·필터에 쓴다. 대행 체크인은
+  // 자녀 id 로 저장되므로 본인 id 로 조회하면 아무것도 걸리지 않는다.
+  const children =
+    role === 'parent' && userId ? await getGuardianChildren(userId) : [];
+  const parentMarks = children.length > 0;
+  // 참여 표시(✓)를 볼 수 있는가 — 본인 체크인(학생·운영진) 또는 자녀 체크인(학부모)
+  const showMarks = canCheckIn || parentMarks;
+
   const params = await searchParams;
   const [eventsResult, categories, checkedInIds] = await Promise.all([
     getEvents(
@@ -72,7 +87,11 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       })
     ),
     getCategories(),
-    canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
+    canCheckIn
+      ? getUserCheckedInEventIds(userId)
+      : parentMarks
+        ? getCheckedInEventIdsForUsers(children.map((c) => c.studentId))
+        : Promise.resolve(new Set<number>()),
   ]);
 
   const { events, total, years } = eventsResult;
@@ -80,13 +99,13 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   // 다가오는 공연 판정용 오늘 날짜(event_date는 'YYYY-MM-DD')
   const today = new Date().toISOString().slice(0, 10);
 
-  // 체크인한 것만 모아 보기 (학생 전용)
-  const mineOnly = canCheckIn && params.mine === '1';
-  const checkedInCount = canCheckIn ? events.filter((e) => checkedInIds.has(e.id)).length : 0;
+  // 체크인한 것만 모아 보기 (학생 본인 / 학부모는 자녀 참여)
+  const mineOnly = showMarks && params.mine === '1';
+  const checkedInCount = showMarks ? events.filter((e) => checkedInIds.has(e.id)).length : 0;
   const displayEvents = mineOnly ? events.filter((e) => checkedInIds.has(e.id)) : events;
 
-  // 학생 기본 보기는 "다가오는 공연 먼저" — 응답을 유도하고 실수를 줄인다.
-  const showUpcomingFirst = canCheckIn && !mineOnly;
+  // 학생·학부모 기본 보기는 "다가오는 공연 먼저" — 응답을 유도하고 실수를 줄인다.
+  const showUpcomingFirst = showMarks && !mineOnly;
   const upcomingEvents = showUpcomingFirst
     ? displayEvents
         .filter((e) => e.event_date >= today)
@@ -128,6 +147,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
     view,
     memberView,
     canCheckIn,
+    showMarks,
     checkedInIds: checkedInList,
     today,
   };
@@ -154,6 +174,11 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
                 본인이 참여하는 공연에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개)
                 공연에도 체크인할 수 있습니다.
               </T>
+            ) : role === 'parent' ? (
+              <T k="admin.library.subtitleParent">
+                자녀가 참여하는 공연은 ✓로 표시됩니다. 공연 상세에서 자녀별 참여(체크인)를 대신
+                표시할 수 있습니다.
+              </T>
             ) : (
               <T k="admin.library.subtitle">
                 공개된 공연을 검색하고 열람합니다. 카드를 누르면 사진과 영상이 담긴 상세 페이지가
@@ -171,7 +196,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
         category={params.category || ''}
         search={params.search || ''}
         hasFilters={hasFilters}
-        canCheckIn={canCheckIn}
+        canCheckIn={showMarks}
         mineOnly={mineOnly}
         checkedInCount={checkedInCount}
         displayCount={displayCount}

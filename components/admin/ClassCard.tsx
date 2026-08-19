@@ -17,7 +17,14 @@ import { useLocaleText } from '@/components/common/LocaleText';
 import { programTypeLabel, enrollmentStatusLabel } from '@/lib/i18n/programLabels';
 import { formatClassSchedule } from '@/lib/programText';
 
-export default function ClassCard({ item }: { item: MyEnrollment }) {
+export default function ClassCard({
+  item,
+  ownerLabel,
+}: {
+  item: MyEnrollment;
+  /** 학부모 화면: 이 수업이 누구(자녀)의 것인지. 형제가 함께 다니면 "지우 · 서준". */
+  ownerLabel?: string | null;
+}) {
   const t = useT();
   const { locale } = useLanguage();
   const pick = useLocaleText();
@@ -44,6 +51,7 @@ export default function ClassCard({ item }: { item: MyEnrollment }) {
           <span className={`myclass-status myclass-status-${item.status}`}>
             {enrollmentStatusLabel(t, item.status)}
           </span>
+          {ownerLabel && <span className="myclass-owner">{ownerLabel}</span>}
         </div>
         <h3 className="myclass-card-title">{title}</h3>
         {schedule && <p className="myclass-card-meta">{schedule}</p>}

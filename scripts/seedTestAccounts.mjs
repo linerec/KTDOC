@@ -90,7 +90,12 @@ async function linkGuardian(parentId, acc) {
   );
   const studentId = students.length === 1 ? students[0].id : null;
 
-  const links = await q('SELECT id FROM student_guardians WHERE guardian_id = ?', [parentId]);
+  // 이 자녀(이름 기준)의 연결 행만 다룬다 — guardian_id 전체를 갱신하면
+  // 다자녀 학부모의 다른 자녀 연결을 몽땅 덮어쓴다(형제자매 지원과 충돌).
+  const links = await q(
+    'SELECT id FROM student_guardians WHERE guardian_id = ? AND claimed_student_name = ?',
+    [parentId, acc.childName]
+  );
   if (!links.length) {
     await q(
       `INSERT INTO student_guardians
@@ -99,9 +104,9 @@ async function linkGuardian(parentId, acc) {
       [randomUUID(), parentId, studentId, acc.childName, acc.childEnrollmentYear ?? null]
     );
   } else if (studentId) {
-    await q('UPDATE student_guardians SET student_id = ? WHERE guardian_id = ?', [
+    await q('UPDATE student_guardians SET student_id = ? WHERE id = ?', [
       studentId,
-      parentId,
+      links[0].id,
     ]);
   }
   return studentId;

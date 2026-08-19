@@ -7,7 +7,15 @@ import Link from 'next/link';
 import IntlObject from '@/components/common/IntlObject';
 import ContactChannels from '@/components/common/ContactChannels';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/lib/i18n/useT';
+import { MAX_CHILDREN } from '@/lib/members/childEntries';
 import type { SignupRole } from '@/types/members';
+
+/** 자녀 입력 한 줄 — 형제자매면 줄이 늘어난다 */
+interface ChildDraft {
+  name: string;
+  year: string;
+}
 
 /** 입학년도 선택지: 올해부터 과거 12년치 */
 function enrollmentYears(): number[] {
@@ -18,6 +26,7 @@ function enrollmentYears(): number[] {
 export default function RegisterForm() {
   const router = useRouter();
   const { messages } = useLanguage();
+  const t = useT();
 
   const [role, setRole] = useState<SignupRole>('student');
   const [name, setName] = useState('');
@@ -27,9 +36,8 @@ export default function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   // 원생
   const [enrollmentYear, setEnrollmentYear] = useState('');
-  // 학부모
-  const [childName, setChildName] = useState('');
-  const [childEnrollmentYear, setChildEnrollmentYear] = useState('');
+  // 학부모 — 자녀 목록(형제자매면 "자녀 추가"로 줄이 늘어난다)
+  const [children, setChildren] = useState<ChildDraft[]>([{ name: '', year: '' }]);
   // 이용약관·개인정보처리방침 동의 (필수)
   const [agreed, setAgreed] = useState(false);
 
@@ -71,7 +79,7 @@ export default function RegisterForm() {
           agreed,
           ...(role === 'student'
             ? { enrollmentYear }
-            : { childName, childEnrollmentYear }),
+            : { children: children.map((c) => ({ name: c.name, enrollmentYear: c.year })) }),
         }),
       });
 
@@ -209,40 +217,79 @@ export default function RegisterForm() {
         </div>
       )}
 
-      {/* 학부모: 자녀 정보 */}
+      {/* 학부모: 자녀 정보 — 형제자매면 "자녀 추가"로 줄을 늘린다 */}
       {role === 'parent' && (
         <>
           <div className="auth-hint">
             <strong>{messages['auth.parent.guideTitle']}</strong>
             <span>{messages['auth.parent.guide']}</span>
+            <span>{t('auth.parent.siblingGuide', '자녀가 여러 명이면 아래 ‘자녀 추가’로 모두 적어 주세요.')}</span>
           </div>
-          <div className="auth-field">
-            <label htmlFor="childName"><IntlObject keycode="auth.childName" /></label>
-            <input
-              id="childName"
-              type="text"
-              value={childName}
-              onChange={(e) => setChildName(e.target.value)}
-              placeholder={messages['auth.childName.placeholder']}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="auth-field">
-            <label htmlFor="childEnrollmentYear"><IntlObject keycode="auth.childEnrollmentYear" /></label>
-            <select
-              id="childEnrollmentYear"
-              value={childEnrollmentYear}
-              onChange={(e) => setChildEnrollmentYear(e.target.value)}
-              required
+          {children.map((child, i) => (
+            <fieldset key={i} className="auth-child">
+              <legend className="auth-child-legend">
+                {t('auth.child.item', '자녀 {n}', { n: i + 1 })}
+              </legend>
+              {children.length > 1 && (
+                <button
+                  type="button"
+                  className="auth-child-remove"
+                  onClick={() => setChildren((prev) => prev.filter((_, idx) => idx !== i))}
+                  disabled={isLoading}
+                  aria-label={t('auth.child.removeAria', '자녀 {n} 입력 삭제', { n: i + 1 })}
+                >
+                  {t('auth.child.remove', '삭제')}
+                </button>
+              )}
+              <div className="auth-field">
+                <label htmlFor={`childName-${i}`}><IntlObject keycode="auth.childName" /></label>
+                <input
+                  id={`childName-${i}`}
+                  type="text"
+                  value={child.name}
+                  onChange={(e) =>
+                    setChildren((prev) =>
+                      prev.map((c, idx) => (idx === i ? { ...c, name: e.target.value } : c))
+                    )
+                  }
+                  placeholder={messages['auth.childName.placeholder']}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="auth-field">
+                <label htmlFor={`childEnrollmentYear-${i}`}>
+                  <IntlObject keycode="auth.childEnrollmentYear" />
+                </label>
+                <select
+                  id={`childEnrollmentYear-${i}`}
+                  value={child.year}
+                  onChange={(e) =>
+                    setChildren((prev) =>
+                      prev.map((c, idx) => (idx === i ? { ...c, year: e.target.value } : c))
+                    )
+                  }
+                  required
+                  disabled={isLoading}
+                >
+                  <option value="" disabled>{messages['auth.enrollmentYear.placeholder']}</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+          {children.length < MAX_CHILDREN && (
+            <button
+              type="button"
+              className="auth-child-add"
+              onClick={() => setChildren((prev) => [...prev, { name: '', year: '' }])}
               disabled={isLoading}
             >
-              <option value="" disabled>{messages['auth.enrollmentYear.placeholder']}</option>
-              {years.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-          </div>
+              + {t('auth.child.add', '자녀 추가')}
+            </button>
+          )}
         </>
       )}
 

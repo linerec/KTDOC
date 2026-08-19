@@ -19,14 +19,22 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/lib/i18n/useT';
 import { validateAnswers, visibleQuestions, type AnswerErrors } from '@/lib/forms/schema';
 import AccountBlock, { EMPTY_ACCOUNT, type AccountDraft } from './AccountBlock';
-import FormField, { pick } from './FormField';
-import type { AnswerValue, Answers, FormSchema } from '@/types/forms';
+import FormField, { pick, useAnswerErrorText } from './FormField';
+import type { AnswerValue, Answers, FormQuestion, FormSchema } from '@/types/forms';
 
 export interface FormPrefill {
   /** 로그인 회원이면 세션에서 채워 온다. 비회원이면 전부 빈 값이다. */
   values: Answers;
   /** 로그인 상태 표시용 이름. 없으면 안내를 띄우지 않는다. */
   memberName?: string | null;
+  /**
+   * 학부모 회원의 연결(확정) 자녀 — 학생 이름 문항이 셀렉트로 바뀐다.
+   * 고르면 제출에 forStudentUserId 가 실려 응답↔학생 연결이 즉시 확정된다
+   * (없으면 운영진이 손으로 잇는다). 형제자매 가정의 두 번째 신청서가 이 경로다.
+   */
+  children?: { id: string; name: string }[];
+  /** 자녀가 하나면 미리 골라 둔다 */
+  defaultChildId?: string | null;
 }
 
 interface FormRendererProps {
@@ -86,6 +94,11 @@ export default function FormRenderer({
   >(null);
   const [account, setAccount] = useState<AccountDraft>(EMPTY_ACCOUNT);
   const [accountErrors, setAccountErrors] = useState<Record<string, { key: string; fallback: string }>>({});
+
+  // 학부모의 자녀 선택 — '' = 아직 안 고름, 'manual' = 직접 입력, 그 외 = 자녀 user id.
+  // 고른 자녀의 이름이 학생 이름 답으로 들어가고, 제출에 forStudentUserId 가 실린다.
+  const childOptions = prefill?.children ?? [];
+  const [childId, setChildId] = useState<string>(prefill?.defaultChildId ?? '');
 
   const formRef = useRef<HTMLFormElement>(null);
   // 스팸 방어 1: 사람은 이 칸을 채울 수 없다(화면에서 숨겨져 있다).
@@ -216,6 +229,10 @@ export default function FormRenderer({
             showAccount && account.wants
               ? { role: account.role, password: account.password, agreed: account.agreed }
               : undefined,
+          // 학부모가 자녀를 골랐으면 대상 학생을 함께 보낸다 — 서버가 보호자
+          // 관계를 검증한 뒤 응답의 student_user_id 로 확정한다.
+          forStudentUserId:
+            childId && childId !== 'manual' ? childId : undefined,
         }),
       });
       const json = await res.json();
@@ -316,17 +333,37 @@ export default function FormRenderer({
             {section.body && <p className="form-section-body">{pick(section.body, locale)}</p>}
 
             <div className="form-section-fields">
-              {shown.map((q) => (
-                <FormField
-                  key={q.key}
-                  question={q}
-                  value={answers[q.key] ?? null}
-                  error={errors[q.key]}
-                  locale={locale}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                />
-              ))}
+              {shown.map((q) =>
+                q.bind === 'student_name' && childOptions.length > 0 ? (
+                  <ChildNameField
+                    key={q.key}
+                    question={q}
+                    options={childOptions}
+                    childId={childId}
+                    value={answers[q.key] ?? null}
+                    error={errors[q.key]}
+                    locale={locale}
+                    onPick={(picked) => {
+                      setChildId(picked);
+                      const found = childOptions.find((c) => c.id === picked);
+                      // 자녀를 고르면 그 이름이 답이고, 직접 입력으로 바꾸면 비운다.
+                      handleChange(q.key, found ? found.name : '');
+                    }}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                ) : (
+                  <FormField
+                    key={q.key}
+                    question={q}
+                    value={answers[q.key] ?? null}
+                    error={errors[q.key]}
+                    locale={locale}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                )
+              )}
             </div>
           </section>
         );
@@ -362,5 +399,83 @@ export default function FormRenderer({
               : (submitLabel ?? t('forms.submit.label', '신청서 제출'))}
       </button>
     </form>
+  );
+}
+
+/**
+ * ChildNameField — 학생 이름 문항의 학부모 전용 모습(자녀 셀렉트)
+ *
+ * 학부모 회원이 열면 이름을 타이핑하는 대신 연결된 자녀 중에서 고른다.
+ * 고른 자녀의 이름이 그대로 답이 되고, 제출에 forStudentUserId 가 실려
+ * 응답↔학생 연결(승격의 기준)이 운영진 수작업 없이 확정된다.
+ * '직접 입력'을 고르면 원래의 텍스트 문항이 나타난다 — 아직 연결되지 않은
+ * 자녀나 형제의 친구 등 목록 밖의 학생을 막지 않기 위해서다.
+ */
+function ChildNameField({
+  question: q,
+  options,
+  childId,
+  value,
+  error,
+  locale,
+  onPick,
+  onChange,
+  onBlur,
+}: {
+  question: FormQuestion;
+  options: { id: string; name: string }[];
+  childId: string;
+  value: AnswerValue | null;
+  error?: AnswerErrors[string];
+  locale: string;
+  onPick: (childId: string) => void;
+  onChange: (key: string, value: AnswerValue) => void;
+  onBlur: (key: string) => void;
+}) {
+  const t = useT();
+  const errorText = useAnswerErrorText()(error);
+  const manual = childId === 'manual';
+  const selectId = `f-${q.key}-child`;
+
+  return (
+    <div className="form-field form-q">
+      <label htmlFor={selectId}>
+        <span className="form-q-label">
+          {pick(q.label, locale)}
+          {q.required && <span className="required" aria-hidden="true"> *</span>}
+        </span>
+      </label>
+      <select
+        id={selectId}
+        value={childId}
+        onChange={(e) => onPick(e.target.value)}
+        aria-invalid={!manual && !!error}
+      >
+        <option value="" disabled>
+          {t('forms.childPick.placeholder', '자녀 선택...')}
+        </option>
+        {options.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+        <option value="manual">{t('forms.childPick.manual', '직접 입력')}</option>
+      </select>
+      {manual && (
+        <input
+          id={`f-${q.key}`}
+          type="text"
+          className="form-childpick-manual"
+          placeholder={t('forms.childPick.manualPlaceholder', '학생 이름을 입력해 주세요')}
+          autoComplete="name"
+          value={typeof value === 'string' ? value : ''}
+          onChange={(e) => onChange(q.key, e.target.value)}
+          onBlur={() => onBlur(q.key)}
+          aria-invalid={!!error}
+          required={q.required}
+        />
+      )}
+      {errorText && <span className="form-error">{errorText}</span>}
+    </div>
   );
 }

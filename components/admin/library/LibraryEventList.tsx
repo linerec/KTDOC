@@ -24,7 +24,9 @@ interface LibraryEventListProps {
   /** 멤버(원생·학부모)인가 — 콘솔 상세로 보낼지 공개 페이지로 보낼지 */
   memberView: boolean;
   canCheckIn: boolean;
-  /** 본인이 체크인한 공연 id (Set은 서버→클라이언트로 넘길 수 없어 배열로 받는다) */
+  /** 참여 표시(✓)를 보여줄지 — 본인 체크인(학생) 또는 자녀 체크인(학부모) */
+  showMarks?: boolean;
+  /** 본인(학부모는 자녀)이 체크인한 공연 id (Set은 직렬화가 안 돼 배열로 받는다) */
   checkedInIds: number[];
   /** 'YYYY-MM-DD' — 이 날짜 이후면 다가오는 공연 */
   today: string;
@@ -35,6 +37,7 @@ export default function LibraryEventList({
   view,
   memberView,
   canCheckIn,
+  showMarks = false,
   checkedInIds,
   today,
 }: LibraryEventListProps) {
@@ -49,7 +52,7 @@ export default function LibraryEventList({
       ? pick(event.category_name_ko, event.category_name_en)
       : null,
     isDraft: event.is_published === 0,
-    isChecked: canCheckIn && checkedIn.has(event.id),
+    isChecked: (showMarks || canCheckIn) && checkedIn.has(event.id),
     isUpcoming: event.event_date >= today,
   });
 

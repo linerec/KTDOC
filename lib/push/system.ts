@@ -71,6 +71,29 @@ export async function notifyStaffOfRegistration(newUser: {
   );
 }
 
+/**
+ * 학부모의 자녀 연결 신청(프로필에서 추가) → 운영진에게 알림.
+ * 셀프 신청은 항상 미해결(student_id NULL)로 만들어지므로, 운영진이 회원 관리에서
+ * 확정해 줘야 학부모 화면에 자녀가 나타난다 — 이 알림이 그 확정을 부른다.
+ */
+export async function notifyStaffOfChildLinkRequest(parent: {
+  id: string;
+  name: string;
+  childName: string;
+}): Promise<void> {
+  const staffIds = await getMemberIdsByRoles(['teacher', 'admin']);
+  await notifyUsers(
+    parent.id,
+    staffIds,
+    {
+      title: '자녀 연결 신청',
+      body: `${parent.name}님이 자녀 '${parent.childName}' 연결을 신청했습니다. 회원 관리에서 원생을 확인해 연결해 주세요.`,
+      url: '/admin/members?role=parent',
+    },
+    'staff:child-link'
+  );
+}
+
 /** 가입 승인 → 가입자 본인에게 알림(다음 로그인 시 알림함에서 확인). */
 export async function notifyMemberApproved(
   approverId: string,

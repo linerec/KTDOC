@@ -18,9 +18,11 @@ interface ArchiveEventCardProps {
   event: CheckedInEvent;
   /** 이 공연의 미리보기 사진(최대 3장) */
   strip: EventImage[];
+  /** 학부모 화면: 누구(자녀)의 참여인지. 형제가 함께 참여하면 "지우 · 서준". */
+  ownerLabel?: string | null;
 }
 
-export default function ArchiveEventCard({ event, strip }: ArchiveEventCardProps) {
+export default function ArchiveEventCard({ event, strip, ownerLabel }: ArchiveEventCardProps) {
   const t = useT();
   const { locale } = useLanguage();
   const pick = useLocaleText();
@@ -55,6 +57,7 @@ export default function ArchiveEventCard({ event, strip }: ArchiveEventCardProps
         <h3 className="library-card-title">{title}</h3>
         <p className="library-card-date">{event.event_date}</p>
         <p className="archive-card-checkin">
+          {ownerLabel && <span className="myclass-owner">{ownerLabel}</span>}
           {t('admin.archive.checkedInAt', '참여 체크인 · {date}', {
             date: formatTimestampDate(event.checked_in_at, locale),
           })}

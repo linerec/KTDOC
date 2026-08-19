@@ -15,6 +15,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
+import { getGuardianChildren } from '@/lib/members';
 import { getFormBySlugAnyStatus } from '@/lib/d1';
 import { allQuestions } from '@/lib/forms/schema';
 import FormHead from '@/components/forms/FormHead';
@@ -48,21 +49,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 /** 세션에서 채울 수 있는 값을 문항의 bind 지시자에 맞춰 놓는다. */
 function buildPrefill(
   schema: FormSchema,
-  user: { name?: string | null; email?: string | null; role?: string | null } | undefined
+  user: { name?: string | null; email?: string | null; role?: string | null } | undefined,
+  children: { studentId: string; studentName: string | null }[]
 ): FormPrefill | undefined {
   if (!user) return undefined;
+
+  // 학부모의 연결(확정) 자녀 — 학생 이름 문항이 셀렉트로 바뀌고, 고르면
+  // 응답↔학생 연결이 제출 시점에 확정된다(운영진 수작업 연결이 필요 없어진다).
+  const childOptions = children
+    .filter((c) => c.studentName)
+    .map((c) => ({ id: c.studentId, name: c.studentName! }));
+  const defaultChildId = childOptions.length === 1 ? childOptions[0].id : null;
 
   const values: Answers = {};
   for (const q of allQuestions(schema)) {
     if (q.bind === 'email' && user.email) values[q.key] = user.email;
     // 학생 본인이 로그인했을 때만 이름을 학생 이름으로 채운다.
-    // 학부모 계정이면 자녀 이름이 따로이므로 비워 두는 것이 맞다.
+    // 학부모 계정이면 자녀 이름이 따로다 — 자녀가 하나면 그 이름을 미리 채운다.
     if (q.bind === 'student_name' && user.role === 'student' && user.name) values[q.key] = user.name;
+    if (q.bind === 'student_name' && defaultChildId) {
+      values[q.key] = childOptions[0].name;
+    }
     if (q.bind === 'guardian_name' && user.role === 'parent' && user.name) values[q.key] = user.name;
   }
 
-  if (Object.keys(values).length === 0) return undefined;
-  return { values, memberName: user.name ?? null };
+  if (Object.keys(values).length === 0 && childOptions.length === 0) return undefined;
+  return {
+    values,
+    memberName: user.name ?? null,
+    children: childOptions.length > 0 ? childOptions : undefined,
+    defaultChildId,
+  };
 }
 
 function ClosedNotice({ form }: { form: FormRow }) {
@@ -141,7 +158,11 @@ export default async function PublicFormPage({ params }: PageProps) {
   }
 
   const schema = JSON.parse(form.schema_json) as FormSchema;
-  const prefill = buildPrefill(schema, session?.user);
+  const children =
+    session?.user?.role === 'parent' && session.user.id
+      ? await getGuardianChildren(session.user.id)
+      : [];
+  const prefill = buildPrefill(schema, session?.user, children);
 
   return (
     <main className="form-page">

@@ -22,6 +22,7 @@ import { auth } from '@/auth';
 import { attachSubmitter, getSubmittableFormBySlug, insertResponse } from '@/lib/d1';
 import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { createMember, emailExists } from '@/lib/members/createMember';
+import { isGuardianOf } from '@/lib/members';
 import { applyBindings, validateAnswers, visibleQuestions } from '@/lib/forms/schema';
 import { notifyStaffOfFormResponse } from '@/lib/push/system';
 import type { Answers, FormSchema, LinkSource } from '@/types/forms';
@@ -121,10 +122,21 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     const userId = session?.user?.id ?? null;
     const linkSource: LinkSource | null = userId ? 'session' : null;
-    // 학생 본인이 로그인해 낸 경우에만 대상 학생을 정한다.
-    // 학부모 계정이면 자녀가 누구인지 모르므로 비워 두고 운영진이 연결한다 —
-    // 여기서 학부모를 넣으면 나중에 학부모가 수업에 배정된다.
-    const studentUserId = session?.user?.role === 'student' ? userId : null;
+    // 대상 학생 확정:
+    //  - 학생 본인이 로그인해 냈으면 본인.
+    //  - 학부모가 자녀 셀렉트에서 골랐으면(forStudentUserId) **보호자 관계를 서버에서
+    //    검증한 뒤** 그 자녀. 검증 없이 믿으면 아무 학생에게나 응답을 붙일 수 있다.
+    //  - 그 외(직접 입력·비회원)는 비워 두고 운영진이 연결한다 —
+    //    학부모 본인을 넣으면 나중에 학부모가 수업에 배정된다.
+    let studentUserId = session?.user?.role === 'student' ? userId : null;
+    const forStudent =
+      typeof body.forStudentUserId === 'string' ? body.forStudentUserId : null;
+    if (!studentUserId && forStudent && userId && session?.user?.role === 'parent') {
+      if (await isGuardianOf(userId, forStudent)) {
+        studentUserId = forStudent;
+      }
+      // 관계가 아니면 조용히 무시하고 미연결로 접수한다 — 신청 자체를 막을 이유는 없다.
+    }
 
     const responseId = await insertResponse({
       formId: form.id,
@@ -172,7 +184,9 @@ export async function POST(request: Request, { params }: RouteParams) {
             name: accountName,
             phone: core.phone,
             agreed: body.account.agreed === true,
-            childName: role === 'parent' ? core.student_name : null,
+            // 신청서는 응답 1건 = 학생 1명이라 자녀도 1명이다. 형제는 신청서를
+            // 한 번 더 내고, 그때는 이미 회원이므로 이 경로를 다시 타지 않는다.
+            children: role === 'parent' ? [{ name: core.student_name }] : undefined,
             // 신규 가족은 자녀도 아직 가입 전이다 — 여기서 막으면 아무도 가입할 수 없다.
             requireExistingChild: false,
           });

@@ -15,6 +15,7 @@ interface LibraryFiltersProps {
   category: string;
   search: string;
   hasFilters: boolean;
+  /** 참여 표시·필터를 보여줄지 — 본인 체크인(학생·운영진) 또는 자녀 체크인(학부모) */
   canCheckIn: boolean;
   mineOnly: boolean;
   checkedInCount: number;

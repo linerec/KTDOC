@@ -83,6 +83,8 @@ export {
   isCheckedIn,
   getUserCheckedInEventIds,
   getUserCheckins,
+  getUserCheckinsForUsers,
+  getCheckedInEventIdsForUsers,
   getEventCheckins,
   getEventsWithParticipantCounts,
   getCheckinsForEvents,

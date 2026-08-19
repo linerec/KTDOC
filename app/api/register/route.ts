@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { createMember, parseEnrollmentYear } from '@/lib/members/createMember';
+import { normalizeChildEntries, MAX_CHILDREN } from '@/lib/members/childEntries';
 import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { SIGNUP_ROLES, type SignupRole } from '@/types/members';
 
@@ -19,6 +20,9 @@ interface RegisterBody {
   phone?: string;
   agreed?: boolean;
   enrollmentYear?: number | string;
+  /** 학부모 가입 — 자녀 목록(형제자매면 여러 명) */
+  children?: { name?: string; enrollmentYear?: number | string }[];
+  /** 구형 클라이언트(자녀 1명) 호환 — children 이 없을 때만 읽는다 */
   childName?: string;
   childEnrollmentYear?: number | string;
 }
@@ -41,11 +45,33 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    if (body.role === 'parent' && parseEnrollmentYear(body.childEnrollmentYear) === null) {
-      return NextResponse.json(
-        { error: '자녀(원생)의 입학년도를 올바르게 선택해주세요.' },
-        { status: 400 }
-      );
+
+    // 학부모: 자녀 목록(형제자매면 여러 명). 구형 페이로드(단일 childName)도 받는다.
+    let children: { name: string; enrollmentYear: number | null }[] = [];
+    if (body.role === 'parent') {
+      const raw = Array.isArray(body.children)
+        ? body.children
+        : [{ name: body.childName, enrollmentYear: body.childEnrollmentYear }];
+      if (Array.isArray(body.children) && body.children.length > MAX_CHILDREN) {
+        return NextResponse.json(
+          { error: `자녀는 한 번에 ${MAX_CHILDREN}명까지 등록할 수 있습니다.` },
+          { status: 400 }
+        );
+      }
+      children = normalizeChildEntries(raw);
+      if (children.length === 0) {
+        return NextResponse.json(
+          { error: '자녀(원생)의 이름을 입력해주세요.' },
+          { status: 400 }
+        );
+      }
+      // 이 페이지에서는 자녀마다 입학년도가 필수다 — 자녀 연결(동명이인 구분)의 기준.
+      if (children.some((c) => c.enrollmentYear === null)) {
+        return NextResponse.json(
+          { error: '자녀(원생)의 입학년도를 올바르게 선택해주세요.' },
+          { status: 400 }
+        );
+      }
     }
 
     const result = await createMember({
@@ -56,8 +82,7 @@ export async function POST(request: Request) {
       phone: body.phone ?? null,
       agreed: body.agreed === true,
       enrollmentYear: parseEnrollmentYear(body.enrollmentYear),
-      childName: body.childName ?? null,
-      childEnrollmentYear: parseEnrollmentYear(body.childEnrollmentYear),
+      children,
       // 가입 페이지는 자녀 선행 가입을 요구한다(오타를 잡아 주는 쪽이 낫다).
       requireExistingChild: true,
     });

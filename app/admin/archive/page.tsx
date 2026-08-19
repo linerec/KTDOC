@@ -12,6 +12,7 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import {
   getUserCheckins,
+  getUserCheckinsForUsers,
   getPreviewImagesForEvents,
   getEnrollmentsForUser,
   getEnrollmentsForUsers,
@@ -44,21 +45,66 @@ export default async function AdminArchivePage() {
   const role = (session?.user?.role ?? 'user') as MemberRole;
   const userId = session?.user?.id ?? '';
 
-  async function loadEnrollments(): Promise<MyEnrollment[]> {
-    if (!userId) return [];
-    if (role === 'parent') {
-      const children = await getGuardianChildren(userId);
-      return children.length > 0
-        ? getEnrollmentsForUsers(children.map((c) => c.studentId))
-        : [];
+  // 학부모는 자녀들의 기록을 본다 — 체크인도 배정도 자녀 id 로 저장돼 있다.
+  // (본인 id 로 체크인을 조회하면 대행 체크인을 아무리 해도 영원히 0건이다.)
+  const isParent = role === 'parent';
+  const children = isParent && userId ? await getGuardianChildren(userId) : [];
+  const childIds = children.map((c) => c.studentId);
+  const childName = new Map<string, string>(
+    children.map((c) => [c.studentId, c.studentName ?? ''])
+  );
+
+  const [rawCheckins, rawEnrollments] = await Promise.all([
+    !userId
+      ? Promise.resolve([] as (CheckedInEvent & { user_id?: string })[])
+      : isParent
+        ? getUserCheckinsForUsers(childIds)
+        : getUserCheckins(userId),
+    !userId
+      ? Promise.resolve([] as MyEnrollment[])
+      : isParent
+        ? childIds.length > 0
+          ? getEnrollmentsForUsers(childIds)
+          : Promise.resolve([] as MyEnrollment[])
+        : getEnrollmentsForUser(userId),
+  ]);
+
+  // 형제가 같은 공연·수업에 참여하면 행이 자녀 수만큼 온다 — 카드 하나로 접고
+  // 소유자(자녀 이름)를 함께 단다. "누구의 기록인지"가 학부모 화면의 핵심 정보다.
+  const eventOwnerNames = new Map<number, string[]>();
+  const checkins: CheckedInEvent[] = [];
+  for (const ev of rawCheckins) {
+    const rawOwnerId = (ev as { user_id?: string }).user_id;
+    const owner = isParent && rawOwnerId ? (childName.get(rawOwnerId) ?? null) : null;
+    const names = eventOwnerNames.get(ev.id);
+    if (names) {
+      if (owner && !names.includes(owner)) names.push(owner);
+      continue;
     }
-    return getEnrollmentsForUser(userId);
+    eventOwnerNames.set(ev.id, owner ? [owner] : []);
+    checkins.push(ev);
   }
 
-  const [checkins, enrollments] = await Promise.all([
-    userId ? getUserCheckins(userId) : Promise.resolve([] as CheckedInEvent[]),
-    loadEnrollments(),
-  ]);
+  const classOwnerNames = new Map<number, string[]>();
+  const enrollments: MyEnrollment[] = [];
+  for (const en of rawEnrollments) {
+    if (en.status === 'cancelled') continue;
+    const owner = isParent ? childName.get(en.user_id) : null;
+    const names = classOwnerNames.get(en.program.id);
+    if (names) {
+      if (owner && !names.includes(owner)) names.push(owner);
+      continue;
+    }
+    classOwnerNames.set(en.program.id, owner ? [owner] : []);
+    enrollments.push(en);
+  }
+
+  // 이름표는 자녀가 둘 이상일 때만 — 하나뿐이면 페이지 전체가 그 아이의 기록이라 소음이다.
+  const ownerLabel = (names: string[] | undefined): string | null =>
+    isParent && children.length > 1 && names && names.length > 0
+      ? names.filter(Boolean).join(' · ')
+      : null;
+
   const previews: Map<number, EventImage[]> =
     checkins.length > 0
       ? await getPreviewImagesForEvents(checkins.map((e) => e.id), 3)
@@ -76,13 +122,12 @@ export default async function AdminArchivePage() {
   };
   for (const ev of checkins) ensureYear(ev.year).events.push(ev);
   for (const en of enrollments) {
-    if (en.status === 'cancelled') continue;
     ensureYear(classYear(en)).classes.push(en);
   }
 
   const sortedYears = Array.from(years.keys()).sort((a, b) => b - a);
   const totalEvents = checkins.length;
-  const totalClasses = enrollments.filter((e) => e.status !== 'cancelled').length;
+  const totalClasses = enrollments.length;
   const isEmpty = totalEvents === 0 && totalClasses === 0;
 
   return (
@@ -146,7 +191,11 @@ export default async function AdminArchivePage() {
                   {bucket.classes.length > 0 && (
                     <div className="myclass-grid" style={{ marginBottom: '18px' }}>
                       {bucket.classes.map((en) => (
-                        <ClassCard key={`cls-${en.enrollment_id}`} item={en} />
+                        <ClassCard
+                          key={`cls-${en.enrollment_id}`}
+                          item={en}
+                          ownerLabel={ownerLabel(classOwnerNames.get(en.program.id))}
+                        />
                       ))}
                     </div>
                   )}
@@ -158,6 +207,7 @@ export default async function AdminArchivePage() {
                           key={`ev-${event.id}`}
                           event={event}
                           strip={previews.get(event.id) ?? []}
+                          ownerLabel={ownerLabel(eventOwnerNames.get(event.id))}
                         />
                       ))}
                     </div>

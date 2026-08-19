@@ -10,6 +10,7 @@ import { isAdmin, isStaff } from '@/lib/isAdmin';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getMemberById, type MemberRole } from '@/lib/members';
 import ProfileForm from '@/components/admin/profile/ProfileForm';
+import ChildrenCard from '@/components/admin/profile/ChildrenCard';
 import ChangePasswordCard from '@/components/admin/ChangePasswordCard';
 import PushOptInCard from '@/components/push/PushOptInCard';
 import EmailOptInCard from '@/components/admin/mail/EmailOptInCard';
@@ -65,6 +66,14 @@ export default async function AdminProfilePage() {
         />
         <ChangePasswordCard />
       </div>
+
+      {/* 학부모: 자녀 연결 관리 — 가입 때 못 적은 둘째·셋째를 여기서 잇는다(형제자매 지원).
+          신청은 '확인 대기'로 만들어지고 운영진이 회원 관리에서 확정한다. */}
+      {role === 'parent' && (
+        <div className="admin-profile-grid">
+          <ChildrenCard initialChildren={member?.children ?? []} />
+        </div>
+      )}
 
       {/* 알림 설정 — 대시보드 카드는 켜고 나면 사라지므로 끄기·테스트는 여기가 집이다.
           구독은 기기(브라우저)마다 따로이므로 지금 보고 있는 기기의 상태를 보여준다.

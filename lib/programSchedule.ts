@@ -19,6 +19,12 @@ export interface ClassOccurrence {
   title_en: string | null;
   time: string | null; // "HH:MM" 또는 "HH:MM~HH:MM" (캠프는 null=종일)
   isCamp: boolean;
+  /**
+   * 이 수업이 누구의 배정인지(user_id 목록). 학부모 캘린더는 자녀 여러 명을
+   * 한꺼번에 전개하므로, 형제가 같은 수업이면 항목 하나에 둘 다 담긴다 —
+   * 두 줄로 중복 표시되는 대신 "누구의 수업인지"를 붙일 근거가 된다.
+   */
+  owners: string[];
 }
 
 function pad(n: number): string {
@@ -43,8 +49,16 @@ export function expandClassesForMonth(
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const byDate = new Map<string, ClassOccurrence[]>();
 
+  // 같은 날짜의 같은 프로그램은 한 항목으로 접고 소유자만 보탠다.
   const push = (date: string, occ: ClassOccurrence) => {
     const list = byDate.get(date) ?? [];
+    const existing = list.find((o) => o.programId === occ.programId);
+    if (existing) {
+      for (const owner of occ.owners) {
+        if (!existing.owners.includes(owner)) existing.owners.push(owner);
+      }
+      return;
+    }
     list.push(occ);
     byDate.set(date, list);
   };
@@ -68,6 +82,7 @@ export function expandClassesForMonth(
             title_en: p.title_en,
             time: null,
             isCamp: true,
+            owners: [e.user_id],
           });
         }
       }
@@ -96,6 +111,7 @@ export function expandClassesForMonth(
         title_en: p.title_en,
         time,
         isCamp: false,
+        owners: [e.user_id],
       });
     }
   }

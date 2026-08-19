@@ -16,7 +16,11 @@ import { randomUUID } from 'node:crypto';
 import { query } from '@/lib/db';
 import { hashPassword } from '@/lib/password';
 import { notifyStaffOfRegistration } from '@/lib/push/system';
+import { normalizeChildEntries, parseEnrollmentYear, type ChildEntry } from './childEntries';
 import type { SignupRole } from '@/types/members';
+
+// 입학년도 규칙은 childEntries 한 곳에 있다 — 기존 import 자리를 위해 재노출.
+export { parseEnrollmentYear } from './childEntries';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -32,9 +36,11 @@ export interface CreateMemberInput {
   agreed: boolean;
   /** 원생 본인 가입일 때 */
   enrollmentYear?: number | null;
-  /** 학부모 가입일 때 — 자녀 이름 */
-  childName?: string | null;
-  childEnrollmentYear?: number | null;
+  /**
+   * 학부모 가입일 때 — 자녀 목록(형제자매면 여러 명).
+   * 자녀마다 student_guardians 행이 하나씩 만들어진다.
+   */
+  children?: { name: string; enrollmentYear?: number | string | null }[];
   /**
    * 자녀가 이미 가입돼 있어야 하는가.
    * 가입 페이지는 true(오타를 잡아 준다), 신청서 안 가입은 false(신규 가족을 막지 않는다).
@@ -47,16 +53,6 @@ export type CreateMemberResult =
   | { ok: false; code: 'invalid'; message: string }
   | { ok: false; code: 'email_taken'; message: string }
   | { ok: false; code: 'child_not_found'; message: string };
-
-/** 입학년도 파싱·검증 (1990 ~ 올해+1 사이의 정수만) */
-export function parseEnrollmentYear(value: number | string | null | undefined): number | null {
-  if (value === undefined || value === null || value === '') return null;
-  const year = Math.trunc(Number(value));
-  if (!Number.isFinite(year)) return null;
-  const maxYear = new Date().getFullYear() + 1;
-  if (year < 1990 || year > maxYear) return null;
-  return year;
-}
 
 export async function emailExists(email: string): Promise<boolean> {
   const rows = await query<{ id: string }[]>('SELECT id FROM users WHERE email = ?', [
@@ -99,17 +95,15 @@ export async function createMember(input: CreateMemberInput): Promise<CreateMemb
   }
 
   let enrollmentYear: number | null = null;
-  let childName: string | null = null;
-  let childYear: number | null = null;
+  let children: ChildEntry[] = [];
 
   if (input.role === 'student') {
     enrollmentYear = parseEnrollmentYear(input.enrollmentYear);
     // 신청서 안 가입에서는 입학년도를 묻지 않는다(신청서가 곧 그해 등록이다).
     // 가입 페이지는 호출 전에 스스로 검증한다.
   } else {
-    childName = input.childName?.trim() || null;
-    childYear = parseEnrollmentYear(input.childEnrollmentYear);
-    if (!childName) {
+    children = normalizeChildEntries(input.children);
+    if (children.length === 0) {
       return { ok: false, code: 'invalid', message: '자녀(원생)의 이름을 입력해주세요.' };
     }
   }
@@ -118,25 +112,25 @@ export async function createMember(input: CreateMemberInput): Promise<CreateMemb
     return { ok: false, code: 'email_taken', message: '이미 등록된 이메일입니다.' };
   }
 
-  // 학부모: 자녀 찾기. 못 찾았을 때 막을지는 호출부가 정한다.
-  let matchedStudents: { id: string }[] = [];
-  if (input.role === 'parent') {
-    matchedStudents = childYear
+  // 학부모: 자녀마다 찾기. 못 찾았을 때 막을지는 호출부가 정한다.
+  const matchedByChild = new Map<ChildEntry, { id: string }[]>();
+  for (const child of children) {
+    const matched = child.enrollmentYear
       ? await query<{ id: string }[]>(
           `SELECT id FROM users WHERE role = 'student' AND name = ? AND enrollment_year = ?`,
-          [childName, childYear]
+          [child.name, child.enrollmentYear]
         )
       : await query<{ id: string }[]>(
           `SELECT id FROM users WHERE role = 'student' AND name = ?`,
-          [childName]
+          [child.name]
         );
+    matchedByChild.set(child, matched);
 
-    if (matchedStudents.length === 0 && input.requireExistingChild) {
+    if (matched.length === 0 && input.requireExistingChild) {
       return {
         ok: false,
         code: 'child_not_found',
-        message:
-          '해당 원생을 찾을 수 없습니다. 자녀(원생)가 먼저 회원가입했는지, 이름·입학년도가 정확한지 확인해주세요.',
+        message: `'${child.name}' 원생을 찾을 수 없습니다. 자녀(원생)가 먼저 회원가입했는지, 이름·입학년도가 정확한지 확인해주세요.`,
       };
     }
   }
@@ -151,15 +145,19 @@ export async function createMember(input: CreateMemberInput): Promise<CreateMemb
   );
 
   if (input.role === 'parent') {
+    // 자녀마다 연결 행 하나 — 형제자매면 여러 행이 생긴다.
     // 동명이인+같은 입학년도이거나 아직 자녀가 가입 전이면 student_id 를 비워 둔다.
     // 운영진이 승인하며 잇는다 — 이 우회로가 신규 가족을 막지 않는 장치다.
-    const studentId = matchedStudents.length === 1 ? matchedStudents[0].id : null;
-    await query(
-      `INSERT INTO student_guardians
-         (id, guardian_id, student_id, claimed_student_name, claimed_enrollment_year)
-       VALUES (?, ?, ?, ?, ?)`,
-      [randomUUID(), newUserId, studentId, childName, childYear]
-    );
+    for (const child of children) {
+      const matched = matchedByChild.get(child) ?? [];
+      const studentId = matched.length === 1 ? matched[0].id : null;
+      await query(
+        `INSERT INTO student_guardians
+           (id, guardian_id, student_id, claimed_student_name, claimed_enrollment_year)
+         VALUES (?, ?, ?, ?, ?)`,
+        [randomUUID(), newUserId, studentId, child.name, child.enrollmentYear]
+      );
+    }
   }
 
   // 운영진 알림은 실패해도 가입 자체를 되돌리지 않는다.

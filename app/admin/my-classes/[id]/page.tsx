@@ -56,7 +56,10 @@ export default async function MyClassDetailPage({ params }: PageProps) {
   if (!program) notFound();
 
   // 배정 검증 — 본인(학생) 또는 자녀(학부모)에 배정된 수업만. 관리 권한자는 통과.
+  // 학부모: 이 수업이 어느 자녀의 것인지 이름표(childLabel)도 여기서 얻는다 —
+  // 목록에서는 자녀별 섹션으로 보이던 맥락이 상세에서 끊기지 않게.
   let allowed = isAdmin(session);
+  let childLabel: string | null = null;
   if (!allowed && userId) {
     let enrollments;
     if (role === 'parent') {
@@ -64,6 +67,14 @@ export default async function MyClassDetailPage({ params }: PageProps) {
       enrollments = children.length > 0
         ? await getEnrollmentsForUsers(children.map((c) => c.studentId))
         : [];
+      const childName = new Map<string, string>(
+        children.map((c) => [c.studentId, c.studentName ?? ''])
+      );
+      const owners = enrollments
+        .filter((e) => e.program.id === programId && e.status !== 'cancelled')
+        .map((e) => childName.get(e.user_id))
+        .filter(Boolean);
+      childLabel = owners.length > 0 ? owners.join(' · ') : null;
     } else {
       enrollments = await getEnrollmentsForUser(userId);
     }
@@ -108,6 +119,13 @@ export default async function MyClassDetailPage({ params }: PageProps) {
                 {PROGRAM_TYPE_LABELS[program.program_type].ko}
               </T>
             </span>
+            {childLabel && (
+              <span className="myclass-owner">
+                <T k="admin.myClasses.ownerPrefix" params={{ name: childLabel }}>
+                  {'자녀: {name}'}
+                </T>
+              </span>
+            )}
             {scheduleKo && (
               <span>
                 <LocaleText ko={scheduleKo} en={scheduleEn} />

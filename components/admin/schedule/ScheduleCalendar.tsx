@@ -33,8 +33,10 @@ export interface CalendarItem {
   titleEn?: string | null;
   time: string | null; // "19:00" 또는 "10:00~12:00", null=종일
   href: string;
-  isMine?: boolean; // 체크인한 공연
+  isMine?: boolean; // 체크인한 공연 (학부모 화면에서는 자녀의 체크인)
   isDraft?: boolean; // 비공개(운영진 작성 중)
+  /** 학부모 화면: 이 수업이 누구(자녀)의 것인지 — 형제가 함께 다니면 "지우 · 서준" */
+  ownerLabel?: string | null;
   note?: string | null; // 장소·분류 등 보조 정보
   noteEn?: string | null;
 }
@@ -47,8 +49,10 @@ interface ScheduleCalendarProps {
   prevHref: string;
   nextHref: string;
   todayHref: string;
-  showMine: boolean; // 학생(체크인 가능) — '참여' 범례
+  showMine: boolean; // 학생(체크인 가능)·자녀 있는 학부모 — '참여' 범례
   showMember: boolean; // 학생·학부모 — '내 수업'·'비공개' 범례
+  /** 학부모 화면 — '참여' 범례를 '자녀 참여'로 읽는다(체크인 주체가 자녀이므로) */
+  parentMode?: boolean;
 }
 
 /** 한 칸에 노출하는 최대 항목 수. 넘치면 "+N"으로 접는다. */
@@ -90,6 +94,7 @@ export default function ScheduleCalendar({
   todayHref,
   showMine,
   showMember,
+  parentMode = false,
 }: ScheduleCalendarProps) {
   const t = useT();
   const { locale } = useLanguage();
@@ -353,7 +358,12 @@ export default function ScheduleCalendar({
                           {it.time ?? t('admin.schedule.allDay', '종일')}
                         </span>
                         <span className="cal-agenda-body">
-                          <span className="cal-agenda-title">{pick(it.title, it.titleEn)}</span>
+                          <span className="cal-agenda-title">
+                            {pick(it.title, it.titleEn)}
+                            {it.ownerLabel && (
+                              <span className="cal-agenda-owner">{it.ownerLabel}</span>
+                            )}
+                          </span>
                           {it.note && <span className="cal-agenda-note">{pick(it.note, it.noteEn)}</span>}
                         </span>
                         <span className="cal-agenda-tags">
@@ -389,7 +399,10 @@ export default function ScheduleCalendar({
         )}
         {showMine && (
           <span>
-            <i className="cal-swatch is-mine" /> {t('admin.schedule.legendMine', '내가 참여')}
+            <i className="cal-swatch is-mine" />{' '}
+            {parentMode
+              ? t('admin.schedule.legendChild', '자녀 참여')
+              : t('admin.schedule.legendMine', '내가 참여')}
           </span>
         )}
         {showMember && (

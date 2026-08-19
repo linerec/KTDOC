@@ -3,7 +3,8 @@
  * PATCH /api/admin/members/[id] - 회원 승인/거절/정지/복구/역할변경/원생연결
  *
  * 권한:
- *  - approve | reject | suspend | restore | linkStudent : 운영진(선생님·관리자, isStaff)
+ *  - approve | reject | suspend | restore | linkStudent
+ *    | addChildLink | unlinkChild                        : 운영진(선생님·관리자, isStaff)
  *  - issueTempPassword (임시 비밀번호 발급)             : 운영진. 단, 관리자 계정 대상은 관리자만
  *  - setRole (역할 변경, 선생님 임명 등)               : 관리자(isAdmin)만
  */
@@ -21,6 +22,9 @@ import {
   setMemberAdmin,
   setTempPassword,
   linkGuardianToStudent,
+  addGuardianChildLink,
+  removeGuardianChildLink,
+  getGuardianLinkById,
   getMemberById,
   countActiveAdmins,
   MEMBER_ROLES,
@@ -43,6 +47,10 @@ type Action =
   /** 관리 권한 부여·회수 — 신분은 건드리지 않는다 */
   | 'setAdmin'
   | 'linkStudent'
+  /** 자녀 연결 추가(형제자매) — 실제 원생을 골라 확정 연결을 새로 만든다 */
+  | 'addChildLink'
+  /** 자녀 연결 해제(잘못 이은 연결 정리) */
+  | 'unlinkChild'
   | 'issueTempPassword';
 
 export async function PATCH(request: Request, { params }: RouteParams) {
@@ -211,6 +219,53 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           );
         }
         await linkGuardianToStudent(linkId, studentId);
+        break;
+      }
+      case 'addChildLink': {
+        // 형제자매: 이미 가입한 학부모에게 둘째·셋째를 잇는 경로.
+        // 가입 시의 자동 매칭과 달리 운영진이 실제 원생을 직접 고르므로 바로 확정한다.
+        const studentId: string = body.studentId;
+        if (!studentId) {
+          return NextResponse.json(
+            { success: false, error: '연결할 원생을 선택해주세요.' },
+            { status: 400 }
+          );
+        }
+        const target = await getMemberById(id);
+        if (!target || target.role !== 'parent') {
+          return NextResponse.json(
+            { success: false, error: '학부모 회원에게만 자녀를 연결할 수 있습니다.' },
+            { status: 400 }
+          );
+        }
+        const added = await addGuardianChildLink({ guardianId: id, studentId });
+        if (!added.ok) {
+          const msg =
+            added.code === 'duplicate'
+              ? '이미 연결된 자녀입니다.'
+              : '원생을 찾을 수 없습니다.';
+          return NextResponse.json({ success: false, error: msg }, { status: 400 });
+        }
+        break;
+      }
+      case 'unlinkChild': {
+        const linkId: string = body.linkId;
+        if (!linkId) {
+          return NextResponse.json(
+            { success: false, error: '해제할 연결이 없습니다.' },
+            { status: 400 }
+          );
+        }
+        // 이 회원(학부모)의 연결인지 확인 — 다른 회원의 연결을 URL 바꿔치기로
+        // 지우지 못하게 한다.
+        const link = await getGuardianLinkById(linkId);
+        if (!link || link.guardianId !== id) {
+          return NextResponse.json(
+            { success: false, error: '해당 회원의 연결이 아닙니다.' },
+            { status: 404 }
+          );
+        }
+        await removeGuardianChildLink(linkId);
         break;
       }
       default:

@@ -5,6 +5,7 @@
  * password_hash 등 민감 정보는 절대 반환하지 않는다.
  */
 
+import { randomUUID } from 'node:crypto';
 import { query } from '@/lib/db';
 import type {
   Member,
@@ -596,4 +597,103 @@ export async function linkGuardianToStudent(
     studentId,
     linkId,
   ]);
+}
+
+/* ------------------------------------------------------------------ */
+/* 자녀 연결 추가·해제 — 형제자매(다자녀) 지원                          */
+/* ------------------------------------------------------------------ */
+
+export type AddChildLinkResult =
+  | { ok: true; linkId: string }
+  | { ok: false; code: 'duplicate' | 'student_not_found' };
+
+/**
+ * 학부모에게 자녀 연결을 **추가**한다(가입 후 둘째·셋째를 잇는 유일한 경로).
+ *
+ * 두 모양이 있다:
+ *  - studentId 지정: 운영진이 실제 원생을 골라 바로 확정 연결한다.
+ *  - studentId 없음: 학부모 셀프 신청. **항상 미해결(student_id NULL)로 만든다** —
+ *    이름만으로 자동 연결하면 아무 학부모나 아무 원생에게 스스로를 붙일 수 있다.
+ *    가입 때의 자동 매칭은 승인(pending→active)이 사람 관문이었지만, 이미 승인된
+ *    계정의 추가에는 관문이 없으므로 운영진의 확정(linkStudent)이 그 관문이 된다.
+ *
+ * student_guardians에 (guardian_id, student_id) 유니크 제약이 없으므로
+ * 중복 방지는 여기 애플리케이션 검사가 전부다.
+ */
+export async function addGuardianChildLink(input: {
+  guardianId: string;
+  studentId?: string | null;
+  claimedName?: string | null;
+  claimedEnrollmentYear?: number | null;
+}): Promise<AddChildLinkResult> {
+  const { guardianId } = input;
+
+  if (input.studentId) {
+    const dup = await query<{ one: number }[]>(
+      `SELECT 1 AS one FROM student_guardians
+       WHERE guardian_id = ? AND student_id = ? LIMIT 1`,
+      [guardianId, input.studentId]
+    );
+    if (dup.length > 0) return { ok: false, code: 'duplicate' };
+
+    // claimed_* 는 NOT NULL — 확정 연결이라도 원생의 실제 값으로 채운다.
+    const student = await query<{ name: string | null; enrollment_year: number | null }[]>(
+      `SELECT name, enrollment_year FROM users WHERE id = ? AND role = 'student' LIMIT 1`,
+      [input.studentId]
+    );
+    if (!student[0]) return { ok: false, code: 'student_not_found' };
+
+    const linkId = randomUUID();
+    await query(
+      `INSERT INTO student_guardians
+         (id, guardian_id, student_id, claimed_student_name, claimed_enrollment_year)
+       VALUES (?, ?, ?, ?, ?)`,
+      [linkId, guardianId, input.studentId, student[0].name ?? '', student[0].enrollment_year]
+    );
+    return { ok: true, linkId };
+  }
+
+  const claimedName = input.claimedName?.trim() ?? '';
+  if (!claimedName) return { ok: false, code: 'student_not_found' };
+  const year = input.claimedEnrollmentYear ?? null;
+
+  // 같은 이름(+같은 연도)의 미해결 신청이 이미 있으면 다시 만들지 않는다.
+  // 확정된 연결과의 중복(같은 자녀를 또 신청)은 운영진이 확정 단계에서 거른다.
+  const dup = await query<{ one: number }[]>(
+    `SELECT 1 AS one FROM student_guardians
+     WHERE guardian_id = ? AND student_id IS NULL AND claimed_student_name = ?
+       AND (claimed_enrollment_year <=> ?) LIMIT 1`,
+    [guardianId, claimedName, year]
+  );
+  if (dup.length > 0) return { ok: false, code: 'duplicate' };
+
+  const linkId = randomUUID();
+  await query(
+    `INSERT INTO student_guardians
+       (id, guardian_id, student_id, claimed_student_name, claimed_enrollment_year)
+     VALUES (?, ?, NULL, ?, ?)`,
+    [linkId, guardianId, claimedName, year]
+  );
+  return { ok: true, linkId };
+}
+
+/** 연결 한 건 조회 — 해제 전 소유·상태 검증용. */
+export async function getGuardianLinkById(
+  linkId: string
+): Promise<{ guardianId: string; studentId: string | null } | null> {
+  const rows = await query<{ guardian_id: string; student_id: string | null }[]>(
+    `SELECT guardian_id, student_id FROM student_guardians WHERE id = ? LIMIT 1`,
+    [linkId]
+  );
+  if (!rows[0]) return null;
+  return { guardianId: rows[0].guardian_id, studentId: rows[0].student_id };
+}
+
+/** 자녀 연결 해제(행 삭제). 성공 시 true. 소유·권한 검증은 호출부가 한다. */
+export async function removeGuardianChildLink(linkId: string): Promise<boolean> {
+  const result = await query<{ affectedRows?: number }>(
+    `DELETE FROM student_guardians WHERE id = ?`,
+    [linkId]
+  );
+  return ((result as { affectedRows?: number }).affectedRows ?? 0) > 0;
 }

@@ -18,6 +18,7 @@ import { hasMenuAccess, requireMenuAccess } from '@/lib/admin/permissions';
 import {
   getEvents,
   getUserCheckedInEventIds,
+  getCheckedInEventIdsForUsers,
   getEnrollmentsForUser,
   getEnrollmentsForUsers,
   memberLibrary
@@ -73,6 +74,17 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
   // 체크인할 수 있는 사람은 비공개 공연도 본다 — 참여 대상일 수 있기 때문이다.
   const memberView = (canCheckIn || role === 'parent') && !!userId;
 
+  // 학부모: 자녀 목록을 한 번 읽어 수업 조회·참여 표시·이름표에 모두 쓴다.
+  const isParent = role === 'parent';
+  const children = isParent && userId ? await getGuardianChildren(userId) : [];
+  const childIds = children.map((c) => c.studentId);
+  const childName = new Map<string, string>(
+    children.map((c) => [c.studentId, c.studentName ?? ''])
+  );
+  // 학부모의 참여 표시: 자녀 중 누구라도 체크인한 공연에 ✓ — 대행 체크인은
+  // 자녀 id 로 저장되므로 본인 id 로는 아무것도 걸리지 않는다.
+  const parentMarks = isParent && childIds.length > 0;
+
   const { month: monthParam } = await searchParams;
   const { year, month } = parseMonth(monthParam);
   const monthStr = ymd(year, month);
@@ -80,21 +92,23 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
   // 내 수업(배정) 조회: 학생=본인, 학부모=자녀들. 운영진은 배정이 없어 빈 배열.
   async function loadEnrollments(): Promise<MyEnrollment[]> {
     if (!userId) return [];
-    if (role === 'parent') {
-      const children = await getGuardianChildren(userId);
-      return children.length > 0
-        ? getEnrollmentsForUsers(children.map((c) => c.studentId))
-        : [];
+    if (isParent) {
+      return childIds.length > 0 ? getEnrollmentsForUsers(childIds) : [];
     }
     return getEnrollmentsForUser(userId);
   }
 
   const [eventsResult, checkedInIds, enrollments] = await Promise.all([
     getEvents(memberLibrary({ limit: 500, canSeeUnpublished: memberView })),
-    canCheckIn ? getUserCheckedInEventIds(userId) : Promise.resolve(new Set<number>()),
+    canCheckIn
+      ? getUserCheckedInEventIds(userId)
+      : parentMarks
+        ? getCheckedInEventIdsForUsers(childIds)
+        : Promise.resolve(new Set<number>()),
     loadEnrollments(),
   ]);
 
+  const showMine = canCheckIn || parentMarks;
 
   // 이번 달 공연·행사 → 캘린더 항목
   const items: CalendarItem[] = [];
@@ -109,7 +123,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
       titleEn: e.title_en,
       time: timeRange(e.start_time, e.end_time),
       href: `/admin/library/${e.id}`,
-      isMine: canCheckIn && checkedInIds.has(e.id),
+      isMine: showMine && checkedInIds.has(e.id),
       isDraft: e.is_published === 0,
       // 장소는 한 벌뿐이라 두 언어가 같은 값을 쓴다 — 분류만 언어를 탄다.
       note: e.location || e.category_name_ko || null,
@@ -117,22 +131,32 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
     });
   }
 
-  // 내 수업(요일 반복·캠프 기간 전개) → 캘린더 항목
+  // 내 수업(요일 반복·캠프 기간 전개) → 캘린더 항목.
+  // 형제가 같은 수업이면 전개 단계에서 한 항목으로 접혀 온다(owners 병합) —
+  // 자녀가 둘 이상일 때만 이름표를 달아 "누구의 수업인지"를 보인다.
   const classesByDate = expandClassesForMonth(enrollments, year, month);
   for (const [date, list] of classesByDate) {
-    list.forEach((c, i) => {
+    for (const c of list) {
+      const ownerLabel =
+        isParent && children.length > 1
+          ? c.owners
+              .map((id) => childName.get(id))
+              .filter(Boolean)
+              .join(' · ') || null
+          : null;
       items.push({
-        key: `cl-${c.programId}-${date}-${i}`,
+        key: `cl-${c.programId}-${date}`,
         date,
         type: 'class',
         title: c.title_ko,
         titleEn: c.title_en,
         time: c.time,
         href: `/admin/my-classes/${c.programId}`,
+        ownerLabel,
         note: c.isCamp ? PROGRAM_TYPE_LABELS.camp.ko : null,
         noteEn: c.isCamp ? PROGRAM_TYPE_LABELS.camp.en : null,
       });
-    });
+    }
   }
 
   const prev = month === 1 ? { y: year - 1, m: 12 } : { y: year, m: month - 1 };
@@ -159,6 +183,14 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
                 </T>
               </>
             )}
+            {parentMarks && (
+              <>
+                {' '}
+                <T k="admin.schedule.subtitleCheckinParent">
+                  자녀가 참여하는 공연은 ✓로 표시됩니다.
+                </T>
+              </>
+            )}
           </p>
         </div>
         {canManageFeed && (
@@ -178,8 +210,9 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
         prevHref={`/admin/schedule?month=${ymd(prev.y, prev.m)}`}
         nextHref={`/admin/schedule?month=${ymd(next.y, next.m)}`}
         todayHref="/admin/schedule"
-        showMine={canCheckIn}
+        showMine={showMine}
         showMember={memberView}
+        parentMode={parentMarks}
       />
     </div>
   );

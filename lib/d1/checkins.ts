@@ -107,6 +107,50 @@ export async function getUserCheckins(userId: string): Promise<CheckedInEvent[]>
   );
 }
 
+/**
+ * 여러 사용자가 체크인한 이벤트 목록 — 학부모 아카이브(자녀들 참여 기록 통합).
+ * 체크인 저장은 자녀 id 로 되므로, 학부모 본인 id 로 조회하면 영원히 0건이다 —
+ * 자녀 id 집합으로 물어야 한다. user_id 를 함께 돌려주어 "누구의 참여"인지
+ * 화면이 이름표를 붙일 수 있게 한다(이름 해석은 호출부 MySQL).
+ */
+export async function getUserCheckinsForUsers(
+  userIds: string[]
+): Promise<(CheckedInEvent & { user_id: string })[]> {
+  if (userIds.length === 0) return [];
+  const placeholders = userIds.map(() => '?').join(', ');
+  return queryD1<CheckedInEvent & { user_id: string }>(
+    `SELECT e.*,
+            c.name_ko  AS category_name_ko,
+            c.name_en  AS category_name_en,
+            c.slug     AS category_slug,
+            ec.user_id       AS user_id,
+            ec.checked_in_at AS checked_in_at,
+            ec.status        AS checkin_status
+     FROM event_checkins ec
+     JOIN events e ON e.id = ec.event_id
+     LEFT JOIN event_categories c ON e.category_id = c.id
+     WHERE ec.user_id IN (${placeholders})
+     ORDER BY e.event_date DESC, e.id DESC`,
+    userIds
+  );
+}
+
+/**
+ * 여러 사용자의 체크인 이벤트 id 합집합 — 학부모 목록·캘린더의 참여 표시용.
+ * "자녀 중 누구라도 참여하면 표시"가 학부모 화면의 의미다.
+ */
+export async function getCheckedInEventIdsForUsers(
+  userIds: string[]
+): Promise<Set<number>> {
+  if (userIds.length === 0) return new Set();
+  const placeholders = userIds.map(() => '?').join(', ');
+  const rows = await queryD1<{ event_id: number }>(
+    `SELECT DISTINCT event_id FROM event_checkins WHERE user_id IN (${placeholders})`,
+    userIds
+  );
+  return new Set(rows.map((r) => r.event_id));
+}
+
 /** 특정 이벤트의 체크인(참가자) 행 목록 — 운영진/검증용. 이름 해석은 호출부(MySQL). */
 export async function getEventCheckins(eventId: number): Promise<EventCheckin[]> {
   return queryD1<EventCheckin>(

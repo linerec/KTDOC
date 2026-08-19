@@ -2959,6 +2959,59 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
 }
 
 /* 약관·개인정보처리방침 동의 체크박스 (가입 폼) */
+/* 가입 — 학부모 자녀 목록(형제자매면 줄이 늘어난다) */
+.auth-child {
+  position: relative;
+  margin: 0 0 18px;
+  padding: 14px 16px 2px;
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 8px;
+}
+
+.auth-child-legend {
+  padding: 0 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.auth-child-remove {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.auth-child-remove:hover:not(:disabled) {
+  color: var(--text-color);
+  border-color: rgba(var(--fg-rgb), 0.4);
+}
+
+.auth-child-add {
+  display: block;
+  width: 100%;
+  margin: -6px 0 20px;
+  padding: 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--soft-gold-text);
+  background: rgba(212, 160, 23, 0.06);
+  border: 1px dashed rgba(212, 160, 23, 0.45);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.auth-child-add:hover:not(:disabled) {
+  background: rgba(212, 160, 23, 0.12);
+}
+
 .auth-agree {
   display: flex;
   align-items: flex-start;
@@ -7096,6 +7149,29 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   font-size: 0.78rem;
 }
 
+/* 자녀 연결 해제(×) — 이름 옆에 조그맣게 */
+.admin-conn-unlink {
+  margin-left: 6px;
+  padding: 0 6px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.admin-conn-unlink:hover:not(:disabled) {
+  color: var(--text-color);
+  border-color: rgba(var(--fg-rgb), 0.45);
+}
+
+/* 자녀 추가 버튼 — 연결 목록 아래, 왼쪽 정렬로 접혀 있다 */
+.admin-conn-add {
+  align-self: flex-start;
+}
+
 /* ===== 권한 관리 매트릭스 ===== */
 .perm-toolbar {
   display: flex;
@@ -7990,6 +8066,13 @@ button.cal-cell.is-selected:hover {
   font-size: 0.76rem;
   color: var(--text-muted);
 }
+/* 일정판의 자녀 이름표 — 형제 중 누구의 수업인지 */
+.cal-agenda-owner {
+  margin-left: 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--soft-gold-text);
+}
 .cal-agenda-tags {
   display: flex;
   align-items: center;
@@ -8613,6 +8696,40 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .admin-profile-grid .admin-account-card {
   max-width: none;
+}
+
+/* 내 프로필 — 자녀 연결(형제자매) */
+.profile-children-list {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-children-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-children-name {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.profile-children-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.profile-children-add .admin-filter-input {
+  flex: 1;
+  min-width: 140px;
 }
 /* 알림 설정 카드 — 위 그리드 열과 같은 폭으로 맞춰 한 줄 더 이어지는 것처럼 보이게. */
 /* ============================================================
@@ -15140,6 +15257,19 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   border-radius: 999px;
   border: 1px solid transparent;
 }
+/* 학부모 화면의 자녀 이름표 — "누구(자녀)의 수업·참여인지" */
+.myclass-owner {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(var(--fg-rgb), 0.06);
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  color: var(--text-muted);
+}
+.archive-card-checkin .myclass-owner {
+  margin-right: 8px;
+}
 .myclass-status-active {
   background: rgba(46, 160, 87, 0.15);
   border-color: rgba(46, 160, 87, 0.4);
@@ -18394,7 +18524,8 @@ html[data-admin-theme='light'] .admin-sheet {
 }
 
 .form-field input,
-.form-field textarea {
+.form-field textarea,
+.form-field select {
   width: 100%;
   padding: 12px 14px;
   font: inherit;
@@ -18406,15 +18537,22 @@ html[data-admin-theme='light'] .admin-sheet {
 }
 
 .form-field input:focus-visible,
-.form-field textarea:focus-visible {
+.form-field textarea:focus-visible,
+.form-field select:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 1px;
   border-color: var(--accent-color);
 }
 
 .form-field input[aria-invalid='true'],
-.form-field textarea[aria-invalid='true'] {
+.form-field textarea[aria-invalid='true'],
+.form-field select[aria-invalid='true'] {
   border-color: var(--deep-red);
+}
+
+/* 자녀 셀렉트의 '직접 입력' — 셀렉트 아래로 살짝 떨어뜨린다 */
+.form-childpick-manual {
+  margin-top: 2px;
 }
 
 .form-error {

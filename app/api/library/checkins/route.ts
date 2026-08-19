@@ -20,7 +20,7 @@ import {
   getCheckinEventState,
   getUserCheckedInEventIds,
 } from '@/lib/d1';
-import { isGuardianOf } from '@/lib/members';
+import { isGuardianOf, getUserNamesByIds } from '@/lib/members';
 
 function unauthorized() {
   return NextResponse.json(
@@ -111,9 +111,14 @@ export async function POST(request: Request) {
     await checkInEvent(eventId, target.userId);
 
     // 참여 확정 안내. 기본은 꺼져 있다(빈도가 높다) — 관리 콘솔에서 켜면 나간다.
+    // 이름은 **대상자(자녀일 수 있다)** 의 것을 채운다 — 학부모가 대행 체크인하면
+    // 메일도 학부모에게 가는데, 이름이 비면 형제 중 누구 얘긴지 알 수 없다.
+    const names = await getUserNamesByIds([target.userId]).catch(
+      () => new Map<string, string>()
+    );
     notifyEventAfterResponse('checkin.created', {
       userIds: [target.userId],
-      data: { title: state.title ?? '', name: '' },
+      data: { title: state.title ?? '', name: names.get(target.userId) ?? '' },
     });
 
     return NextResponse.json({ success: true, data: { eventId, checkedIn: true } });
