@@ -19,7 +19,8 @@
     "cleanup:sample-events": "node scripts/cleanupSampleEvents.mjs",
     "d1:migrate": "node scripts/d1Migrate.mjs",
     "mysql:migrate": "node scripts/mysqlMigrate.mjs",
-    "images:migrate": "node scripts/migrateR2Images.mjs"
+    "images:migrate": "node scripts/migrateR2Images.mjs",
+    "mail:domain": "node scripts/setupMailDomain.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
