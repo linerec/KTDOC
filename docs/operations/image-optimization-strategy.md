@@ -1,5 +1,21 @@
 # 이미지 업로드 최적화·비용 전략
 
+> **2026-08-20 규모 재조정 — 슬림판으로 대체 구현 완료.** 이 문서의 원판(아래)은
+> 참고용으로 남긴다. 실제 구현은 `docs/superpowers/plans/2026-08-20-upload-image-pipeline.md`:
+>
+> - **계기**: 2026-08-19 Vercel 이미지 변환 월 한도(Hobby 5천 건) 초과로 `/_next/image`
+>   전면 402 → 사이트 전체 사진 깨짐. 응급조치로 `images.unoptimized: true` 적용(영구 유지).
+> - **구현**: 서버 관문 `uploadToR2()`에서 `lib/images/processForUpload.ts`로 1회 정규화
+>   (JPEG/무거운 PNG→WebP q80·장변 **2000px**·EXIF 스트립, immutable 1년 CacheControl).
+>   클라이언트 프리스케일은 생략 — Vercel 바디 한도가 100MB로 상향돼 불필요(한도 15MB).
+> - **원판과의 차이**: 썸네일(640px) 미생성(현 볼륨에서 YAGNI), 마스터 2560→2000px,
+>   제자리 덮어쓰기 → **새 키 업로드 + DB URL 갱신**(unoptimized라 Vercel 이미지 캐시
+>   제약이 소멸해 순서 제약도 소멸), 커스텀 도메인은 선택 과제로 이연(r2.dev가
+>   httpMetadata CacheControl을 존중함을 실측 확인).
+> - **기존분 마이그레이션**: `npm run images:migrate`(dry-run)/`-- --apply`로 125건 중
+>   120건 재처리, 80% 절감(89.8MB→18.4MB). 변환 불가 2건은 .jpg로 위장한 HEIC(브라우저도
+>   못 그리는 기존 깨진 파일) — program_images#14·#15, 재업로드 필요.
+>
 > 2026-07-09 전문가 팀 회의 결과. 참여: 클라우드 비용 전문가, 이미지 파이프라인 전문가,
 > 코드베이스 분석가, 장기 운영·아카이브 전문가 + 레드팀 교차 검증.
 > 가격·한도는 모두 2026-07-09 시점 공식 문서 기준.
