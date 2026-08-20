@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // Vercel Hobby 이미지 변환 한도(월 5천 건) 초과로 운영의 /_next/image가 전부
+    // 402(OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED)를 내며 사이트 사진이 통째로
+    // 깨졌다(2026-08). 최적화를 끄고 원본을 직접 서빙한다. 되켜는 조건: 플랜 업그레이드
+    // 또는 업로드 시점 리사이즈 파이프라인(docs/operations/image-pipeline 전략) 구축.
+    unoptimized: true,
+    // remotePatterns는 최적화 재개 시 필요한 허용 호스트 목록이라 남겨 둔다.
     remotePatterns: [
       {
         protocol: 'https',
