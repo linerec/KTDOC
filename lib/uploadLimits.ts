@@ -1,10 +1,12 @@
 /**
  * 업로드 용량 한도 — 클라이언트(업로드 전 검증)와 서버 라우트(최종 방어)가 공유한다.
  *
- * Vercel 함수의 요청 바디 한도가 4.5MB라 이보다 큰 요청은 프로덕션에서 서버에
- * 닿지 못하고 413으로 실패한다. FormData 오버헤드 여유를 두고 4MB로 잡는다.
+ * Vercel 함수의 요청 바디 한도가 100MB로 상향돼(2026) 종전 4.5MB 제약은 사라졌다.
+ * 폰 원본 사진(HEIC/JPEG 3~10MB)이 그대로 올라오는 것을 수용하도록 15MB로 잡는다 —
+ * 어차피 서버가 업로드 시점에 정규화(장변 2000 WebP)하므로 저장 무게는 늘지 않는다.
+ * 15MB를 넘는 파일은 사진이 아니라 잘못 고른 파일일 가능성이 높다(영상 등).
  */
-export const MAX_UPLOAD_FILE_BYTES = 4 * 1024 * 1024;
+export const MAX_UPLOAD_FILE_BYTES = 15 * 1024 * 1024;
 
 /** UI 안내 문구·에러 메시지용 한도 표기 */
-export const MAX_UPLOAD_FILE_MB = 4;
+export const MAX_UPLOAD_FILE_MB = 15;
