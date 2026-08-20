@@ -10642,7 +10642,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
    ========================================================================== */
 .about-hero {
   position: relative;
-  min-height: 100vh;
+  /* 화면을 꽉 채우지 않는다 — 다음 섹션이 아래에 살짝 걸쳐야 스크롤을 부른다.
+     min-height 라 카피가 더 길어지면 알아서 늘어난다. */
+  min-height: 70vh;
   /* 따뜻한 umber 베이스 — 사진 로드 전에도 검정이 아닌 온기 */
   background:
     radial-gradient(circle at 16% 22%, rgba(224, 184, 79, 0.10), transparent 38%),
@@ -10699,7 +10701,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   z-index: 3;
   max-width: var(--container-width);
   margin: 0 auto;
-  padding: 0 48px 280px;
+  /* 하단 280px 는 히어로를 화면 밖까지 밀어내던 여백이었다 */
+  padding: 0 48px 140px;
   display: grid;
   grid-template-columns: minmax(400px, 44%) 1fr;
   align-items: start;
@@ -10779,7 +10782,10 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 /* 본문 위 옅은 금색 헤어라인 (단청 리듬) */
 .about-hero-content {
-  max-width: 380px;               /* 강한 스크림 구역 안으로 텍스트 제한 */
+  /* 스크림은 폭의 30%까지 0.94를 유지하고 52%에서 0.80으로 떨어진다. 460px 는
+     그 사이(≈36%, 0.90)라 사진 위 대비를 지키면서 줄 수를 줄인다 — 380px 에서는
+     1000자 넘는 소개글이 22줄로 흘러 히어로가 화면 두 배 높이가 됐다. */
+  max-width: 460px;
   text-align: left;
   margin-bottom: 50px;
   padding-top: 20px;
@@ -10817,7 +10823,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
-  align-items: center;
+  /* start 다. center 로 두면 짧은 춤 사진이 긴 소개글 기준으로 가운데 정렬되면서
+     사진 아래에 소개글 길이만큼의 빈 공간이 생긴다. */
+  align-items: start;
 }
 
 /* Left Column (text + portrait) - moved to right side */
@@ -10826,11 +10834,19 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   grid-row: 1;
   display: flex;
   flex-direction: column;
-  padding: 60px 0 80px;
+  /* 상단 패딩 없음 — 제목이 왼쪽 춤 사진과 같은 높이에서 시작해야 두 칸이 한 줄로 읽힌다 */
+  padding: 0 0 40px;
 }
 
 .about-director-title {
   margin-bottom: 30px;
+}
+
+/* 선생님 카드와 같은 보정 — 없으면 .intl-object 전역 inline 때문에
+   "안은희 단장Founder & Artistic Director" 처럼 이름과 직함이 붙어 흐른다 */
+.about-director-title-ko.intl-object,
+.about-director-title-en.intl-object {
+  display: block;
 }
 
 .about-director-title-ko {
@@ -10849,9 +10865,11 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin-bottom: 0;
 }
 
+/* 단장은 선생님(280px)보다 확실히 크다 — 같은 크기로 두면 위계가 사라진다.
+   리빙 포트레이트가 들어오면서 이 자리가 페이지에서 유일하게 움직이는 곳이 됐다. */
 .about-director-portrait {
-  width: min(100%, 280px);
-  max-width: 280px;
+  width: min(100%, 400px);
+  max-width: 400px;
   margin-bottom: 30px;
   padding: 10px;
   background: rgba(var(--ivory-rgb),  0.06);
@@ -10864,9 +10882,59 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   border-radius: 6px;
 }
 
+/* 리빙 포트레이트 — 원장님이 관리 콘솔에 올리신 프로필 사진이 정사각(1254×1254)이라
+   영상도 1:1 로 둔다. 소스 자체가 768×768 이므로 잘라내는 것 없이 그대로 앉는다.
+   두 영상(평소·웃는 얼굴)이 겹쳐 있으므로 상자는 스택이 잡고 영상은 채우기만 한다. */
+.director-portrait-stack {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.about-director-portrait video,
+.about-director-portrait .about-director-portrait-still {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 웃는 얼굴은 평소 투명. 겹쳐 두고 투명도만 바꿔야 첫 프레임을 기다리는 빈 박자가 없다. */
+.director-portrait-video--smile {
+  opacity: 0;
+  transition: opacity 0.28s var(--ease-out-quart);
+}
+
+.director-portrait-video--smile[data-active='true'] {
+  opacity: 1;
+}
+
+/* 정지 대체 이미지는 평소엔 숨는다(스크린리더 중복 낭독도 함께 막힌다) */
+.about-director-portrait .about-director-portrait-still {
+  display: none;
+}
+
+/* 동작 최소화: 움직이는 것은 전부 걷어내고 정지 이미지만 남긴다.
+   이스터에그도 여기서는 일어나지 않는다 — 갑자기 움직이는 얼굴이야말로
+   이 설정을 켠 이유다. */
+@media (prefers-reduced-motion: reduce) {
+  .about-director-portrait video {
+    display: none;
+  }
+
+  .about-director-portrait .about-director-portrait-still {
+    display: block;
+  }
+}
+
 .about-director-bio {
   text-align: left;
-  max-width: 400px;
+  /* 칸 전체를 쓰되 한 줄이 너무 길어지지 않게만 막는다.
+     400px 로 묶여 있을 때는 소개글이 세로로 한없이 흘러내렸다. */
+  max-width: 62ch;
 }
 
 .about-director-bio p {
@@ -10877,9 +10945,68 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin-bottom: 20px;
 }
 
+/* .intl-object 는 전역이 display: inline 이라 문단이 여럿이면 한 줄로 붙는다
+   (선생님 섹션도 같은 보정을 쓴다) */
+.about-director-bio .intl-object {
+  display: block;
+}
+
 .about-director-bio .highlight {
   color: var(--accent-text);
   font-weight: 500;
+}
+
+/* 주요 무대·수상 — 선생님 카드의 '주요 경력'과 같은 문법. 문장 속에 묻히면
+   안 되는 이름(카네기홀·UN 본부·펠로우십)만 목록으로 떨어뜨린다. */
+.about-director-credits {
+  max-width: 62ch;
+}
+
+.about-director-block + .about-director-block {
+  margin-top: 26px;
+}
+
+.about-director-block-title.intl-object,
+.about-director-block-lead.intl-object {
+  display: block;
+}
+
+.about-director-block-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: rgba(var(--ivory-rgb), 0.9);
+  margin: 0 0 10px;
+}
+
+.about-director-block-lead {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: rgba(var(--ivory-rgb), 0.7);
+  margin: 0 0 10px;
+}
+
+.about-director-block ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.about-director-block li {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: rgba(var(--ivory-rgb), 0.75);
+  padding-left: 18px;
+  position: relative;
+}
+
+.about-director-block li::before {
+  content: '·';
+  position: absolute;
+  left: 2px;
+  color: var(--soft-gold-text);
+  font-weight: 700;
 }
 
 /* Right Column (dance photo) - moved to left side */
@@ -10893,7 +11020,9 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 
 .about-director-right img {
-  max-width: 440px;
+  /* 칸 폭(약 630px)에 가깝게 — 440px 일 때는 사진이 소개글의 3분의 2 높이에서
+     끝나 왼쪽 아래가 통째로 비었다. 단장의 무대 사진이라 존재감도 이쪽이 맞다. */
+  max-width: 560px;
   width: 100%;
   height: auto;
   filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.3));
@@ -10912,19 +11041,14 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   to { transform: scale(1.07); }
 }
 
-/* 인물 프레임: 호버 시 안쪽 이미지가 부드럽게 확대 (프레임 밖으로 새지 않게 clip) */
+/* 인물 프레임: 안쪽이 프레임 밖으로 새지 않게 clip */
 .about-director-portrait {
   overflow: hidden;
 }
 
-.about-director-portrait img {
-  transition: transform 0.7s var(--ease-out-quart), filter 0.7s var(--ease-out-quart);
-}
-
-.about-director-portrait:hover img {
-  transform: scale(1.04);
-  filter: brightness(1.05);
-}
+/* 호버 확대·밝기 변화는 일부러 두지 않는다. 리빙 포트레이트가 들어오면서
+   '얼굴이 바뀌는데 동시에 커지고 밝아지는' 그림이 됐고, 그건 인사가 아니라
+   놀래키는 연출로 읽힌다. 표정만 바뀌게 두는 편이 훨씬 자연스럽다. */
 
 /* 전신 공연 사진: 호버 시 살짝 떠오르며 그림자가 깊어짐 */
 .about-director-right img {
@@ -11031,9 +11155,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
     margin: 0 auto 30px;
   }
 
-  .about-director-bio {
-    text-align: center;
+  /* 한 칸으로 접히면 제목·사진만 가운데 두고 읽을 것은 왼쪽에 건다.
+     목록을 가운데 정렬하면 글머리 기호가 줄마다 들쭉날쭉해진다. */
+  .about-director-bio,
+  .about-director-credits {
+    text-align: left;
     max-width: 100%;
+    width: 100%;
   }
 
   .about-director-right {
@@ -11087,8 +11215,11 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
     font-size: 1.5rem;
   }
 
-  .about-director-portrait img {
-    max-width: 200px;
+  /* 좁은 화면에서는 액자 폭만 줄인다. 안쪽 영상은 스택을 채우므로 max-width 를 걸면
+     정사각 상자와 어긋나 빈 띠가 생긴다. */
+  .about-director-portrait {
+    width: min(100%, 260px);
+    max-width: 260px;
   }
 
   .about-director-right img {
@@ -11871,7 +12002,8 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
 .about-director-right .about-director-right-fill {
   width: 100%;
-  max-width: 440px;
+  /* img 쪽 max-width 와 같은 값이어야 한다 — 한쪽만 키우면 래퍼가 다시 묶는다 */
+  max-width: 560px;
   display: flex;
   justify-content: center;
 }

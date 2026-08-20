@@ -33,7 +33,13 @@ interface ImageObjectProps {
   priority?: boolean;
   className?: string;
   containerClassName?: string;
-  fallbackSrc?: string;
+  /**
+   * D1에 등록된 이미지가 없을 때 그릴 번들 이미지 — **현재 쓰는 사진일 때만** 둔다.
+   * 콘솔에서 새 사진으로 교체된 자리에 옛 파일을 남겨 두면, 이미지 서버가 잠깐
+   * 흔들릴 때 지난 사진이 대신 올라온다. 그런 자리에는 `null` 을 줘서
+   * 아무것도 그리지 않고 자리만 비운다(빈 편이 틀린 것보다 안전하다).
+   */
+  fallbackSrc?: string | null;
   isLogin?: boolean;
   sizes?: string;
   quality?: number;
@@ -126,6 +132,8 @@ export default function ImageObject({
   // 이미지 소스 결정
   const hasValidImage = imageData?.url && imageData.url !== '/assets/images/placeholder.png' && imageData.r2_key;
   const imageSrc = hasValidImage ? imageData.url : fallbackSrc;
+  // 등록된 이미지도 없고 폴백도 없으면 그릴 것이 없다. 자리만 남기고 비운다.
+  const isBlank = !imageSrc;
   const imageAlt = alt || (locale === 'ko' ? imageData?.alt_ko : imageData?.alt_en) || keycode;
 
   // 편집 클릭 핸들러
@@ -246,7 +254,14 @@ export default function ImageObject({
         className={`image-object-container ${containerClassName} ${isEditable ? 'editable' : ''}`}
         style={fill ? { width: '100%', height: '100%' } : undefined}
       >
-        {fill ? (
+        {isBlank ? (
+          /* 빈 자리 — 운영자에게는 편집 버튼이 보이므로 여기서 바로 사진을 올릴 수 있다 */
+          <div
+            className={`image-object-blank ${className}`.trim()}
+            style={fill ? undefined : { width: '100%', aspectRatio: `${width} / ${height}` }}
+            aria-hidden="true"
+          />
+        ) : fill ? (
           <Image
             src={imageSrc}
             alt={imageAlt}
