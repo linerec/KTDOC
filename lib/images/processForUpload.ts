@@ -1,4 +1,22 @@
-import sharp, { type Metadata, type Sharp } from 'sharp';
+import type { Metadata, Sharp } from 'sharp';
+
+/**
+ * sharp는 지연 로드한다 — 네이티브 바이너리라 배포 환경에서 로드가 실패할 수 있고
+ * (실사례: Vercel 트레이싱에서 libvips 누락 → ERR_DLOPEN_FAILED), 그 실패가
+ * lib/r2를 import하는 조회(GET) 라우트까지 죽여서는 안 된다. 로드 실패 시
+ * 업로드는 원본 통과로 강등된다(파이프라인 도입 전과 동일한 동작).
+ */
+let sharpLoader: Promise<typeof import('sharp').default | null> | null = null;
+function getSharp(): Promise<typeof import('sharp').default | null> {
+  sharpLoader ??= import('sharp').then(
+    (m) => m.default,
+    (err) => {
+      console.error('sharp 로드 실패 — 업로드 정규화 없이 원본 통과로 동작:', err?.message);
+      return null;
+    }
+  );
+  return sharpLoader;
+}
 
 /**
  * 업로드 직전 1회 정규화 — 이후로는 어떤 변환도 없이 그대로 서빙된다.
@@ -58,6 +76,9 @@ export async function processForUpload(buffer: Buffer, filename: string): Promis
   const ext = extOf(filename);
   // GIF는 애니메이션 보존, SVG는 래스터화 무의미 — 둘 다 손대지 않는다
   if (ext === 'svg' || ext === 'gif') return passthrough(buffer, filename);
+
+  const sharp = await getSharp();
+  if (!sharp) return passthrough(buffer, filename);
 
   let meta: Metadata;
   try {
