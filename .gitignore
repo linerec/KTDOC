@@ -53,3 +53,7 @@ next-env.d.ts
 /docs/pictures/
 /docs/screenshots/
 public/guide/login-mockup.html
+
+# 원장님이 보내신 수신 자료 원본(사진·PDF, 약 49MB). 정리한 메모(.md)는 커밋하고
+# 첨부 원본은 리포에 두지 않는다 — 한 번 들어가면 히스토리에서 못 뺀다.
+/docs/content/**/attachments/
