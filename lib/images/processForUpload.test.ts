@@ -67,6 +67,27 @@ test('큰 PNG는 PNG를 유지한 채 축소된다', async () => {
   assert.equal(meta.width, 2000);
 });
 
+test('무거운 PNG(>500KB)는 사진으로 보고 WebP로 재인코딩된다', async () => {
+  // 노이즈는 PNG로 압축이 안 돼 500KB를 확실히 넘긴다 (xorshift32 — 결정적 백색 잡음)
+  const noise = Buffer.alloc(900 * 700 * 3);
+  let s = 123456789;
+  for (let i = 0; i < noise.length; i++) {
+    s ^= s << 13; s |= 0;
+    s ^= s >>> 17;
+    s ^= s << 5; s |= 0;
+    noise[i] = s & 255;
+  }
+  const input = await sharp(noise, { raw: { width: 900, height: 700, channels: 3 } }).png().toBuffer();
+  assert.ok(input.length > 500 * 1024, `테스트 입력이 500KB를 넘어야 한다(실제 ${input.length})`);
+  const out = await processForUpload(input, 'phone-photo.png');
+  assert.equal(out.processed, true);
+  assert.equal(out.contentType, 'image/webp');
+  assert.equal(out.filename, 'phone-photo.webp');
+  const meta = await sharp(out.buffer).metadata();
+  assert.equal(meta.format, 'webp');
+  assert.equal(meta.width, 900);
+});
+
 test('SVG·GIF·디코드 불가 파일은 그대로 통과한다', async () => {
   const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>');
   const outSvg = await processForUpload(svg, 'icon.svg');

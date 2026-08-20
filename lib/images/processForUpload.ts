@@ -8,7 +8,8 @@ import sharp, { type Metadata, type Sharp } from 'sharp';
  *
  * 규칙:
  * - JPEG(디코드 가능한 HEIC 포함) → WebP q80 + EXIF(GPS) 제거 + 장변 ≤2000
- * - PNG·WebP → 장변 초과 시에만 축소(포맷 유지; 작은 PNG 스크린샷은 무손실 보존)
+ * - 무거운 PNG(>500KB, 폰 사진일 가능성) → WebP q80 + 장변 ≤2000
+ * - 그 외 PNG·WebP → 장변 초과 시에만 축소(포맷 유지; 작은 PNG 스크린샷은 무손실 보존)
  * - GIF·SVG·디코드 불가(코덱 없는 HEIC 등) → 원본 통과(종전 동작과 동일)
  *
  * scripts/migrateR2Images.mjs가 같은 규칙을 복제한다 — 임계값을 바꾸면 함께 바꿀 것.
@@ -17,6 +18,8 @@ import sharp, { type Metadata, type Sharp } from 'sharp';
 /** 표시용 최대 장변. 사이트 최대 표시 폭(전폭 히어로) 기준 — 이보다 큰 원본은 화면에 이득이 없다. */
 export const MAX_LONG_EDGE = 2000;
 const WEBP_QUALITY = 80;
+/** 이보다 무거운 PNG는 스크린샷이 아니라 사진으로 보고 WebP로 재인코딩한다 */
+export const HEAVY_PNG_BYTES = 500 * 1024;
 
 export interface ProcessedUpload {
   buffer: Buffer;
@@ -76,35 +79,45 @@ export async function processForUpload(buffer: Buffer, filename: string): Promis
       ? img.resize({ width: MAX_LONG_EDGE, height: MAX_LONG_EDGE, fit: 'inside', withoutEnlargement: true })
       : img;
 
-  if (format === 'jpeg' || format === 'heif') {
-    // .rotate() 인자 없음 = EXIF 방향을 픽셀에 굽는다; 재인코딩이 메타데이터를 소거한다
-    const out = await resized(sharp(buffer).rotate())
-      .webp({ quality: WEBP_QUALITY })
-      .toBuffer({ resolveWithObject: true });
-    return {
-      buffer: out.data,
-      filename: `${base}.webp`,
-      contentType: 'image/webp',
-      width: out.info.width,
-      height: out.info.height,
-      processed: true,
-    };
-  }
+  const heavyPng = format === 'png' && buffer.length > HEAVY_PNG_BYTES;
 
-  if ((format === 'png' || format === 'webp') && needsResize) {
-    const img = resized(sharp(buffer).rotate());
-    const out =
-      format === 'png'
-        ? await img.png().toBuffer({ resolveWithObject: true })
-        : await img.webp({ quality: WEBP_QUALITY }).toBuffer({ resolveWithObject: true });
-    return {
-      buffer: out.data,
-      filename,
-      contentType: `image/${format}`,
-      width: out.info.width,
-      height: out.info.height,
-      processed: true,
-    };
+  // failOn:'none' — 잘린 JPEG 등 부분 손상 파일도 가능한 만큼 살려서 변환한다
+  const tolerant = () => sharp(buffer, { failOn: 'none' });
+
+  try {
+    if (format === 'jpeg' || format === 'heif' || heavyPng) {
+      // .rotate() 인자 없음 = EXIF 방향을 픽셀에 굽는다; 재인코딩이 메타데이터를 소거한다
+      const out = await resized(tolerant().rotate())
+        .webp({ quality: WEBP_QUALITY })
+        .toBuffer({ resolveWithObject: true });
+      return {
+        buffer: out.data,
+        filename: `${base}.webp`,
+        contentType: 'image/webp',
+        width: out.info.width,
+        height: out.info.height,
+        processed: true,
+      };
+    }
+
+    if ((format === 'png' || format === 'webp') && needsResize) {
+      const img = resized(tolerant().rotate());
+      const out =
+        format === 'png'
+          ? await img.png().toBuffer({ resolveWithObject: true })
+          : await img.webp({ quality: WEBP_QUALITY }).toBuffer({ resolveWithObject: true });
+      return {
+        buffer: out.data,
+        filename,
+        contentType: `image/${format}`,
+        width: out.info.width,
+        height: out.info.height,
+        processed: true,
+      };
+    }
+  } catch {
+    // 변환 실패(HEVC 코덱 없는 HEIC 등) — 업로드 자체를 막지 않고 원본을 통과시킨다
+    return passthrough(buffer, filename);
   }
 
   return passthrough(buffer, filename);
