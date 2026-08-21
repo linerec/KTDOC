@@ -8,6 +8,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
+import { lockBodyScroll } from '@/lib/bodyScrollLock';
 
 // 구조적 최소 타입 — EventImage / ProgramImage 모두 호환 (라이트박스 재사용용)
 interface GalleryLightboxImage {
@@ -76,14 +77,19 @@ export default function ImageGallery({
     lastFocusedRef.current = (document.activeElement as HTMLElement) || null;
     setCurrentIndex(index);
     setLightboxOpen(true);
-    document.body.style.overflow = 'hidden';
   }, []);
 
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false);
-    document.body.style.overflow = '';
     lastFocusedRef.current?.focus();
   }, []);
+
+  // 배경 스크롤 잠금은 여는/닫는 함수가 아니라 열림 상태에 매단다 — 닫지 않고
+  // 떠나는 경로(뒤로가기)에서도 정리 함수가 불려 body가 잠긴 채 남지 않는다.
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    return lockBodyScroll();
+  }, [lightboxOpen]);
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));

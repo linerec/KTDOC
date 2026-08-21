@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import type { GalleryPhoto } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { lockBodyScroll } from '@/lib/bodyScrollLock';
 
 interface PhotoStreamSectionProps {
   photos: GalleryPhoto[];
@@ -31,13 +32,18 @@ export default function PhotoStreamSection({ photos }: PhotoStreamSectionProps) 
   const openLightbox = useCallback((index: number) => {
     setCurrentIndex(index);
     setLightboxOpen(true);
-    document.body.style.overflow = 'hidden';
   }, []);
 
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false);
-    document.body.style.overflow = '';
   }, []);
+
+  // 배경 스크롤 잠금은 여는/닫는 함수가 아니라 열림 상태에 매단다 — 닫지 않고
+  // 떠나는 경로(뒤로가기)에서도 정리 함수가 불려 body가 잠긴 채 남지 않는다.
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    return lockBodyScroll();
+  }, [lightboxOpen]);
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
