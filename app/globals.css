@@ -19747,9 +19747,28 @@ button.admin-page-tab {
   margin-left: 6px;
 }
 
-.resp-picks {
-  font-size: 0.88rem;
+/* 요약(몇 과목·기간·금액)이 먼저 오고 과목 이름이 그 아래로 물러난다 —
+   인보이스를 쓰는 사람은 요약 줄만 세로로 훑는다. */
+.resp-pick-summary {
+  font-size: 0.9rem;
   line-height: 1.5;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.resp-pick-amount {
+  color: var(--soft-gold-text);
+  font-weight: 700;
+}
+
+.resp-pick-unknown {
+  color: var(--text-muted);
+}
+
+.resp-picks {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text-muted);
 }
 
 /* ── 응답 상세 ──────────────────────────────────────────── */

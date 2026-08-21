@@ -16,6 +16,8 @@
  * ※ node --test 가 @/ 별칭을 풀지 못하므로 import 는 상대 경로 + .ts 로.
  */
 
+import type { Answers, FormQuestion } from '../../types/forms.ts';
+
 export type TuitionPeriod = 'm3' | 'm6' | 'y1';
 
 export interface TuitionRow {
@@ -89,6 +91,55 @@ export function lookupTuition(
   const row = BY_KEY.get(key(courseCodes as string[]));
   if (!row) return null;
   return { label: row.label, amount: row[period], period };
+}
+
+/* ── 응답 한 건 → 학비표 행 ──────────────────────────────────────────────
+   목록과 상세가 각자 조립하면 두 화면이 다른 금액을 말하는 날이 온다.
+   조립은 여기 한 곳에서만 한다. */
+
+/** 기간 문항 찾기 — 신청서마다 키가 다를 수 있어 이름으로 찾는다(roster 도 같은 규칙). */
+export function findPeriodQuestion(questions: FormQuestion[]): FormQuestion | undefined {
+  return questions.find((q) => q.key.includes('period') && q.type === 'single');
+}
+
+/** 기간 라벨 — 운영 화면에서 금액 옆에 붙는다. */
+export const PERIOD_LABEL_KO: Record<TuitionPeriod, string> = {
+  m3: '3개월',
+  m6: '6개월',
+  y1: '1년',
+};
+
+/**
+ * 고른 등록 기간. 금액을 못 찾는 응답에도 기간은 보여 줄 수 있어 따로 둔다.
+ * 기간 문항이 없는 신청서(특강·설문)에서는 null 이다.
+ */
+export function periodOf(questions: FormQuestion[], answers: Answers): TuitionPeriod | null {
+  const periodQuestion = findPeriodQuestion(questions);
+  if (!periodQuestion) return null;
+  const value = answers[periodQuestion.key];
+  return value === 'm3' || value === 'm6' || value === 'y1' ? value : null;
+}
+
+/**
+ * 응답 한 건(답 + 고른 과목 키)에서 학비표 행을 찾는다.
+ *
+ * 못 찾는 경우가 여럿이고 전부 정상이다 — 기간을 아직 안 골랐다, 기간 문항이
+ * 없는 신청서다(특강·설문), 지금 문안에 없는 옛 선택지다, 학비표에 자리가 없는
+ * 과목이 섞였다. 어느 쪽이든 null 이고, 화면은 "개별 확인"으로 정직하게 빠진다.
+ */
+export function tuitionForResponse(
+  questions: FormQuestion[],
+  answers: Answers,
+  optionKeys: string[]
+): TuitionLookup | null {
+  const period = periodOf(questions, answers);
+  if (!period) return null;
+
+  // 지금 문안에서 못 찾은 선택지는 undefined 가 되고, lookupTuition 이 null 로 받는다.
+  const options = questions.flatMap((q) => q.options ?? []);
+  const courseCodes = optionKeys.map((k) => options.find((o) => o.key === k)?.courseCode);
+
+  return lookupTuition(courseCodes, period);
 }
 
 /** '*2 Dance Courses (Sat + Sun Combination Package)' — 조건이 미확정이라 표에 넣지 않았다. */

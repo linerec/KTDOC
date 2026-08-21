@@ -13,6 +13,7 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getFormById, getRoster, getSelectionCounts, rebuildDirtyForForm, rosterView } from '@/lib/d1';
 import { allQuestions } from '@/lib/forms/schema';
+import { findPeriodQuestion, PERIOD_LABEL_KO } from '@/lib/forms/tuition';
 import type { RosterRow } from '@/lib/d1';
 import type { FormSchema } from '@/types/forms';
 
@@ -26,7 +27,8 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-const PERIOD_LABEL: Record<string, string> = { m3: '3개월', m6: '6개월', y1: '1년' };
+/** 기간 라벨은 학비표 모듈이 단일 소스다 — 여기서는 임의 문자열로 조회만 한다. */
+const PERIOD_LABEL: Record<string, string> = PERIOD_LABEL_KO;
 
 export default async function AdminFormRosterPage({ params }: PageProps) {
   const session = await auth();
@@ -44,7 +46,7 @@ export default async function AdminFormRosterPage({ params }: PageProps) {
   const schema = JSON.parse(form.schema_json) as FormSchema;
   const questions = allQuestions(schema);
   const classQuestion = questions.find((q) => q.selectionOf);
-  const periodQuestion = questions.find((q) => q.key.includes('period') && q.type === 'single');
+  const periodQuestion = findPeriodQuestion(questions);
   const fullYearKey =
     periodQuestion?.options?.find((o) => o.key === 'y1' || o.label.ko.includes('1년'))?.key ?? 'y1';
 

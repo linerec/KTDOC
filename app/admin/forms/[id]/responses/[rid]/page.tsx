@@ -23,7 +23,7 @@ import {
 } from '@/lib/d1';
 import { getUserNamesByIds } from '@/lib/members';
 import { allQuestions } from '@/lib/forms/schema';
-import { lookupTuition, type TuitionPeriod } from '@/lib/forms/tuition';
+import { PERIOD_LABEL_KO, tuitionForResponse } from '@/lib/forms/tuition';
 import ResponseActions from '@/components/admin/forms/ResponseActions';
 import type { Answers, FormSchema } from '@/types/forms';
 
@@ -73,14 +73,13 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
     : null;
 
   // 학비표 조회 보조 — 운영자 화면 전용. 신청자에게는 절대 보이지 않는다.
-  const periodQuestion = questions.find((q) => q.key.includes('period') && q.type === 'single');
-  const periodValue = periodQuestion ? answers[periodQuestion.key] : null;
-  const period: TuitionPeriod | null =
-    periodValue === 'm3' || periodValue === 'm6' || periodValue === 'y1' ? periodValue : null;
-  const courseCodes = selections.map(
-    (s) => questions.flatMap((q) => q.options ?? []).find((o) => o.key === s.option_key)?.courseCode
+  // 조립은 lib/forms/tuition.ts 한 곳에서만 한다(목록과 같은 답을 내야 한다).
+  // 기간은 아래 '답변' 섹션이 그대로 보여 주므로 여기서 따로 읽지 않는다.
+  const tuition = tuitionForResponse(
+    questions,
+    answers,
+    selections.map((s) => s.option_key)
   );
-  const tuition = period ? lookupTuition(courseCodes, period) : null;
 
   /** 답 하나를 사람이 읽는 값으로. 민감 문항은 여기서 그리지 않는다. */
   function render(key: string): string {
@@ -145,7 +144,7 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
             {tuition ? (
               <p className="resp-tuition">
                 학비표 참고 — <strong>{tuition.label}</strong> ·{' '}
-                {period === 'm3' ? '3개월' : period === 'm6' ? '6개월' : '1년'}{' '}
+                {PERIOD_LABEL_KO[tuition.period]}{' '}
                 <strong>${tuition.amount.toLocaleString()}</strong>
                 <span className="admin-cell-sub">
                   신청하신 분께는 보이지 않습니다. 최종 금액은 확인 후 개별 안내합니다.

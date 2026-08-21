@@ -22,7 +22,9 @@ import {
   rebuildDirtyForForm,
 } from '@/lib/d1';
 import ResponseFilters from '@/components/admin/forms/ResponseFilters';
-import type { ResponseStatus } from '@/types/forms';
+import { allQuestions } from '@/lib/forms/schema';
+import { PERIOD_LABEL_KO, periodOf, tuitionForResponse } from '@/lib/forms/tuition';
+import type { Answers, FormSchema, ResponseStatus } from '@/types/forms';
 
 export const metadata: Metadata = {
   title: '신청 응답 | KTDOC Admin',
@@ -69,17 +71,33 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
   const view = adminResponseList({ formId, status, search: sp.q });
   const { rows, total } = await getResponses(view);
 
-  // 선택 과목은 파생 테이블에서 — answers_json 을 목록에서 펴지 않는다.
-  const selectionsByResponse = new Map<number, string[]>();
+  // 선택 과목은 파생 테이블에서 — 라벨은 스냅샷이라 여기서 스키마를 읽지 않아도 된다.
+  // 키는 학비표 조회에 쓴다(라벨은 매년 바뀌지만 키는 그대로다).
+  const picksByResponse = new Map<number, { keys: string[]; labels: string[] }>();
   await Promise.all(
     rows.map(async (r) => {
       const s = await getSelections(r.id);
-      selectionsByResponse.set(
-        r.id,
-        s.map((x) => x.option_label_ko ?? x.option_key)
-      );
+      picksByResponse.set(r.id, {
+        keys: s.map((x) => x.option_key),
+        labels: s.map((x) => x.option_label_ko ?? x.option_key),
+      });
     })
   );
+
+  // 학비표 조회 — **지금 문안**으로 본다. 상세는 그 응답이 본 버전 스냅샷을 쓰지만,
+  // 목록에서 응답마다 스냅샷을 불러오면 조회가 배로 는다. 옛 선택지는 조회에서
+  // 빠지고 "개별 확인"으로 표시되므로, 틀린 금액이 실릴 일은 없다.
+  const schema = JSON.parse(form.schema_json) as FormSchema;
+  const questions = allQuestions(schema);
+
+  /** 한 건이 망가져도 목록 전체가 죽지 않게 한다. */
+  function answersOf(json: string): Answers {
+    try {
+      return JSON.parse(json) as Answers;
+    } catch {
+      return {};
+    }
+  }
 
   return (
     <div className="admin-page">
@@ -140,7 +158,10 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
             <tbody>
               {rows.map((r) => {
                 const s = STATUS_LABEL[r.status];
-                const picks = selectionsByResponse.get(r.id) ?? [];
+                const picks = picksByResponse.get(r.id) ?? { keys: [], labels: [] };
+                const answers = answersOf(r.answers_json);
+                const period = periodOf(questions, answers);
+                const tuition = tuitionForResponse(questions, answers, picks.keys);
                 return (
                   <tr key={r.id}>
                     <td>
@@ -163,8 +184,23 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
                       </div>
                     </td>
                     <td>
-                      {picks.length > 0 ? (
-                        <span className="resp-picks">{picks.join(' · ')}</span>
+                      {picks.labels.length > 0 ? (
+                        <>
+                          {/* 요약이 먼저 온다 — 인보이스를 쓰는 사람은 이 줄만 세로로 훑는다. */}
+                          <div className="resp-pick-summary">
+                            <strong>{picks.labels.length}과목</strong>
+                            {period && <span> · {PERIOD_LABEL_KO[period]}</span>}
+                            {tuition ? (
+                              <span className="resp-pick-amount">
+                                {' '}
+                                · ${tuition.amount.toLocaleString()}
+                              </span>
+                            ) : (
+                              <span className="resp-pick-unknown"> · 개별 확인</span>
+                            )}
+                          </div>
+                          <span className="resp-picks">{picks.labels.join(' · ')}</span>
+                        </>
                       ) : (
                         <span className="admin-cell-sub">—</span>
                       )}
