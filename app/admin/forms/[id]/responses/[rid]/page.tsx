@@ -23,6 +23,7 @@ import {
 } from '@/lib/d1';
 import { getUserNamesByIds } from '@/lib/members';
 import { allQuestions } from '@/lib/forms/schema';
+import { responseStatusLabel } from '@/lib/forms/responseLabels';
 import { PERIOD_LABEL_KO, tuitionForResponse } from '@/lib/forms/tuition';
 import ResponseActions from '@/components/admin/forms/ResponseActions';
 import type { Answers, FormSchema } from '@/types/forms';
@@ -235,7 +236,8 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
                     </div>
                     {n.from_status && n.to_status && (
                       <p className="resp-history-move">
-                        {n.from_status} → <strong>{n.to_status}</strong>
+                        {responseStatusLabel(n.from_status)} →{' '}
+                        <strong>{responseStatusLabel(n.to_status)}</strong>
                       </p>
                     )}
                     {n.body && <p className="resp-history-body">{n.body}</p>}

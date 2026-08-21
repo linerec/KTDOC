@@ -22,7 +22,15 @@ import {
   rebuildDirtyForForm,
 } from '@/lib/d1';
 import ResponseFilters from '@/components/admin/forms/ResponseFilters';
+import ResponseRow from '@/components/admin/forms/ResponseRow';
 import { allQuestions } from '@/lib/forms/schema';
+import {
+  REG_TYPE_LABEL,
+  RESPONSE_STATUSES,
+  RESPONSE_STATUS_BADGE,
+  RESPONSE_STATUS_LABEL,
+  regTypeOf,
+} from '@/lib/forms/responseLabels';
 import { PERIOD_LABEL_KO, periodOf, tuitionForResponse } from '@/lib/forms/tuition';
 import type { Answers, FormSchema, ResponseStatus } from '@/types/forms';
 
@@ -31,18 +39,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = 'force-dynamic';
-
-const STATUS_LABEL: Record<ResponseStatus, { ko: string; cls: string }> = {
-  new: { ko: '신규', cls: 'admin-badge-warning' },
-  reviewing: { ko: '확인 중', cls: 'admin-badge-muted' },
-  needs_info: { ko: '추가 확인', cls: 'admin-badge-muted' },
-  accepted: { ko: '승인', cls: 'admin-badge-success' },
-  enrolled: { ko: '수업 배정됨', cls: 'admin-badge-success' },
-  declined: { ko: '거절', cls: 'admin-badge-muted' },
-  cancelled: { ko: '취소', cls: 'admin-badge-danger' },
-};
-
-const STATUSES = Object.keys(STATUS_LABEL) as ResponseStatus[];
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -61,7 +57,7 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
   if (!form) notFound();
 
   const sp = await searchParams;
-  const status = STATUSES.includes(sp.status as ResponseStatus)
+  const status = RESPONSE_STATUSES.includes(sp.status as ResponseStatus)
     ? (sp.status as ResponseStatus)
     : undefined;
 
@@ -144,6 +140,7 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
           <p>조건에 맞는 신청이 없습니다.</p>
         </div>
       ) : (
+        <>
         <div className="admin-table-wrapper">
           <table className="admin-table">
             <thead>
@@ -157,13 +154,13 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
             </thead>
             <tbody>
               {rows.map((r) => {
-                const s = STATUS_LABEL[r.status];
                 const picks = picksByResponse.get(r.id) ?? { keys: [], labels: [] };
                 const answers = answersOf(r.answers_json);
                 const period = periodOf(questions, answers);
                 const tuition = tuitionForResponse(questions, answers, picks.keys);
+                const regType = regTypeOf(questions, answers);
                 return (
-                  <tr key={r.id}>
+                  <ResponseRow key={r.id} href={`/admin/forms/${formId}/responses/${r.id}`}>
                     <td>
                       <Link
                         href={`/admin/forms/${formId}/responses/${r.id}`}
@@ -171,10 +168,16 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
                       >
                         {r.student_name}
                       </Link>
-                      <div className="admin-cell-sub">
-                        {r.student_grade ?? '학년 미기재'}
+                      <div className="admin-cell-sub resp-student-sub">
+                        {/* 학년은 성인 수강생에게 없는 것이 정상이다 — '미기재'는 빠뜨렸다는 뜻이라 쓰지 않는다. */}
+                        <span>{r.student_grade || '—'}</span>
+                        {regType && (
+                          <span className="admin-badge admin-badge-muted">
+                            {REG_TYPE_LABEL[regType]}
+                          </span>
+                        )}
                         {r.has_medical === 1 && (
-                          <span className="admin-badge admin-badge-warning resp-medical">
+                          <span className="admin-badge admin-badge-warning">
                             건강 특이사항 있음
                           </span>
                         )}
@@ -215,18 +218,35 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
                       {!r.phone && !r.email && <span className="admin-cell-sub">—</span>}
                     </td>
                     <td>
-                      <span className={`admin-badge ${s.cls}`}>{s.ko}</span>
+                      <span className={`admin-badge ${RESPONSE_STATUS_BADGE[r.status]}`}>
+                        {RESPONSE_STATUS_LABEL[r.status]}
+                      </span>
                       {r.student_user_id == null && (
-                        <div className="admin-cell-sub">회원 미연결</div>
+                        <div
+                          className="admin-cell-sub"
+                          title="이 신청이 아직 사이트 회원 계정에 연결되지 않았습니다. 로그인하지 않고 내면 이렇게 됩니다. 상세 화면에서 회원을 연결해야 수업 명단에 넣을 수 있습니다."
+                        >
+                          회원 계정 미연결
+                        </div>
                       )}
                     </td>
                     <td className="admin-cell-sub">{r.submitted_at?.slice(0, 10)}</td>
-                  </tr>
+                  </ResponseRow>
                 );
               })}
             </tbody>
           </table>
         </div>
+        {/* 툴팁만으로는 모바일에서 읽을 길이 없다 — 한 줄로 적어 둔다.
+            상태 배지는 처리 단계이고, 신규 등록/재등록은 학생 칸의 배지다. */}
+        {rows.some((r) => r.student_user_id == null) && (
+          <p className="admin-field-help resp-legend">
+            <strong>회원 계정 미연결</strong> — 신청은 정상 접수되었지만 사이트 회원 계정에
+            이어지지 않은 상태입니다. 로그인하지 않고 신청하면 이렇게 됩니다. 신청 건을 열어
+            회원을 연결해야 수업 명단에 넣을 수 있습니다.
+          </p>
+        )}
+        </>
       )}
     </div>
   );

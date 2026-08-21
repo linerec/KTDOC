@@ -50,6 +50,12 @@ test('전화는 필수, 보호자명은 선택 — 구글폼에 없던 두 문�
   assert.equal(qs.find((q) => q.key === 'q4c_guardian')?.required, false);
 });
 
+test('학년은 선택 — 성인 수강생이 제출하지 못하던 자리다', () => {
+  // 이 신청서 하나를 유년부부터 일요 성인반까지 함께 쓴다. 학년을 필수로 두면
+  // 성인은 적을 것이 없어 제출 자체가 막힌다.
+  assert.equal(allQuestions(seasonPreset2026()).find((q) => q.key === 'q3_grade')?.required, false);
+});
+
 test('건강 문항은 민감으로 표시된다 — 목록·CSV에서 감춰지는 근거다', () => {
   assert.equal(allQuestions(seasonPreset2026()).find((q) => q.key === 'q5_medical')?.sensitive, true);
 });

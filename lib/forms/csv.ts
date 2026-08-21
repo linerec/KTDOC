@@ -12,6 +12,7 @@
  */
 
 import { allQuestions } from './schema.ts';
+import { responseStatusLabel } from './responseLabels.ts';
 import type { Answers, FormSchema } from '../../types/forms.ts';
 
 /** 쉼표·따옴표·줄바꿈이 들어간 값을 안전하게 감싼다. */
@@ -94,7 +95,9 @@ export function buildCsv({ schema, rows, includeSensitive }: BuildCsvInput): str
     const cells: unknown[] = [
       r.id,
       r.submitted_at,
-      r.status,
+      // 옆 칸들이 이미 사람 말이다('대리 입력'/'직접 제출'). 여기만 코드로 두면
+      // 원장님이 여는 시트에 'new'·'reviewing' 이 그대로 실린다.
+      responseStatusLabel(r.status),
       r.student_name,
       r.student_grade,
       r.email,

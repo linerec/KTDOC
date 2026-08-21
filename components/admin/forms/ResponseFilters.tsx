@@ -9,16 +9,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { RESPONSE_STATUSES, RESPONSE_STATUS_LABEL } from '@/lib/forms/responseLabels';
 
 const STATUS_OPTIONS = [
   { value: '', label: '처리 대기 · 진행 중 전체' },
-  { value: 'new', label: '신규' },
-  { value: 'reviewing', label: '확인 중' },
-  { value: 'needs_info', label: '추가 확인 필요' },
-  { value: 'accepted', label: '승인' },
-  { value: 'enrolled', label: '수업 배정됨' },
-  { value: 'declined', label: '거절' },
-  { value: 'cancelled', label: '취소' },
+  ...RESPONSE_STATUSES.map((s) => ({ value: s, label: RESPONSE_STATUS_LABEL[s] })),
 ];
 
 interface ResponseFiltersProps {

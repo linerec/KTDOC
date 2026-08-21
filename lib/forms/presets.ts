@@ -62,12 +62,19 @@ export function seasonPreset2026(): FormSchema {
             bind: 'student_name',
             label: { ko: '학생 이름', en: 'Student Name' },
           },
+          // 필수가 아니다 — 이 신청서는 유년부부터 일요 성인반까지 함께 쓴다.
+          // 필수였을 때 성인 신청자가 적을 학년이 없어 제출 자체가 막혔고,
+          // 실제로 나이를 적어 넣고서야 빠져나간 응답이 남았다.
           {
             key: 'q3_grade',
             type: 'short',
-            required: true,
+            required: false,
             bind: 'student_grade',
-            label: { ko: '학년', en: 'Grade' },
+            label: { ko: '학년 (성인은 비워 두세요)', en: 'Grade (adults may leave blank)' },
+            help: {
+              ko: '재학 중인 학년을 적어 주세요. 성인 수강생은 비워 두셔도 됩니다.',
+              en: 'Enter the current school grade. Adult students may leave this blank.',
+            },
           },
           {
             key: 'q4_email',

@@ -10,16 +10,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  MANUAL_RESPONSE_STATUSES,
+  RESPONSE_STATUS_LABEL,
+} from '@/lib/forms/responseLabels';
 import type { ResponseStatus } from '@/types/forms';
 
-const STATUS_CHOICES: Array<{ value: ResponseStatus; label: string }> = [
-  { value: 'new', label: '신규' },
-  { value: 'reviewing', label: '확인 중' },
-  { value: 'needs_info', label: '추가 확인 필요' },
-  { value: 'accepted', label: '승인' },
-  { value: 'declined', label: '거절' },
-  { value: 'cancelled', label: '취소' },
-];
+const STATUS_CHOICES: Array<{ value: ResponseStatus; label: string }> =
+  MANUAL_RESPONSE_STATUSES.map((s) => ({ value: s, label: RESPONSE_STATUS_LABEL[s] }));
 
 interface MemberHit {
   id: string;
