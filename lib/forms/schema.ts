@@ -17,6 +17,7 @@
 import {
   CORE_BIND_KEYS,
   type Answers,
+  type Bilingual,
   type CoreBindKey,
   type FormQuestion,
   type FormSchema,
@@ -30,6 +31,16 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** 스키마의 모든 문항을 순서대로 (섹션 경계 없이) */
 export function allQuestions(schema: FormSchema): FormQuestion[] {
   return schema.sections.flatMap((s) => s.questions);
+}
+
+/**
+ * 한/영 병기 텍스트 중 화면의 언어에 맞는 쪽. 영문이 비면 한국어로 돌아간다 —
+ * 번역이 아직 없는 문항이 빈칸으로 사라지지 않게.
+ * (components/forms/FormField.tsx 가 `pick` 이라는 이름으로 다시 내보낸다.)
+ */
+export function pickText(text: Bilingual | undefined, locale: string): string {
+  if (!text) return '';
+  return locale === 'en' ? text.en || text.ko : text.ko;
 }
 
 /**

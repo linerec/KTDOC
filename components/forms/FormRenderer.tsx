@@ -18,8 +18,10 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/lib/i18n/useT';
 import { validateAnswers, visibleQuestions, type AnswerErrors } from '@/lib/forms/schema';
+import { hasSummary, summarizeAnswers } from '@/lib/forms/summary';
 import AccountBlock, { EMPTY_ACCOUNT, type AccountDraft } from './AccountBlock';
 import FormField, { pick, useAnswerErrorText } from './FormField';
+import ReviewSummary from './ReviewSummary';
 import type { AnswerValue, Answers, FormQuestion, FormSchema } from '@/types/forms';
 
 export interface FormPrefill {
@@ -112,6 +114,13 @@ export default function FormRenderer({
 
   const visible = useMemo(() => visibleQuestions(schema, answers), [schema, answers]);
 
+  // 제출 직전 요약 — 답이 바뀔 때마다 다시 계산된다(고르는 즉시 반영되어야 뜻이 있다).
+  const review = useMemo(
+    () => summarizeAnswers(schema, answers, locale),
+    [schema, answers, locale]
+  );
+  const showReview = hasSummary(review);
+
   const handleChange = useCallback((key: string, value: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
     // 고치는 중에는 오류를 지워 준다 — 타이핑하는 내내 빨간 글씨가 떠 있으면 성가시다.
@@ -148,18 +157,23 @@ export default function FormRenderer({
     [schema]
   );
 
-  const focusFirstError = useCallback((keys: string[]) => {
-    for (const key of keys) {
-      const el = formRef.current?.querySelector<HTMLElement>(
-        `#f-${CSS.escape(key)}, [name="${CSS.escape(key)}"]`
-      );
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        return;
-      }
-    }
+  /** 문항 하나로 데려간다 — 오류 안내와 요약의 '고르러 가기'가 같은 길을 쓴다. */
+  const focusQuestion = useCallback((key: string): boolean => {
+    const el = formRef.current?.querySelector<HTMLElement>(
+      `#f-${CSS.escape(key)}, [name="${CSS.escape(key)}"]`
+    );
+    if (!el) return false;
+    el.focus();
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return true;
   }, []);
+
+  const focusFirstError = useCallback(
+    (keys: string[]) => {
+      for (const key of keys) if (focusQuestion(key)) return;
+    },
+    [focusQuestion]
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -368,6 +382,10 @@ export default function FormRenderer({
           </section>
         );
       })}
+
+      {/* 제출 직전 확인 — 위로 되짚어 올라가지 않고 여기서 고른 것을 본다.
+          고를 것이 없는 신청서(설문)에서는 뜨지 않는다. */}
+      {showReview && <ReviewSummary summary={review} onJump={focusQuestion} />}
 
       {/* 스팸 방어 — 화면에서 감춰져 있고 사람은 채울 수 없다 */}
       <div className="register-hp" aria-hidden="true">

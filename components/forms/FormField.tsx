@@ -12,8 +12,9 @@
  */
 
 import { useT } from '@/lib/i18n/useT';
+import { pickText } from '@/lib/forms/schema';
 import type { AnswerError } from '@/lib/forms/schema';
-import type { AnswerValue, Bilingual, FormQuestion } from '@/types/forms';
+import type { AnswerValue, FormQuestion } from '@/types/forms';
 
 /**
  * 오류 코드를 사람이 읽는 문장으로.
@@ -49,11 +50,11 @@ export function useAnswerErrorText(): (err?: AnswerError) => string | undefined 
   };
 }
 
-/** en 이 비면 ko 로 폴백한다 — 번역이 덜 된 문항이 빈칸으로 보이면 안 된다. */
-export function pick(text: Bilingual | undefined, locale: string): string {
-  if (!text) return '';
-  return locale === 'en' ? text.en || text.ko : text.ko;
-}
+/**
+ * en 이 비면 ko 로 폴백한다 — 번역이 덜 된 문항이 빈칸으로 보이면 안 된다.
+ * 구현은 lib/forms/schema.ts 에 있다(제출 전 요약도 같은 규칙으로 라벨을 고른다).
+ */
+export const pick = pickText;
 
 interface FormFieldProps {
   question: FormQuestion;

@@ -15,7 +15,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
-import { getGuardianChildren } from '@/lib/members';
+import { getGuardianChildren, getMemberById } from '@/lib/members';
 import { getFormBySlugAnyStatus } from '@/lib/d1';
 import { allQuestions } from '@/lib/forms/schema';
 import FormHead from '@/components/forms/FormHead';
@@ -46,11 +46,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-/** 세션에서 채울 수 있는 값을 문항의 bind 지시자에 맞춰 놓는다. */
+/**
+ * 세션에서 채울 수 있는 값을 문항의 bind 지시자에 맞춰 놓는다.
+ *
+ * 전화번호는 세션에 없어 회원 레코드에서 따로 읽어 넘긴다 — 재등록하는 분이
+ * 매년 같은 번호를 다시 치지 않게 한다. 학부모 계정이면 보호자 번호가 오고,
+ * 그것이 학기 중 연락받을 번호로 맞다.
+ */
 function buildPrefill(
   schema: FormSchema,
   user: { name?: string | null; email?: string | null; role?: string | null } | undefined,
-  children: { studentId: string; studentName: string | null }[]
+  children: { studentId: string; studentName: string | null }[],
+  phone: string | null
 ): FormPrefill | undefined {
   if (!user) return undefined;
 
@@ -69,6 +76,7 @@ function buildPrefill(
   const values: Answers = {};
   for (const q of allQuestions(schema)) {
     if (q.bind === 'email' && user.email) values[q.key] = user.email;
+    if (q.bind === 'phone' && phone) values[q.key] = phone;
     // 학생 본인이 로그인했을 때만 이름을 학생 이름으로 채운다.
     // 학부모 계정이면 자녀 이름이 따로다 — 자녀가 하나면 그 이름을 미리 채운다.
     if (q.bind === 'student_name' && user.role === 'student' && user.name) values[q.key] = user.name;
@@ -163,11 +171,14 @@ export default async function PublicFormPage({ params }: PageProps) {
   }
 
   const schema = JSON.parse(form.schema_json) as FormSchema;
-  const children =
+  // 세션에 없는 값(전화번호)만 회원 레코드에서 마저 읽는다.
+  const [children, member] = await Promise.all([
     session?.user?.role === 'parent' && session.user.id
-      ? await getGuardianChildren(session.user.id)
-      : [];
-  const prefill = buildPrefill(schema, session?.user, children);
+      ? getGuardianChildren(session.user.id)
+      : Promise.resolve([]),
+    session?.user?.id ? getMemberById(session.user.id) : Promise.resolve(null),
+  ]);
+  const prefill = buildPrefill(schema, session?.user, children, member?.phone ?? null);
 
   return (
     <main className="form-page">
