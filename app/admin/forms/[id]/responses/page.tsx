@@ -224,7 +224,7 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
                       {r.student_user_id == null && (
                         <div
                           className="admin-cell-sub"
-                          title="이 신청이 아직 사이트 회원 계정에 연결되지 않았습니다. 로그인하지 않고 내면 이렇게 됩니다. 상세 화면에서 회원을 연결해야 수업 명단에 넣을 수 있습니다."
+                          title="이 신청이 아직 사이트 회원 계정에 연결되지 않았습니다. 자동 연결은 학생 본인이 로그인해 냈거나 학부모가 자녀를 골라 냈을 때만 됩니다 — 비로그인 제출과 성인·선생님의 본인 신청은 여기서 직접 연결합니다. 상세 화면에서 회원을 연결하면 수업 명단에 넣을 수 있습니다."
                         >
                           회원 계정 미연결
                         </div>
@@ -242,8 +242,11 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
         {rows.some((r) => r.student_user_id == null) && (
           <p className="admin-field-help resp-legend">
             <strong>회원 계정 미연결</strong> — 신청은 정상 접수되었지만 사이트 회원 계정에
-            이어지지 않은 상태입니다. 로그인하지 않고 신청하면 이렇게 됩니다. 신청 건을 열어
-            회원을 연결해야 수업 명단에 넣을 수 있습니다.
+            이어지지 않은 상태입니다. 자동으로 연결되는 경우는 두 가지뿐입니다:
+            <strong>학생 본인이 로그인해 제출</strong>했거나, <strong>학부모가 로그인해 자녀를
+            골라 제출</strong>한 경우. 비로그인 제출, 그리고 성인·선생님이 본인 이름으로 낸
+            신청은 로그인했어도 여기 남습니다 — 신청 건을 열어 회원을 연결해야 수업 명단에
+            넣을 수 있습니다.
           </p>
         )}
         </>
