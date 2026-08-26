@@ -8,7 +8,7 @@
  * 무기록이었다. 무엇을 하든 이력에 남는다.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   MANUAL_RESPONSE_STATUSES,
@@ -54,6 +54,13 @@ export default function ResponseActions({
 
   const [nextStatus, setNextStatus] = useState<ResponseStatus>(status);
   const [note, setNote] = useState('');
+
+  // 서버가 상태를 바꾸고 나면(배정하면 '배정 완료'가 된다) 드롭다운도 따라와야 한다.
+  // 이게 없으면 배정 직후 화면에 남아 있는 옛 값('승인')으로 '저장'을 누르는 순간
+  // 방금 끝낸 배정이 되돌아간 것처럼 상태가 뒤로 간다.
+  useEffect(() => {
+    setNextStatus(status);
+  }, [status]);
 
   const [medical, setMedical] = useState<Array<{ key: string; label: string; value: string }> | null>(
     null

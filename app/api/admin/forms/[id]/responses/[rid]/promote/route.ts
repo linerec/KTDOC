@@ -20,11 +20,14 @@ import {
   addResponseNote,
   createEnrollment,
   getConsents,
+  getEnrollmentStatusesForUser,
+  getProgramById,
   getResponseById,
   getSelections,
   markPromoted,
 } from '@/lib/d1';
 import { getMemberById, setPublicArchiveConsent } from '@/lib/members';
+import { notifyEventAfterResponse } from '@/lib/mail/notify';
 
 interface RouteParams {
   params: Promise<{ id: string; rid: string }>;
@@ -78,7 +81,16 @@ export async function POST(_request: Request, { params }: RouteParams) {
     }
 
     const staffId = session?.user?.id ?? null;
-    for (const s of linked) {
+
+    // 운영진이 수업 화면에서 '취소'로 내려 둔 배정은 여기서 되살리지 않는다.
+    // createEnrollment 는 무조건 덮어쓰는 UPSERT라, 이 검사가 없으면 신청 화면의
+    // 배정 버튼이 수업 화면의 결정을 조용히 지운다(양쪽 다 옳아 보이는 화면이라
+    // 누가 지웠는지 알 길도 없다).
+    const existing = await getEnrollmentStatusesForUser(response.student_user_id);
+    const toEnroll = linked.filter((s) => existing.get(s.program_id!) !== 'cancelled');
+    const skippedCancelled = linked.filter((s) => existing.get(s.program_id!) === 'cancelled');
+
+    for (const s of toEnroll) {
       await createEnrollment(s.program_id!, {
         user_id: response.student_user_id,
         status: 'active',
@@ -106,16 +118,47 @@ export async function POST(_request: Request, { params }: RouteParams) {
       fromStatus: response.status,
       toStatus: 'enrolled',
       body:
-        `${member.name ?? '회원'}님을 수업 ${linked.length}개에 배정했습니다.` +
+        `${member.name ?? '회원'}님을 수업 ${toEnroll.length}개에 배정했습니다.` +
         (unlinked.length > 0 ? ` (수업이 연결되지 않은 과목 ${unlinked.length}개는 건너뛰었습니다.)` : '') +
+        (skippedCancelled.length > 0
+          ? ` (이미 취소로 내려 둔 수업 ${skippedCancelled.length}개는 그대로 두었습니다 — 되살리려면 수업 화면에서 상태를 바꿔 주세요.)`
+          : '') +
         consentNote,
       authorId: staffId,
       authorName: session?.user?.name ?? null,
+      // 자동으로 쓴 문장이라 사람이 남긴 운영 메모를 덮지 않는다.
+      system: true,
     });
+
+    // 배정 안내 — 원생과 보호자에게 간다(notifyEvent가 보호자를 붙인다).
+    // 예전에는 이 호출이 없어서, 수업 화면에서 배정한 사람만 안내를 받고
+    // 신청서에서 배정된 사람은 자기가 어느 수업에 들어갔는지 듣지 못했다.
+    if (toEnroll.length > 0) {
+      const titles = (
+        await Promise.all(
+          toEnroll.map((s) => getProgramById(s.program_id!).catch(() => null))
+        )
+      )
+        .filter((p): p is NonNullable<typeof p> => p != null)
+        .map((p) => p.title_ko);
+
+      notifyEventAfterResponse('enrollment.created', {
+        userIds: [response.student_user_id],
+        data: {
+          name: member.name ?? '',
+          title: titles.join(', '),
+          schedule: '',
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      data: { enrolled: linked.length, skipped: unlinked.length },
+      data: {
+        enrolled: toEnroll.length,
+        skipped: unlinked.length,
+        skippedCancelled: skippedCancelled.length,
+      },
     });
   } catch (error) {
     console.error('Admin form promote error:', error);

@@ -321,6 +321,15 @@ export async function updateResponseStatus(
   );
 }
 
+/**
+ * 처리 이력 한 줄 추가. body가 있으면 form_responses.internal_note(요약 칸)도 갱신한다.
+ *
+ * **system: true 면 요약 칸을 건드리지 않는다.** '회원 연결했습니다', '수업 3개에
+ * 배정했습니다' 같은 자동 문장이 요약 칸을 덮어쓰는 바람에, 선생님이 쓴 운영 판단이
+ * 처리 몇 분 만에 사라졌다(예: "결석하는날이 있으면 일요성인수업때 메이크업 가능").
+ * 실제로 처리된 응답 전부에서 일어났고, CSV의 '운영 메모' 열에 사람이 쓴 말이
+ * 한 줄도 남지 않았다. 이력 테이블에는 그대로 있으니 요약 칸만 지키면 된다.
+ */
 export async function addResponseNote(input: {
   responseId: number;
   kind: FormResponseNote['kind'];
@@ -329,6 +338,8 @@ export async function addResponseNote(input: {
   body?: string | null;
   authorId: string | null;
   authorName: string | null;
+  /** 시스템이 자동으로 쓴 문장인가. true면 요약 칸(internal_note)을 덮지 않는다. */
+  system?: boolean;
 }): Promise<void> {
   await executeD1(
     `INSERT INTO form_response_notes
@@ -344,7 +355,7 @@ export async function addResponseNote(input: {
       input.authorName,
     ]
   );
-  if (input.body?.trim()) {
+  if (input.body?.trim() && !input.system) {
     await executeD1(
       `UPDATE form_responses SET internal_note = ?, updated_at = datetime('now') WHERE id = ?`,
       [input.body.trim(), input.responseId]

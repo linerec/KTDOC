@@ -12,6 +12,16 @@ import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
 import { addRecipients, logNotification } from './notifications';
 import { sendToUsers } from './webpush';
 
+/**
+ * 운영진으로 볼 신분. **역할 목록을 여기 한 곳에만 둔다.**
+ *
+ * 예전에는 알림마다 역할을 손으로 나열했고, 신청서 알림만 ['admin']을 조회했다.
+ * 그런데 role='admin' 인 회원은 0명이다(운영진은 'staff' 또는 is_admin 플래그로
+ * 옮겨 갔다) — 수신자 0명이라 아무 오류 없이 조용히 아무 데도 가지 않았다.
+ * 실제로 신청서 접수 알림이 단 한 건도 발송되지 않았다.
+ */
+const STAFF_ROLES: MemberRole[] = ['teacher', 'staff', 'admin'];
+
 interface SystemNotice {
   title: string;
   body: string;
@@ -57,7 +67,7 @@ export async function notifyStaffOfRegistration(newUser: {
   name: string;
   role: MemberRole;
 }): Promise<void> {
-  const staffIds = await getMemberIdsByRoles(['teacher', 'admin']);
+  const staffIds = await getMemberIdsByRoles(STAFF_ROLES);
   const roleLabel = MEMBER_ROLE_LABELS[newUser.role] ?? newUser.role;
   await notifyUsers(
     newUser.id,
@@ -81,7 +91,7 @@ export async function notifyStaffOfChildLinkRequest(parent: {
   name: string;
   childName: string;
 }): Promise<void> {
-  const staffIds = await getMemberIdsByRoles(['teacher', 'admin']);
+  const staffIds = await getMemberIdsByRoles(STAFF_ROLES);
   await notifyUsers(
     parent.id,
     staffIds,
@@ -123,7 +133,7 @@ export async function notifyStaffOfFormResponse(input: {
   formTitle: string;
   studentName: string;
 }): Promise<void> {
-  const staffIds = await getMemberIdsByRoles(['admin']);
+  const staffIds = await getMemberIdsByRoles(STAFF_ROLES);
   if (staffIds.length === 0) return;
   await notifyUsers(
     staffIds[0],

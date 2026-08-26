@@ -88,6 +88,8 @@ export async function POST(request: Request, { params }: RouteParams) {
       body: `${member.name ?? member.email} 회원과 연결했습니다.`,
       authorId: session?.user?.id ?? null,
       authorName: session?.user?.name ?? null,
+      // 자동으로 쓴 문장이라 사람이 남긴 운영 메모를 덮지 않는다.
+      system: true,
     });
 
     return NextResponse.json({ success: true, data: { userId } });

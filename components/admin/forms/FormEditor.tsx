@@ -271,6 +271,28 @@ export default function FormEditor({
           </>
         )}
 
+        {/*
+          마감은 편도가 아니다. 예전에는 마감하면 다시 여는 버튼이 화면에서 사라져,
+          확인 대화상자 한 번으로 사이트의 유일한 신청 창구가 닫히고 끝이었다
+          (서버는 처음부터 다시 열기를 허용하고 있었다). 게다가 마감된 신청서가
+          붙은 수업은 '접수 마감'으로 표시되므로, 되열 방법이 반드시 보여야 한다.
+        */}
+        {form.status === 'closed' && (
+          <button
+            type="button"
+            className="admin-btn admin-btn-gold"
+            onClick={() =>
+              act(
+                'publish',
+                '접수를 다시 열까요? 공개 페이지에서 신청을 다시 받기 시작합니다.'
+              )
+            }
+            disabled={busy}
+          >
+            접수 다시 열기
+          </button>
+        )}
+
         {form.status === 'draft' && (
           <a
             href={`/f/${form.slug}`}

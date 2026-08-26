@@ -25,15 +25,21 @@ export default function ApplicationTable({ applications }: ApplicationTableProps
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // 이 표의 신청은 **사본이 없는 원본**이다. 신청서(forms)로 옮겨진 적이 없어
+  // 지우면 신청자 이름·보호자·연락처가 사이트 어디에도 남지 않는다.
+  // 게다가 삭제 버튼이 '이메일 답장' 바로 옆, 가로 스크롤되는 표 안에 있어
+  // 손가락 하나 폭 차이로 눌린다. 그래서 이름을 직접 입력하게 한다.
   const handleDelete = async (app: ApplicationWithProgram) => {
-    if (
-      !confirm(
-        t('admin.applications.deleteConfirm', '{name}님의 신청을 삭제하시겠습니까?', {
-          name: app.applicant_name,
-        })
-      )
-    )
+    const typed = window.prompt(
+      `${app.applicant_name}님의 신청을 삭제합니다.\n\n` +
+        '이 신청은 다른 곳에 사본이 없습니다 — 지우면 이름·보호자·연락처가 함께 사라지고 되돌릴 수 없습니다.\n\n' +
+        `정말 지우려면 신청자 이름을 그대로 입력해 주세요: ${app.applicant_name}`
+    );
+    if (typed === null) return;
+    if (typed.trim() !== app.applicant_name.trim()) {
+      setError('이름이 일치하지 않아 삭제하지 않았습니다.');
       return;
+    }
     setDeletingId(app.id);
     setError(null);
     try {
