@@ -18,8 +18,10 @@ import {
   getApplicationCounts,
   getPendingResponseCounts,
   getPublishedEventsOnDay,
+  getMyResponses,
+  myApplications,
 } from '@/lib/d1';
-import { getMemberCounts } from '@/lib/members';
+import { getMemberCounts, getGuardianView } from '@/lib/members';
 import { getCalendarConfig } from '@/lib/calendar';
 import { dayInTimeZone } from '@/lib/siteDay';
 import type { MemberRole } from '@/types/members';
@@ -57,9 +59,13 @@ export default async function AdminDashboardPage() {
   if (role === 'student' || role === 'parent') {
     // 이름도 이메일도 없는 계정은 역할 이름으로 부른다 — 그 문구는 클라이언트가 번역한다.
     const userName = session?.user?.name || session?.user?.email?.split('@')[0] || null;
-    const [unreadCount, todayEvents] = await Promise.all([
+    // 신청 건수는 홈 카드의 문구를 가른다 — 이미 낸 사람에게 '신청하러 가기'만
+    // 권하면 접수가 안 된 줄 안다. 범위는 내 신청 내역 화면과 같은 관점을 쓴다.
+    const { childIds } = await getGuardianView(role, session!.user!.id!);
+    const [unreadCount, todayEvents, myResponses] = await Promise.all([
       countUnread(session!.user!.id!).catch(() => 0),
       getTodayEvents(),
+      getMyResponses(myApplications([session!.user!.id!, ...childIds])).catch(() => []),
     ]);
     return (
       <StudentDashboard
@@ -67,6 +73,7 @@ export default async function AdminDashboardPage() {
         isParent={role === 'parent'}
         unreadCount={unreadCount}
         todayEvents={todayEvents}
+        applicationCount={myResponses.length}
       />
     );
   }

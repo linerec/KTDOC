@@ -1808,5 +1808,10 @@
   "mail.optIn.note": "Even when off, essential email such as registration confirmations and password notices will still be sent.",
   "mail.optIn.loading": "Checking…",
   "mail.optIn.loadFailed": "Couldn't load the setting.",
-  "mail.optIn.saveFailed": "Couldn't save the setting."
+  "mail.optIn.saveFailed": "Couldn't save the setting.",
+  "admin.nav.my-applications": "My Registrations",
+  "admin.home.linkMyApplicationsDesc": "What you submitted and where it stands",
+  "admin.home.appliedTitle": "Your registration is in",
+  "admin.home.appliedDesc": "You can check the status of your {n} submitted registration(s). To add a class, please contact the studio.",
+  "admin.home.appliedCta": "View my registrations →"
 }

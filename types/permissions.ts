@@ -17,6 +17,7 @@ export type MenuKey =
   | 'inbox'
   | 'schedule'
   | 'my-classes'
+  | 'my-applications'
   | 'programs'
   | 'forms'
   | 'applications'

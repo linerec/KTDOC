@@ -80,3 +80,36 @@ export function rosterView(opts: {
 }): RosterView {
   return { ...opts, orderBy: 'full_year_first' };
 }
+
+export interface MyApplicationsView {
+  /** 이 사람들의 신청을 본다 — 본인 + (학부모면) 자녀들의 회원 id */
+  personIds: string[];
+  /** 대체된 옛 제출본은 감춘다 — 다시 낸 사람에게 옛 것까지 보이면 무엇이 유효한지 모른다. */
+  latestOnly: true;
+  /** 취소한 신청도 본인에게는 보인다 — "내가 낸 것이 어떻게 됐나"의 답이라서. */
+  includeCancelled: true;
+}
+
+/**
+ * 내 신청 내역 — **신청자 본인·보호자가 자기가 낸 것을 확인하는 자리**.
+ *
+ * 왜 관점이 필요한가: 이 자리가 없어서 "저장이 안 된다"는 말이 나왔다.
+ * 제출 완료 화면과 가입 안내가 "로그인하시면 신청 내역을 확인하실 수 있습니다"라고
+ * 약속하는데 정작 그런 화면이 없었다. 학부모는 로그인해서 아무것도 못 찾고
+ * 접수가 안 된 줄 알았고, 홈 화면은 그 위에 "신청하러 가기"를 계속 권했다.
+ *
+ * **운영 관점(adminResponseList)과 절대 섞지 않는다.** 저쪽은 처리하는 자리라
+ * 연락처·의료정보·내부 메모를 본다. 이 관점은 낸 사람이 자기 것을 보는 자리이고,
+ * 남의 신청은 한 건도 보여선 안 된다 — personIds 는 호출부가 서버에서
+ * (세션 본인 + isGuardianOf 로 확인된 자녀)로만 만들어야 한다.
+ *
+ * 제출 당시 비회원이었던 신청은 여기 뜨지 않는다. 회원 연결이 되어야 보인다 —
+ * 이메일이 같다는 이유로 붙이면 남의 신청을 보여줄 수 있다.
+ */
+export function myApplications(personIds: string[]): MyApplicationsView {
+  return {
+    personIds: Array.from(new Set(personIds.filter(Boolean))),
+    latestOnly: true,
+    includeCancelled: true,
+  };
+}

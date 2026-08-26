@@ -84,6 +84,11 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 내 수업(원생·학부모): 운영진이 배정한 수업·프로그램을 본인(학부모는 자녀별)으로 확인. 운영진은 programs에서 관리하므로 제외(admin은 항상 표시).
   // 선생님도 수업에 배정된다(함께 서는 무대·연수) — 배정만 되고 볼 곳이 없으면 안 된다.
   { key: 'my-classes', href: '/admin/my-classes', label: '내 수업', iconKey: 'calendar', group: 'lesson', defaultRoles: ['student', 'parent', 'teacher'] },
+  // 내 신청 내역(원생·학부모·본인이 낸 선생님): 자기가 낸 수강 신청이 어디까지 왔는지.
+  // 이 자리가 없어서 "저장이 안 된다"는 말이 나왔다 — 완료 화면이 "로그인하시면
+  // 신청 내역을 확인하실 수 있습니다"라고 약속하는데 갈 곳이 없었다.
+  // 운영 화면(forms)과 달리 연락처·의료 본문·내부 메모를 담지 않으므로 신분과 무관하게 연다.
+  { key: 'my-applications', href: '/admin/my-applications', label: '내 신청 내역', iconKey: 'inbox', group: 'lesson', defaultRoles: ['student', 'parent', 'teacher'] },
   { key: 'programs', href: '/admin/programs', label: '수업 · 프로그램 관리', iconKey: 'calendar', group: 'lesson', defaultRoles: ['teacher', 'admin'] },
   // 신청서: 질문지를 만들어 QR·링크로 뿌리고, 들어온 응답을 확인해 수강 배정까지 잇는다.
   // 구글폼을 대체하는 자리라 하위 화면(응답 목록·상세·명단)이 여럿이지만, 메뉴는 하나로 족하다 —

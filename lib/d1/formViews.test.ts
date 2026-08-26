@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { chunkParams } from './chunk.ts';
-import { adminResponseList, publicFormBySlug, rosterView } from './formViews.ts';
+import { adminResponseList, myApplications, publicFormBySlug, rosterView } from './formViews.ts';
 
 test('파라미터는 90개 단위로 쪼갠다 — D1 상한 100 아래로 여유를 둔다', () => {
   const ids = Array.from({ length: 200 }, (_, i) => i);
@@ -61,4 +61,22 @@ test('명단은 1년 등록 우선, 그다음 선착순 — 이 정렬이 배정
   assert.equal(v.orderBy, 'full_year_first');
   assert.equal(v.fullYearOptionKey, 'y1');
   assert.equal(v.periodQuestionKey, 'q6_period');
+});
+
+test('내 신청 내역 관점 — 중복 id와 빈 값을 턴다', () => {
+  const v = myApplications(['a', 'b', 'a', '', 'c']);
+  assert.deepEqual(v.personIds, ['a', 'b', 'c']);
+});
+
+test('내 신청 내역은 최신본만 보되 취소한 것은 보여준다', () => {
+  // 대체된 옛 제출본까지 보이면 무엇이 유효한지 본인이 알 수 없다.
+  // 반대로 취소는 감추면 "내가 낸 건 어디 갔나"가 다시 생긴다.
+  const v = myApplications(['a']);
+  assert.equal(v.latestOnly, true);
+  assert.equal(v.includeCancelled, true);
+});
+
+test('아무도 없으면 빈 목록 — 남의 신청으로 새지 않는다', () => {
+  assert.deepEqual(myApplications([]).personIds, []);
+  assert.deepEqual(myApplications(['', '']).personIds, []);
 });

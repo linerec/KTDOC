@@ -45,6 +45,13 @@ const QUICK_LINKS: QuickLink[] = [
     descFallback: '배정된 수업·프로그램 보기',
   },
   {
+    href: '/admin/my-applications',
+    titleKey: 'admin.nav.my-applications',
+    titleFallback: '내 신청 내역',
+    descKey: 'admin.home.linkMyApplicationsDesc',
+    descFallback: '내가 낸 신청과 진행 상태',
+  },
+  {
     href: '/admin/library',
     titleKey: 'admin.nav.library',
     titleFallback: '공연 둘러보기',
@@ -88,6 +95,7 @@ export default function StudentDashboard({
   isParent,
   unreadCount,
   todayEvents,
+  applicationCount,
 }: {
   /** null이면 역할 이름(원생/학부모)으로 부른다 */
   userName: string | null;
@@ -95,6 +103,11 @@ export default function StudentDashboard({
   unreadCount: number;
   /** 오늘 열리는 공개 행사. 없으면 빈 배열 — 배너가 스스로 사라진다. */
   todayEvents: EventWithCategory[];
+  /**
+   * 본인·자녀가 낸 신청 건수. 0이면 신청을 권하고, 1건 이상이면 낸 것을 먼저 보여준다.
+   * 이미 신청한 사람에게 '신청하러 가기'만 권해서 "접수가 안 됐나" 싶게 만들던 자리다.
+   */
+  applicationCount: number;
 }) {
   const t = useT();
   const displayName =
@@ -141,20 +154,37 @@ export default function StudentDashboard({
       {/* 1) 알림 받기 — 온보딩 핵심. 이 기기에서 켜고 나면 사라진다(끄기·테스트는 내 프로필). */}
       <PushOptInCard placement="dashboard" audience="member" />
 
-      {/* 2) 수업·프로그램 신청 */}
+      {/* 2) 수업·프로그램 신청 — 이미 낸 사람에게는 '낸 것'을 먼저 보여준다.
+             신청을 마친 학부모에게 '신청하러 가기'만 보이면 접수가 안 된 줄 안다. */}
       <section className="dash-cta">
         <div className="dash-cta-body">
-          <h2 className="dash-cta-title">{t('admin.home.applyTitle', '수업 · 프로그램 신청')}</h2>
+          <h2 className="dash-cta-title">
+            {applicationCount > 0
+              ? t('admin.home.appliedTitle', '신청이 접수되어 있습니다')
+              : t('admin.home.applyTitle', '수업 · 프로그램 신청')}
+          </h2>
           <p className="dash-cta-desc">
-            {t(
-              'admin.home.applyDesc',
-              '정규 수업과 여름 캠프 등 모집 중인 프로그램을 둘러보고 바로 신청할 수 있습니다.'
-            )}
+            {applicationCount > 0
+              ? t(
+                  'admin.home.appliedDesc',
+                  '내신 신청 {n}건의 진행 상태를 확인하실 수 있습니다. 과목을 더 넣고 싶으시면 학원으로 알려 주세요.',
+                  { n: applicationCount }
+                )
+              : t(
+                  'admin.home.applyDesc',
+                  '정규 수업과 여름 캠프 등 모집 중인 프로그램을 둘러보고 바로 신청할 수 있습니다.'
+                )}
           </p>
         </div>
-        <Link href="/classes" className="admin-btn admin-btn-gold">
-          {t('admin.home.applyCta', '신청하러 가기 →')}
-        </Link>
+        {applicationCount > 0 ? (
+          <Link href="/admin/my-applications" className="admin-btn admin-btn-gold">
+            {t('admin.home.appliedCta', '내 신청 내역 보기 →')}
+          </Link>
+        ) : (
+          <Link href="/classes" className="admin-btn admin-btn-gold">
+            {t('admin.home.applyCta', '신청하러 가기 →')}
+          </Link>
+        )}
       </section>
 
       {/* 3) 바로가기 */}

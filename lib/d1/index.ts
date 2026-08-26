@@ -237,8 +237,8 @@ export type { BrowseParams } from './eventViews';
 export { chunkParams } from './chunk';
 
 // 응답 목록의 '관점' — eventViews 와 같은 규칙
-export { publicFormBySlug, adminResponseList, rosterView } from './formViews';
-export type { PublicFormView, AdminResponseListView, RosterView } from './formViews';
+export { publicFormBySlug, adminResponseList, rosterView, myApplications } from './formViews';
+export type { PublicFormView, AdminResponseListView, RosterView, MyApplicationsView } from './formViews';
 
 export {
   LOCKED_ERROR_PREFIX,
@@ -277,6 +277,8 @@ export {
   getResponses,
   getResponseCountsByForm,
   getPendingResponseCounts,
+  getMyResponses,
+  getSelectionsForResponses,
   updateResponseStatus,
   addResponseNote,
   getResponseNotes,
@@ -288,7 +290,7 @@ export {
   getResponsesForExport,
   attachSubmitter,
 } from './formResponses';
-export type { InsertResponseInput, RosterRow } from './formResponses';
+export type { InsertResponseInput, RosterRow, MyResponseRow } from './formResponses';
 
 export {
   insertMailLogs,

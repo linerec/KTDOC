@@ -21184,3 +21184,123 @@ button.admin-page-tab {
   color: var(--mail-fail-text);
   font-size: 0.82rem;
 }
+
+/* ── 내 신청 내역 (원생·학부모) ─────────────────────────────
+   낸 사람이 "접수는 됐고 지금 어디까지 왔나"를 한눈에 보는 자리.
+   운영 표(admin-table)와 다르게 카드로 두는 이유: 건수가 적고(보통 1~3건),
+   폰에서 보는 사람이 대부분이라 가로 스크롤이 생기면 안 된다. */
+.myapp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.myapp-card {
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.myapp-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.myapp-student {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.myapp-form {
+  margin: 3px 0 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+.myapp-status {
+  flex: none;
+  padding: 4px 11px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(var(--fg-rgb), 0.06);
+  color: var(--text-muted);
+}
+/* 접수됐다는 것 자체가 안심이므로 '확인 전'도 어둡게 두지 않는다. */
+.myapp-status.is-new,
+.myapp-status.is-reviewing,
+.myapp-status.is-accepted {
+  background: rgba(212, 160, 23, 0.16);
+  color: var(--accent-text);
+}
+.myapp-status.is-enrolled {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+.myapp-status.is-needs_info,
+.myapp-status.is-declined,
+.myapp-status.is-cancelled {
+  background: rgba(209, 47, 39, 0.14);
+  color: var(--secondary-color);
+}
+.myapp-hint {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-color);
+}
+.myapp-classes {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.08);
+}
+.myapp-classes-label {
+  display: block;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.myapp-classes ul {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-color);
+}
+.myapp-foot {
+  margin-top: 14px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.myapp-link {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.myapp-link:hover { text-decoration: underline; }
+.myapp-empty {
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 10px;
+  padding: 26px 20px;
+  text-align: center;
+}
+.myapp-empty-title {
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.myapp-empty .admin-btn { margin-top: 16px; }
+.myapp-note { margin-top: 18px; }

@@ -32,6 +32,22 @@ import type {
 /** 파생 INSERT 는 행당 컬럼이 6개(선택)·5개(동의)라 15행이면 90개 안쪽이다. */
 const DERIVED_ROWS_PER_STATEMENT = 15;
 
+/**
+ * 신청자 본인이 봐도 되는 것만 담은 행. 운영 화면의 FormResponseRow 와 일부러 다르다 —
+ * 내부 메모·검토자·연락처·의료 본문은 여기 없다.
+ */
+export interface MyResponseRow {
+  id: number;
+  form_id: number;
+  form_title_ko: string | null;
+  student_name: string;
+  student_user_id: string | null;
+  submitted_by_user_id: string | null;
+  status: ResponseStatus;
+  has_medical: 0 | 1;
+  submitted_at: string;
+}
+
 export interface InsertResponseInput {
   formId: number;
   formTitleKo: string | null;
@@ -290,6 +306,70 @@ export async function getResponses(view: {
     queryD1<{ n: number }>(`SELECT COUNT(*) AS n FROM form_responses ${clause}`, params),
   ]);
   return { rows, total: counts[0]?.n ?? 0 };
+}
+
+/**
+ * 내 신청 내역 — 본인·자녀가 낸 신청. formViews.myApplications 관점 전용.
+ *
+ * personIds 는 **서버에서 확인된 회원 id**만 들어와야 한다(세션 본인 + 보호자 관계가
+ * 확인된 자녀). 이메일로 붙이지 않는 이유는 formViews 주석에 있다.
+ *
+ * 여기서 돌려주는 것은 낸 사람이 봐도 되는 것뿐이다 — 내부 메모·검토자·의료정보
+ * 본문은 고르지 않는다(has_medical 로 "적으셨다"까지만 전한다).
+ */
+export async function getMyResponses(view: {
+  personIds: string[];
+  latestOnly: boolean;
+}): Promise<MyResponseRow[]> {
+  if (!view.personIds.length) return [];
+
+  const rows: MyResponseRow[] = [];
+  // D1 바인딩 파라미터 상한(100) — 자녀가 많아도 터지지 않게 쪼갠다.
+  for (const chunk of chunkParams(view.personIds)) {
+    const holes = chunk.map(() => '?').join(', ');
+    const where = [
+      `(student_user_id IN (${holes}) OR submitted_by_user_id IN (${holes}))`,
+    ];
+    if (view.latestOnly) where.push('is_latest = 1');
+    const part = await queryD1<MyResponseRow>(
+      `SELECT id, form_id, form_title_ko, student_name, student_user_id,
+              submitted_by_user_id, status, has_medical, submitted_at
+         FROM form_responses
+        WHERE ${where.join(' AND ')}
+        ORDER BY submitted_at DESC, id DESC`,
+      [...chunk, ...chunk]
+    );
+    rows.push(...part);
+  }
+  // 청크 경계에서 같은 행이 두 번 들어올 수 있다(본인이 제출자이자 대상인 경우).
+  const seen = new Set<number>();
+  return rows.filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)));
+}
+
+/** 여러 응답의 선택 과목 — 내 신청 내역에서 N+1을 피한다. */
+export async function getSelectionsForResponses(
+  responseIds: number[]
+): Promise<Map<number, { optionKey: string; labelKo: string | null }[]>> {
+  const out = new Map<number, { optionKey: string; labelKo: string | null }[]>();
+  if (!responseIds.length) return out;
+  for (const chunk of chunkParams(responseIds)) {
+    const rows = await queryD1<{
+      response_id: number;
+      option_key: string;
+      option_label_ko: string | null;
+    }>(
+      `SELECT response_id, option_key, option_label_ko
+         FROM form_response_selections
+        WHERE response_id IN (${chunk.map(() => '?').join(', ')})
+        ORDER BY id`,
+      chunk
+    );
+    for (const r of rows) {
+      if (!out.has(r.response_id)) out.set(r.response_id, []);
+      out.get(r.response_id)!.push({ optionKey: r.option_key, labelKo: r.option_label_ko });
+    }
+  }
+  return out;
 }
 
 /** 폼별 응답 수 — 목록 화면에서 N+1 쿼리를 피한다. */

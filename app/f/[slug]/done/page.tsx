@@ -99,8 +99,11 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
             <p className="form-notice-alt">
               Your account request was submitted too. You can sign in once the studio approves it.
             </p>
-            <Link href="/login" className="form-notice-link">
-              로그인 화면으로 / Sign in
+            <Link
+              href="/login?callbackUrl=%2Fadmin%2Fmy-applications"
+              className="form-notice-link"
+            >
+              로그인하고 내 신청 내역 보기 / Sign in
             </Link>
           </div>
         )}
@@ -117,8 +120,11 @@ export default async function FormDonePage({ params, searchParams }: PageProps) 
               An account already exists for that email, so we didn&rsquo;t create a new one. Your
               registration was received — sign in to see it.
             </p>
-            <Link href="/login" className="form-notice-link">
-              로그인 화면으로 / Sign in
+            <Link
+              href="/login?callbackUrl=%2Fadmin%2Fmy-applications"
+              className="form-notice-link"
+            >
+              로그인하고 내 신청 내역 보기 / Sign in
             </Link>
           </div>
         )}
