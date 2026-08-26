@@ -1,0 +1,390 @@
+<title>춤누리 퍼레이드 배너</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+
+<style>
+  /* ── Light palette (complete set; dark blocks below redefine tokens only) ── */
+  :root {
+    --ground:      #F2F4F6;   /* 배너 비닐의 찬 흰색 계열 */
+    --surface:     #FFFFFF;
+    --surface-2:   #F8FAFB;
+    --ink:         #141821;   /* 먹, 청 쪽으로 살짝 기운 */
+    --ink-muted:   #59616D;
+    --ink-faint:   #8A929E;
+    --rule:        #DCE1E6;
+    --rule-strong: #C3CAD2;
+    --hong:        #CD2E3A;   /* 태극기 홍 */
+    --cheong:      #0047A0;   /* 태극기 청 */
+    --hong-soft:   rgba(205, 46, 58, 0.10);
+    --cheong-soft: rgba(0, 71, 160, 0.09);
+    --warn-ground: #FDF3F4;
+    --warn-rule:   #EFC9CD;
+
+    --measure: 68ch;
+    --radius: 3px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #101319;
+      --surface:     #181C23;
+      --surface-2:   #1E232B;
+      --ink:         #E7EAEF;
+      --ink-muted:   #9AA2AE;
+      --ink-faint:   #6E7783;
+      --rule:        #2A303A;
+      --rule-strong: #3A424E;
+      --hong:        #EC6B75;
+      --cheong:      #6E9EE8;
+      --hong-soft:   rgba(236, 107, 117, 0.13);
+      --cheong-soft: rgba(110, 158, 232, 0.12);
+      --warn-ground: #251A1C;
+      --warn-rule:   #4A2F33;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #101319;
+    --surface:     #181C23;
+    --surface-2:   #1E232B;
+    --ink:         #E7EAEF;
+    --ink-muted:   #9AA2AE;
+    --ink-faint:   #6E7783;
+    --rule:        #2A303A;
+    --rule-strong: #3A424E;
+    --hong:        #EC6B75;
+    --cheong:      #6E9EE8;
+    --hong-soft:   rgba(236, 107, 117, 0.13);
+    --cheong-soft: rgba(110, 158, 232, 0.12);
+    --warn-ground: #251A1C;
+    --warn-rule:   #4A2F33;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", system-ui, -apple-system, "Malgun Gothic", sans-serif;
+    font-size: 15px;
+    line-height: 1.72;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+
+  .page {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 24px 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ── 표제부: 기존 배너의 좌상 홍 / 우하 청 모서리를 그대로 인용 ── */
+  .head {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 40px 40px 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .head::before,
+  .head::after {
+    content: "";
+    position: absolute;
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .head::before { top: -66px;    left: -66px;  background: var(--hong); }
+  .head::after  { bottom: -66px; right: -66px; background: var(--cheong); }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+  h1 {
+    font-family: "Gowun Batang", "Noto Serif KR", serif;
+    font-weight: 700;
+    font-size: clamp(30px, 5.4vw, 42px);
+    line-height: 1.24;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .head .lede {
+    margin: 0;
+    max-width: var(--measure);
+    color: var(--ink-muted);
+    font-size: 15px;
+  }
+
+  .credits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 28px;
+    margin-top: 12px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  .credits div { display: flex; gap: 8px; }
+  .credits dt { color: var(--ink-faint); }
+  .credits dd { margin: 0; font-weight: 500; }
+
+  /* ── 섹션 ── */
+  section { display: flex; flex-direction: column; gap: 16px; }
+
+  h2 {
+    font-family: "Gowun Batang", "Noto Serif KR", serif;
+    font-weight: 700;
+    font-size: 21px;
+    line-height: 1.35;
+    margin: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule-strong);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  h2 .count {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+  }
+
+  p { margin: 0; max-width: var(--measure); }
+  .muted { color: var(--ink-muted); }
+  .fine { font-size: 13px; color: var(--ink-muted); }
+
+  /* ── 착수 전 블로커 ── */
+  .blocker {
+    background: var(--warn-ground);
+    border: 1px solid var(--warn-rule);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .blocker h2 {
+    border-bottom: none;
+    padding-bottom: 0;
+    font-size: 18px;
+    color: var(--hong);
+  }
+
+  /* ── 규격표 ── */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; background: var(--surface); }
+  th, td { text-align: left; padding: 11px 18px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th {
+    background: var(--surface-2);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
+  tbody th { font-weight: 500; white-space: nowrap; width: 1%; }
+  td.val {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  td.note { color: var(--ink-muted); font-size: 13.5px; }
+
+  /* ── 목록 ── */
+  ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 7px; }
+  li { max-width: var(--measure); }
+  li strong { font-weight: 600; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card > h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0.01em; }
+  .card.keep  { border-top: 2px solid var(--cheong); }
+  .card.fix   { border-top: 2px solid var(--hong); }
+
+  /* ── 담당자별 확정 항목 ── */
+  .owner {
+    display: grid;
+    grid-template-columns: 148px 1fr;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .owner:last-child { border-bottom: none; padding-bottom: 0; }
+  @media (max-width: 640px) { .owner { grid-template-columns: 1fr; gap: 10px; } }
+
+  .chip {
+    align-self: start;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+    padding: 3px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .chip.dev    { background: var(--cheong-soft); color: var(--cheong); }
+  .chip.dir    { background: var(--hong-soft);   color: var(--hong); }
+  .chip.design { background: var(--surface-2);   color: var(--ink-muted); border: 1px solid var(--rule-strong); }
+  .owner .who { display: flex; flex-direction: column; gap: 4px; }
+  .owner .who small { color: var(--ink-faint); font-size: 12px; padding-left: 2px; }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 20px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+
+  a { color: var(--cheong); }
+  a:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--cheong);
+    outline-offset: 3px;
+  }
+</style>
+
+<div class="page">
+
+  <header class="head">
+    <p class="eyebrow">인쇄 제작 브리프 · 2026.08.24</p>
+    <h1>춤누리 퍼레이드 배너</h1>
+    <p class="lede">뉴욕 퍼레이드 행진용 3폭 연결 배너. 안은희 단장 구두 설명을 1차 도안 요구사항으로 정리한 문서입니다.</p>
+    <dl class="credits">
+      <div><dt>요청</dt><dd>안은희 단장</dd></div>
+      <div><dt>정리</dt><dd>owenkdev</dd></div>
+      <div><dt>도안</dt><dd>Hearyun Chu</dd></div>
+      <div><dt>이후</dt><dd>단장 검수 → 인쇄소</dd></div>
+    </dl>
+  </header>
+
+  <section class="blocker">
+    <h2>착수 전 해결 — 로고 벡터 원본</h2>
+    <p>현재 확보된 KTDOC 로고의 최대 파일은 <strong>1536 × 1024 PNG</strong>입니다. 28인치 폭 패널에 로고를 14인치로 앉히면 약 110 DPI로, 팔각 창살 격자의 가는 선이 뭉개집니다. 배너 인쇄는 실제 크기 150 DPI 이상을 권장합니다.</p>
+    <p><strong>필요:</strong> KTDOC · KHPAF 로고의 AI · EPS · SVG 원본. 원본이 없으면 벡터 트레이싱 재제작을 일정과 비용에 반영해야 합니다.</p>
+  </section>
+
+  <section>
+    <h2>형태 <span class="count">무엇을 만드는가</span></h2>
+    <ul>
+      <li><strong>가로형 배너</strong> — 퍼레이드 행진 중 양쪽 끝을 사람이 들고 갑니다.</li>
+      <li><strong>3폭을 좌우로 연결</strong> — 모서리 아일렛에 끈을 걸어 잇는 구조.</li>
+      <li>분리형 유지 권장 — 보관·운반이 쉽고, 1·2폭만 쓸 수 있으며, 통짜보다 바람 저항이 적습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>규격 <span class="count">추정치 — 실측으로 확정</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">항목</th><th scope="col">값</th><th scope="col">비고</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">1폭 크기</th><td class="val">28 × 28 in</td><td class="note">사진상 정사각형에 가까움. 실측 필요</td></tr>
+          <tr><th scope="row">총 폭 (3폭)</th><td class="val">84 in</td><td class="note">7 ft / 213 cm. 연결 간격 별도</td></tr>
+          <tr><th scope="row">메인 타이틀</th><td class="val">4 – 5 in</td><td class="note">문자 높이 기준</td></tr>
+          <tr><th scope="row">보조 문구</th><td class="val">2 – 3 in</td><td class="note">관람 거리 10 – 25 ft 기준</td></tr>
+          <tr><th scope="row">인쇄면</th><td class="val">양면 검토</td><td class="note">기존은 단면. 퍼레이드는 양쪽에서 봅니다</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">문자 크기는 배너 가독 통례(문자 높이 1인치 ≈ 가독 거리 10피트)를 적용한 값입니다. 실측 2개 수치 — 한 폭의 가로·세로 인치(아일렛 포함 재단 기준) — 를 받으면 전체가 확정됩니다.</p>
+  </section>
+
+  <section>
+    <h2>구성 요소 <span class="count">흰 바탕 · 심플</span></h2>
+    <ul>
+      <li><strong>KTDOC 로고</strong> — 팔각 창살 엠블럼 + 춤누리 한국전통무용단 + KOREAN TRADITIONAL DANCE OF CHOOMNOORI (국·영문 병기)</li>
+      <li><strong>KHPAF 로고</strong> — Korean Heritage Performing Arts Foundation. 안은희 단장이 설립·대표를 맡은 비영리 재단이며, <strong>기존 배너에 없던 신규 요소</strong>입니다.</li>
+      <li><strong>태극기 · 성조기</strong> — 심플하게</li>
+      <li>요소를 더 늘리지 않는 방향으로 정리합니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>기존 배너 <span class="count">3폭을 임시로 이어 쓰던 상태</span></h2>
+    <div class="cols">
+      <div class="card keep">
+        <h3>이어갈 것</h3>
+        <ul>
+          <li>흰 바탕 기조</li>
+          <li><strong>좌상단 홍 · 우하단 청 모서리 곡면</strong> — 태극 색을 모서리로 끌어온 모티프. 3폭이 이어질 때 리듬을 만드는 요소입니다.</li>
+        </ul>
+      </div>
+      <div class="card fix">
+        <h3>고칠 것</h3>
+        <ul>
+          <li>글자 방향 불일치 — 1폭은 가로, 3폭은 90° 세로 회전</li>
+          <li>3폭의 로고 크기·조판이 제각각</li>
+          <li>KHPAF가 들어갈 자리가 없음</li>
+        </ul>
+      </div>
+    </div>
+    <p class="fine">기존 3폭은 각각 따로 만들어진 것을 즉석에서 묶은 상태입니다. 새 도안의 과제는 3폭을 하나의 작품으로 설계하는 것입니다.</p>
+  </section>
+
+  <section>
+    <h2>확정 필요 <span class="count">담당자별</span></h2>
+
+    <div class="owner">
+      <div class="who"><span class="chip dev">개발자</span><small>owenkdev</small></div>
+      <ul>
+        <li>KTDOC 로고 벡터 원본 확보</li>
+        <li>KHPAF 로고 벡터 원본 확보</li>
+      </ul>
+    </div>
+
+    <div class="owner">
+      <div class="who"><span class="chip dir">단장</span><small>안은희</small></div>
+      <ul>
+        <li>기존 배너 실측 — 한 폭의 가로 × 세로</li>
+        <li>3폭 배분 — 기존 구성(①로고 ②양국기 ③보조) 유지 vs. 재설계</li>
+        <li>KHPAF 노출 비중 — KTDOC와 동등 vs. 하단 보조</li>
+        <li>국기 원형 크롭 유지 여부 <span class="fine">— 미국 국기법(4 U.S.C. §8)은 국기를 디자인 요소로 변형하는 것을 권장하지 않습니다. 강제 조항은 아니고 문화 퍼레이드에서 흔한 처리이나, 결정하고 넘어갈 사안입니다.</span></li>
+      </ul>
+    </div>
+
+    <div class="owner">
+      <div class="who"><span class="chip design">디자이너</span><small>Hearyun Chu</small></div>
+      <ul>
+        <li>원단·마감 — 실외용 비닐, 4면 헴, 아일렛 간격</li>
+        <li>연결 방식 — 기존 아일렛 + 끈 유지 vs. 개선</li>
+        <li>양면 인쇄 여부</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    항목 1(퍼레이드 배너)까지 정리한 문서입니다. 나머지 인쇄물 항목이 확인되는 대로 이 문서에 이어 붙입니다.
+  </footer>
+
+</div>
