@@ -36,6 +36,13 @@ export interface NotifyInput {
   replyTo?: string;
   /** 템플릿 치환값 */
   data?: MailTemplateData;
+  /**
+   * 보낼 대상을 좁힌다. 비우면 이벤트가 정의한 대상 전부(보통 user + staff).
+   *
+   * 지나간 일을 뒤늦게 알릴 때 쓴다 — 며칠 전 배정을 이제 안내하면서
+   * 학원에도 "새 등록이 있었습니다"를 보내면 방금 일어난 일로 읽힌다.
+   */
+  audiences?: MailAudience[];
 }
 
 interface MemberRow {
@@ -280,7 +287,9 @@ export async function notifyEvent(
       loadMailConfig(),
       getCalendarConfig(),
     ]);
+    const wanted = input.audiences;
     for (const audience of def.audiences) {
+      if (wanted && !wanted.includes(audience)) continue;
       await notifyAudience(def, audience, input, config, calendar.timezone);
     }
   } catch (error) {
