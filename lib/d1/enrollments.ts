@@ -129,6 +129,24 @@ export async function getEnrollmentsForUsers(
 }
 
 /**
+ * 한 회원의 수업별 배정 상태 — programId → status.
+ *
+ * 신청서 승격이 "이미 취소해 둔 수업"을 되살리지 않으려고 먼저 확인하는 용도다.
+ * createEnrollment 는 멱등 UPSERT라 무조건 덮어쓰는데, 운영진이 수업 화면에서
+ * 취소로 내려 둔 사람을 다른 화면(신청 상세)의 배정 버튼이 조용히 되살리면
+ * 두 화면이 서로의 결정을 지우게 된다.
+ */
+export async function getEnrollmentStatusesForUser(
+  userId: string
+): Promise<Map<number, EnrollmentStatus>> {
+  const rows = await queryD1<{ program_id: number; status: EnrollmentStatus }>(
+    'SELECT program_id, status FROM program_enrollments WHERE user_id = ?',
+    [userId]
+  );
+  return new Map(rows.map((r) => [r.program_id, r.status]));
+}
+
+/**
  * 수강생 배정(멱등). 이미 있으면 상태·메모·배정자를 갱신한다(취소했다가 재배정 포함).
  * 어떤 회원을 배정할지(원생 역할 등)는 호출부에서 강제한다.
  */

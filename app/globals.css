@@ -12687,6 +12687,28 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .program-detail-apply-cta {
   margin-top: 28px;
 }
+/* 신청서가 붙었으나 접수가 끝난 수업 — 옛 모달로 되돌리지 않고 마감을 말한다.
+   히어로는 사진 위(다크 섬)라 전경은 --on-media 를 쓴다. */
+.program-detail-apply-cta.is-closed,
+.program-facts-cta.is-closed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 30px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: not-allowed;
+}
+.program-detail-apply-cta.is-closed {
+  border: 1px solid rgba(var(--ivory-rgb), 0.34);
+  color: var(--on-media);
+  opacity: 0.72;
+}
+.program-facts-cta.is-closed {
+  border: 1px solid var(--line-color, rgba(var(--fg-rgb), 0.18));
+  color: var(--text-muted);
+}
 .program-detail-body {
   padding: 64px 0;
 }

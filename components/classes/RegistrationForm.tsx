@@ -132,6 +132,12 @@ export default function RegistrationForm({ programId, programType, programTitleK
         }),
       });
       const data = await res.json();
+      // 이 수업이 신청서로 옮겨 갔다(409). 막다른 오류로 두지 않고 신청서로 데려간다 —
+      // 여기까지 온 사람은 예전 링크나 캐시된 화면으로 들어온 것이라 잘못이 없다.
+      if (!data.success && data.redirect) {
+        window.location.href = data.redirect;
+        return;
+      }
       if (!data.success) {
         throw new Error(data.error || t('register.errorGeneric', '신청 접수에 실패했습니다.'));
       }

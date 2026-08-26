@@ -331,3 +331,33 @@ export async function getFormSlugById(id: number): Promise<string | null> {
   if (!row || row.status !== 'open') return null;
   return row.slug;
 }
+
+/**
+ * 수업에 붙은 신청서의 지금 상태 — **신청 경로를 정하는 유일한 근거**.
+ *
+ * 왜 slug만으로는 안 되는가: getFormSlugById 는 접수 중이 아니면 null을 준다.
+ * 그러면 호출부가 "신청서가 없는 수업"과 "신청서가 마감된 수업"을 구별하지 못하고,
+ * 마감된 순간 옛 모달로 조용히 되돌아갔다. 둘은 전혀 다른 상황이다 —
+ * 전자는 옛 경로가 정답이고, 후자는 '접수 마감'이 정답이다.
+ *
+ * 화면(수업 상세)과 서버(POST /api/applications)가 **같은 이 함수**를 보고
+ * 판단해야 한 페이지에 서로 다른 곳으로 가는 버튼이 다시 생기지 않는다.
+ */
+export interface LinkedForm {
+  id: number;
+  slug: string;
+  status: FormStatus;
+  /** 지금 이 신청서로 받고 있는가 */
+  isOpen: boolean;
+}
+
+export async function getLinkedForm(formId: number | null): Promise<LinkedForm | null> {
+  if (!formId) return null;
+  const rows = await queryD1<{ id: number; slug: string; status: FormStatus }>(
+    'SELECT id, slug, status FROM forms WHERE id = ?',
+    [formId]
+  );
+  const row = rows[0];
+  if (!row) return null;
+  return { ...row, isOpen: row.status === 'open' };
+}

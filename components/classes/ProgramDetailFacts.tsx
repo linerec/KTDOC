@@ -3,14 +3,23 @@
 /**
  * ProgramDetailFacts
  * 상세 페이지 사이드바 — 일정/기간·대상·수강료·장소를 이중언어로 표시.
+ *
+ * 신청 버튼은 **스스로 판단하지 않는다.** 예전에는 여기서 무조건 옛 모달을 열어,
+ * 히어로 CTA가 신청서로 가는 동안 같은 페이지의 이 버튼만 옛 저장소로 신청을
+ * 떨어뜨렸다(글자·스타일까지 같아 방문자가 구별할 방법이 없었다).
+ * 이제 applyMode 를 상세 페이지에서 받아 그대로 따른다.
  */
 
+import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ApplyButton } from '@/components/classes/ApplyModal';
 import type { ProgramDetail } from '@/types/programs';
 
 interface ProgramDetailFactsProps {
   program: ProgramDetail;
+  /** 상세 페이지가 정한 신청 경로. 사이드바는 이 결정을 따르기만 한다. */
+  applyMode: 'form' | 'closed' | 'legacy';
+  formSlug: string | null;
 }
 
 function formatRange(start: string | null, end: string | null, isKo: boolean): string | null {
@@ -26,7 +35,11 @@ function formatRange(start: string | null, end: string | null, isKo: boolean): s
   return fmt(start);
 }
 
-export default function ProgramDetailFacts({ program }: ProgramDetailFactsProps) {
+export default function ProgramDetailFacts({
+  program,
+  applyMode,
+  formSlug,
+}: ProgramDetailFactsProps) {
   const { locale, messages } = useLanguage();
   const isKo = locale === 'ko';
   const t = (key: string, fallback: string) => messages[key] || fallback;
@@ -58,9 +71,21 @@ export default function ProgramDetailFacts({ program }: ProgramDetailFactsProps)
           </div>
         ))}
       </dl>
-      <ApplyButton className="btn-ink-primary program-facts-cta">
-        {t('programs.detail.applyCta', '신청하기')}
-      </ApplyButton>
+      {applyMode === 'form' && formSlug && (
+        <Link href={`/f/${formSlug}`} className="btn-ink-primary program-facts-cta">
+          {t('programs.detail.applyCta', '신청하기')}
+        </Link>
+      )}
+      {applyMode === 'closed' && (
+        <span className="program-facts-cta is-closed" aria-disabled="true">
+          {t('programs.detail.applyClosed', '접수 마감')}
+        </span>
+      )}
+      {applyMode === 'legacy' && (
+        <ApplyButton className="btn-ink-primary program-facts-cta">
+          {t('programs.detail.applyCta', '신청하기')}
+        </ApplyButton>
+      )}
     </div>
   );
 }

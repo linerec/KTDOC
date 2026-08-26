@@ -127,6 +127,7 @@ export {
   getEnrollmentCountsByProgram,
   getEnrollmentsForUser,
   getEnrollmentsForUsers,
+  getEnrollmentStatusesForUser,
   createEnrollment,
   updateEnrollment,
   deleteEnrollment,
@@ -247,6 +248,7 @@ export {
   getSubmittableFormBySlug,
   getFormBySlugAnyStatus,
   getFormSlugById,
+  getLinkedForm,
   slugExists,
   createForm,
   snapshotSchemaVersion,
@@ -262,7 +264,7 @@ export {
   duplicateForm,
   deleteForm,
 } from './forms';
-export type { CreateFormInput } from './forms';
+export type { CreateFormInput, LinkedForm } from './forms';
 
 export {
   insertResponse,

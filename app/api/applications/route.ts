@@ -3,13 +3,19 @@
  * POST /api/applications - 방문자 수업·캠프 신청 제출
  *
  * 1) 검증(필수값·이메일·동의·허니팟·최소제출시간·길이제한)
- * 2) 프로그램 확인(존재 + 공개) 후 D1에 신청 저장 (source of truth)
+ * 2) 프로그램 확인(존재 + 공개 + **신청서가 붙지 않았을 것**) 후 D1에 신청 저장
  * 3) 알림 메일 (신청자 확인 + 운영진 알림) — 실패해도 신청은 유효하다.
  *    누구에게 보낼지는 관리 콘솔의 이메일 설정을 따른다(lib/mail).
+ *
+ * ※ 이 라우트는 **옛 경로**다. 신청서(forms)가 붙은 수업은 여기로 받지 않는다.
+ *   화면에서 버튼을 지우는 것만으로는 부족했다 — 예전에 공유된 …#apply 링크,
+ *   캐시된 페이지, 직접 호출이 남아 있어 화면을 고친 뒤에도 신청이 새어 들어왔다.
+ *   판단 근거는 화면과 똑같이 getLinkedForm 하나다.
  */
 
 import { NextResponse } from 'next/server';
-import { getProgramById, createApplication } from '@/lib/d1';
+import { getProgramById, createApplication, getLinkedForm } from '@/lib/d1';
+import { acceptsLegacyApplication } from '@/lib/applyRoute';
 import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import type { CreateApplicationInput } from '@/types/programs';
 
@@ -107,6 +113,23 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: '신청할 수 없는 프로그램입니다.' },
         { status: 404 }
+      );
+    }
+
+    // 이 수업이 신청서로 옮겨 갔다면 옛 경로로는 받지 않는다.
+    // 판단 규칙은 수업 상세 화면과 **같은 함수**를 쓴다(lib/applyRoute).
+    // 409를 쓰는 이유: 요청이 틀린 게 아니라 받는 창구가 바뀐 것이다.
+    const linkedForm = await getLinkedForm(program.active_form_id);
+    if (!acceptsLegacyApplication(linkedForm) && linkedForm) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: linkedForm.isOpen
+            ? '이 수업은 수강 신청서로 접수합니다. 신청서에서 다시 신청해 주세요.'
+            : '이 수업은 접수가 마감되었습니다.',
+          redirect: linkedForm.isOpen ? `/f/${linkedForm.slug}` : null,
+        },
+        { status: 409 }
       );
     }
 

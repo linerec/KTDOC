@@ -168,6 +168,7 @@
   "programs.detail.priceTitle": "수강료",
   "programs.detail.locationTitle": "장소",
   "programs.detail.applyCta": "신청하기",
+  "programs.detail.applyClosed": "접수 마감",
   "share.qrHint": "휴대폰으로 스캔하세요",
   "share.qrAlt": "이 페이지로 이동하는 QR코드",
   "share.shareCta": "공유하기",

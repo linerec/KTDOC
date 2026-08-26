@@ -168,6 +168,7 @@
   "programs.detail.priceTitle": "Tuition",
   "programs.detail.locationTitle": "Location",
   "programs.detail.applyCta": "Apply Now",
+  "programs.detail.applyClosed": "Registration Closed",
   "share.qrHint": "Scan with your phone",
   "share.qrAlt": "QR code linking to this page",
   "share.shareCta": "Share",
