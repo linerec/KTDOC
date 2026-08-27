@@ -204,3 +204,18 @@ test('QR 그림 자체를 못 만들면 실패 — 빈 파일을 내려주지 �
   assert.equal(outcome, 'failed');
   assert.deepEqual(saved, []);
 });
+
+test('QR 주소는 보고 있는 브라우저가 아니라 공개 주소를 담는다', () => {
+  // 로컬·프리뷰에서 만든 QR이 그 주소를 담으면, 그림은 똑같이 생겼는데
+  // 받아서 스캔한 사람만 열리지 않는다. 만든 사람은 끝까지 알 수 없다.
+  assert.equal(
+    toShareUrl('/f/2026-2027-regular', 'https://ktdoc.org'),
+    'https://ktdoc.org/f/2026-2027-regular'
+  );
+  // 같은 경로를 로컬 origin으로 풀면 남에게 줄 수 없는 주소가 된다 — 이걸 피하려고
+  // ShareQrCard 는 window.location.origin 대신 SITE_URL 을 넘긴다.
+  assert.equal(
+    toShareUrl('/f/2026-2027-regular', 'http://localhost:3000'),
+    'http://localhost:3000/f/2026-2027-regular'
+  );
+});

@@ -17,6 +17,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '@/lib/i18n/useT';
+import { SITE_URL } from '@/lib/seoBusiness';
 import {
   browserCopyQrDeps,
   browserShareDeps,
@@ -62,9 +63,20 @@ export default function ShareQrCard({
   const [drawn, setDrawn] = useState(false);
   const [status, setStatus] = useState<string>('');
 
-  // 주소는 브라우저만 안다(서버 렌더 시점에는 알 수 없다).
+  /**
+   * QR이 담을 주소.
+   *
+   * **정식 사이트 주소(SITE_URL)로 고정한다.** 예전에는 window.location.origin 을
+   * 썼는데, 그러면 QR이 "지금 이 브라우저가 보고 있는 곳"을 담는다 — 로컬에서
+   * 만들면 localhost:3000, 프리뷰 배포에서 만들면 vercel.app 주소가 박힌다.
+   * 그림은 똑같이 생겨서 만든 사람은 알 수 없고, 받아서 스캔한 사람만 열리지 않는다.
+   * QR은 남에게 주려고 만드는 것이니 언제나 공개 주소를 담아야 한다.
+   *
+   * path 를 안 주면 지금 페이지의 경로를 쓰되, 호스트는 역시 정식 주소로 바꾼다.
+   */
   useEffect(() => {
-    setUrl(toShareUrl(path ?? window.location.href, window.location.origin));
+    const here = window.location.pathname + window.location.search;
+    setUrl(toShareUrl(path ?? here, SITE_URL));
   }, [path]);
 
   // QR은 필요할 때만 불러 온다 — 첫 화면 번들에 얹지 않는다.
@@ -80,7 +92,9 @@ export default function ShareQrCard({
           // 화면 크기의 두 배로 그려 둔다 — 고해상도 화면에서 선명하고,
           // 복사·저장된 그림도 인쇄에 쓸 만하다.
           width: size * 2,
-          margin: 2,
+          // 여백 4모듈은 QR 규격이 요구하는 '조용한 구역'이다. 2로 좁히면 화면에서는
+          // 읽히지만, 인쇄물에서 옆 글자·색 배경에 붙으면 스캐너가 경계를 못 찾는다.
+          margin: 4,
           // QR은 스캐너가 읽는 그림이라 테마를 따르지 않는다(CSS 쪽 주석 참고).
           color: { dark: '#000000', light: '#ffffff' },
         });
@@ -156,6 +170,15 @@ export default function ShareQrCard({
       <p className={status ? 'share-qr-hint is-status' : 'share-qr-hint'} aria-live="polite">
         {status || scanHint}
       </p>
+
+      {/* 주소를 글자로도 보여준다. 안내는 "주소를 복사해 카톡으로 보내세요"라고
+          하는데 정작 주소가 화면에 없었다 — 그리고 QR이 어디로 가는지 눈으로
+          확인할 방법도 이것뿐이다(스캔하기 전에는 알 수 없다). */}
+      {url && (
+        <p className="share-qr-url" title={url}>
+          {url.replace(/^https?:\/\//, '')}
+        </p>
+      )}
 
       <div className="share-qr-actions">
         <button type="button" className="share-qr-btn" onClick={handleShare} disabled={!url}>

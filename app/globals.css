@@ -21384,3 +21384,15 @@ button.admin-page-tab {
   cursor: pointer;
 }
 .notify-email-toggle input { cursor: pointer; width: 16px; height: 16px; }
+
+/* 공유 QR 카드 — QR이 담은 주소를 글자로도 보여준다.
+   스캔하기 전에는 QR이 어디로 가는지 알 수 없어서, 이 줄이 유일한 확인 수단이다. */
+.share-qr-url {
+  margin: 2px 0 10px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  word-break: break-all;
+  text-align: center;
+  user-select: all; /* 한 번 눌러 전체 선택 — 손으로 옮겨 적는 일이 없게 */
+}
