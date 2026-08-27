@@ -7,14 +7,14 @@ import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { roleLabel } from '@/lib/i18n/memberLabels';
 import { formatWhen } from './timeFormat';
-import type { MemberOption } from './NotifyForm';
+import type { MemberOption, ProgramOption } from './NotifyForm';
 
 export interface NotificationLog {
   id: number;
   title: string;
   body: string;
   url: string | null;
-  target_type: 'all' | 'role' | 'user';
+  target_type: 'all' | 'role' | 'user' | 'class';
   target_value: string | null;
   sent_count: number;
   fail_count: number;
@@ -26,15 +26,23 @@ interface NotifyHistoryProps {
   recent: NotificationLog[];
   /** 개인 발송의 대상 이름을 찾기 위한 명단 */
   members: MemberOption[];
+  /** 수업 발송의 수업 이름을 찾기 위한 목록 */
+  programs: ProgramOption[];
 }
 
-export default function NotifyHistory({ recent, members }: NotifyHistoryProps) {
+export default function NotifyHistory({ recent, members, programs }: NotifyHistoryProps) {
   const t = useT();
   const { locale } = useLanguage();
 
-  /** '전체' / '원생·학부모' / '개인: 홍길동' */
+  /** '전체' / '원생·학부모' / '수업: 유년부 난타' / '개인: 홍길동' */
   const targetLabel = (n: NotificationLog): string => {
     if (n.target_type === 'all') return t('admin.events.targetAll', '전체');
+    if (n.target_type === 'class') {
+      const p = programs.find((x) => String(x.id) === n.target_value);
+      return p
+        ? t('admin.notify.targetClassNamed', '수업: {name}', { name: p.title })
+        : t('admin.notify.targetClass', '수업');
+    }
     if (n.target_type === 'role') {
       return (n.target_value || '')
         .split(',')

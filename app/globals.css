@@ -21371,3 +21371,16 @@ button.admin-page-tab {
   cursor: pointer;
 }
 .resp-more-toggle:hover { color: var(--text-color); }
+
+/* 알림 발송 — 이메일 동시 발송 스위치.
+   기본이 켬이라 눈에 띄어야 하지만, 발송 버튼보다 앞서면 안 된다. */
+.notify-email-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-color);
+  cursor: pointer;
+}
+.notify-email-toggle input { cursor: pointer; width: 16px; height: 16px; }

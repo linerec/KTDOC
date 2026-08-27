@@ -12,6 +12,7 @@
  */
 
 import { queryD1, executeD1 } from './client';
+import { chunkParams } from './chunk';
 import type {
   Program,
   ProgramEnrollment,
@@ -144,6 +145,46 @@ export async function getEnrollmentStatusesForUser(
     [userId]
   );
   return new Map(rows.map((r) => [r.program_id, r.status]));
+}
+
+/**
+ * 수업별 '수강 중' 인원 — 수업 단위 공지에서 "몇 명에게 가는지" 미리 보여줄 때.
+ *
+ * getEnrollmentCountsByProgram 과 세는 기준이 다르다. 저쪽은 정원 표시용이라
+ * 대기·수료까지 넣고(취소만 뺀다), 이쪽은 **실제 발송 대상과 같은 수**여야 한다.
+ * 화면이 "5명"이라 해놓고 3명에게만 가면 아무도 눈치채지 못한 채 두 명이 빠진다.
+ */
+export async function getActiveEnrollmentCounts(
+  programIds: number[]
+): Promise<Map<number, number>> {
+  if (programIds.length === 0) return new Map();
+  const out = new Map<number, number>();
+  for (const chunk of chunkParams(programIds)) {
+    const rows = await queryD1<{ program_id: number; count: number }>(
+      `SELECT program_id, COUNT(*) AS count
+         FROM program_enrollments
+        WHERE program_id IN (${chunk.map(() => '?').join(', ')}) AND status = 'active'
+        GROUP BY program_id`,
+      chunk
+    );
+    for (const r of rows) out.set(r.program_id, r.count);
+  }
+  return out;
+}
+
+/**
+ * 한 수업에서 **지금 수강 중인** 회원 id — 수업 단위 공지의 대상.
+ *
+ * 'active'만 고른다. 대기(waitlist)·수료(completed)·취소(cancelled)에게
+ * "이번 주 휴강입니다"가 가면 안 된다 — 대기자는 아직 자리가 없고, 수료·취소자는
+ * 이미 그 반이 아니다. 필요한 자리가 생기면 그때 상태를 인자로 받는다.
+ */
+export async function getActiveEnrollmentUserIds(programId: number): Promise<string[]> {
+  const rows = await queryD1<{ user_id: string }>(
+    "SELECT user_id FROM program_enrollments WHERE program_id = ? AND status = 'active'",
+    [programId]
+  );
+  return rows.map((r) => r.user_id);
 }
 
 /**

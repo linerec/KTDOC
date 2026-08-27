@@ -1813,5 +1813,17 @@
   "admin.home.linkMyApplicationsDesc": "What you submitted and where it stands",
   "admin.home.appliedTitle": "Your registration is in",
   "admin.home.appliedDesc": "You can check the status of your {n} submitted registration(s). To add a class, please contact the studio.",
-  "admin.home.appliedCta": "View my registrations →"
+  "admin.home.appliedCta": "View my registrations →",
+  "admin.notify.targetClass": "Class",
+  "admin.notify.targetClassPick": "Class",
+  "admin.notify.targetClassNamed": "Class: {name}",
+  "admin.notify.classCount": "{n} enrolled",
+  "admin.notify.classHelp": "Goes to currently enrolled students and their guardians. Waitlisted, completed and cancelled are excluded.",
+  "admin.notify.classEmpty": "No one is currently enrolled in this class, so nothing can be sent.",
+  "admin.notify.needClass": "Please choose a class.",
+  "admin.notify.noPrograms": "No classes",
+  "admin.notify.alsoEmail": "Also send by email",
+  "admin.notify.alsoEmailOn": "Sent as a phone notification and an email. For students it also goes to their guardians. People who turned email off will not receive it.",
+  "admin.notify.alsoEmailOff": "Phone notification only — it reaches only those who turned notifications on ({n} devices). Everyone else has to sign in and open “My alerts”.",
+  "admin.notify.formHelp2": "Phone notifications reach only devices that turned them on ({n} now). With “Also send by email” checked below, it also goes out by email and reaches far more people. Title and text appear as written."
 }

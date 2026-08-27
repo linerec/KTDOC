@@ -127,6 +127,17 @@ export const MAIL_EVENTS: readonly MailEventDef[] = [
     bulk: true,
   },
   {
+    key: 'notice.broadcast',
+    label: '운영진이 보내는 공지',
+    description:
+      '알림 보내기 화면에서 운영진이 직접 쓴 공지. 휴대폰 알림과 함께 이메일로도 갈 때 이 스위치를 따릅니다.',
+    group: 'ops',
+    audiences: ['user'],
+    // 공지는 필수가 아니다 — 수신거부하신 분께는 보내지 않는다.
+    // (가입 확인·비밀번호처럼 계정에 꼭 필요한 메일만 essential 이다.)
+    defaultOn: { user: true },
+  },
+  {
     key: 'quota.warning',
     label: '발송 한도 경고',
     description:

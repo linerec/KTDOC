@@ -1,10 +1,17 @@
 'use client';
 
 /**
- * 알림 작성·발송 폼 — 대상(전체/역할별/개인)을 고르고 제목·내용을 써서 보낸다
+ * 알림 작성·발송 폼 — 대상(전체/역할별/수업/개인)을 고르고 제목·내용을 써서 보낸다
  *
  * 발송은 되돌릴 수 없다. 그래서 제목·내용이 비었거나 대상이 정해지지 않았으면
  * 서버에 보내기 전에 여기서 막는다.
+ *
+ * **이메일 동시 발송이 기본이다.** 휴대폰 알림만으로는 회원 절반에게 닿지 않는다
+ * (푸시를 켠 분이 전체의 절반뿐이고, 학부모는 더 낮다). 끌 수는 있지만,
+ * 끄면 무엇을 잃는지 화면이 말해 준다.
+ *
+ * '수업' 대상은 그 반에서 **지금 수강 중인** 원생과 보호자에게만 간다 —
+ * 대기·수료·취소한 분은 빠진다.
  */
 
 import { useState } from 'react';
@@ -20,29 +27,45 @@ export interface MemberOption {
   role: MemberRole;
 }
 
-type TargetType = 'all' | 'role' | 'user';
+export interface ProgramOption {
+  id: number;
+  title: string;
+  /** 지금 수강 중인 인원 — 고르기 전에 몇 명에게 가는지 보여준다 */
+  activeCount: number;
+}
+
+type TargetType = 'all' | 'role' | 'class' | 'user';
 
 const ROLE_CHOICES: MemberRole[] = ['student', 'parent', 'teacher', 'admin'];
 
 interface NotifyFormProps {
   members: MemberOption[];
+  programs: ProgramOption[];
   subscriberCount: number;
 }
 
-export default function NotifyForm({ members, subscriberCount }: NotifyFormProps) {
+export default function NotifyForm({ members, programs, subscriberCount }: NotifyFormProps) {
   const router = useRouter();
   const t = useT();
 
   const [targetType, setTargetType] = useState<TargetType>('all');
   const [roles, setRoles] = useState<MemberRole[]>(['student', 'parent']);
   const [userId, setUserId] = useState<string>(members[0]?.id ?? '');
+  // 수강생이 있는 첫 수업을 기본으로 — 0명인 반이 먼저 뜨면 고르자마자 보낼 수 없다.
+  const [programId, setProgramId] = useState<string>(
+    String((programs.find((p) => p.activeCount > 0) ?? programs[0])?.id ?? '')
+  );
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [url, setUrl] = useState('');
+  /** 기본은 켬 — 푸시만으로는 절반에게 닿지 않는다. */
+  const [alsoEmail, setAlsoEmail] = useState(true);
 
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
+
+  const pickedProgram = programs.find((p) => String(p.id) === programId);
 
   const toggleRole = (r: MemberRole) => {
     setRoles((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
@@ -63,6 +86,16 @@ export default function NotifyForm({ members, subscriberCount }: NotifyFormProps
       setError(t('admin.notify.needUser', '대상 회원을 선택해 주세요.'));
       return;
     }
+    if (targetType === 'class' && !programId) {
+      setError(t('admin.notify.needClass', '수업을 선택해 주세요.'));
+      return;
+    }
+    if (targetType === 'class' && pickedProgram && pickedProgram.activeCount === 0) {
+      setError(
+        t('admin.notify.classEmpty', '이 수업에는 수강 중인 원생이 없어 보낼 수 없습니다.')
+      );
+      return;
+    }
 
     setSending(true);
     try {
@@ -73,10 +106,12 @@ export default function NotifyForm({ members, subscriberCount }: NotifyFormProps
           title: title.trim(),
           body: body.trim(),
           url: url.trim() || undefined,
+          alsoEmail,
           target: {
             type: targetType,
             roles: targetType === 'role' ? roles : undefined,
             userId: targetType === 'user' ? userId : undefined,
+            programId: targetType === 'class' ? Number(programId) : undefined,
           },
         }),
       });
@@ -100,6 +135,7 @@ export default function NotifyForm({ members, subscriberCount }: NotifyFormProps
   const targetTabs: [TargetType, string][] = [
     ['all', t('admin.events.targetAll', '전체')],
     ['role', t('admin.events.targetRole', '역할별')],
+    ['class', t('admin.notify.targetClass', '수업')],
     ['user', t('admin.notify.targetUser', '개인')],
   ];
 
@@ -108,8 +144,8 @@ export default function NotifyForm({ members, subscriberCount }: NotifyFormProps
       <h2 className="admin-form-section-title">{t('admin.notify.newAlert', '새 알림')}</h2>
       <p className="admin-form-help">
         {t(
-          'admin.notify.formHelp',
-          '알림을 켠 기기로만 전송됩니다(현재 {n}대). 제목·내용은 휴대폰 알림에 그대로 표시됩니다.',
+          'admin.notify.formHelp2',
+          '휴대폰 알림은 켜신 기기로만 갑니다(현재 {n}대). 아래 ‘이메일로도 함께 보내기’가 켜져 있으면 이메일로도 나가 훨씬 많은 분께 닿습니다. 제목·내용은 그대로 표시됩니다.',
           { n: subscriberCount }
         )}
       </p>
@@ -146,6 +182,38 @@ export default function NotifyForm({ members, subscriberCount }: NotifyFormProps
               </label>
             ))}
           </div>
+        </div>
+      )}
+
+      {targetType === 'class' && (
+        <div className="admin-form-group">
+          <label className="admin-form-label" htmlFor="notify-class">
+            {t('admin.notify.targetClassPick', '수업')}
+          </label>
+          <select
+            id="notify-class"
+            className="admin-form-input"
+            value={programId}
+            onChange={(e) => setProgramId(e.target.value)}
+            disabled={sending}
+          >
+            {programs.length === 0 && (
+              <option value="">{t('admin.notify.noPrograms', '수업이 없습니다')}</option>
+            )}
+            {programs.map((p) => (
+              <option key={p.id} value={String(p.id)}>
+                {p.title} · {t('admin.notify.classCount', '수강생 {n}명', { n: p.activeCount })}
+              </option>
+            ))}
+          </select>
+          <p className="admin-form-help">
+            {pickedProgram && pickedProgram.activeCount === 0
+              ? t('admin.notify.classEmpty', '이 수업에는 수강 중인 원생이 없어 보낼 수 없습니다.')
+              : t(
+                  'admin.notify.classHelp',
+                  '지금 수강 중인 원생과 보호자에게 갑니다. 대기·수료·취소하신 분은 빠집니다.'
+                )}
+          </p>
         </div>
       )}
 
@@ -223,6 +291,31 @@ export default function NotifyForm({ members, subscriberCount }: NotifyFormProps
         />
       </div>
 
+      {/* 이메일 동시 발송 — 기본 켬. 끄면 무엇을 잃는지 바로 아래에서 말한다. */}
+      <div className="admin-form-group">
+        <label className="notify-email-toggle">
+          <input
+            type="checkbox"
+            checked={alsoEmail}
+            onChange={(e) => setAlsoEmail(e.target.checked)}
+            disabled={sending}
+          />
+          <span>{t('admin.notify.alsoEmail', '이메일로도 함께 보내기')}</span>
+        </label>
+        <p className="admin-form-help">
+          {alsoEmail
+            ? t(
+                'admin.notify.alsoEmailOn',
+                '휴대폰 알림과 이메일로 함께 갑니다. 원생에게 보내면 보호자에게도 함께 갑니다. 이메일 수신을 꺼두신 분께는 가지 않습니다.'
+              )
+            : t(
+                'admin.notify.alsoEmailOff',
+                '휴대폰 알림만 갑니다 — 알림을 켜신 분에게만 도착합니다(현재 {n}대). 나머지 분은 로그인해서 ‘내 알림’을 열어야 봅니다.',
+                { n: subscriberCount }
+              )}
+        </p>
+      </div>
+
       {error && (
         <p className="admin-account-feedback admin-account-feedback--error" role="alert">
           {error}
@@ -239,7 +332,10 @@ export default function NotifyForm({ members, subscriberCount }: NotifyFormProps
           type="button"
           className="admin-btn admin-btn-gold"
           onClick={handleSend}
-          disabled={sending}
+          disabled={
+            sending ||
+            (targetType === 'class' && (!pickedProgram || pickedProgram.activeCount === 0))
+          }
         >
           {sending
             ? t('admin.notify.sending', '보내는 중…')

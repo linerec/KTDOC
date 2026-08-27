@@ -48,6 +48,15 @@ export function renderMailBody(
   const linkEn = url ? `\n\nDetails: ${url}` : '';
 
   switch (`${eventKey}:${audience}`) {
+    // 운영진이 직접 쓴 공지 — 본문이 사람 손으로 들어온다.
+    // 다른 이벤트와 달리 **번역문을 붙이지 않는다.** 쓰신 말 그대로 나가야 한다
+    // (영문을 지어내면 원장님이 쓰지 않은 문장이 학원 이름으로 나간다).
+    case 'notice.broadcast:user':
+      return {
+        subject: title || `[${SITE_NAME}] 안내`,
+        text: `${s(data, 'message')}${linkKo}\n\n— ${SITE_NAME}`,
+      };
+
     case 'member.signup:user':
       return {
         subject: '가입 신청이 접수되었습니다 / Registration received',

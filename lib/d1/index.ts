@@ -128,6 +128,8 @@ export {
   getEnrollmentsForUser,
   getEnrollmentsForUsers,
   getEnrollmentStatusesForUser,
+  getActiveEnrollmentUserIds,
+  getActiveEnrollmentCounts,
   createEnrollment,
   updateEnrollment,
   deleteEnrollment,

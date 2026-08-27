@@ -15,6 +15,7 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getMembers } from '@/lib/members';
 import { getRecentNotifications } from '@/lib/push/notifications';
+import { getPrograms, getActiveEnrollmentCounts } from '@/lib/d1';
 import { countSubscriptions } from '@/lib/push/subscriptions';
 import {
   getMembersWithoutPush,
@@ -61,13 +62,20 @@ export default async function AdminNotifyPage({ searchParams }: PageProps) {
   ]);
 
   // 보이는 탭에 필요한 것만 부른다.
-  const [membersResult, recent] =
+  // 수업 목록은 '수업' 대상 선택과 발송 내역의 이름 표시 둘 다에 쓴다.
+  const [membersResult, recent, programsResult] =
     view === 'send'
       ? await Promise.all([
           getMembers({ status: 'active', limit: 500 }).catch(() => ({ members: [], total: 0 })),
           getRecentNotifications(20).catch(() => []),
+          getPrograms({ limit: 200 }).catch(() => ({ programs: [], total: 0 })),
         ])
-      : [{ members: [], total: 0 }, []];
+      : [{ members: [], total: 0 }, [], { programs: [], total: 0 }];
+
+  // 수강 인원은 프로그램 id가 나온 뒤에야 셀 수 있다. 발송 대상과 같은 기준('active')으로 센다.
+  const enrollCounts = await getActiveEnrollmentCounts(
+    programsResult.programs.map((p) => p.id)
+  ).catch(() => new Map<number, number>());
 
   const [pushMembers, pushOff, pushEvents] =
     view === 'status'
@@ -83,6 +91,12 @@ export default async function AdminNotifyPage({ searchParams }: PageProps) {
     name: m.name,
     email: m.email,
     role: m.role,
+  }));
+
+  const programOptions = programsResult.programs.map((p) => ({
+    id: p.id,
+    title: p.title_ko,
+    activeCount: enrollCounts.get(p.id) ?? 0,
   }));
 
   // 탭 라벨은 AdminPageTabs가 그릴 때 번역한다 — 여기서는 키와 한국어 폴백만 정한다.
@@ -156,6 +170,7 @@ export default async function AdminNotifyPage({ searchParams }: PageProps) {
       {view === 'send' ? (
         <NotifyComposer
           members={memberOptions}
+          programs={programOptions}
           recent={recent}
           subscriberCount={subscriberCount}
         />

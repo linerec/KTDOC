@@ -7,7 +7,12 @@
 
 import { query } from '@/lib/db';
 
-export type NotifyTargetType = 'all' | 'role' | 'user';
+/**
+ * 알림 발송 대상.
+ * 'class' — 한 수업의 수강생(+보호자). target_value 에 programs.id(D1)를 담는다.
+ * 저장소가 달라 FK는 없다(program_enrollments 와 같은 교차 저장소 관례).
+ */
+export type NotifyTargetType = 'all' | 'role' | 'user' | 'class';
 
 export interface LogNotificationInput {
   senderId: string;

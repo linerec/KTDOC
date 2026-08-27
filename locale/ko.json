@@ -1813,5 +1813,17 @@
   "admin.home.linkMyApplicationsDesc": "내가 낸 신청과 진행 상태",
   "admin.home.appliedTitle": "신청이 접수되어 있습니다",
   "admin.home.appliedDesc": "내신 신청 {n}건의 진행 상태를 확인하실 수 있습니다. 과목을 더 넣고 싶으시면 학원으로 알려 주세요.",
-  "admin.home.appliedCta": "내 신청 내역 보기 →"
+  "admin.home.appliedCta": "내 신청 내역 보기 →",
+  "admin.notify.targetClass": "수업",
+  "admin.notify.targetClassPick": "수업",
+  "admin.notify.targetClassNamed": "수업: {name}",
+  "admin.notify.classCount": "수강생 {n}명",
+  "admin.notify.classHelp": "지금 수강 중인 원생과 보호자에게 갑니다. 대기·수료·취소하신 분은 빠집니다.",
+  "admin.notify.classEmpty": "이 수업에는 수강 중인 원생이 없어 보낼 수 없습니다.",
+  "admin.notify.needClass": "수업을 선택해 주세요.",
+  "admin.notify.noPrograms": "수업이 없습니다",
+  "admin.notify.alsoEmail": "이메일로도 함께 보내기",
+  "admin.notify.alsoEmailOn": "휴대폰 알림과 이메일로 함께 갑니다. 원생에게 보내면 보호자에게도 함께 갑니다. 이메일 수신을 꺼두신 분께는 가지 않습니다.",
+  "admin.notify.alsoEmailOff": "휴대폰 알림만 갑니다 — 알림을 켜신 분에게만 도착합니다(현재 {n}대). 나머지 분은 로그인해서 ‘내 알림’을 열어야 봅니다.",
+  "admin.notify.formHelp2": "휴대폰 알림은 켜신 기기로만 갑니다(현재 {n}대). 아래 ‘이메일로도 함께 보내기’가 켜져 있으면 이메일로도 나가 훨씬 많은 분께 닿습니다. 제목·내용은 그대로 표시됩니다."
 }
