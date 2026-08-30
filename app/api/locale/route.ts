@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
 import { getAllLocaleMessages, upsertLocale, deleteLocale } from '@/lib/d1';
+import { isRichKeycode } from '@/lib/i18n/richKeys';
+import { sanitizeRichText } from '@/lib/html/richText';
 
 // GET - Fetch all locale data from D1
 export async function GET() {
@@ -44,11 +46,19 @@ export async function POST(request: Request) {
       );
     }
 
-    await upsertLocale(
-      keycode,
-      localeData.ko || '',
-      localeData.en || ''
-    );
+    // 긴 본문 키는 저장 전에 깎는다. 화면에서 이미 깎아 보내지만, 화면을 거치지 않는
+    // 저장 경로(스크립트·옛 클라이언트)도 같은 문을 지나야 한다 — 이 값들은
+    // dangerouslySetInnerHTML 로 그대로 페이지 마크업이 된다.
+    // 짧은 문구 키는 건드리지 않는다: locale 파일에 <br/>·<a class="...">로 손질해 둔
+    // 값이 열댓 개 있고, 같은 허용 목록으로 깎으면 조용히 모양이 바뀐다.
+    const clean = isRichKeycode(keycode)
+      ? {
+          ko: sanitizeRichText(localeData?.ko || ''),
+          en: sanitizeRichText(localeData?.en || ''),
+        }
+      : { ko: localeData?.ko || '', en: localeData?.en || '' };
+
+    await upsertLocale(keycode, clean.ko, clean.en);
 
     return NextResponse.json({ success: true });
   } catch (error) {

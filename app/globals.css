@@ -3509,6 +3509,249 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   cursor: not-allowed;
 }
 
+/* ── 긴 본문 편집 (위지윅) ─────────────────────────────────────────────
+   짧은 문구를 고치는 모달과 같은 껍데기를 쓰되 넓다. 한국어와 영어를 좌우로 놓는
+   것이 핵심이다 — 소개글은 두 언어가 같은 사실을 말해야 하는데, 위아래로 놓으면
+   한쪽을 고치고 다른 쪽을 잊는다(실제로 무대 목록이 한동안 어긋나 있었다). */
+.intl-modal--rich {
+  max-width: min(1180px, 96vw);
+}
+
+.intl-modal-hint {
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+.intl-modal-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* 쓰다 만 글 알림 — 조용히 덮어쓰지 않는다. 어느 쪽이 최신인지는 쓴 사람만 안다. */
+.intl-modal-draft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--soft-gold);
+  border-radius: 6px;
+  background: rgba(212, 160, 23, 0.08);
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.intl-modal-draft button {
+  background: none;
+  border: 1px solid var(--soft-gold);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  color: var(--accent-text);
+  cursor: pointer;
+}
+
+.intl-modal-draft button.is-quiet {
+  border-color: rgba(var(--fg-rgb), 0.25);
+  color: var(--text-muted);
+}
+
+.rt-editor {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rt-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.rt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid rgba(var(--fg-rgb), 0.15);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: rgba(var(--fg-rgb), 0.05);
+}
+
+.rt-tool {
+  padding: 5px 9px;
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+  color: var(--text-color);
+  background: var(--bg-color);
+  border: 1px solid rgba(var(--fg-rgb), 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.rt-tool:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  background: rgba(212, 160, 23, 0.1);
+}
+
+.rt-tool:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rt-tool--bold {
+  font-weight: 700;
+}
+
+.rt-tool--italic {
+  font-style: italic;
+}
+
+.rt-tool--highlight {
+  color: var(--accent-text);
+}
+
+.rt-linkbar {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-left: 1px solid rgba(var(--fg-rgb), 0.15);
+  border-right: 1px solid rgba(var(--fg-rgb), 0.15);
+  background: rgba(var(--fg-rgb), 0.03);
+}
+
+.rt-linkbar input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  color: var(--text-color);
+  background: var(--bg-color);
+  border: 1px solid rgba(var(--fg-rgb), 0.15);
+  border-radius: 4px;
+}
+
+/* 쓰는 칸. 공개 화면과 글자 크기·줄간격을 맞춰 두어야 "이 길이면 이만큼"이 보인다 —
+   그게 위지윅의 전부다. 색은 모달 지면 위라 공개 화면(먹 배경)과 다를 수밖에 없다. */
+.rt-surface {
+  position: relative;
+  min-height: 320px;
+  max-height: min(52vh, 520px);
+  overflow-y: auto;
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: var(--text-color);
+  background: rgba(var(--fg-rgb), 0.05);
+  border: 1px solid rgba(var(--fg-rgb), 0.15);
+  border-radius: 0 0 6px 6px;
+}
+
+.rt-surface:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: rgba(var(--fg-rgb), 0.08);
+}
+
+/* 빈 칸 안내. 흐름에서 빼야 한다 — 흘려 두면 안내문이 빈 문단을 아래로 밀어
+   커서가 안내문 밑에서 깜빡인다. */
+.rt-surface.is-empty::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.rt-surface p {
+  margin: 0 0 14px;
+}
+
+.rt-surface h3 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 400;
+  margin: 20px 0 8px;
+}
+
+.rt-surface h4 {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 400;
+  margin: 16px 0 6px;
+}
+
+/* 목록 표시는 공개 화면과 같은 금색 · 로. 전역 리셋이 list-style을 없애 두어서
+   그냥 두면 편집기 안에서 목록이 '들여쓴 문단'처럼 보인다 — 지금 이 줄이 목록인지
+   아닌지를 모르면 위지윅이라 할 수 없다. */
+.rt-surface ul {
+  list-style: none;
+  margin: 0 0 14px;
+  padding-left: 4px;
+}
+
+.rt-surface ol {
+  /* 번호는 브라우저가 그린다 */
+  list-style: decimal;
+  margin: 0 0 14px;
+  padding-left: 24px;
+}
+
+.rt-surface li {
+  margin-bottom: 2px;
+}
+
+.rt-surface ul > li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.rt-surface ul > li::before {
+  content: '·';
+  position: absolute;
+  left: 2px;
+  color: var(--soft-gold-text);
+  font-weight: 700;
+}
+
+.rt-surface blockquote {
+  margin: 0 0 14px;
+  padding-left: 14px;
+  border-left: 2px solid var(--soft-gold);
+  color: var(--text-muted);
+}
+
+.rt-surface .highlight {
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+.rt-surface a {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
+
+/* 좁은 화면에서는 두 언어를 위아래로. 나란히 두려다 두 칸 모두 못 읽게 된다. */
+@media (max-width: 860px) {
+  .intl-modal-pair {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .rt-surface {
+    min-height: 200px;
+  }
+}
+
 /* Modal Focus & Event Isolation */
 .intl-modal-overlay,
 .image-object-modal-overlay {
@@ -10940,83 +11183,100 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   }
 }
 
-.about-director-bio {
+/* 원장 소개 — 소개글 + 주요 초청공연 + 수상이 위지윅 한 덩어리다.
+   읽을 문장은 문단으로, 훑을 항목은 목록으로 — 그 문법은 예전 그대로다. 달라진 것은
+   그 문법을 **마크업이 아니라 CSS가 안다**는 것이다. 쓰시는 분은 엔터를 칠 뿐이고,
+   무대가 6개든 20개든 여기가 같은 모양으로 받는다. */
+.about-director-profile.intl-object {
+  /* .intl-object 는 전역이 display: inline 이라 문단이 여럿이면 한 줄로 붙는다 */
+  display: block;
   text-align: left;
   /* 칸 전체를 쓰되 한 줄이 너무 길어지지 않게만 막는다.
      400px 로 묶여 있을 때는 소개글이 세로로 한없이 흘러내렸다. */
   max-width: 62ch;
 }
 
-.about-director-bio p {
+.about-director-profile p {
   font-family: var(--font-body);
   font-size: 0.85rem;
   line-height: 1.9;
-  color: rgba(var(--ivory-rgb),  0.82);
-  margin-bottom: 20px;
+  color: rgba(var(--ivory-rgb), 0.82);
+  margin: 0 0 20px;
 }
 
-/* .intl-object 는 전역이 display: inline 이라 문단이 여럿이면 한 줄로 붙는다
-   (선생님 섹션도 같은 보정을 쓴다) */
-.about-director-bio .intl-object {
-  display: block;
-}
-
-.about-director-bio .highlight {
-  color: var(--accent-text);
-  font-weight: 500;
-}
-
-/* 주요 무대·수상 — 선생님 카드의 '주요 경력'과 같은 문법. 문장 속에 묻히면
-   안 되는 이름(카네기홀·UN 본부·펠로우십)만 목록으로 떨어뜨린다. */
-.about-director-credits {
-  max-width: 62ch;
-}
-
-.about-director-block + .about-director-block {
-  margin-top: 26px;
-}
-
-.about-director-block-title.intl-object,
-.about-director-block-lead.intl-object {
-  display: block;
-}
-
-.about-director-block-title {
+/* 소제목 — 예전 .about-director-block-title. 앞 블록과 사이를 벌리는 것은
+   첫 소제목에는 걸리지 않아야 하므로 인접 선택자로 준다. */
+.about-director-profile h3 {
   font-family: var(--font-heading);
   font-size: 1.05rem;
+  font-weight: 400;
   color: rgba(var(--ivory-rgb), 0.9);
   margin: 0 0 10px;
 }
 
-.about-director-block-lead {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  line-height: 1.9;
-  color: rgba(var(--ivory-rgb), 0.7);
-  margin: 0 0 10px;
+.about-director-profile * + h3 {
+  margin-top: 26px;
 }
 
-.about-director-block ul {
+/* 소제목 바로 아래 문단은 '들어가는 말'이다 — 예전 .about-director-block-lead가
+   하던 일을 자리가 대신한다. 쓰시는 분이 따로 표시할 것이 없다. */
+.about-director-profile h3 + p {
+  color: rgba(var(--ivory-rgb), 0.7);
+  margin-bottom: 10px;
+}
+
+.about-director-profile ul {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 20px;
 }
 
-.about-director-block li {
+.about-director-profile ol {
+  /* 번호는 브라우저가 그린다 — 글머리표와 달리 직접 그릴 수 없다 */
+  padding-left: 22px;
+  margin: 0 0 20px;
+}
+
+.about-director-profile li {
   font-family: var(--font-body);
   font-size: 0.85rem;
   line-height: 1.9;
   color: rgba(var(--ivory-rgb), 0.75);
+}
+
+.about-director-profile ul > li {
   padding-left: 18px;
   position: relative;
 }
 
-.about-director-block li::before {
+.about-director-profile ul > li::before {
   content: '·';
   position: absolute;
   left: 2px;
   color: var(--soft-gold-text);
   font-weight: 700;
+}
+
+.about-director-profile :last-child {
+  margin-bottom: 0;
+}
+
+.about-director-profile .highlight {
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+.about-director-profile a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.about-director-profile blockquote {
+  margin: 0 0 20px;
+  padding-left: 16px;
+  border-left: 2px solid var(--soft-gold);
+  color: rgba(var(--ivory-rgb), 0.75);
 }
 
 /* Right Column (dance photo) - moved to left side */
@@ -11167,8 +11427,7 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 
   /* 한 칸으로 접히면 제목·사진만 가운데 두고 읽을 것은 왼쪽에 건다.
      목록을 가운데 정렬하면 글머리 기호가 줄마다 들쭉날쭉해진다. */
-  .about-director-bio,
-  .about-director-credits {
+  .about-director-profile.intl-object {
     text-align: left;
     max-width: 100%;
     width: 100%;

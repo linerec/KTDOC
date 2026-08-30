@@ -103,48 +103,24 @@ export default function About() {
                 <DirectorLivingPortrait alt="안은희 단장 - Director Eunhee Ahn" />
               </div>
 
-              {/* Bio — 문단 셋에 이어 무대·수상 목록. 선생님 카드(약력 + 주요 경력)와
-                  같은 문법을 쓴다: 읽을 문장은 문단으로, 훑을 항목은 목록으로.
-                  한 덩어리 긴 문단은 카네기홀·UN 같은 이름을 문장 속에 묻어 버린다. */}
-              <div className="about-director-bio reveal reveal--up" style={revealDelay(240)}>
-                <IntlObject keycode="about.director.bio.1" returnType="p" />
-                <IntlObject keycode="about.director.bio.2" returnType="p" />
-                <IntlObject keycode="about.director.bio.3" returnType="p" />
-              </div>
+              {/* 소개글 + 주요 초청공연 + 수상 — 한 덩어리 위지윅.
+                  읽을 문장은 문단으로, 훑을 항목은 목록으로. 그 문법은 그대로다.
+                  달라진 것은 **칸의 개수를 코드가 정하지 않는다**는 것이다.
 
-              <div className="about-director-credits reveal reveal--up" style={revealDelay(300)}>
-                <div className="about-director-block">
-                  <IntlObject
-                    keycode="about.director.stages.title"
-                    returnType="p"
-                    className="about-director-block-title"
-                  />
-                  <IntlObject
-                    keycode="about.director.stages.lead"
-                    returnType="p"
-                    className="about-director-block-lead"
-                  />
-                  <ul>
-                    <li><IntlObject keycode="about.director.stages.1" /></li>
-                    <li><IntlObject keycode="about.director.stages.2" /></li>
-                    <li><IntlObject keycode="about.director.stages.3" /></li>
-                    <li><IntlObject keycode="about.director.stages.4" /></li>
-                    <li><IntlObject keycode="about.director.stages.5" /></li>
-                    <li><IntlObject keycode="about.director.stages.6" /></li>
-                  </ul>
-                </div>
+                  예전에는 문단 3개와 목록 6줄이 여기 박혀 있었다. 칸이 모자라자
+                  한 칸에 엔터로 여러 줄을 넣으셨는데, HTML은 줄바꿈을 공백으로 접는다
+                  — 대사관 초청공연 세 건과 NBC TODAY Show가 한 줄로 이어져 나왔다.
+                  칸에 줄을 나눠 넣었으니 나눠 보일 거라 믿는 것이 당연하고,
+                  그 믿음이 깨지는 자리를 화면에서는 알아낼 수 없다.
 
-                <div className="about-director-block">
-                  <IntlObject
-                    keycode="about.director.awards.title"
-                    returnType="p"
-                    className="about-director-block-title"
-                  />
-                  <ul>
-                    <li><IntlObject keycode="about.director.awards.1" /></li>
-                  </ul>
-                </div>
-              </div>
+                  이제 엔터가 곧 새 줄이다. 스타일은 아래 .about-director-profile 이
+                  옛 블록(.about-director-bio/-block)과 같은 모양을 그대로 그린다. */}
+              <IntlObject
+                rich
+                keycode="about.director.profile"
+                className="about-director-profile reveal reveal--up"
+                style={revealDelay(240)}
+              />
             </div>
 
             {/* Right Column - Full Body Dance Photo */}
