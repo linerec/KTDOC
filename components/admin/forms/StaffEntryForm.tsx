@@ -22,6 +22,7 @@ import {
   ENTRY_CHANNELS,
   ENTRY_CHANNEL_LABEL,
   relaxSchemaForStaffEntry,
+  staffEntryPrefill,
   type EntryChannel,
 } from '@/lib/forms/staffEntry';
 import {
@@ -51,6 +52,11 @@ interface Props {
   formId: number;
   slug: string;
   schema: FormSchema;
+}
+
+/** 검색 결과 한 줄을 폼에 옮길 수 있는 모양으로. 빈 값은 빈 문자열이다. */
+function contactOf(m: LinkableMember) {
+  return { name: m.name ?? '', email: m.email, phone: m.phone ?? '' };
 }
 
 export default function StaffEntryForm({ formId, slug, schema }: Props) {
@@ -133,9 +139,13 @@ export default function StaffEntryForm({ formId, slug, schema }: Props) {
       userId: m.id,
       label: name || m.email,
       sub: `${m.email} · ${MEMBER_ROLE_LABELS[m.role]} · ${MEMBER_STATUS_LABELS[m.status]}`,
-      fill: isParent
-        ? { guardian_name: name, email: m.email, phone: m.phone ?? '' }
-        : { student_name: name, email: m.email, phone: m.phone ?? '' },
+      // 어느 칸을 채울지는 코어 bind 마다 한 곳에서 정한다(staffEntryPrefill).
+      // 학부모를 골랐으면 그 사람은 '보호자'다 — 학생 이름 칸에 넣지 않는다.
+      fill: staffEntryPrefill(
+        isParent
+          ? { student: null, guardian: contactOf(m) }
+          : { student: contactOf(m), guardian: null }
+      ),
       warn: !isParent
         ? undefined
         : kids.length > 0
@@ -152,12 +162,11 @@ export default function StaffEntryForm({ formId, slug, schema }: Props) {
       userId: child.id,
       label: child.name,
       sub: `${parent.name ?? parent.email} 님의 자녀 · 연락처는 보호자 것으로 채웠습니다`,
-      fill: {
-        student_name: child.name,
-        guardian_name: parent.name ?? '',
-        email: parent.email,
-        phone: parent.phone ?? '',
-      },
+      // 자녀 계정에는 대개 연락처가 없다 — 연락은 보호자 것으로 채워진다.
+      fill: staffEntryPrefill({
+        student: { name: child.name, email: '', phone: '' },
+        guardian: contactOf(parent),
+      }),
     });
     setHits(null);
   }

@@ -9,7 +9,45 @@
  * 괄호로 붙이므로 실제로는 조사를 쓰지 않지만, 나중에 문장에 넣더라도 깨지지 않게).
  */
 
-import type { FormQuestion, FormSchema } from '@/types/forms';
+import type { CoreBindKey, FormQuestion, FormSchema } from '@/types/forms';
+
+/** 회원 하나에서 폼으로 옮길 수 있는 값. 없으면 빈 문자열이다. */
+export interface MemberContact {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+/**
+ * 회원을 골랐을 때 **어느 칸이 채워지는가** — 코어 bind 마다 하나씩 정한다.
+ *
+ * 반환형이 아니라 안쪽의 `Record<CoreBindKey, string>` 이 요점이다.
+ * types/forms.ts 의 CORE_BIND_KEYS 에 새 bind 가 하나 늘면 이 표에 구멍이 생겨
+ * **타입 검사가 막는다**. 신청서에 코어 문항이 늘었는데 대리 입력만 그것을 모르는
+ * 상태로는 빌드가 되지 않는다 — 주석은 지나칠 수 있지만 컴파일 오류는 못 지나친다.
+ *
+ * student  = 실제로 배울 사람. guardian = 연락을 받을 보호자(본인 신청이면 없다).
+ */
+export function staffEntryPrefill(who: {
+  student: MemberContact | null;
+  guardian: MemberContact | null;
+}): Partial<Record<CoreBindKey, string>> {
+  const fill: Record<CoreBindKey, string> = {
+    student_name: who.student?.name ?? '',
+    guardian_name: who.guardian?.name ?? '',
+    // 연락은 보호자에게 간다. 자녀 계정에는 전화번호가 없는 경우가 대부분이라
+    // 보호자 것을 먼저 쓰고, 본인 신청(보호자 없음)일 때만 본인 것을 쓴다.
+    email: who.guardian?.email || who.student?.email || '',
+    phone: who.guardian?.phone || who.student?.phone || '',
+    // 학년은 회원 정보에 없다 — 통화하며 받아 적는 칸이다.
+    // 지어내느니 비워 두는 편이 낫다(틀린 학년으로 반이 갈린다).
+    student_grade: '',
+  };
+
+  // 빈 값은 아예 넘기지 않는다 — 렌더러가 "빈 칸만 채운다"로 판단하므로
+  // 빈 문자열을 넘겨도 해는 없지만, 채운 칸과 아닌 칸이 뒤섞이면 읽기 어렵다.
+  return Object.fromEntries(Object.entries(fill).filter(([, v]) => v !== ''));
+}
 
 /**
  * 대리 입력에서 **비어 있어도 통과시키는** 문항.

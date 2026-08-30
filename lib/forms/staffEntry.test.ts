@@ -8,6 +8,7 @@ import {
   isOptionalInStaffEntry,
   relaxSchemaForStaffEntry,
   staffEntryNote,
+  staffEntryPrefill,
 } from './staffEntry.ts';
 import { seasonPreset2026 } from './presets.ts';
 import { allQuestions, validateAnswers } from './schema.ts';
@@ -99,4 +100,47 @@ test('처리 이력 한 줄에 누가·어디로·무엇을이 담긴다', () =>
     staffEntryNote({ staffName: '김선생', channel: null, memo: '' }),
     '김선생 님이 대신 입력했습니다.'
   );
+});
+
+// ── 회원을 골랐을 때 채워지는 칸 ────────────────────────────────────
+// 표 자체는 타입이 지킨다(CORE_BIND_KEYS 가 늘면 컴파일이 막힌다).
+// 여기서 잠그는 것은 **어느 쪽 값이 어느 칸으로 가는가** 다.
+
+const 원생 = { name: '김원생', email: 'student@example.com', phone: '917-555-0001' };
+const 학부모 = { name: '김보호자', email: 'parent@example.com', phone: '917-555-0002' };
+
+test('원생 본인을 고르면 본인 값이 학생 칸으로 간다', () => {
+  assert.deepEqual(staffEntryPrefill({ student: 원생, guardian: null }), {
+    student_name: '김원생',
+    email: 'student@example.com',
+    phone: '917-555-0001',
+  });
+});
+
+test('학부모를 고르면 이름이 보호자 칸으로 간다 — 학생 이름이 되지 않는다', () => {
+  // 학부모 이름이 학생 칸에 들어가면 그 학부모가 수업 명단에 올라간다.
+  const fill = staffEntryPrefill({ student: null, guardian: 학부모 });
+  assert.equal(fill.student_name, undefined);
+  assert.equal(fill.guardian_name, '김보호자');
+});
+
+test('자녀를 고르면 연락처는 보호자 것으로 채워진다', () => {
+  // 자녀 계정에는 대개 전화번호가 없다. 빈 칸을 남기느니 연락이 닿는 곳을 넣는다.
+  assert.deepEqual(
+    staffEntryPrefill({
+      student: { name: '김자녀', email: '', phone: '' },
+      guardian: 학부모,
+    }),
+    {
+      student_name: '김자녀',
+      guardian_name: '김보호자',
+      email: 'parent@example.com',
+      phone: '917-555-0002',
+    }
+  );
+});
+
+test('학년은 채우지 않는다 — 회원 정보에 없는 것을 지어내지 않는다', () => {
+  const fill = staffEntryPrefill({ student: 원생, guardian: 학부모 });
+  assert.equal(fill.student_grade, undefined, '틀린 학년으로 반이 갈린다');
 });
