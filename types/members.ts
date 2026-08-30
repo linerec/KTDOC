@@ -137,3 +137,29 @@ export interface MemberCounts {
   students: number;
   parents: number;
 }
+
+/**
+ * 신청서 화면에서 "이 신청의 주인"으로 고를 수 있는 회원.
+ *
+ * Member 를 그대로 넘기지 않는다 — 고르는 화면에 필요한 것은 이름·연락처·신분이
+ * 전부이고, 프로필 사진이나 동의 플래그까지 브라우저로 보낼 이유가 없다.
+ * 조회 함수는 서버 전용 lib/forms/memberSearch.ts 에 있다.
+ */
+export interface LinkableMember {
+  id: string;
+  name: string | null;
+  email: string;
+  /** 대리 입력에서 빈 칸을 채울 때 쓴다 */
+  phone: string | null;
+  role: MemberRole;
+  status: MemberStatus;
+  /**
+   * 학부모라면 **연결이 확정된** 자녀. 전화는 학부모가 걸어 오므로 운영진은
+   * 학부모 이름으로 찾는다 — 그 자리에서 자녀로 건너갈 수 있어야 신청이
+   * 학부모 계정에 붙는 사고(나중에 학부모가 수업 명단에 들어간다)를 막는다.
+   */
+  children?: { id: string; name: string }[];
+}
+
+/** 한 글자로는 명단 절반이 나온다 — 고르는 자리에서는 도움이 되지 않는다. */
+export const MEMBER_SEARCH_MIN = 2;

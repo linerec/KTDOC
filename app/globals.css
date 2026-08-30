@@ -20263,6 +20263,8 @@ button.admin-page-tab {
   font-size: 0.88rem;
   line-height: 1.6;
   color: var(--text-muted);
+  /* 메모는 사람이 줄을 바꿔 가며 쓴다 — 접으면 통화 요지가 한 덩어리가 된다 */
+  white-space: pre-wrap;
 }
 
 .resp-history-move strong {
@@ -20337,6 +20339,120 @@ button.admin-page-tab {
 }
 
 /* ── 대리 입력 ──────────────────────────────────────────── */
+/* 폼 밖의 맥락(누구의 신청인가 · 어디로 받았는가)이 먼저 오고, 그 아래에
+   신청서 본체가 온다. 두 덩이를 카드로 갈라 두면 "이건 신청서 문항이 아니다"가
+   눈으로 구분된다 — 운영진이 학부모에게 읽어 주다 헷갈리지 않게. */
+.staff-entry-context {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-bottom: 18px;
+}
+
+.staff-entry-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.staff-entry-title {
+  margin: 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.staff-entry-picked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--soft-gold);
+  background: rgba(var(--fg-rgb), 0.04);
+}
+
+.staff-entry-picked .admin-cell-sub {
+  display: block;
+}
+
+.staff-entry-warn {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.staff-entry-warn p {
+  margin: 0;
+}
+
+/* 학부모로 찾았을 때의 자녀 바로가기 — 이 줄이 보이면 대개 이쪽이 정답이다 */
+.staff-entry-children {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.staff-entry-child {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--soft-gold);
+  background: transparent;
+  color: var(--soft-gold-text);
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.staff-entry-child:hover {
+  background: rgba(var(--fg-rgb), 0.06);
+}
+
+.staff-entry-hit > span:first-child {
+  min-width: 0;
+}
+
+.staff-entry-channel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.staff-entry-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--fg-rgb), 0.22);
+  font-size: 0.88rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.staff-entry-chip input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.staff-entry-chip.is-on {
+  border-color: var(--soft-gold);
+  background: rgba(var(--fg-rgb), 0.06);
+  color: var(--soft-gold-text);
+  font-weight: 600;
+}
+
+.staff-entry-chip:focus-within {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
 .staff-entry .public-form {
   gap: 28px;
 }

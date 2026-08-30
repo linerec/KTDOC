@@ -3,7 +3,11 @@
  *
  * 학기 초 업무의 절반이 이것이다. 공개 폼 렌더러를 그대로 재사용한다 —
  * 운영진이 학부모가 보는 것과 같은 화면을 봐야 문항을 헷갈리지 않는다.
- * 다르게 두는 것은 보낼 곳(관리 라우트)과 이메일을 비울 수 있다는 점뿐이다.
+ * 다르게 두는 것은 보낼 곳(관리 라우트), 이메일을 비울 수 있다는 점, 그리고
+ * 폼 밖의 맥락(누구의 신청인가 · 어디로 받았는가)을 함께 받는다는 점이다.
+ *
+ * 서버가 하는 일은 여기까지다 — 회원 찾기와 값 채우기는 손이 움직이는 일이라
+ * StaffEntryForm(클라이언트)이 맡는다.
  */
 
 import type { Metadata } from 'next';
@@ -12,7 +16,7 @@ import { notFound } from 'next/navigation';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getFormById } from '@/lib/d1';
-import FormRenderer from '@/components/forms/FormRenderer';
+import StaffEntryForm from '@/components/admin/forms/StaffEntryForm';
 import type { FormSchema } from '@/types/forms';
 
 export const metadata: Metadata = {
@@ -49,21 +53,13 @@ export default async function AdminStaffEntryPage({ params }: PageProps) {
           </div>
           <h1 className="admin-title">대신 입력</h1>
           <p className="admin-subtitle">
-            전화·카톡·종이로 받은 신청을 대신 넣습니다. 이메일을 못 받았으면 비워 두셔도 되고,
-            대신 연락처를 꼭 적어 주세요. 마감된 신청서에도 넣을 수 있습니다.
+            {form.title_ko} · 전화·카톡·종이로 받은 신청을 대신 넣습니다. 이메일을 못 받았으면
+            비워 두셔도 되고, 대신 연락처를 꼭 적어 주세요. 마감된 신청서에도 넣을 수 있습니다.
           </p>
         </div>
       </div>
 
-      <div className="admin-card staff-entry">
-        <FormRenderer
-          slug={form.slug}
-          schema={schema}
-          submitTo={`/api/admin/forms/${formId}/responses`}
-          doneHref={(responseId) => `/admin/forms/${formId}/responses/${responseId}`}
-          submitLabel="이 내용으로 접수하기"
-        />
-      </div>
+      <StaffEntryForm formId={formId} slug={form.slug} schema={schema} />
     </div>
   );
 }

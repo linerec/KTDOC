@@ -57,10 +57,20 @@ interface FormRendererProps {
    * 렌더러를 복제하지 않고 보내는 곳만 바꾼다.
    */
   submitTo?: string;
-  /** 제출 후 갈 곳. 기본은 완료 화면. */
-  doneHref?: (responseId: number) => string;
+  /**
+   * 제출 후 갈 곳. `{id}` 자리에 응답 번호가 들어간다. 기본은 완료 화면.
+   *
+   * 함수가 아니라 **문자열 틀**인 것이 중요하다 — 이 컴포넌트는 서버 컴포넌트에서
+   * 불리므로 함수를 넘기면 직렬화되지 않고 화면 전체가 500 으로 죽는다.
+   */
+  doneHref?: string;
   /** 제출 버튼 문구를 바꿀 때(대리 입력) */
   submitLabel?: string;
+  /**
+   * 제출 본문에 함께 실을 것 — 폼 밖에서 정해지는 값(대리 입력의 회원 연결·접수 경로).
+   * 답변과 섞지 않는다: 답변은 스키마가 가진 문항이고, 이쪽은 화면이 붙이는 맥락이다.
+   */
+  extraPayload?: Record<string, unknown>;
   /**
    * 로그인·가입 블록을 보일지. 비회원 공개 제출에서만 켠다 —
    * 로그인한 사람에게는 필요 없고, 대리 입력은 운영진이 남의 계정을 만드는 자리가 아니다.
@@ -77,6 +87,7 @@ export default function FormRenderer({
   submitTo,
   doneHref,
   submitLabel,
+  extraPayload,
   showAccount = false,
 }: FormRendererProps) {
   const t = useT();
@@ -111,6 +122,34 @@ export default function FormRenderer({
   useEffect(() => {
     renderedAt.current = Date.now();
   }, []);
+
+  /**
+   * 미리 채울 값이 **나중에** 도착하는 경우(대리 입력에서 회원을 고른 순간).
+   * 이미 적힌 답은 건드리지 않고 빈 칸만 채운다 — 운영진이 통화하며 타이핑한 것을
+   * 회원을 고르는 순간 지워 버리면, 두 번 다시 회원을 고르지 않게 된다.
+   *
+   * 이펙트가 아니라 **렌더 중에** 맞춘다(React 의 "prop 이 바뀔 때 state 조정" 관용구).
+   * 이펙트로 하면 한 번 그린 뒤 다시 그리게 되어, 빈 칸이 잠깐 보였다가 채워진다.
+   */
+  const prefillValues = prefill?.values;
+  const [appliedPrefill, setAppliedPrefill] = useState(prefillValues);
+  if (prefillValues !== appliedPrefill) {
+    setAppliedPrefill(prefillValues);
+    if (prefillValues) {
+      setAnswers((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(prefillValues)) {
+          const cur = next[k];
+          if (cur === undefined || cur === null || cur === '') {
+            next[k] = v;
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }
+  }
 
   const visible = useMemo(() => visibleQuestions(schema, answers), [schema, answers]);
 
@@ -233,6 +272,9 @@ export default function FormRenderer({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          // 화면이 붙이는 맥락(대리 입력의 회원 연결·접수 경로)이 먼저다 —
+          // 뒤에 오는 답변·언어 같은 본문을 실수로 덮어쓸 수 없게. 서버가 다시 검증한다.
+          ...(extraPayload ?? {}),
           answers: pruned,
           locale,
           // 마운트 이펙트가 이미 찍었다. 아직 없다면(있을 수 없지만) 0 을 보내
@@ -265,7 +307,7 @@ export default function FormRenderer({
 
       router.push(
         doneHref
-          ? doneHref(json.data.responseId)
+          ? doneHref.replace('{id}', String(json.data.responseId))
           : `/f/${encodeURIComponent(slug)}/done?r=${json.data.responseId}` +
             (json.data.account ? `&a=${json.data.account}` : '') +
             (json.data.trial ? '&trial=1' : '')

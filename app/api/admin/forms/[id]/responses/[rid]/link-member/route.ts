@@ -14,7 +14,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
 import { addResponseNote, getResponseById, linkResponseToMember } from '@/lib/d1';
-import { getMemberById, getMembers } from '@/lib/members';
+import { searchLinkableMembers } from '@/lib/forms/memberSearch';
+import { getMemberById } from '@/lib/members';
 
 interface RouteParams {
   params: Promise<{ id: string; rid: string }>;
@@ -28,24 +29,12 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
     await params;
 
-    const q = new URL(request.url).searchParams.get('q')?.trim() ?? '';
-    if (q.length < 2) {
-      return NextResponse.json({ success: true, data: { members: [] } });
-    }
+    // 대리 입력 화면(member-search)과 같은 조회를 쓴다 — 두 화면이 고르는 집합이
+    // 갈리면 어느 쪽을 믿어야 할지 알 수 없다.
+    const q = new URL(request.url).searchParams.get('q') ?? '';
+    const members = await searchLinkableMembers(q);
 
-    const { members } = await getMembers({ search: q, limit: 20 });
-    return NextResponse.json({
-      success: true,
-      data: {
-        members: members.map((m) => ({
-          id: m.id,
-          name: m.name,
-          email: m.email,
-          role: m.role,
-          status: m.status,
-        })),
-      },
-    });
+    return NextResponse.json({ success: true, data: { members } });
   } catch (error) {
     console.error('Admin form member search error:', error);
     return NextResponse.json({ success: false, error: '검색하지 못했습니다.' }, { status: 500 });
