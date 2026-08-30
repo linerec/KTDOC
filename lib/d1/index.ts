@@ -301,6 +301,7 @@ export {
   searchMailLog,
   getMailLogById,
   getBatchBody,
+  getMailLogForAddresses,
   purgeMailLogOlderThan,
 } from './mailLog';
 export type { MailLogInsert, MailLogSearch } from './mailLog';

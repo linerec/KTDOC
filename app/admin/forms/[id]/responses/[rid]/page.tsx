@@ -114,9 +114,12 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
               전화 {response.phone}
             </a>
           )}
+          {/* 내 메일 앱으로 여는 길. 오른쪽 '메일 보내기' 카드와 달리 여기로 쓴 메일은
+              학원 계정에서 나가지 않고 발송 내역에도 남지 않는다 — 그래서 이름을
+              나눠 둔다(둘 다 '메일 보내기'면 기록이 남는 쪽을 고를 이유가 없다). */}
           {response.email && (
             <a href={`mailto:${response.email}`} className="admin-btn admin-btn-outline">
-              메일 보내기
+              내 메일 앱으로
             </a>
           )}
         </div>
@@ -258,6 +261,7 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
             linkedUserName={linkedName}
             studentName={response.student_name}
             email={response.email}
+            phone={response.phone}
           />
         </aside>
       </div>

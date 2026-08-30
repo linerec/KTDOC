@@ -223,7 +223,7 @@ export interface FormResponseConsent {
 export interface FormResponseNote {
   id: number;
   response_id: number;
-  kind: 'note' | 'status' | 'link' | 'enroll' | 'rebuild';
+  kind: 'note' | 'status' | 'link' | 'enroll' | 'rebuild' | 'mail';
   from_status: string | null;
   to_status: string | null;
   body: string | null;

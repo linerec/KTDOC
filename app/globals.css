@@ -21372,6 +21372,241 @@ button.admin-page-tab {
 }
 .resp-more-toggle:hover { color: var(--text-color); }
 
+/* ── 신청 상세: 메모 / 메일 보내기 ─────────────────────────────
+   두 칸이 나란히 있다. 하나는 우리끼리 남기는 기록이고 하나는 밖으로 나가는
+   말이라, 눈으로 먼저 갈라져야 한다 — 메모는 지면 색 그대로 조용히, 발송 카드는
+   금색 테두리로 "여기서 누르면 나간다"를 말한다. */
+.resp-note-lead,
+.resp-mail-lead {
+  margin: -4px 0 0;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.resp-mail {
+  border-color: rgba(212, 160, 23, 0.28);
+}
+.resp-mail-lead strong {
+  color: var(--soft-gold-text);
+}
+.resp-note-lead strong {
+  color: var(--text-color);
+}
+
+.resp-mail-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* 받는 사람 — 주소까지 보여 준다. 어디로 가는지 모르는 채 눌린 발송은
+   되돌릴 수 없다. */
+.resp-mail-to {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.resp-mail-rcpt {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 11px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  cursor: pointer;
+}
+.resp-mail-rcpt input {
+  margin-top: 3px;
+  accent-color: var(--accent-color);
+}
+.resp-mail-rcpt.is-blocked {
+  cursor: not-allowed;
+  border-left: 3px solid var(--deep-red);
+  padding-left: 8px;
+}
+.resp-mail-rcpt.is-blocked .resp-mail-rcpt-name,
+.resp-mail-rcpt.is-blocked .resp-mail-rcpt-mail {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.resp-mail-rcpt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.resp-mail-rcpt-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.resp-mail-rcpt-mail {
+  font-size: 0.86rem;
+  color: var(--text-color);
+  word-break: break-all;
+}
+.resp-mail-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(var(--fg-rgb), 0.1);
+  color: var(--text-muted);
+}
+
+/* 빠른 시작 — 빈 화면 앞에서 멈추지 않게 하는 것이 전부다. */
+.resp-mail-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.resp-mail-quick-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.resp-mail-chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  background: transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+.resp-mail-chip:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  color: var(--accent-text);
+}
+.resp-mail-chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.resp-mail textarea {
+  resize: vertical;
+  line-height: 1.65;
+}
+
+/* 확인 단계 — 보낸 메일은 취소가 없다. 받는 사람·제목·본문을 그대로 되비춘다. */
+.resp-mail-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  border-left: 3px solid var(--accent-color);
+}
+.resp-mail-confirm-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.resp-mail-confirm-head {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 0.86rem;
+}
+.resp-mail-confirm-head dt {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.resp-mail-confirm-head dd {
+  margin: 2px 0 0;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.resp-mail-confirm-to {
+  word-break: break-all;
+}
+.resp-mail-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resp-mail-preview {
+  margin: 0;
+  padding: 11px 12px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
+  font: inherit;
+  font-size: 0.87rem;
+  line-height: 1.65;
+  color: var(--text-color);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* 보낸 내역 — "이분께 뭘 보냈더라"의 답. 자동 안내도 함께 보인다. */
+.resp-mail-history {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+}
+.resp-mail-log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.resp-mail-log > li {
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  overflow: hidden;
+}
+/* 못 나간 메일은 목록에서 바로 보여야 한다 — 답장을 기다리게 두지 않는다. */
+.resp-mail-log > li.is-failed {
+  border-left: 3px solid var(--deep-red);
+}
+.resp-mail-log-head {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.resp-mail-log-when {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.resp-mail-log-subject {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+.resp-mail-log-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.resp-mail-log-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 0 11px 11px;
+}
+
 /* 알림 발송 — 이메일 동시 발송 스위치.
    기본이 켬이라 눈에 띄어야 하지만, 발송 버튼보다 앞서면 안 된다. */
 .notify-email-toggle {

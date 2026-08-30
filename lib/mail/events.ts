@@ -138,6 +138,17 @@ export const MAIL_EVENTS: readonly MailEventDef[] = [
     defaultOn: { user: true },
   },
   {
+    key: 'form.message',
+    label: '신청 건 개별 메시지',
+    description:
+      '신청 상세 화면에서 운영진이 신청하신 분께 직접 쓴 메일. 쓰신 내용이 그대로 나갑니다. 이 스위치를 끄면 그 화면의 발송이 통째로 막힙니다.',
+    group: 'ops',
+    audiences: ['user'],
+    // 개별 메시지도 수신거부는 존중한다 — 다만 화면이 "이 분은 꺼두셨습니다"를
+    // 미리 말해 주므로, 선생님은 전화 같은 다른 길을 그 자리에서 고를 수 있다.
+    defaultOn: { user: true },
+  },
+  {
     key: 'quota.warning',
     label: '발송 한도 경고',
     description:

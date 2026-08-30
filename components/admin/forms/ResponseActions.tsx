@@ -22,6 +22,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RESPONSE_STATUS_LABEL } from '@/lib/forms/responseLabels';
+import ResponseMessage from './ResponseMessage';
 import type { ResponseStatus } from '@/types/forms';
 
 /**
@@ -51,6 +52,7 @@ interface ResponseActionsProps {
   linkedUserName: string | null;
   studentName: string;
   email: string | null;
+  phone: string | null;
 }
 
 export default function ResponseActions({
@@ -62,6 +64,7 @@ export default function ResponseActions({
   linkedUserName,
   studentName,
   email,
+  phone,
 }: ResponseActionsProps) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -321,9 +324,16 @@ export default function ResponseActions({
 
       {/* ── 메모 ──
              통화 결과·유의사항. 상태를 바꾸지 않고도 남길 수 있어야 한다 —
-             예전에는 상태 저장에 딸려 있어서, 메모만 쓰려면 상태를 건드려야 했다. */}
+             예전에는 상태 저장에 딸려 있어서, 메모만 쓰려면 상태를 건드려야 했다.
+
+             바로 아래에 '메일 보내기'가 붙으면서 두 칸이 나란해졌다. 하나는
+             우리끼리 남기는 기록이고 하나는 밖으로 나가는 말이다 — 어느 쪽인지
+             각 칸이 스스로 말해야 한다. 헷갈렸을 때 되돌릴 수 없는 쪽이 발송이다. */}
       <section className="admin-card resp-panel">
         <h2 className="resp-panel-title">메모</h2>
+        <p className="resp-note-lead">
+          운영진만 봅니다 — <strong>신청하신 분께는 보이지 않습니다.</strong>
+        </p>
         <div className="admin-field">
           <label htmlFor="ra-note">통화 결과·유의사항</label>
           <textarea
@@ -343,6 +353,14 @@ export default function ResponseActions({
           메모 남기기
         </button>
       </section>
+
+      {/* ── 메일 보내기 ── 메모 바로 아래. 안쪽 기록 다음에 바깥으로 나가는 말. */}
+      <ResponseMessage
+        formId={formId}
+        responseId={responseId}
+        studentName={studentName}
+        phone={phone}
+      />
 
       {/* ── 다르게 처리하기 ──
              정원 초과·환불 요청처럼 평소 흐름을 벗어나는 경우. 접어 둔다. */}

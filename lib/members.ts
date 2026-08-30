@@ -504,6 +504,30 @@ export async function getUsersByIds(
   );
 }
 
+/**
+ * 주어진 주소 중 **이메일 수신을 꺼둔** 회원의 주소(소문자)만 골라 준다.
+ *
+ * 운영진이 신청 화면에서 직접 쓰는 개별 메시지는 발송 전에 화면이 "이 주소로
+ * 갑니다"를 보여줘야 한다. 그러려면 수신거부를 보내기 전에 알아야 한다 —
+ * 발송 파이프라인이 조용히 건너뛰면 선생님은 보냈다고 믿는다.
+ *
+ * 주소 기준으로 판정하는 이유: 신청서에 적힌 주소가 회원 계정 주소와 같을 수
+ * 있다. 회원 id로만 보면 그 우회로로 수신거부가 무력화된다.
+ */
+export async function getOptedOutEmails(emails: string[]): Promise<Set<string>> {
+  const unique = Array.from(
+    new Set(emails.filter(Boolean).map((e) => e.trim().toLowerCase()))
+  );
+  if (!unique.length) return new Set();
+  const placeholders = unique.map(() => '?').join(', ');
+  const rows = await query<{ email: string }[]>(
+    `SELECT email FROM users
+      WHERE email_opt_in = 0 AND LOWER(email) IN (${placeholders})`,
+    unique
+  );
+  return new Set(rows.map((r) => r.email.toLowerCase()));
+}
+
 /** 여러 원생의 보호자 이메일 — 자녀 일정 알림을 학부모에게도 보낼 때. studentId → 이메일[]. */
 export async function getGuardianEmailsForStudents(
   studentIds: string[]

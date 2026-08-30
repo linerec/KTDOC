@@ -25,7 +25,12 @@ import {
   wasEventSentToday,
   type MailLogInsert,
 } from '@/lib/d1/mailLog';
-import type { MailAudience, MailConfig, MailUsage } from '@/types/mail';
+import type {
+  MailAudience,
+  MailConfig,
+  MailLogStatus,
+  MailUsage,
+} from '@/types/mail';
 
 export interface NotifyInput {
   /** 'user' 대상의 회원 id들. 원생이면 보호자가 자동으로 더해진다. */
@@ -43,6 +48,50 @@ export interface NotifyInput {
    * 학원에도 "새 등록이 있었습니다"를 보내면 방금 일어난 일로 읽힌다.
    */
   audiences?: MailAudience[];
+}
+
+/**
+ * 발송 결과 요약.
+ *
+ * 대부분의 호출부는 이 값을 쓰지 않는다 — 가입·등록이 메일 결과에 좌우되면 안
+ * 되기 때문이다. 다만 **사람이 직접 쓴 1:1 메일**은 다르다. 선생님이 '보내기'를
+ * 누른 자리에서는 정말 나갔는지를 화면이 말해야 한다. 못 갔는데 "보냈습니다"를
+ * 띄우면 아무도 그 사실을 모른 채 답장을 기다린다.
+ */
+export interface NotifyOutcome {
+  audience: MailAudience;
+  to: string;
+  status: MailLogStatus;
+  detail: string | null;
+}
+
+export interface NotifyResult {
+  sent: number;
+  failed: number;
+  skipped: number;
+  quotaBlocked: number;
+  outcomes: NotifyOutcome[];
+}
+
+function emptyResult(): NotifyResult {
+  return { sent: 0, failed: 0, skipped: 0, quotaBlocked: 0, outcomes: [] };
+}
+
+function summarize(logs: MailLogInsert[]): NotifyResult {
+  const result = emptyResult();
+  for (const log of logs) {
+    if (log.status === 'sent') result.sent += 1;
+    else if (log.status === 'failed') result.failed += 1;
+    else if (log.status === 'quota_blocked') result.quotaBlocked += 1;
+    else result.skipped += 1;
+    result.outcomes.push({
+      audience: log.audience,
+      to: log.toAddress,
+      status: log.status,
+      detail: log.detail ?? null,
+    });
+  }
+  return result;
 }
 
 interface MemberRow {
@@ -110,15 +159,18 @@ async function collectUserCandidates(
   return candidates;
 }
 
-/** 한 이벤트의 한 대상에게 보낸다. 로그는 성공·실패·건너뜀 모두 남긴다. */
+/**
+ * 한 이벤트의 한 대상에게 보낸다. 로그는 성공·실패·건너뜀 모두 남긴다.
+ * 남긴 로그를 그대로 돌려준다 — 호출부가 "무엇이 어떻게 됐는지"를 알 수 있게.
+ */
 async function notifyAudience(
   def: MailEventDef,
   audience: MailAudience,
   input: NotifyInput,
   config: MailConfig,
   timeZone: string
-): Promise<void> {
-  if (!def.audiences.includes(audience)) return;
+): Promise<MailLogInsert[]> {
+  if (!def.audiences.includes(audience)) return [];
 
   const candidates =
     audience === 'user'
@@ -146,7 +198,7 @@ async function notifyAudience(
 
   if (!addresses.length) {
     await insertMailLogs(logs);
-    return;
+    return logs;
   }
 
   // ── 한도 판정 (수신자 수 단위)
@@ -170,7 +222,7 @@ async function notifyAudience(
     );
     await insertMailLogs(logs);
     await maybeWarnQuota(usage, config, timeZone);
-    return;
+    return logs;
   }
 
   // ── 발송
@@ -234,6 +286,7 @@ async function notifyAudience(
 
   await insertMailLogs(logs);
   if (decision.warn) await maybeWarnQuota(usage, config, timeZone);
+  return logs;
 }
 
 /**
@@ -271,17 +324,18 @@ async function maybeWarnQuota(
 
 /**
  * 이벤트 하나를 알린다. 정의된 모든 대상(user·staff)에게 순서대로.
- * 실패해도 던지지 않는다.
+ * 실패해도 던지지 않는다 — 결과는 반환값으로만 말한다.
  */
 export async function notifyEvent(
   eventKey: string,
   input: NotifyInput = {}
-): Promise<void> {
+): Promise<NotifyResult> {
+  const logs: MailLogInsert[] = [];
   try {
     const def = getMailEvent(eventKey);
     if (!def) {
       console.warn(`[mail] 알 수 없는 이벤트: ${eventKey}`);
-      return;
+      return emptyResult();
     }
     const [config, calendar] = await Promise.all([
       loadMailConfig(),
@@ -290,11 +344,14 @@ export async function notifyEvent(
     const wanted = input.audiences;
     for (const audience of def.audiences) {
       if (wanted && !wanted.includes(audience)) continue;
-      await notifyAudience(def, audience, input, config, calendar.timezone);
+      logs.push(
+        ...(await notifyAudience(def, audience, input, config, calendar.timezone))
+      );
     }
   } catch (error) {
     console.error(`[mail] notifyEvent(${eventKey}) 실패:`, error);
   }
+  return summarize(logs);
 }
 
 /**

@@ -195,6 +195,49 @@ export async function getBatchBody(batchId: string): Promise<string | null> {
   return rows[0]?.body ?? null;
 }
 
+/**
+ * 이 주소들로 나간 메일 — 신청 상세의 "보낸 메일" 목록.
+ *
+ * 응답 id가 아니라 **주소**로 찾는다. 선생님이 묻는 것은 "이 신청 건에 어떤
+ * 로그가 달렸나"가 아니라 "이분께 뭘 보냈더라"이고, 그 답에는 이 화면에서 쓴
+ * 메시지뿐 아니라 접수 확인·등록 안내 같은 자동 메일도 들어가야 한다 —
+ * "메일 못 받았다"는 연락의 답이 대개 그쪽에 있다.
+ *
+ * 본문은 단체 발송이면 대표 행에만 있다. 목록에서 눌러 바로 펼 수 있어야 하므로
+ * 같은 batch의 본문을 여기서 채워 준다(호출부가 저장 구조를 알 필요가 없다).
+ */
+export async function getMailLogForAddresses(
+  addresses: string[],
+  limit = 20
+): Promise<MailLogRow[]> {
+  const unique = Array.from(
+    new Set(addresses.filter(Boolean).map((a) => a.trim().toLowerCase()))
+  );
+  if (!unique.length) return [];
+  const n = Math.min(100, Math.max(1, Math.trunc(limit)));
+  const placeholders = unique.map(() => '?').join(', ');
+  const rows = await queryD1<MailLogRow>(
+    `SELECT * FROM mail_log
+      WHERE LOWER(to_address) IN (${placeholders})
+      ORDER BY created_at DESC, id DESC
+      LIMIT ?`,
+    [...unique, n]
+  );
+
+  // 본문이 비었지만 묶음에 속한 행은 대표 행에서 본문을 끌어온다.
+  const needBody = Array.from(
+    new Set(rows.filter((r) => !r.body && r.batch_id).map((r) => r.batch_id!))
+  );
+  if (!needBody.length) return rows;
+  const bodies = new Map<string, string | null>();
+  for (const batchId of needBody) {
+    bodies.set(batchId, await getBatchBody(batchId).catch(() => null));
+  }
+  return rows.map((r) =>
+    r.body || !r.batch_id ? r : { ...r, body: bodies.get(r.batch_id) ?? null }
+  );
+}
+
 /** 보관 기간이 지난 기록 정리. 반환값은 삭제된 행 수. */
 export async function purgeMailLogOlderThan(days: number): Promise<number> {
   const n = Math.max(1, Math.trunc(days));
