@@ -22088,3 +22088,391 @@ button.admin-page-tab {
   text-align: center;
   user-select: all; /* 한 번 눌러 전체 선택 — 손으로 옮겨 적는 일이 없게 */
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   인쇄물 도안 확인 (/confirm/banner)
+   ────────────────────────────────────────────────────────────────────
+   문자로 받은 주소 하나로 열어 보고 답하는 한 장짜리 문서. 사이트 헤더가
+   없으므로 상단 여백을 이 화면이 직접 갖는다.
+
+   도안 자체(.cb-art)의 흰 바탕과 국기·모서리 색은 **인쇄물의 실제 색**이다.
+   테마를 따라 뒤집히면 무엇을 인쇄하는지 알 수 없게 되므로 고정한다.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.cb-shell {
+  min-height: 100vh;
+  background: var(--ground);
+  color: var(--text-color);
+}
+
+.cb-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(32px, 6vw, 64px) clamp(16px, 4vw, 28px) 96px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 5vw, 44px);
+}
+
+/* ── 머리말 ── */
+
+.cb-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+
+.cb-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--soft-gold-text);
+}
+
+.cb-title {
+  margin: 0;
+  font-family: var(--font-noto-serif-kr), serif;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.24;
+  letter-spacing: -0.01em;
+  color: var(--text-color);
+}
+
+.cb-lede {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+  word-break: keep-all;
+}
+
+/* ── 섹션 ── */
+
+.cb-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cb-section h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-color);
+}
+
+.cb-section__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(var(--fg-rgb), 0.12);
+}
+
+.cb-spec {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 도안 ── */
+
+.cb-stage {
+  padding: clamp(18px, 4vw, 30px) clamp(14px, 3vw, 26px);
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow-x: auto;
+}
+
+.cb-stage--drum {
+  display: flex;
+  justify-content: center;
+}
+
+.cb-art {
+  display: block;
+  /* theme-exempt: 배너 원단의 흰 바탕 — 인쇄물의 실제 색이라 테마와 무관하다 */
+  background: #fff;
+  /* theme-exempt: 종이가 지면에서 떠 보이게 하는 그림자. 두 테마에서 같다 */
+  filter: drop-shadow(0 10px 26px rgba(20, 24, 33, 0.16));
+}
+
+.cb-art--parade {
+  width: 100%;
+  min-width: 660px;
+  aspect-ratio: 3 / 1;
+}
+
+.cb-art--drum {
+  width: 300px;
+  max-width: 100%;
+  aspect-ratio: 19 / 23;
+}
+
+.cb-art text {
+  font-family: var(--font-noto-serif-kr), serif;
+  /* theme-exempt: 배너에 인쇄되는 먹색 글자 — 흰 원단 위에 얹힌다 */
+  fill: #1d2430;
+  text-anchor: middle;
+}
+
+.cb-art__ko {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* ── 도안 설명 ── */
+
+.cb-notes {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  word-break: keep-all;
+}
+
+.cb-notes li::marker {
+  color: var(--soft-gold-text);
+}
+
+/* ── 회신 폼 ── */
+
+.cb-form {
+  padding: clamp(22px, 4vw, 34px) clamp(18px, 3.5vw, 30px);
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.cb-form__lede {
+  margin: 0 0 6px;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+.cb-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.cb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cb-field--inline {
+  max-width: 260px;
+}
+
+.cb-field__label {
+  padding: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.cb-field__help {
+  margin: 0;
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  word-break: keep-all;
+}
+
+.cb-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cb-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cb-choice:hover {
+  border-color: var(--accent-color);
+}
+
+.cb-choice:has(input:checked) {
+  border-color: var(--accent-color);
+  background: rgba(var(--soft-gold-rgb), 0.14);
+}
+
+.cb-choice input {
+  accent-color: var(--accent-color);
+  margin: 0;
+}
+
+.cb-sizes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.cb-size {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cb-size__label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.cb-form input[type='text'],
+.cb-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 3px;
+  background: var(--ground);
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.cb-form input[type='text']:focus,
+.cb-form textarea:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.cb-form textarea {
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.cb-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.cb-btn {
+  align-self: flex-start;
+  padding: 12px 30px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--accent-color);
+  color: var(--on-accent);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.cb-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.cb-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cb-btn--quiet {
+  background: transparent;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cb-form__done {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+}
+
+.cb-form__error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(214, 48, 49, 0.4);
+  background: rgba(214, 48, 49, 0.09);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-color);
+  word-break: keep-all;
+}
+
+/* ── 착수를 막고 있는 것 ── */
+
+.cb-blocker {
+  padding: clamp(20px, 4vw, 30px) clamp(18px, 3.5vw, 28px);
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
+  border-left: 3px solid var(--accent-color);
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.cb-blocker p {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+  word-break: keep-all;
+}
+
+.cb-blocker__sub {
+  padding-top: 14px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+  font-size: 0.88rem !important;
+}
+
+.cb-hint {
+  display: none;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* 폰에서는 도안 전체가 한 화면에 들어오는 편이 낫다. 가로 스크롤 안에 갇히면
+   왼쪽 3분의 1만 보고 "이게 다인가" 하신다 — 실제로 확인이 필요한 것은 세 폭의
+   배분이므로, 작더라도 전체를 보여 주고 확대는 기기에 맡긴다. */
+@media (max-width: 720px) {
+  .cb-art--parade {
+    min-width: 0;
+  }
+
+  .cb-stage {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .cb-hint {
+    display: block;
+  }
+}

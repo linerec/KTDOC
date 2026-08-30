@@ -210,6 +210,19 @@ export function renderMailBody(
         ),
       };
 
+    // 인쇄물 도안 확인 페이지의 회신. 사람이 고르고 쓴 답이 그대로 실린다 —
+    // notice.broadcast와 같은 이유로 답 자체는 번역하지 않는다.
+    case 'print.feedback:staff':
+      return {
+        subject: `[${SITE_NAME}] 도안 회신 — ${title || '인쇄물'}${
+          s(data, 'sender') ? ` / ${s(data, 'sender')}` : ''
+        }`,
+        text: bilingual(
+          `도안 확인 페이지에서 회신이 왔습니다.\n\n보내신 분: ${s(data, 'sender', '이름을 남기지 않으셨습니다')}\n\n${'─'.repeat(24)}\n\n${s(data, 'message')}${linkKo}`,
+          `A reply came in from the print proof page. The answers above are as written.${linkEn}`
+        ),
+      };
+
     default:
       // 레지스트리에만 있고 본문이 없는 이벤트 — 발송이 깨지지 않게 일반 문구로.
       return {
