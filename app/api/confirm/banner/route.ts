@@ -11,7 +11,7 @@
 
 import { NextResponse } from 'next/server';
 import { notifyEvent } from '@/lib/mail/notify';
-import { parseBannerFeedback, formatBannerFeedback } from '@/lib/print/bannerConfirm';
+import { parseBannerFeedback } from '@/lib/print/bannerConfirm';
 
 export const runtime = 'nodejs';
 
@@ -55,8 +55,7 @@ export async function POST(request: Request) {
     const result = await notifyEvent('print.feedback', {
       data: {
         title: '퍼레이드 배너 · 북 배너',
-        sender: parsed.value.sender,
-        message: formatBannerFeedback(parsed.value),
+        message: parsed.value.note,
         url: `${origin}${PAGE_PATH}`,
       },
     });
