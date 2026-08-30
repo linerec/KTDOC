@@ -96,6 +96,12 @@ export interface GalleryPhoto {
   id: number;
   image_url: string;
   r2_key: string;
+  /**
+   * 줄이지 않은 원본의 R2 키. 화면에 뿌리는 것은 r2_key(장변 2000·WebP)이고,
+   * 이 칸은 보관된 원본을 가리킨다. NULL이면 정규화가 필요 없었던 사진이라
+   * r2_key 한 장이 곧 원본이다.
+   */
+  original_key: string | null;
   caption_ko: string | null;
   caption_en: string | null;
   taken_date: string | null;
@@ -268,6 +274,8 @@ export interface CreateVideoInput {
 export interface CreateGalleryPhotoInput {
   image_url: string;
   r2_key: string;
+  /** 보관된 원본 키 (정규화가 일어난 경우에만) */
+  original_key?: string | null;
   caption_ko?: string;
   caption_en?: string;
   taken_date?: string;

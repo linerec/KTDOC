@@ -951,13 +951,14 @@ export async function createGalleryPhoto(input: CreateGalleryPhotoInput): Promis
 
   const { lastRowId } = await executeD1(
     `INSERT INTO gallery_photos (
-      image_url, r2_key, caption_ko, caption_en, taken_date,
+      image_url, r2_key, original_key, caption_ko, caption_en, taken_date,
       event_id, program_id, is_published, is_featured, sort_order,
       width, height, size, uploaded_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.image_url,
       input.r2_key,
+      input.original_key || null,
       input.caption_ko || null,
       input.caption_en || null,
       input.taken_date || null,

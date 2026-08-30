@@ -87,6 +87,8 @@ export interface MailLogRow {
   batch_id: string | null;
   quota_daily: number | null;
   quota_monthly: number | null;
+  /** 첨부 흔적 JSON — [{"name","size"}]. 첨부가 없었으면 null. */
+  attachments: string | null;
   created_at: string;
 }
 

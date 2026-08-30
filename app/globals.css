@@ -6705,6 +6705,37 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: var(--text-color);
 }
 
+/* 콘솔 홈 공지 — 읽고 닫는 짧은 알림. 긴급(빨강)보다 조용하고, 관리실 카드보다
+   눈에 띄어야 한다. 금색 콜아웃 위에 제목 한 줄 + 버튼 두 개만 얹는다. */
+.console-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.console-notice-body {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.console-notice-title {
+  margin: 0 0 4px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+.console-notice-text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+.console-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .admin-callout-link {
   margin-left: 10px;
   color: var(--accent-text);
@@ -21788,6 +21819,91 @@ button.admin-page-tab {
 .resp-mail-chip:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* 첨부 — 붙인 것이 목록으로 보여야 한다. "붙였던가?"를 확인 화면까지 미루면
+   그때 고치느라 쓰던 글에서 손을 뗀다. 합계 게이지는 한도(15MB)를 눈으로 잰다. */
+.resp-mail-files {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.resp-mail-file-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.resp-mail-file {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px 7px 11px;
+  border-radius: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+}
+.resp-mail-file-name {
+  font-size: 0.88rem;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.resp-mail-file-size {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.resp-mail-file-remove {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(var(--fg-rgb), 0.08);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.resp-mail-file-remove:hover:not(:disabled) {
+  background: var(--deep-red);
+  color: var(--on-accent);
+}
+.resp-mail-file-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.resp-mail-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.resp-mail-file-gauge {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(var(--fg-rgb), 0.1);
+  overflow: hidden;
+}
+.resp-mail-file-gauge > span {
+  display: block;
+  height: 100%;
+  background: var(--accent-color);
+}
+/* 합계가 한도에 닿아 가면 색으로 먼저 말한다 — 마지막 파일에서 막히지 않게 */
+.resp-mail-file-gauge[data-warn='true'] > span {
+  background: var(--deep-red);
+}
+.resp-mail-file-error {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--deep-red);
 }
 
 .resp-mail textarea {

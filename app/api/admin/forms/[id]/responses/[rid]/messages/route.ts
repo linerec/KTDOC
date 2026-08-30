@@ -11,6 +11,15 @@
  * 주소는 클라이언트가 정하지 않는다. 후보 목록을 서버가 만들고, 클라이언트는
  * 그 중 어느 것을 골랐는지(키)만 돌려보낸다 — 화면에 보이지 않던 주소로는
  * 절대 나가지 않는다.
+ *
+ * 첨부 파일은 **이 라우트를 지나오지 않는다.** 브라우저가 R2로 곧장 올리고
+ * (Vercel 함수의 4.5MB 본문 한도를 피한다) 여기에는 티켓만 온다. 서버는 그
+ * 파일을 R2에서 다시 읽어 메일에 싣고, **보낸 뒤 지운다** — 첨부가 공개 주소에
+ * 남으면 안 되기 때문이다(수강료 안내서·인보이스가 그런 파일이다).
+ *
+ * 작은 파일을 multipart로 그대로 보내는 옛 경로도 아직 받는다(4.5MB 이하).
+ * 붙일 수 있는지는 화면이 미리 판정하지만 여기서 한 번 더 판정한다 — 화면을
+ * 거치지 않은 요청도 같은 규칙을 받아야 한다.
  */
 
 import { NextResponse } from 'next/server';
@@ -28,6 +37,18 @@ import {
   resolvePickedAddresses,
   type MessageRecipient,
 } from '@/lib/forms/responseMessage';
+import {
+  checkAttachments,
+  describeAttachmentProblem,
+  describeAttachments,
+  safeAttachmentName,
+  MAX_ATTACHMENTS,
+  type MailAttachment,
+  type MailAttachmentNote,
+} from '@/lib/mail/attachments';
+import { deleteFromR2 } from '@/lib/r2';
+import { finalizeTicket, readR2Object } from '@/lib/r2/directUpload';
+import { uploadTargetByKey } from '@/lib/r2/uploadTargets';
 import { getMailEvent, MAIL_EVENTS } from '@/lib/mail/events';
 import { isAudienceOn } from '@/lib/mail/recipients';
 import { loadMailConfig } from '@/lib/mail/store';
@@ -103,6 +124,22 @@ function sendability(config: MailConfig, recipients: MessageRecipient[]) {
 
 const EVENT_LABEL = new Map(MAIL_EVENTS.map((e) => [e.key, e.label]));
 
+/** 저장된 첨부 흔적 JSON을 화면이 쓰는 모양으로. 깨진 값은 조용히 비운다. */
+function parseAttachmentNotes(raw: string | null): MailAttachmentNote[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((x): x is MailAttachmentNote =>
+        Boolean(x) && typeof (x as MailAttachmentNote).name === 'string'
+      )
+      .map((x) => ({ name: x.name, size: Number(x.size) || 0 }));
+  } catch {
+    return [];
+  }
+}
+
 async function historyFor(recipients: MessageRecipient[]) {
   const rows = await getMailLogForAddresses(
     recipients.map((r) => r.email),
@@ -121,6 +158,7 @@ async function historyFor(recipients: MessageRecipient[]) {
     bodyRedacted: getMailEvent(row.event_key)?.redactBody === true,
     status: row.status,
     detail: row.detail,
+    attachments: parseAttachmentNotes(row.attachments),
     createdAt: row.created_at,
   }));
 }
@@ -162,6 +200,142 @@ export async function GET(_request: Request, { params }: RouteParams) {
   }
 }
 
+interface SendPayload {
+  subject: string;
+  body: string;
+  /** 서버가 만든 후보 중 고른 것들의 키 */
+  keys: string[];
+  attachments: MailAttachment[];
+}
+
+/** 보내고 나면 지울 임시 첨부 파일들(R2). 공개 주소에 남기지 않는다. */
+interface SendPayloadWithCleanup extends SendPayload {
+  tempKeys: string[];
+}
+
+/**
+ * 보낼 내용을 읽는다.
+ *
+ *  - 새 경로: JSON + 티켓. 파일은 이미 R2에 있고, 여기서 읽어 base64로 옮긴다.
+ *  - 옛 경로: multipart로 파일이 그대로 온다(4.5MB 이하에서만 성립).
+ *
+ * 어느 쪽이든 이 아래(notify → mailer)에는 base64만 내려간다 — 발송 코드는
+ * File도 R2도 몰라야 한다.
+ */
+async function readSendPayload(
+  request: Request,
+  userId: string
+): Promise<SendPayloadWithCleanup | { error: string }> {
+  const contentType = request.headers.get('content-type') ?? '';
+
+  if (!contentType.includes('multipart/form-data')) {
+    const payload = (await request.json().catch(() => null)) as {
+      subject?: unknown;
+      body?: unknown;
+      to?: unknown;
+      uploads?: unknown;
+    } | null;
+
+    const base = {
+      subject: typeof payload?.subject === 'string' ? payload.subject.trim() : '',
+      body: typeof payload?.body === 'string' ? payload.body.trim() : '',
+      keys: Array.isArray(payload?.to)
+        ? payload.to.filter((k): k is string => typeof k === 'string')
+        : [],
+    };
+
+    const raw = Array.isArray(payload?.uploads) ? payload.uploads : [];
+    if (!raw.length) return { ...base, attachments: [], tempKeys: [] };
+    if (raw.length > MAX_ATTACHMENTS) {
+      return { error: describeAttachmentProblem({ kind: 'too-many' }) };
+    }
+
+    const target = uploadTargetByKey('mail-attachment', 'mail-attachments');
+    if (!target) return { error: '첨부를 처리하지 못했습니다.' };
+
+    const attachments: MailAttachment[] = [];
+    const tempKeys: string[] = [];
+
+    for (const item of raw) {
+      const entry = (item ?? {}) as Record<string, unknown>;
+      const ticket = typeof entry.ticket === 'string' ? entry.ticket : '';
+      const name = typeof entry.name === 'string' ? entry.name : '';
+      if (!ticket) return { error: '첨부 정보를 확인하지 못했습니다. 다시 붙여 주세요.' };
+
+      const finalized = await finalizeTicket(ticket, target, userId, name);
+      if (!finalized.ok) {
+        await discardTempFiles(tempKeys);
+        return { error: finalized.error };
+      }
+      tempKeys.push(finalized.upload.key);
+
+      // 메일에 실으려면 바이트가 필요하다. 함수가 R2에서 당겨오는 데는
+      // 4.5MB 한도가 없다(그 한도는 함수로 들어오고 나가는 본문에만 걸린다).
+      const buffer = await readR2Object(finalized.upload.key);
+      if (!buffer) {
+        await discardTempFiles(tempKeys);
+        return { error: '첨부 파일을 읽지 못했습니다. 다시 시도해 주세요.' };
+      }
+
+      attachments.push({
+        filename: safeAttachmentName(name || finalized.upload.originalName),
+        contentType: finalized.upload.contentType,
+        content: buffer.toString('base64'),
+        size: buffer.byteLength,
+      });
+    }
+
+    const problem = checkAttachments(attachments.map((a) => ({ name: a.filename, size: a.size })));
+    if (problem) {
+      await discardTempFiles(tempKeys);
+      return { error: describeAttachmentProblem(problem) };
+    }
+
+    return { ...base, attachments, tempKeys };
+  }
+
+  const form = await request.formData().catch(() => null);
+  if (!form) return { error: '보낼 내용을 읽지 못했습니다. 다시 시도해 주세요.' };
+
+  const subject = String(form.get('subject') ?? '').trim();
+  const body = String(form.get('body') ?? '').trim();
+  const keys = form
+    .getAll('to')
+    .map((v) => String(v))
+    .filter(Boolean);
+
+  const files = form.getAll('files').filter((f): f is File => f instanceof File);
+  if (files.length > MAX_ATTACHMENTS) {
+    return { error: describeAttachmentProblem({ kind: 'too-many' }) };
+  }
+
+  // 화면이 이미 판정했지만 한 번 더 — 화면을 거치지 않은 요청도 같은 규칙을 받는다.
+  const problem = checkAttachments(files.map((f) => ({ name: f.name, size: f.size })));
+  if (problem) return { error: describeAttachmentProblem(problem) };
+
+  const attachments: MailAttachment[] = [];
+  for (const file of files) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    attachments.push({
+      filename: safeAttachmentName(file.name),
+      contentType: file.type || 'application/octet-stream',
+      content: buffer.toString('base64'),
+      size: buffer.byteLength,
+    });
+  }
+
+  return { subject, body, keys, attachments, tempKeys: [] };
+}
+
+/** 메일에 실은 뒤 남은 임시 파일을 지운다 — 실패해도 발송 흐름을 깨지 않는다. */
+async function discardTempFiles(keys: string[]): Promise<void> {
+  for (const key of keys) {
+    await deleteFromR2(key).catch((error) => {
+      console.warn('[mail] 첨부 임시 파일 정리 실패:', key, error);
+    });
+  }
+}
+
 export async function POST(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
@@ -179,17 +353,11 @@ export async function POST(request: Request, { params }: RouteParams) {
       return NextResponse.json({ success: false, error: '응답을 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    const payload = (await request.json().catch(() => null)) as {
-      subject?: unknown;
-      body?: unknown;
-      to?: unknown;
-    } | null;
-
-    const subject = typeof payload?.subject === 'string' ? payload.subject.trim() : '';
-    const body = typeof payload?.body === 'string' ? payload.body.trim() : '';
-    const keys = Array.isArray(payload?.to)
-      ? payload.to.filter((k): k is string => typeof k === 'string')
-      : [];
+    const parsed = await readSendPayload(request, session?.user?.id ?? '');
+    if ('error' in parsed) {
+      return NextResponse.json({ success: false, error: parsed.error }, { status: 400 });
+    }
+    const { subject, body, keys, attachments, tempKeys } = parsed;
 
     if (!subject || !body) {
       return NextResponse.json(
@@ -245,7 +413,11 @@ export async function POST(request: Request, { params }: RouteParams) {
       audiences: ['user'],
       directEmails: addresses,
       data: { title: subject, message: body },
+      attachments,
     });
+
+    // 첨부는 이미 메일에 실렸다 — 공개 주소에 남겨 두지 않는다.
+    await discardTempFiles(tempKeys);
 
     const staffId = session?.user?.id ?? null;
     const staffName = session?.user?.name ?? null;
@@ -253,11 +425,15 @@ export async function POST(request: Request, { params }: RouteParams) {
     // 처리 이력에 한 줄 남긴다 — "이 신청에 무슨 일이 있었나"가 한 줄기로 읽혀야
     // 한다. 자동 문장이므로 메모 요약 칸(internal_note)은 건드리지 않는다.
     if (result.sent > 0) {
+      const attachedLine = attachments.length
+        ? `\n첨부: ${describeAttachments(attachments.map((a) => ({ name: a.filename, size: a.size })))}`
+        : '';
       await addResponseNote({
         responseId,
         kind: 'mail',
         body:
           `메일을 보냈습니다 — “${subject}”\n받는 사람: ${addresses.join(', ')}` +
+          attachedLine +
           (result.failed > 0 ? `\n(실패 ${result.failed}건)` : ''),
         authorId: staffId,
         authorName: staffName,

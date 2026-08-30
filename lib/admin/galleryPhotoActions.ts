@@ -114,6 +114,15 @@ export async function deletePhotoFully(photo: GalleryPhoto): Promise<void> {
   } catch (error) {
     console.warn('Failed to delete gallery photo from R2:', error);
   }
+
+  // 보관된 원본도 함께 지운다 — 표시본만 지우면 아무도 모르는 파일이 버킷에 쌓인다
+  if (photo.original_key) {
+    try {
+      await deleteFromR2(photo.original_key);
+    } catch (error) {
+      console.warn('Failed to delete original photo from R2:', error);
+    }
+  }
 }
 
 /**

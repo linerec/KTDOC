@@ -8,8 +8,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
 import { getProgramById, createProgramImage, deleteProgramImage } from '@/lib/d1';
-import { uploadToR2, deleteFromR2 } from '@/lib/r2';
-import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
+import { deleteFromR2 } from '@/lib/r2';
+import { readUploads } from '@/lib/r2/readUploads';
+import { uploadTargetByKey } from '@/lib/r2/uploadTargets';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -42,52 +43,38 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
-    const formData = await request.formData();
-    const files = formData.getAll('files') as File[];
+    // 파일은 브라우저에서 R2로 직접 올라온다 — 여기 오는 것은 티켓뿐이다.
+    const target = uploadTargetByKey('program-images', `programs/${programId}`)!;
+    const intake = await readUploads(request, {
+      target,
+      userId: session?.user?.id ?? '',
+    });
 
-    if (files.length === 0) {
+    if (intake.uploads.length === 0) {
       return NextResponse.json(
-        { success: false, error: '업로드할 파일이 없습니다.' },
-        { status: 400 }
-      );
-    }
-
-    // 파일별 용량 상한 — 클라이언트 검증을 우회한 직접 호출 방어 (lib/uploadLimits.ts)
-    const oversize = files.find((file) => file.size > MAX_UPLOAD_FILE_BYTES);
-    if (oversize) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `${MAX_UPLOAD_FILE_MB}MB를 넘는 사진은 올릴 수 없습니다: ${oversize.name}`,
-        },
+        { success: false, error: intake.error ?? '업로드할 파일이 없습니다.' },
         { status: 400 }
       );
     }
 
     const uploadedImages = [];
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) continue;
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      const r2Result = await uploadToR2(buffer, filename, `programs/${programId}`);
-
+    for (const file of intake.uploads) {
       const imageId = await createProgramImage(programId, {
-        image_url: r2Result.url,
-        r2_key: r2Result.key,
+        image_url: file.url,
+        r2_key: file.key,
         size: file.size,
       });
 
       uploadedImages.push({
         id: imageId,
         program_id: programId,
-        image_url: r2Result.url,
-        r2_key: r2Result.key,
+        image_url: file.url,
+        r2_key: file.key,
         sort_order: 0,
         caption_ko: null,
         caption_en: null,
-        width: null,
-        height: null,
+        width: file.width,
+        height: file.height,
         size: file.size,
         created_at: '',
       });

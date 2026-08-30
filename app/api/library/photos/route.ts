@@ -18,8 +18,8 @@ import {
   eventIdExists,
   programIdExists,
 } from '@/lib/d1';
-import { uploadToR2 } from '@/lib/r2';
-import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
+import { readUploads } from '@/lib/r2/readUploads';
+import { uploadTargetByKey } from '@/lib/r2/uploadTargets';
 
 const MAX_FILES_PER_REQUEST = 20;
 
@@ -64,39 +64,26 @@ export async function POST(request: Request) {
   }
 
   try {
-    const formData = await request.formData();
-    const files = formData.getAll('files') as File[];
+    // 파일은 브라우저에서 R2로 직접 올라온다 — 여기 오는 것은 티켓뿐이다.
+    const target = uploadTargetByKey('library-photos', 'gallery/submissions')!;
+    const intake = await readUploads(request, {
+      target,
+      userId: session.user.id,
+      maxFiles: MAX_FILES_PER_REQUEST,
+    });
 
     // 이벤트/수업 상세에서 제출하면 해당 항목에 연결한다(둘 중 하나). 비공개 보관은 동일.
-    const eventIdRaw = formData.get('eventId');
-    const programIdRaw = formData.get('programId');
+    const eventIdRaw = intake.field('eventId');
+    const programIdRaw = intake.field('programId');
     const eventId = eventIdRaw ? parseInt(String(eventIdRaw), 10) : NaN;
     const programId = programIdRaw ? parseInt(String(programIdRaw), 10) : NaN;
     const linkedEventId = Number.isFinite(eventId) ? eventId : undefined;
     const linkedProgramId =
       !linkedEventId && Number.isFinite(programId) ? programId : undefined;
 
-    if (files.length === 0) {
+    if (intake.uploads.length === 0) {
       return NextResponse.json(
-        { success: false, error: '제출할 사진이 없습니다.' },
-        { status: 400 }
-      );
-    }
-    if (files.length > MAX_FILES_PER_REQUEST) {
-      return NextResponse.json(
-        { success: false, error: `한 번에 최대 ${MAX_FILES_PER_REQUEST}장까지 올릴 수 있습니다.` },
-        { status: 400 }
-      );
-    }
-
-    // 파일별 용량 상한 — 클라이언트 검증을 우회한 직접 호출 방어 (lib/uploadLimits.ts)
-    const oversize = files.find((file) => file.size > MAX_UPLOAD_FILE_BYTES);
-    if (oversize) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `${MAX_UPLOAD_FILE_MB}MB를 넘는 사진은 올릴 수 없습니다: ${oversize.name}`,
-        },
+        { success: false, error: intake.error ?? '제출할 사진이 없습니다.' },
         { status: 400 }
       );
     }
@@ -118,16 +105,13 @@ export async function POST(request: Request) {
 
     const uploaded = [];
 
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) continue;
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      const r2Result = await uploadToR2(buffer, filename, 'gallery/submissions');
-
+    for (const file of intake.uploads) {
       const photoId = await createGalleryPhoto({
-        image_url: r2Result.url,
-        r2_key: r2Result.key,
+        image_url: file.url,
+        r2_key: file.key,
+        original_key: file.originalKey,
+        width: file.width ?? undefined,
+        height: file.height ?? undefined,
         size: file.size,
         is_published: false, // 학생 제출은 항상 비공개 — 운영진 검토 후 공개
         event_id: linkedEventId,
@@ -136,13 +120,6 @@ export async function POST(request: Request) {
       });
       const photo = await getGalleryPhotoById(photoId);
       if (photo) uploaded.push(photo);
-    }
-
-    if (uploaded.length === 0) {
-      return NextResponse.json(
-        { success: false, error: '이미지 파일만 올릴 수 있습니다.' },
-        { status: 400 }
-      );
     }
 
     return NextResponse.json({

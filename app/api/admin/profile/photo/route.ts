@@ -10,13 +10,12 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { uploadToR2, deleteFromR2, R2_PUBLIC_URL } from '@/lib/r2';
+import { deleteFromR2, R2_PUBLIC_URL } from '@/lib/r2';
 import { getProfilePhotoUrl, setProfilePhotoUrl } from '@/lib/members';
-import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
+import { readUploads } from '@/lib/r2/readUploads';
+import { uploadTargetByKey } from '@/lib/r2/uploadTargets';
 
 // Vercel 함수 바디 한도(4.5MB) 내 실효 한도 — lib/uploadLimits.ts 참조
-const MAX_FILE_SIZE = MAX_UPLOAD_FILE_BYTES;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 /** 공개 URL → R2 키. 우리 버킷 URL이 아니면 null(외부 URL은 건드리지 않음). */
 function r2KeyFromUrl(url: string): string | null {
@@ -44,32 +43,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
+    // 파일은 브라우저에서 R2로 직접 올라온다 — 여기 오는 것은 티켓뿐이다.
+    const target = uploadTargetByKey('profile', 'profiles')!;
+    const intake = await readUploads(request, {
+      target,
+      userId: session.user.id,
+      maxFiles: 1,
+    });
+    const result = intake.uploads[0];
 
-    if (!file) {
+    if (!result) {
       return NextResponse.json(
-        { success: false, error: '파일이 필요합니다.' },
-        { status: 400 }
-      );
-    }
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { success: false, error: '지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP만 가능)' },
-        { status: 400 }
-      );
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { success: false, error: `파일 크기가 ${MAX_UPLOAD_FILE_MB}MB를 초과합니다.` },
+        { success: false, error: intake.error ?? '파일이 필요합니다.' },
         { status: 400 }
       );
     }
 
+    // 새 사진이 확실히 자리를 잡은 뒤에 옛 사진을 지운다 —
+    // 먼저 지웠다가 업로드가 실패하면 프로필이 빈 채로 남는다.
     await deleteOldPhoto(session.user.id);
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await uploadToR2(buffer, file.name, 'profiles');
     await setProfilePhotoUrl(session.user.id, result.url);
 
     return NextResponse.json({ success: true, url: result.url });

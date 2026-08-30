@@ -8,6 +8,7 @@
  * sendMail()은 절대 throw 하지 않는다 — 메일이 치명적인지는 호출부가 정한다.
  */
 
+import type { MailAttachment } from './attachments';
 import type { MailConfig, SmtpConfig } from '@/types/mail';
 
 export type ResolvedMailConfig =
@@ -36,6 +37,11 @@ export interface MailMessage {
   text: string;
   /** 지정하면 설정의 replyTo를 덮어쓴다(문의 접수 → 문의자에게 답장) */
   replyTo?: string;
+  /**
+   * 첨부 파일. 규칙(개수·크기·형식)은 lib/mail/attachments.ts가 이미 판정했다 —
+   * 여기서는 provider가 요구하는 모양으로 옮겨 담기만 한다.
+   */
+  attachments?: MailAttachment[];
 }
 
 export interface SendMailResult {
@@ -98,6 +104,14 @@ async function sendViaResend(
       reply_to: message.replyTo || cfg.replyTo || undefined,
       subject: message.subject,
       text: message.text,
+      // Resend는 base64 문자열을 그대로 받는다(SDK 없이 HTTP만으로 첨부가 된다)
+      attachments: message.attachments?.length
+        ? message.attachments.map((a) => ({
+            filename: a.filename,
+            content: a.content,
+            content_type: a.contentType,
+          }))
+        : undefined,
     }),
   });
 
@@ -144,6 +158,13 @@ async function sendViaSmtp(
     replyTo: message.replyTo || cfg.replyTo || undefined,
     subject: message.subject,
     text: message.text,
+    attachments: message.attachments?.length
+      ? message.attachments.map((a) => ({
+          filename: a.filename,
+          content: Buffer.from(a.content, 'base64'),
+          contentType: a.contentType,
+        }))
+      : undefined,
   });
   return { ok: true, providerId: info.messageId };
 }

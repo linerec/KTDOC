@@ -14,6 +14,7 @@ import Link from 'next/link';
 import SiteViewLink from '@/components/common/SiteViewLink';
 import PushOptInCard from '@/components/push/PushOptInCard';
 import TodayEventBanner from '@/components/admin/TodayEventBanner';
+import ConsoleNotice from '@/components/admin/ConsoleNotice';
 import type { EventWithCategory } from '@/types/gallery';
 import { useT } from '@/lib/i18n/useT';
 
@@ -184,6 +185,20 @@ export default function StaffDashboard({
           </Link>
         </section>
       )}
+
+      {/* 달라진 점 알림 — 읽고 닫으면 다시 뜨지 않는다(ConsoleNotice).
+          다들 확인하고 나면 이 블록은 지운다. */}
+      <ConsoleNotice
+        id="upload-limit-2026-08"
+        title={t('admin.home.noticeUploadTitle', '사진 용량 제한을 크게 올렸습니다')}
+        body={t(
+          'admin.home.noticeUploadBody',
+          '이제 사진 한 장을 50MB까지, 여러 장을 한 번에 올릴 수 있습니다. 크기를 줄이지 않아도 되고, 올린 원본은 그대로 보관됩니다. 메일 첨부도 15MB까지 됩니다. 잘 되는지 한 번 확인해 주세요.'
+        )}
+        href="/admin/gallery"
+        linkLabel={t('admin.home.noticeUploadLink', '사진 올려보기')}
+        dismissLabel={t('admin.home.noticeDismiss', '확인했습니다')}
+      />
 
       {/* 알림 받기 — 운영진도 받는 쪽이다. 새 가입 신청 알림(lib/push/system.ts)은
           이미 teacher·admin을 대상으로 발송되지만, 기기를 등록해 두지 않으면 도착할

@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useT } from '@/lib/i18n/useT';
+import { describeAttachments, type MailAttachmentNote } from '@/lib/mail/attachments';
 import { MAIL_EVENTS } from '@/lib/mail/events';
 import type { MailLogRow, MailLogStatus, MailUsage } from '@/types/mail';
 
@@ -26,6 +27,17 @@ const STATUS_LABEL: Record<MailLogStatus, string> = {
   skipped: '건너뜀',
   quota_blocked: '한도 초과',
 };
+
+/** 저장된 첨부 흔적을 한 줄로. 없거나 깨졌으면 빈 문자열 — 줄 자체가 사라진다. */
+function attachedNames(raw: string | null): string {
+  if (!raw) return '';
+  try {
+    const parsed = JSON.parse(raw) as MailAttachmentNote[];
+    return Array.isArray(parsed) ? describeAttachments(parsed) : '';
+  } catch {
+    return '';
+  }
+}
 
 const SKIP_REASON: Record<string, string> = {
   'switch-off': '설정에서 꺼둠',
@@ -401,6 +413,14 @@ export default function LogTab({
                   ? ` — ${SKIP_REASON[detail.row.detail] ?? detail.row.detail}`
                   : ''}
               </dd>
+              {/* 첨부가 있었다면 함께 보여 준다 — 본문만으로는 "무엇을 보냈나"에
+                  답하지 못한다(파일 내용은 보관하지 않고 이름·크기만 남는다). */}
+              {attachedNames(detail.row.attachments) && (
+                <>
+                  <dt>{t('admin.mail.log.colAttachments', '첨부')}</dt>
+                  <dd>{attachedNames(detail.row.attachments)}</dd>
+                </>
+              )}
             </dl>
             {detail.row.body ? (
               <pre className="mail-detail-body">{detail.row.body}</pre>

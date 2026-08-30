@@ -7,12 +7,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isStaff } from '@/lib/isAdmin';
-import { uploadToR2 } from '@/lib/r2';
-import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
+import { readUploads } from '@/lib/r2/readUploads';
+import { uploadTargetByKey } from '@/lib/r2/uploadTargets';
 
 // Vercel 함수 바디 한도(4.5MB) 내 실효 한도 — lib/uploadLimits.ts 참조
-const MAX_FILE_SIZE = MAX_UPLOAD_FILE_BYTES;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
 
 export async function POST(request: Request) {
   try {
@@ -21,23 +19,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: '운영진 권한이 필요합니다.' }, { status: 403 });
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    if (!file) {
-      return NextResponse.json({ success: false, error: '파일이 필요합니다.' }, { status: 400 });
-    }
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    // 파일은 브라우저에서 R2로 직접 올라온다 — 여기 오는 것은 티켓뿐이다.
+    const target = uploadTargetByKey('supplies', 'supplies')!;
+    const intake = await readUploads(request, {
+      target,
+      userId: session?.user?.id ?? '',
+      maxFiles: 1,
+    });
+    const result = intake.uploads[0];
+    if (!result) {
       return NextResponse.json(
-        { success: false, error: '지원하지 않는 파일 형식입니다. (JPEG, PNG, GIF, WebP, SVG)' },
+        { success: false, error: intake.error ?? '파일이 필요합니다.' },
         { status: 400 }
       );
     }
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ success: false, error: `파일 크기가 ${MAX_UPLOAD_FILE_MB}MB를 초과합니다.` }, { status: 400 });
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await uploadToR2(buffer, file.name, 'supplies');
     return NextResponse.json({ success: true, data: result });
   } catch (error) {
     console.error('Supply image upload error:', error);

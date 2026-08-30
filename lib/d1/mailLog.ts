@@ -11,6 +11,7 @@
 
 import { queryD1, executeD1, batchD1 } from './client';
 import { dayInTimeZone, siteDayUtcRange } from '@/lib/siteDay';
+import type { MailAttachmentNote } from '@/lib/mail/attachments';
 import type {
   MailAudience,
   MailLogRow,
@@ -31,13 +32,15 @@ export interface MailLogInsert {
   batchId?: string | null;
   quotaDaily?: number | null;
   quotaMonthly?: number | null;
+  /** 첨부 흔적(이름·크기). 파일 내용은 어디에도 보관하지 않는다. */
+  attachments?: MailAttachmentNote[] | null;
 }
 
 const INSERT_SQL = `
   INSERT INTO mail_log
     (event_key, audience, to_address, subject, body, status, detail,
-     provider, provider_id, batch_id, quota_daily, quota_monthly)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+     provider, provider_id, batch_id, quota_daily, quota_monthly, attachments)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
 function insertParams(r: MailLogInsert): unknown[] {
   return [
@@ -53,6 +56,7 @@ function insertParams(r: MailLogInsert): unknown[] {
     r.batchId ?? null,
     r.quotaDaily ?? null,
     r.quotaMonthly ?? null,
+    r.attachments?.length ? JSON.stringify(r.attachments) : null,
   ];
 }
 

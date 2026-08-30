@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/isAdmin';
-import { uploadToR2 } from '@/lib/r2';
-import { MAX_UPLOAD_FILE_BYTES, MAX_UPLOAD_FILE_MB } from '@/lib/uploadLimits';
+import { readUploads } from '@/lib/r2/readUploads';
+import { uploadTargetByKey } from '@/lib/r2/uploadTargets';
 
 // Vercel 함수 바디 한도(4.5MB) 내 실효 한도 — lib/uploadLimits.ts 참조
-const MAX_FILE_SIZE = MAX_UPLOAD_FILE_BYTES;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 export async function POST(request: Request) {
   try {
@@ -19,35 +17,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const folder = (formData.get('folder') as string) || 'images';
+    // 파일은 브라우저에서 R2로 직접 올라온다 — 여기 오는 것은 티켓뿐이다.
+    // 폴더는 클라이언트가 아니라 등록소가 정한다(임의 경로에 쓰지 못하게).
+    const target = uploadTargetByKey('general', 'images')!;
+    const intake = await readUploads(request, {
+      target,
+      userId: session?.user?.id ?? '',
+      maxFiles: 1,
+    });
+    const result = intake.uploads[0];
 
-    if (!file) {
+    if (!result) {
       return NextResponse.json(
-        { success: false, error: '파일이 필요합니다.' },
+        { success: false, error: intake.error ?? '파일이 필요합니다.' },
         { status: 400 }
       );
     }
-
-    // 파일 타입 검증
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { success: false, error: '지원하지 않는 파일 형식입니다. (JPEG, PNG, GIF, WebP만 가능)' },
-        { status: 400 }
-      );
-    }
-
-    // 파일 크기 검증
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { success: false, error: `파일 크기가 ${MAX_UPLOAD_FILE_MB}MB를 초과합니다.` },
-        { status: 400 }
-      );
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await uploadToR2(buffer, file.name, folder);
 
     return NextResponse.json({
       success: true,

@@ -13,6 +13,7 @@ import { after } from 'next/server';
 import { getCalendarConfig } from '@/lib/calendar';
 import { getGuardianEmailsForStudents } from '@/lib/members';
 import { query } from '@/lib/db';
+import { attachmentNotes, type MailAttachment } from './attachments';
 import { getMailEvent, isEssential, type MailEventDef } from './events';
 import { loadMailConfig } from './store';
 import { resolveMailConfig, sendMail } from './mailer';
@@ -39,6 +40,12 @@ export interface NotifyInput {
   directEmails?: string[];
   /** 답장을 이 주소로 받고 싶을 때(문의 접수 → 문의자) */
   replyTo?: string;
+  /**
+   * 첨부 파일. 사람이 그 자리에서 붙인 것만 온다 — 자동 알림은 첨부를 쓰지 않는다.
+   * 붙일 수 있는지(개수·크기·형식)는 호출부가 lib/mail/attachments.ts로 이미
+   * 판정했다. 여기서는 그대로 provider까지 나른다.
+   */
+  attachments?: MailAttachment[];
   /** 템플릿 치환값 */
   data?: MailTemplateData;
   /**
@@ -229,6 +236,8 @@ async function notifyAudience(
   const resolved = resolveMailConfig(config);
   const bulk = def.bulk === true && addresses.length > 1;
   const storedBody = def.redactBody ? null : body.text;
+  // 첨부는 이름·크기만 남긴다 — 파일 자체는 보관하지 않는다(보존 기간을 떠안지 않는다).
+  const notes = attachmentNotes(input.attachments);
 
   if (bulk) {
     // 수신자끼리 주소가 보이지 않게 BCC로. to에는 발신 주소를 넣는다.
@@ -240,6 +249,7 @@ async function notifyAudience(
       subject: body.subject,
       text: body.text,
       replyTo: input.replyTo,
+      attachments: input.attachments,
     });
     logs.push(
       ...addresses.map(
@@ -257,6 +267,9 @@ async function notifyAudience(
           batchId,
           quotaDaily: result.quotaDaily ?? null,
           quotaMonthly: result.quotaMonthly ?? null,
+          // 본문과 달리 수신자마다 남긴다 — 내역은 주소로 찾으므로, 대표 행에만
+          // 두면 다른 수신자의 기록에서 첨부가 사라진다(이름·크기라 가볍다).
+          attachments: notes,
         })
       )
     );
@@ -267,6 +280,7 @@ async function notifyAudience(
         subject: body.subject,
         text: body.text,
         replyTo: input.replyTo,
+        attachments: input.attachments,
       });
       logs.push({
         eventKey: def.key,
@@ -280,6 +294,7 @@ async function notifyAudience(
         providerId: result.providerId ?? null,
         quotaDaily: result.quotaDaily ?? null,
         quotaMonthly: result.quotaMonthly ?? null,
+        attachments: notes,
       });
     }
   }

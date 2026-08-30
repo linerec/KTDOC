@@ -20,11 +20,13 @@
     "d1:migrate": "node scripts/d1Migrate.mjs",
     "mysql:migrate": "node scripts/mysqlMigrate.mjs",
     "images:migrate": "node scripts/migrateR2Images.mjs",
-    "mail:domain": "node scripts/setupMailDomain.mjs"
+    "mail:domain": "node scripts/setupMailDomain.mjs",
+    "r2:cors": "node scripts/r2Cors.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
     "@aws-sdk/client-s3": "^3.947.0",
+    "@aws-sdk/s3-request-presigner": "^3.947.0",
     "@types/nodemailer": "^6.4.23",
     "bcryptjs": "^3.0.3",
     "mysql2": "^3.15.3",

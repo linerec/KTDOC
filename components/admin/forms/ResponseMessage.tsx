@@ -15,12 +15,28 @@
  *     띄우면 오지 않을 답장을 기다리게 된다.
  *
  * 쓰다 만 글은 브라우저에 남겨 둔다 — 길게 쓰다 실수로 화면을 옮기면 다시 쓸
- * 마음이 나지 않는다.
+ * 마음이 나지 않는다. 다만 **첨부는 남지 않는다** — 파일은 브라우저에 담아 둘
+ * 수 없고, 담아 둔 척하면 다음에 와서 붙은 줄 알고 그냥 보낸다.
+ *
+ * 첨부의 판정(개수·크기·형식)은 lib/mail/attachments.ts 한 곳에 있다. 여기서
+ * 하는 일은 **고르는 순간에 그 판정을 보여 주는 것**이다 — 보내기를 누른 뒤에야
+ * "너무 큽니다"를 만나면, 방금 쓴 글을 두고 파일부터 다시 고민하게 된다.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatInboxWhen } from '@/components/admin/notify/timeFormat';
+import { uploadFilesDirect } from '@/lib/uploadClient';
+import {
+  checkAttachments,
+  describeAttachmentProblem,
+  formatAttachmentSize,
+  MAX_ATTACHMENTS,
+  MAX_ATTACHMENT_MB,
+  MAX_ATTACHMENTS_TOTAL_BYTES,
+  MAX_ATTACHMENTS_TOTAL_MB,
+  type MailAttachmentNote,
+} from '@/lib/mail/attachments';
 import type { MailLogStatus } from '@/types/mail';
 
 interface Recipient {
@@ -52,6 +68,8 @@ interface HistoryItem {
   bodyRedacted: boolean;
   status: MailLogStatus;
   detail: string | null;
+  /** 그때 함께 나간 파일들 — 이름·크기만 남는다(내용은 보관하지 않는다) */
+  attachments: MailAttachmentNote[];
   createdAt: string;
 }
 
@@ -130,6 +148,9 @@ export default function ResponseMessage({
   const [result, setResult] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [openItem, setOpenItem] = useState<number | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   /**
    * 초안을 아직 읽지 않았을 때 저장 이펙트가 돌면, 복원되기 전의 빈 값으로
    * 저장본을 지운다. 상태로 둬야 복원된 값이 화면에 반영된 **다음 렌더**에서
@@ -194,9 +215,39 @@ export default function ResponseMessage({
   const chosen = recipients.filter((r) => picked.includes(r.key) && !r.blocked);
   const canWrite = Boolean(data?.sending.ready);
   const canSend = canWrite && chosen.length > 0 && subject.trim() !== '' && body.trim() !== '';
+  const totalAttached = files.reduce((sum, f) => sum + f.size, 0);
+  const gaugePercent = Math.min(100, (totalAttached / MAX_ATTACHMENTS_TOTAL_BYTES) * 100);
 
   const toggle = (key: string) => {
     setPicked((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+    setConfirming(false);
+  };
+
+  /**
+   * 고른 파일을 더한다. 한도를 넘기면 **더하지 않고 이유를 말한다** — 일부만
+   * 조용히 받으면 어느 파일이 빠졌는지 모른 채 보내게 된다.
+   */
+  const addFiles = (list: FileList | null) => {
+    if (!list?.length) return;
+    const merged = [...files];
+    for (const f of Array.from(list)) {
+      // 같은 파일을 두 번 고르는 실수는 조용히 걸러 준다(이름+크기가 같으면 같은 파일)
+      if (!merged.some((m) => m.name === f.name && m.size === f.size)) merged.push(f);
+    }
+    const problem = checkAttachments(merged.map((f) => ({ name: f.name, size: f.size })));
+    if (problem) {
+      setFileError(describeAttachmentProblem(problem));
+      return;
+    }
+    setFileError('');
+    setFiles(merged);
+    setResult(null);
+    setConfirming(false);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setFileError('');
     setConfirming(false);
   };
 
@@ -213,10 +264,20 @@ export default function ResponseMessage({
     setSending(true);
     setResult(null);
     try {
+      // 첨부는 이 라우트를 지나지 않는다 — 브라우저가 R2로 곧장 올리고,
+      // 여기에는 "올렸습니다"라는 티켓만 실어 보낸다(Vercel 본문 4.5MB 회피).
+      // 서버가 그 파일을 다시 읽어 메일에 싣고, 보낸 뒤 지운다.
+      const uploads = await uploadFilesDirect(base, files);
+
       const res = await fetch(base, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject: subject.trim(), body: body.trim(), to: picked }),
+        body: JSON.stringify({
+          subject: subject.trim(),
+          body: body.trim(),
+          to: picked,
+          uploads,
+        }),
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
@@ -227,6 +288,8 @@ export default function ResponseMessage({
       setResult({ kind: 'ok', text: json.data?.message || '보냈습니다.' });
       setSubject('');
       setBody('');
+      setFiles([]);
+      setFileError('');
       setConfirming(false);
       setShowHistory(true);
       try {
@@ -237,8 +300,13 @@ export default function ResponseMessage({
       await load(true);
       // 처리 이력에도 한 줄 남았으므로 왼쪽 본문을 다시 그린다.
       router.refresh();
-    } catch {
-      setResult({ kind: 'err', text: '연결이 끊어졌습니다. 보내졌는지 아래 내역에서 확인해 주세요.' });
+    } catch (err) {
+      // 첨부를 올리다 실패했으면 메일은 아직 나가지 않았다 — 그 사실을 그대로 말한다
+      const message =
+        err instanceof Error && err.name === 'UploadError'
+          ? `${err.message} (메일은 아직 보내지 않았습니다.)`
+          : '연결이 끊어졌습니다. 보내졌는지 아래 내역에서 확인해 주세요.';
+      setResult({ kind: 'err', text: message });
       setConfirming(false);
     } finally {
       setSending(false);
@@ -374,10 +442,76 @@ export default function ResponseMessage({
                 />
               </div>
 
+              <div className="resp-mail-files">
+                <span className="resp-mail-label">첨부</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  hidden
+                  onChange={(e) => {
+                    addFiles(e.target.files);
+                    // 같은 파일을 지웠다가 다시 고를 수 있게 입력값을 비운다
+                    e.target.value = '';
+                  }}
+                />
+                {files.length > 0 && (
+                  <ul className="resp-mail-file-list">
+                    {files.map((f, i) => (
+                      <li key={`${f.name}-${f.size}-${i}`} className="resp-mail-file">
+                        <span className="resp-mail-file-name">{f.name}</span>
+                        <span className="resp-mail-file-size">
+                          {formatAttachmentSize(f.size)}
+                        </span>
+                        <button
+                          type="button"
+                          className="resp-mail-file-remove"
+                          onClick={() => removeFile(i)}
+                          disabled={sending}
+                          aria-label={`${f.name} 빼기`}
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="resp-mail-file-actions">
+                  <button
+                    type="button"
+                    className="resp-mail-chip"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={sending || files.length >= MAX_ATTACHMENTS}
+                  >
+                    파일 고르기
+                  </button>
+                  <span className="admin-cell-sub">
+                    {files.length > 0
+                      ? `${files.length}개 · 합계 ${formatAttachmentSize(totalAttached)} / ${MAX_ATTACHMENTS_TOTAL_MB}MB`
+                      : `${MAX_ATTACHMENTS}개까지, 파일 하나 ${MAX_ATTACHMENT_MB}MB·합계 ${MAX_ATTACHMENTS_TOTAL_MB}MB까지`}
+                  </span>
+                </div>
+                {files.length > 0 && (
+                  <div
+                    className="resp-mail-file-gauge"
+                    role="presentation"
+                    data-warn={totalAttached > MAX_ATTACHMENTS_TOTAL_BYTES * 0.8 ? 'true' : undefined}
+                  >
+                    <span style={{ width: `${gaugePercent}%` }} />
+                  </div>
+                )}
+                {fileError && (
+                  <p className="resp-mail-file-error" role="alert">
+                    {fileError}
+                  </p>
+                )}
+              </div>
+
               <p className="admin-field-help">
                 쓰신 그대로 나갑니다(자동 번역·자동 인사말 없음). 맨 끝에 ‘{data.sending.fromName}’
                 서명이 붙습니다. 답장은 <strong>{data.sending.replyTo || data.sending.from}</strong>
                 으로 옵니다.
+                {files.length > 0 && ' 첨부한 파일은 이 화면을 벗어나면 다시 골라야 합니다.'}
               </p>
 
               <button
@@ -415,6 +549,18 @@ export default function ResponseMessage({
                   <dt>제목</dt>
                   <dd>{subject}</dd>
                 </div>
+                {files.length > 0 && (
+                  <div>
+                    <dt>첨부</dt>
+                    <dd>
+                      {files.map((f, i) => (
+                        <span key={`${f.name}-${i}`}>
+                          {f.name} ({formatAttachmentSize(f.size)})
+                        </span>
+                      ))}
+                    </dd>
+                  </div>
+                )}
               </dl>
               <pre className="resp-mail-preview">{body}</pre>
               <div className="resp-mail-confirm-actions">
@@ -489,6 +635,14 @@ export default function ResponseMessage({
                             <p className="admin-cell-sub">받는 사람: {h.to}</p>
                             {h.status !== 'sent' && h.detail && (
                               <p className="admin-cell-sub">사유: {h.detail}</p>
+                            )}
+                            {h.attachments.length > 0 && (
+                              <p className="admin-cell-sub">
+                                첨부:{' '}
+                                {h.attachments
+                                  .map((a) => `${a.name} (${formatAttachmentSize(a.size)})`)
+                                  .join(', ')}
+                              </p>
                             )}
                             {h.body ? (
                               <pre className="resp-mail-preview">{h.body}</pre>
