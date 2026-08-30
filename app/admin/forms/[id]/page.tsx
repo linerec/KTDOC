@@ -12,7 +12,6 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { countDirty, getFormById, getPrograms } from '@/lib/d1';
 import { warnSchema } from '@/lib/forms/schema';
-import { PROVISIONAL_NOTES } from '@/lib/forms/provisionalNotes';
 import FormEditor from '@/components/admin/forms/FormEditor';
 import type { FormSchema } from '@/types/forms';
 
@@ -76,7 +75,6 @@ export default async function AdminFormEditPage({ params }: PageProps) {
         initialSchema={schema}
         warnings={warnSchema(schema)}
         dirtyCount={dirtyCount}
-        provisionalNotes={PROVISIONAL_NOTES}
         programs={programs}
       />
     </div>

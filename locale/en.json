@@ -1555,8 +1555,6 @@
   "admin.programs.applyFormHelp": "Linking a form makes this class’s Apply button open it. If the linked form isn’t published yet, the button keeps working the old way.",
   "admin.forms.subtitle": "Create registration forms, share them by link or QR, and review the entries that come in.",
   "admin.forms.new": "+ New form",
-  "admin.forms.provisionalTitle": "Some decisions still need the director’s confirmation",
-  "admin.forms.provisionalBody": "A few judgements from the 2026–2027 form were left provisional. Confirm them before publishing — once a form is published, class options can no longer be split or removed.",
   "admin.forms.empty": "No forms yet. Start with “New form”.",
   "admin.forms.colTitle": "Form",
   "admin.forms.colStatus": "Status",

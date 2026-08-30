@@ -3,7 +3,7 @@
  * 2026–2027 수강 신청서 시드
  *
  * lib/forms/presets.ts 의 정규 학기 프리셋을 원격 D1 에 신청서 1건으로 심는다.
- * **초안(draft)으로만 심는다** — 원장 확인(lib/forms/provisionalNotes.ts)이 끝나기 전에
+ * **초안(draft)으로만 심는다** — 과목 선택지와 학비 연결을 원장이 확인하기 전에
  * 게시되면 안 되기 때문이다. 게시 후에는 선택지를 쪼갤 수 없다.
  *
  * 같은 slug 가 이미 있으면 **덮지 않고 중단한다.** 응답이 달린 폼을 덮어쓰는 사고를 막는다.
@@ -16,7 +16,6 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { seasonPreset2026 } from '../lib/forms/presets.ts';
-import { PROVISIONAL_NOTES } from '../lib/forms/provisionalNotes.ts';
 import { validateSchema, warnSchema } from '../lib/forms/schema.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -124,11 +123,4 @@ const warnings = warnSchema(schema);
 if (warnings.length > 0) {
   console.log('\n운영 준비 상태 — 게시는 가능하지만 확인이 필요합니다:');
   for (const w of warnings) console.log('  ⚠', w);
-}
-
-if (PROVISIONAL_NOTES.length > 0) {
-  console.log(`\n🚧 원장 확인이 필요한 잠정 판단 ${PROVISIONAL_NOTES.length}건 — 게시 전에 확정해야 합니다:`);
-  for (const n of PROVISIONAL_NOTES) console.log(`  · [${n.id}] ${n.question}`);
-  console.log('\n  확인 문서: docs/operations/registration-form-open-questions.md');
-  console.log('  확인이 끝나면 lib/forms/provisionalNotes.ts 의 해당 항목을 지웁니다.');
 }

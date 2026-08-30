@@ -21,7 +21,6 @@ import {
   updateFormSchema,
 } from '@/lib/d1';
 import { warnSchema } from '@/lib/forms/schema';
-import { PROVISIONAL_NOTES } from '@/lib/forms/provisionalNotes';
 import type { FormSchema } from '@/types/forms';
 
 interface RouteParams {
@@ -59,7 +58,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
         schema,
         warnings: warnSchema(schema),
         dirtyCount: await countDirty(formId),
-        provisionalNotes: PROVISIONAL_NOTES,
       },
     });
   } catch (error) {

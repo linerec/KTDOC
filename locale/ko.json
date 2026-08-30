@@ -1555,8 +1555,6 @@
   "admin.programs.applyFormHelp": "신청서를 연결하면 이 수업 상세의 신청 버튼이 그 신청서를 엽니다. 게시하지 않은 신청서를 연결하면 버튼은 예전 방식 그대로 동작합니다.",
   "admin.forms.subtitle": "수강 신청서·특강 신청서를 만들어 링크와 QR로 공유하고, 들어온 응답을 확인합니다.",
   "admin.forms.new": "+ 새 신청서",
-  "admin.forms.provisionalTitle": "원장님 확인이 필요한 항목이 있습니다",
-  "admin.forms.provisionalBody": "2026–2027 신청서를 만들면서 확정하지 못한 판단이 남아 있습니다. 신청서를 게시하기 전에 확인해 주세요 — 게시한 뒤에는 과목 선택지를 나누거나 지울 수 없습니다.",
   "admin.forms.empty": "아직 만든 신청서가 없습니다. ‘새 신청서’로 시작해 보세요.",
   "admin.forms.colTitle": "신청서",
   "admin.forms.colStatus": "상태",

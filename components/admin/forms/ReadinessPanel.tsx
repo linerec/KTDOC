@@ -11,12 +11,9 @@
  * 원장이 읽고 무엇을 해야 하는지 알 수 있는 문장만 쓴다.
  */
 
-import type { ProvisionalNote } from '@/lib/forms/provisionalNotes';
-
 interface ReadinessPanelProps {
   warnings: string[];
   dirtyCount: number;
-  provisionalNotes: ProvisionalNote[];
   consentCount: number;
   locked: boolean;
 }
@@ -24,7 +21,6 @@ interface ReadinessPanelProps {
 export default function ReadinessPanel({
   warnings,
   dirtyCount,
-  provisionalNotes,
   consentCount,
   locked,
 }: ReadinessPanelProps) {
@@ -81,29 +77,6 @@ export default function ReadinessPanel({
           </li>
         )}
       </ul>
-
-      {provisionalNotes.length > 0 && (
-        <div className="readiness-notes">
-          <h3 className="readiness-notes-title">
-            원장님 확인이 필요합니다 · {provisionalNotes.length}건
-          </h3>
-          <p className="readiness-notes-lead">
-            아래는 원본 신청서와 학비표만으로 확정할 수 없어 <strong>가장 그럴듯한 쪽으로 정해 둔</strong>{' '}
-            것들입니다. 확인이 끝나면 이 목록은 사라집니다.
-          </p>
-          <ul className="readiness-note-list">
-            {provisionalNotes.map((n) => (
-              <li key={n.id}>
-                <p className="readiness-note-q">{n.question}</p>
-                <p className="readiness-note-a">
-                  <strong>해둔 것 —</strong> {n.assumption}
-                </p>
-                <p className="readiness-note-why">{n.reason}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </section>
   );
 }

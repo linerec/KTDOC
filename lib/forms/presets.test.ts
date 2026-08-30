@@ -1,17 +1,13 @@
 /**
- * lib/forms/presets.test.ts — 프리셋과 잠정 판단 노트를 함께 잠근다
+ * lib/forms/presets.test.ts — 프리셋을 잠근다
  *
  * 프리셋은 운영자가 "새 신청서"를 누를 때 나오는 시작점이다. 시작점이 게이트를
  * 통과하지 못하면 아무것도 만들 수 없다 — 그래서 여기서 못박는다.
- *
- * 여기에 더해 provisionalNotes 와의 짝을 검사한다. 노트만 남고 선택지가 사라지거나
- * 그 반대가 되면, 원장에게 "확인해 달라"고 보여주는 목록이 거짓말이 된다.
  */
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { COURSE, PRESETS, seasonPreset2026 } from './presets.ts';
-import { PROVISIONAL_NOTES } from './provisionalNotes.ts';
 import { allQuestions, applyBindings, validateAnswers, validateSchema } from './schema.ts';
 
 test('모든 프리셋은 스키마 게이트를 통과한다', () => {
@@ -218,30 +214,4 @@ test('제출하면 동의 5종 중 해당되는 것만 증빙으로 남는다', 
   // 선택 과목 2건이 명단의 축이 된다
   assert.deepEqual(selections.map((s) => s.option_key).sort(), ['drums_5standing', 'kids_dance']);
   assert.equal(selections.find((s) => s.option_key === 'drums_5standing')?.program_id, 14);
-});
-
-// ── 잠정 판단 노트와의 짝 ────────────────────────────────────────
-
-test('잠정 판단 노트가 가리키는 선택지는 실제로 존재한다', () => {
-  const q7 = allQuestions(seasonPreset2026()).find((q) => q.key === 'q7_classes');
-  const optionKeys = new Set((q7?.options ?? []).map((o) => o.key));
-  for (const note of PROVISIONAL_NOTES) {
-    for (const key of note.optionKeys) {
-      assert.ok(optionKeys.has(key), `노트 "${note.id}" 가 없는 선택지를 가리킨다: ${key}`);
-    }
-  }
-});
-
-test('잠정 판단 노트는 질문·가정·근거·대안을 모두 갖는다 — 원장이 읽고 판단할 수 있어야 한다', () => {
-  for (const note of PROVISIONAL_NOTES) {
-    assert.ok(note.question.trim(), `${note.id}: 질문이 비었다`);
-    assert.ok(note.assumption.trim(), `${note.id}: 잠정 결정이 비었다`);
-    assert.ok(note.reason.trim(), `${note.id}: 근거가 비었다`);
-    assert.ok(note.ifWrong.trim(), `${note.id}: 다를 경우의 대응이 비었다`);
-  }
-});
-
-test('노트 id 는 중복되지 않는다', () => {
-  const ids = PROVISIONAL_NOTES.map((n) => n.id);
-  assert.equal(new Set(ids).size, ids.length);
 });

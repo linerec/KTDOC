@@ -18,7 +18,6 @@ import ShareQrCard from '@/components/share/ShareQrCard';
 import { useT } from '@/lib/i18n/useT';
 import { allQuestions } from '@/lib/forms/schema';
 import { addOption, addQuestion, allKeys, makeKey, moveOption, patchOption, patchQuestion } from '@/lib/forms/edit';
-import type { ProvisionalNote } from '@/lib/forms/provisionalNotes';
 import type { FormOption, FormQuestion, FormRow, FormSchema, QuestionType } from '@/types/forms';
 import OptionTable, { type ProgramChoice } from './OptionTable';
 import ReadinessPanel from './ReadinessPanel';
@@ -44,7 +43,6 @@ interface FormEditorProps {
   initialSchema: FormSchema;
   warnings: string[];
   dirtyCount: number;
-  provisionalNotes: ProvisionalNote[];
   programs: ProgramChoice[];
 }
 
@@ -53,7 +51,6 @@ export default function FormEditor({
   initialSchema,
   warnings,
   dirtyCount,
-  provisionalNotes,
   programs,
 }: FormEditorProps) {
   const t = useT();
@@ -321,7 +318,6 @@ export default function FormEditor({
       <ReadinessPanel
         warnings={warnings}
         dirtyCount={dirtyCount}
-        provisionalNotes={provisionalNotes}
         consentCount={consentCount}
         locked={locked}
       />

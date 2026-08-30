@@ -11,7 +11,6 @@ import T from '@/components/common/T';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getForms, getResponseCountsByForm } from '@/lib/d1';
-import { PROVISIONAL_NOTES } from '@/lib/forms/provisionalNotes';
 import type { FormStatus } from '@/types/forms';
 
 export const metadata: Metadata = {
@@ -51,23 +50,6 @@ export default async function AdminFormsPage() {
           </Link>
         </div>
       </div>
-
-      {PROVISIONAL_NOTES.length > 0 && (
-        <div className="admin-callout">
-          <strong>
-            <T k="admin.forms.provisionalTitle">원장님 확인이 필요한 항목이 있습니다</T>
-          </strong>{' '}
-          <T k="admin.forms.provisionalBody">
-            2026–2027 신청서를 만들면서 확정하지 못한 판단이 남아 있습니다. 신청서를 게시하기 전에
-            확인해 주세요 — 게시한 뒤에는 과목 선택지를 나누거나 지울 수 없습니다.
-          </T>
-          <ul className="admin-callout-list">
-            {PROVISIONAL_NOTES.map((n) => (
-              <li key={n.id}>{n.question}</li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {forms.length === 0 ? (
         <div className="admin-card admin-empty">

@@ -12,7 +12,7 @@
  *  2. **조건부 노출을 실제로 걸었다.** 원본에서는 공연 미참가 사유(Q9)와 칼 소품비(Q11)가
  *     전원에게 필수로 떴다. 이제 해당되는 사람에게만 뜬다.
  *  3. **q7_classes 선택지를 학비표에 맞게 쪼개고, 빠져 있던 중고등부 작품반을 추가했다.**
- *     근거와 미확정 사항은 lib/forms/provisionalNotes.ts 에 모여 있다 — 원장 확인 후 그 파일을 지운다.
+ *     각 선택지의 courseCode 판단 근거는 그 자리에 주석으로 붙어 있다.
  *
  * ⚠️ 선택지 key 는 첫 제출 이후 바꿀 수 없다(응답이 이 키를 가리킨다). 게시 전에 확정할 것.
  *    programId 는 원격 D1 실측 기준이다(2026-08-13, program_type='class' 9건).
@@ -230,10 +230,13 @@ export function seasonPreset2026(): FormSchema {
                   en: 'K-DRUM Ensemble (4:10–5:00 P.M.)',
                 },
                 programId: 16,
-                courseCode: COURSE.MEGA_DRUM, // provisionalNotes: kdrum-is-mega-drum
+                // 원본의 '모북(모듬북)의 합주' = 학비표의 'Mega Drum 모듬북'. 같은 한국어 이름을
+                // 쓰고, 사이트 수업 'K-드럼 앙상블'(id 16)로 이어진다.
+                courseCode: COURSE.MEGA_DRUM,
               },
               // 원본 Q7에 빠져 있던 과목. Q11(칼 소품비)이 이 반을 가리키는데 고를 자리가 없었다.
-              // provisionalNotes: youth-repertoire-missing
+              // 학비표가 'Youth Dance'와 'Advanced Dance'를 나란히 별개로 나열하므로 고급반과
+              // 다른 수업이다. 2026–2027 실폼에서 수업 시간(3:15–4:00 P.M.)이 채워져 확정됐다.
               {
                 key: 'youth_repertoire',
                 label: {
@@ -252,7 +255,10 @@ export function seasonPreset2026(): FormSchema {
                 programId: 17,
                 courseCode: COURSE.DANCE_1,
               },
-              // provisionalNotes: sunday-adult-tuition
+              // 일요 성인반 3종 — 학비표에 성인반 전용 행이 없어 단품 행에 이어 둔다(무용은
+              // 1 Dance Course, 북은 Kids Drum 1. 셋 다 3개월 $400이라 실무상 차이가 없다).
+              // ⚠️ 성인반 전용가가 따로 있는지는 미확인 —
+              // docs/operations/registration-form-open-questions.md 질문 2.
               {
                 key: 'sun_beginner_dance',
                 label: {
