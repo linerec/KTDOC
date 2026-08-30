@@ -8,6 +8,7 @@ import IntlObject from '@/components/common/IntlObject';
 import ImageObject from '@/components/common/ImageObject';
 import ScrollReveal from '@/components/common/ScrollReveal';
 import DirectorLivingPortrait from '@/components/about/DirectorLivingPortrait';
+import StaffLivingPortrait from '@/components/about/StaffLivingPortrait';
 
 // 스태거 딜레이를 CSS 변수로 전달하는 헬퍼
 const revealDelay = (ms: number): CSSProperties => ({ '--reveal-delay': `${ms}ms` } as CSSProperties);
@@ -151,16 +152,14 @@ export default function About() {
             />
 
             <article className="about-staff-card">
+              {/* 선생님 사진으로 만든 무음 루프. 단장 자리와 달리 웃는 이스터에그는 없다.
+                  주의: 여기 영상은 리포지토리 파일이라 콘솔에서 사진을 바꿔도 따라오지 않는다
+                  — 사진이 교체되면 영상도 다시 만들어 넣어야 한다
+                  (소스와 잡: D:\ComfyUI\_h3\jobs\ktdoc-staff\). */}
               <div className="about-staff-portrait reveal reveal--up" style={revealDelay(120)}>
-                <ImageObject
-                  keycode="image.about.staff.baek.portrait"
-                  width={752}
-                  height={940}
-                  className="about-staff-portrait-img"
-                  containerClassName="about-staff-portrait-fill"
-                  fallbackSrc={null}
+                <StaffLivingPortrait
+                  name="baek"
                   alt="백수경 선생 - Soo Gyung Baek, Administrative Director & Instructor"
-                  imageStyle={{ width: '100%', height: 'auto' }}
                 />
               </div>
 
@@ -202,18 +201,9 @@ export default function About() {
 
             <article className="about-staff-card">
               <div className="about-staff-portrait reveal reveal--up" style={revealDelay(120)}>
-                <ImageObject
-                  keycode="image.about.staff.han.portrait"
-                  width={752}
-                  height={940}
-                  className="about-staff-portrait-img"
-                  containerClassName="about-staff-portrait-fill"
-                  /* 지난 사진이 아니라 지금 쓰는 사진이다 — 콘솔 업로드 대신
-                     리포지토리에 담겨 있을 뿐이라 그대로 그린다.
-                     나중에 콘솔에서 교체하시면 이 줄을 null 로 바꿀 것. */
-                  fallbackSrc="/assets/images/staff_han_portrait.jpg"
+                <StaffLivingPortrait
+                  name="han"
                   alt="한진선 선생 - Jinseon Han, Assistant Instructor"
-                  imageStyle={{ width: '100%', height: 'auto' }}
                 />
               </div>
 
