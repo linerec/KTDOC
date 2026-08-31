@@ -22805,3 +22805,491 @@ button.admin-page-tab {
   line-height: 1.6;
   color: var(--text-muted);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   공연 자료함 (관리 콘솔)
+   ───────────────────────────────────────────────────────────────────
+   목록에서 가장 큰 글자는 번호다 — 운영진이 이 화면에서 하는 일의 절반이
+   "그 자료함 번호가 뭐였지"를 확인해 전화로 불러 주는 것이다.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.rva__bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.rva__empty,
+.rvd-empty {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.rva__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rva-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 12px;
+}
+
+.rva-card__code {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 116px;
+}
+
+.rva-card__codeBtn {
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  color: var(--soft-gold-text);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rva-card__copied {
+  min-height: 1em;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.rva-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rva-card__title {
+  display: block;
+  font-size: 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.rva-card__title:hover {
+  color: var(--accent-text);
+}
+
+.rva-card__meta {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.rva-card__meta--dim {
+  opacity: 0.8;
+}
+
+.rva-card__side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.rva-chip {
+  padding: 3px 10px;
+  font-size: 0.74rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.rva-chip--on {
+  color: var(--on-accent);
+  background: var(--accent-color);
+}
+
+.rva-chip--off {
+  color: var(--text-muted);
+  border-color: rgba(var(--fg-rgb), 0.2);
+}
+
+.rva-chip--warn {
+  color: var(--accent-text);
+  border-color: var(--accent-color);
+}
+
+/* ── 새 자료함 모달 ────────────────────────────────────────────── */
+
+.rva-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(var(--bg-rgb), 0.72);
+}
+
+.rva-modal__panel {
+  width: 100%;
+  max-width: 420px;
+  padding: 22px;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 14px;
+}
+
+.rva-modal__title {
+  margin: 0 0 18px;
+  font-size: 1.1rem;
+}
+
+.rva-modal__error {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  color: var(--accent-text);
+}
+
+.rva-modal__acts {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.rva-field {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.rva-field__label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.rva-field__row {
+  display: flex;
+  gap: 8px;
+}
+
+.rva-field__input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background: var(--ground);
+  border: 1px solid rgba(var(--fg-rgb), 0.18);
+  border-radius: 8px;
+}
+
+.rva-field__input--code {
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+}
+
+.rva-field__hint {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.rva-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* ── 상세 ──────────────────────────────────────────────────────── */
+
+.rvd {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rvd-note {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.rvd-note.is-ok {
+  color: var(--soft-gold-text);
+  border-color: rgba(var(--fg-rgb), 0.16);
+}
+
+.rvd-note.is-bad {
+  color: var(--accent-text);
+  border-color: var(--accent-color);
+}
+
+.rvd-card {
+  padding: 18px;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 12px;
+}
+
+.rvd-card--head {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.rvd-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rvd-card__title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.rvd-card__head .rvd-card__title {
+  margin: 0;
+}
+
+.rvd-card__meta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.rvd-head__left {
+  min-width: 240px;
+}
+
+.rvd-head__label {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.rvd-head__code {
+  margin: 2px 0 0;
+  font-size: 2.2rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  color: var(--soft-gold-text);
+}
+
+.rvd-head__url {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.rvd-pass {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rvd-pass__label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.rvd-pass__value {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+}
+
+.rvd-pass__broken {
+  font-size: 0.85rem;
+  color: var(--accent-text);
+}
+
+.rvd-pass__btn {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.rvd-head__qr {
+  flex-shrink: 0;
+}
+
+.rvd-items {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rvd-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--ground);
+  border: 1px solid rgba(var(--fg-rgb), 0.08);
+  border-radius: 8px;
+}
+
+.rvd-item__no {
+  min-width: 1.5em;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.rvd-item__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rvd-item__edit {
+  display: flex;
+  gap: 6px;
+}
+
+.rvd-item__title {
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: text;
+  overflow-wrap: anywhere;
+}
+
+.rvd-item__title:hover {
+  color: var(--accent-text);
+}
+
+.rvd-item__meta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.rvd-item__acts {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rvd-mini {
+  width: 34px;
+  height: 34px;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  background: transparent;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.rvd-mini:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rvd-mini--danger:not(:disabled):hover {
+  color: var(--accent-text);
+  border-color: var(--accent-color);
+}
+
+.rvd-upload {
+  padding-top: 12px;
+  border-top: 1px dashed rgba(var(--fg-rgb), 0.14);
+}
+
+.rvd-upload__input {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.rvd-upload__hint {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.rvd-upload__progress {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--soft-gold-text);
+}
+
+.rvd-revoke {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(var(--fg-rgb), 0.14);
+}
+
+.rvd-log {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.rvd-log th,
+.rvd-log td {
+  padding: 7px 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(var(--fg-rgb), 0.08);
+}
+
+.rvd-log th {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.rvd-log__ip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-muted);
+}
+
+.rvd-log__detail {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .rva-card {
+    flex-wrap: wrap;
+  }
+
+  .rvd-card--head {
+    flex-direction: column;
+  }
+
+  .rvd-head__qr {
+    align-self: center;
+  }
+}
