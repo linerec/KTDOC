@@ -6,6 +6,12 @@
  * 목록에서 가장 큰 글자는 **번호**다. 운영진이 이 화면에서 하는 일의 절반은
  * "그 자료함 번호가 뭐였지"를 확인하고 전화로 불러 주는 것이기 때문이다.
  *
+ * 번호 아래에 **주소 복사**와 **QR 보기**를 둔다. 현장에 무엇을 넘길지가 목록에서
+ * 바로 끝나야 한다 — 상세로 들어갔다 나오는 걸음이 자료함 개수만큼 쌓인다.
+ *
+ * 복사하는 주소는 QR이 담는 주소와 **같은 함수**(toShareUrl + SITE_URL)로 만든다.
+ * 손으로 이어 붙이면 언젠가 어긋나고, 어긋난 줄은 아무도 모른 채 남에게 간다.
+ *
  * 비밀번호는 여기서 보여 주지 않는다 — 목록 질의가 아예 가져오지 않는다
  * (lib/d1/resources.ts). 확인은 상세에서 '보기'를 눌러야 한다.
  */
@@ -13,8 +19,11 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ShareQrCard from '@/components/share/ShareQrCard';
 import { useT } from '@/lib/i18n/useT';
 import { generatePasscode, isValidPasscode } from '@/lib/resources/passcodeFormat';
+import { SITE_URL } from '@/lib/seoBusiness';
+import { toShareUrl } from '@/lib/share/qrShare';
 import type { ResourceVaultSummary } from '@/types/resources';
 
 function formatBytes(bytes: number): string {
@@ -45,20 +54,27 @@ export default function VaultList({ initialVaults }: { initialVaults: ResourceVa
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  /** 방금 무엇을 복사했는지 — `${code}:number` 또는 `${code}:url` */
   const [copied, setCopied] = useState<string | null>(null);
+  /** QR을 펼쳐 보고 있는 자료함 */
+  const [qrOf, setQrOf] = useState<ResourceVaultSummary | null>(null);
 
   const [title, setTitle] = useState('');
   const [passcode, setPasscode] = useState(() => generatePasscode());
   const [allowDownload, setAllowDownload] = useState(true);
   const [allowEmail, setAllowEmail] = useState(true);
 
-  const copyCode = useCallback(async (code: string) => {
+  /**
+   * 클립보드에 넣는다. 막아 둔 브라우저에서는 조용히 넘어간다 —
+   * 번호도 주소도 화면에 떠 있으니 눈으로 읽어 옮길 수 있다.
+   */
+  const copy = useCallback(async (text: string, mark: string) => {
     try {
-      await navigator.clipboard.writeText(code);
-      setCopied(code);
-      setTimeout(() => setCopied(null), 1600);
+      await navigator.clipboard.writeText(text);
+      setCopied(mark);
+      setTimeout(() => setCopied((current) => (current === mark ? null : current)), 1800);
     } catch {
-      // 클립보드를 막아 둔 브라우저 — 번호는 화면에 크게 떠 있으니 눈으로 읽으면 된다
+      /* 클립보드 거부 — 화면의 값을 손으로 옮기면 된다 */
     }
   }, []);
 
@@ -114,19 +130,43 @@ export default function VaultList({ initialVaults }: { initialVaults: ResourceVa
         <ul className="rva__list">
           {initialVaults.map((vault) => {
             const status = statusOf(vault);
+            const url = toShareUrl(`/${vault.code}`, SITE_URL);
+            const copiedNumber = copied === `${vault.code}:number`;
+            const copiedUrl = copied === `${vault.code}:url`;
             return (
               <li className="rva-card" key={vault.id}>
                 <div className="rva-card__code">
                   <button
                     type="button"
                     className="rva-card__codeBtn"
-                    onClick={() => copyCode(vault.code)}
+                    onClick={() => copy(vault.code, `${vault.code}:number`)}
                     title={t('admin.resources.copyCode', '번호 복사')}
                   >
                     {vault.code}
                   </button>
-                  <span className="rva-card__copied">
-                    {copied === vault.code ? t('admin.resources.copied', '복사됨') : ''}
+
+                  <div className="rva-card__share">
+                    <button
+                      type="button"
+                      className="rva-mini"
+                      onClick={() => copy(url, `${vault.code}:url`)}
+                      title={url}
+                    >
+                      {copiedUrl
+                        ? t('admin.resources.copied', '복사됨')
+                        : t('admin.resources.copyUrl', '주소 복사')}
+                    </button>
+                    <button
+                      type="button"
+                      className="rva-mini"
+                      onClick={() => setQrOf(vault)}
+                    >
+                      {t('admin.resources.showQr', 'QR 보기')}
+                    </button>
+                  </div>
+
+                  <span className="rva-card__copied" aria-live="polite">
+                    {copiedNumber ? t('admin.resources.copiedNumber', '번호를 복사했습니다') : ''}
                   </span>
                 </div>
 
@@ -243,6 +283,42 @@ export default function VaultList({ initialVaults }: { initialVaults: ResourceVa
                 disabled={busy}
               >
                 {busy ? t('admin.common.saving', '저장 중…') : t('admin.common.create', '만들기')}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* QR은 눌렀을 때만 펼친다. 줄마다 붙박이로 두면 자료함이 늘수록 목록이
+          QR 벽이 되어, 정작 찾는 제목이 안 보인다.
+          카드 자체는 상세와 같은 ShareQrCard다 — 목록에서 보는 QR과 상세에서
+          인쇄하는 QR이 다를 수 있는 여지를 만들지 않는다. */}
+      {qrOf ? (
+        <div
+          className="rva-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="rva-qr-title"
+          onClick={() => setQrOf(null)}
+        >
+          <div className="rva-modal__panel rva-qr" onClick={(e) => e.stopPropagation()}>
+            <h2 className="rva-modal__title" id="rva-qr-title">
+              {qrOf.title}
+            </h2>
+            <p className="rva-qr__code">{qrOf.code}</p>
+            <ShareQrCard
+              title={qrOf.title}
+              path={`/${qrOf.code}`}
+              size={190}
+              hint={t('admin.resources.qrHint', '공연장에서 이 QR을 스캔하면 열립니다.')}
+            />
+            <div className="rva-modal__acts">
+              <button
+                type="button"
+                className="admin-btn admin-btn-outline"
+                onClick={() => setQrOf(null)}
+              >
+                {t('admin.common.close', '닫기')}
               </button>
             </div>
           </div>

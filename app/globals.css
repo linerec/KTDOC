@@ -22861,7 +22861,32 @@ button.admin-page-tab {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 116px;
+  gap: 6px;
+  min-width: 150px;
+}
+
+/* 주소 복사·QR 보기 — 현장에 무엇을 넘길지가 목록에서 끝나야 한다 */
+.rva-card__share {
+  display: flex;
+  gap: 6px;
+}
+
+.rva-mini {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 0.76rem;
+  white-space: nowrap;
+  color: var(--text-color);
+  background: transparent;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+
+.rva-mini:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .rva-card__codeBtn {
@@ -22976,6 +23001,32 @@ button.admin-page-tab {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 20px;
+}
+
+/* QR 펼침 — 목록에서 "이걸 넘기면 되는구나"를 눈으로 확인하는 자리 */
+.rva-qr {
+  max-width: 340px;
+  text-align: center;
+}
+
+.rva-qr .rva-modal__title {
+  margin-bottom: 2px;
+}
+
+.rva-qr__code {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.24em;
+  color: var(--soft-gold-text);
+}
+
+.rva-qr .share-qr-card {
+  margin: 0 auto;
+}
+
+.rva-qr .rva-modal__acts {
+  justify-content: center;
 }
 
 .rva-field {
@@ -23292,8 +23343,34 @@ button.admin-page-tab {
 }
 
 @media (max-width: 640px) {
+  /* 좁은 화면에서는 두 줄로 접는다 — 번호·버튼·상태가 윗줄, 제목은 아랫줄에서
+     폭을 다 쓴다. 한 줄로 밀어 넣으면 제목이 세 줄로 접혀 목록을 훑을 수 없다. */
   .rva-card {
     flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .rva-card__code {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .rva-card__copied {
+    flex-basis: 100%;
+  }
+
+  .rva-card__side {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .rva-card__body {
+    flex: 1 1 100%;
+    order: 3;
   }
 
   .rvd-card--head {

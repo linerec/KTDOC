@@ -1894,5 +1894,8 @@
   "admin.resources.logWhen": "시각",
   "admin.resources.logWhat": "무엇",
   "admin.resources.logWho": "누구(지문)",
-  "admin.resources.logDetail": "내용"
+  "admin.resources.logDetail": "내용",
+  "admin.resources.copyUrl": "주소 복사",
+  "admin.resources.showQr": "QR 보기",
+  "admin.resources.copiedNumber": "번호를 복사했습니다"
 }

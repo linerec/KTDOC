@@ -1894,5 +1894,8 @@
   "admin.resources.logWhen": "When",
   "admin.resources.logWhat": "What",
   "admin.resources.logWho": "Who (fingerprint)",
-  "admin.resources.logDetail": "Detail"
+  "admin.resources.logDetail": "Detail",
+  "admin.resources.copyUrl": "Copy link",
+  "admin.resources.showQr": "Show QR",
+  "admin.resources.copiedNumber": "Number copied"
 }
