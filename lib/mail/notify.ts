@@ -41,6 +41,15 @@ export interface NotifyInput {
   /** 답장을 이 주소로 받고 싶을 때(문의 접수 → 문의자) */
   replyTo?: string;
   /**
+   * 이 사건의 'staff' 수신처를 관리 콘솔 설정 대신 여기로 보낸다.
+   *
+   * 대부분의 운영 알림은 학원 대표 메일(config.staffTo)이 맞다. 그러나 답을
+   * 받아야 할 사람이 학원이 아니라 **그 답으로 일할 사람**인 사건이 있다
+   * (인쇄물 도안 회신 — 단장님 답이 학원 메일함에만 쌓이면 아무도 고치지 못한다).
+   * 비우면 여느 때처럼 관리 콘솔 설정을 따른다.
+   */
+  staffTo?: string[];
+  /**
    * 첨부 파일. 사람이 그 자리에서 붙인 것만 온다 — 자동 알림은 첨부를 쓰지 않는다.
    * 붙일 수 있는지(개수·크기·형식)는 호출부가 lib/mail/attachments.ts로 이미
    * 판정했다. 여기서는 그대로 provider까지 나른다.
@@ -189,7 +198,7 @@ async function notifyAudience(
     audience,
     switches: config.events,
     candidates,
-    staffTo: config.staffTo,
+    staffTo: input.staffTo?.length ? input.staffTo : config.staffTo,
   });
 
   const body = renderMailBody(def.key, audience, input.data ?? {});

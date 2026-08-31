@@ -12,6 +12,7 @@
 import { NextResponse } from 'next/server';
 import { notifyEvent } from '@/lib/mail/notify';
 import { parseBannerFeedback } from '@/lib/print/bannerConfirm';
+import { resolvePrintFeedbackTo } from '@/lib/print/feedbackRecipients';
 
 export const runtime = 'nodejs';
 
@@ -53,6 +54,9 @@ export async function POST(request: Request) {
 
     const origin = new URL(request.url).origin;
     const result = await notifyEvent('print.feedback', {
+      // 관리 콘솔의 '운영진 주소'는 학원 대표 메일이다. 도안 회신은 그 답으로
+      // 일할 사람에게 가야 하므로 이 사건만 수신처를 따로 준다.
+      staffTo: resolvePrintFeedbackTo(process.env.PRINT_FEEDBACK_TO),
       data: {
         title: '퍼레이드 배너 · 북 배너',
         message: parsed.value.note,

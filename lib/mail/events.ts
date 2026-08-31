@@ -162,7 +162,7 @@ export const MAIL_EVENTS: readonly MailEventDef[] = [
     key: 'print.feedback',
     label: '인쇄물 도안 회신',
     description:
-      '도안 확인 페이지에서 회신이 왔을 때 운영진에게. 회신은 따로 저장되지 않고 이 메일 한 통이 전부이므로 끌 수 없습니다.',
+      '도안 확인 페이지에서 회신이 왔을 때. 아래 운영진 주소가 아니라 도안을 고치는 담당자에게 갑니다(환경변수 PRINT_FEEDBACK_TO). 회신은 따로 저장되지 않고 이 메일 한 통이 전부이므로 끌 수 없습니다.',
     group: 'ops',
     audiences: ['staff'],
     // 이 회신은 어디에도 저장되지 않는다. 스위치를 끄면 회신이 통째로 사라지고
