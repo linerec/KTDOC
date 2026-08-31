@@ -305,3 +305,23 @@ export {
   purgeMailLogOlderThan,
 } from './mailLog';
 export type { MailLogInsert, MailLogSearch } from './mailLog';
+
+export {
+  listVaults,
+  getVaultById,
+  getVaultByCode,
+  createVault,
+  updateVault,
+  deleteVault,
+  bumpLinkEpoch,
+  listItems,
+  getItem,
+  addItems,
+  updateItem,
+  deleteItem,
+  reorderItems,
+  logAccess,
+  recentFailures,
+  countRecentEmails,
+  listAccessLog,
+} from './resources';
