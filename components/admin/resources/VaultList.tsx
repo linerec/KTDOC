@@ -14,14 +14,14 @@ import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n/useT';
-import { generatePasscode, isValidPasscode } from '@/lib/resources/passcode';
+import { generatePasscode, isValidPasscode } from '@/lib/resources/passcodeFormat';
 import type { ResourceVaultSummary } from '@/types/resources';
 
 function formatBytes(bytes: number): string {
+  if (bytes <= 0) return '—';
   if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 ** 2).toFixed(1)}MB`;
-  if (bytes > 0) return `${Math.max(1, Math.ceil(bytes / 1024))}KB`;
-  return '—';
+  return `${Math.max(1, Math.ceil(bytes / 1024))}KB`;
 }
 
 function formatWhen(iso: string | null): string {

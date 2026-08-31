@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import ShareQrCard from '@/components/share/ShareQrCard';
 import { useT } from '@/lib/i18n/useT';
 import { uploadFilesDirect, UploadError } from '@/lib/uploadClient';
-import { generatePasscode, isValidPasscode } from '@/lib/resources/passcode';
+import { generatePasscode, isValidPasscode } from '@/lib/resources/passcodeFormat';
 import type { ResourceAccessEntry, ResourceItem } from '@/types/resources';
 
 /** 화면이 다루는 자료함 — passcodeEnc는 이 경계를 넘어오지 않는다 */
@@ -53,6 +53,8 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 function formatBytes(bytes: number): string {
+  if (bytes <= 0) return '—';
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 ** 2).toFixed(1)}MB`;
   return `${Math.max(1, Math.ceil(bytes / 1024))}KB`;
 }

@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server';
 import { getVaultByCode, logAccess, recentFailures } from '@/lib/d1/resources';
 import { isValidResourceCode } from '@/lib/resources/code';
+import { evaluateGate } from '@/lib/resources/gate';
 import { clientIp, resolvePublicGate, resourceSecret } from '@/lib/resources/publicGate';
 import { passcodeMatches } from '@/lib/resources/passcode';
 import { evaluateRateLimit, FAIL_WINDOW_MS } from '@/lib/resources/rateLimit';
@@ -71,20 +72,46 @@ export async function POST(request: Request, { params }: Ctx) {
 
     const vault = await getVaultByCode(code);
 
-    // 없는 번호도 실패로 기록한다 — 번호를 훑는 것 자체가 세어져야 한다
-    if (!vault || !vault.active || !passcodeMatches(vault.passcodeEnc, passcode, secret)) {
-      await logAccess({
-        vaultId: vault?.id ?? null,
-        code,
-        action: 'unlock_fail',
-        ipHash,
-        userAgent,
-      });
+    // 없는 번호는 실패로 기록한다 — 번호를 훑는 것 자체가 세어져야 한다
+    if (!vault) {
+      await logAccess({ vaultId: null, code, action: 'unlock_fail', ipHash, userAgent });
       await wait(FAIL_DELAY_MS);
+      return NextResponse.json({ success: false, error: '다시 확인해 주세요.' }, { status: 404 });
+    }
+
+    // 꺼졌거나 기간이 지난 자료함 — **비밀번호를 보기 전에** 갈라낸다.
+    //
+    // 두 가지를 지킨다. 하나, "다시 확인해 주세요"라고 답하면 맞는 번호를 든
+    // 사람이 자기 비밀번호를 의심하며 계속 두드린다. 둘, 그 시도가 차단
+    // 카운터에 쌓여, 자료함을 다시 켰을 때 정작 그 사람이 막힌다.
+    //
+    // 판정은 여기서 새로 만들지 않고 게이트에 묻는다 — 열쇠 없이 물으면
+    // inactive·expired·locked 중 하나로 답한다.
+    const state = evaluateGate({
+      vault: {
+        id: vault.id,
+        active: vault.active,
+        expiresAt: vault.expiresAt,
+        allowDownload: vault.allowDownload,
+        allowEmail: vault.allowEmail,
+        linkEpoch: vault.linkEpoch,
+      },
+      now: Date.now(),
+      cookie: null,
+      link: null,
+      need: 'view',
+    });
+    if (!state.ok && state.reason !== 'locked') {
       return NextResponse.json(
-        { success: false, error: '다시 확인해 주세요.' },
-        { status: vault ? 401 : 404 }
+        { success: false, error: '지금은 열 수 없는 자료함입니다.' },
+        { status: 403 }
       );
+    }
+
+    if (!passcodeMatches(vault.passcodeEnc, passcode, secret)) {
+      await logAccess({ vaultId: vault.id, code, action: 'unlock_fail', ipHash, userAgent });
+      await wait(FAIL_DELAY_MS);
+      return NextResponse.json({ success: false, error: '다시 확인해 주세요.' }, { status: 401 });
     }
 
     await logAccess({ vaultId: vault.id, code, action: 'unlock', ipHash, userAgent });

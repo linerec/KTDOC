@@ -60,9 +60,17 @@ export async function resolvePublicGate(input: {
   return { vault, verdict };
 }
 
-/** 요청에서 IP를 뽑는다(프록시 헤더 우선). 모르면 null. */
+/**
+ * 요청에서 IP를 뽑는다. 모르면 null.
+ *
+ * `x-real-ip`를 먼저 보는 이유: Vercel이 값 하나로 딱 채워 주는 헤더다.
+ * `x-forwarded-for`는 목록이라 앞에 무엇이 붙어 있는지 읽는 쪽이 정해야 하고,
+ * 그 애매함이 곧 "요청마다 새 신원을 만들어 차단을 피하는" 길이 된다.
+ * 차단은 신원이 안정적일 때만 뜻이 있다.
+ */
 export function clientIp(request: Request): string | null {
+  const real = request.headers.get('x-real-ip')?.trim();
+  if (real) return real;
   const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0]?.trim() || null;
-  return request.headers.get('x-real-ip');
+  return forwarded?.split(',')[0]?.trim() || null;
 }

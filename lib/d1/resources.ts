@@ -218,6 +218,13 @@ export async function updateVault(id: number, patch: UpdateVaultInput): Promise<
   await executeD1(`UPDATE resource_vaults SET ${sets.join(', ')} WHERE id = ?`, params);
 }
 
+/**
+ * 자료함을 지운다. **접근 기록은 남긴다.**
+ *
+ * 기록의 목적이 "자료가 새어 나갔을 때 언제 누구에게 나갔는지 답하는 것"이므로,
+ * 자료함을 지웠다고 그 답이 사라지면 안 된다. 오히려 지운 뒤에 문제가 드러나는
+ * 경우가 흔하다. 고아 행이 되는 것은 알고 두는 것이다.
+ */
 export async function deleteVault(id: number): Promise<void> {
   // 자식 행은 FK CASCADE가 지우지만, D1은 PRAGMA foreign_keys가 꺼져 있을 수
   // 있으므로 직접 지운다 — 고아 행이 남는 쪽이 더 나쁘다.

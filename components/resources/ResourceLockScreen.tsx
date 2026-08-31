@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n/useT';
-import { PASSCODE_MAX, PASSCODE_MIN } from '@/lib/resources/passcode';
+import { PASSCODE_MAX, PASSCODE_MIN } from '@/lib/resources/passcodeFormat';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 

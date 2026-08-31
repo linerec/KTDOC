@@ -47,7 +47,7 @@ export default async function ResourceCodePage({ params, searchParams }: PagePro
     // 맞는 비밀번호를 쳐도 안 열리는 화면은 사람을 붙잡아 둘 뿐이다.
     if (verdict.reason === 'inactive' || verdict.reason === 'expired') {
       return (
-        <main className="rv-page">
+        <main className="rv-page rv-page--center">
           <div className="rv-closed">
             <p className="rv-closed__mark" aria-hidden="true">
               ⌧
@@ -59,7 +59,7 @@ export default async function ResourceCodePage({ params, searchParams }: PagePro
       );
     }
     return (
-      <main className="rv-page">
+      <main className="rv-page rv-page--center">
         <ResourceLockScreen code={code} />
       </main>
     );

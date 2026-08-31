@@ -22421,6 +22421,9 @@ button.admin-page-tab {
   grid-column: 2;
   margin-top: 2px;
   font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    공연 자료함 (공개) — ktdoc.org/473128
    ───────────────────────────────────────────────────────────────────
@@ -22428,14 +22431,22 @@ button.admin-page-tab {
    터치 타깃을 크게(64px 이상) 잡고, 색은 전부 역할 토큰으로 부른다.
    ═══════════════════════════════════════════════════════════════════ */
 
+/* 사이트 헤더를 붙이지 않는다 — 메뉴를 타고 오는 자리가 아니라 번호·QR로 여는
+   한 장짜리 화면이다(/confirm과 같은 방식). 그래서 --page-offset도 쓰지 않는다:
+   없는 헤더 자리를 230px 비워 두면 무대 뒤 태블릿에서 키패드가 화면 밖으로 밀린다. */
 .rv-page {
-  min-height: 70vh;
-  padding: var(--page-offset-tight) 20px 72px;
+  min-height: 100svh;
+  padding: 40px 20px 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
   background: var(--ground);
   color: var(--text-color);
+}
+
+/* 잠긴 화면·닫힌 화면은 눌러야 할 것이 하나뿐이라 가운데 세운다 */
+.rv-page--center {
+  justify-content: center;
 }
 
 /* ── 잠긴 화면 ─────────────────────────────────────────────────── */

@@ -16,38 +16,19 @@
  * 직접 입력보다 앞에 둔다.
  *
  * 형식: `v1.<iv>.<tag>.<ciphertext>` (전부 base64url)
+ *
+ * **모양(길이·생성)은 여기 없다** — lib/resources/passcodeFormat.ts가 갖는다.
+ * 그쪽은 브라우저에서도 돌아야 하고, 이 파일의 node:crypto는 브라우저에 없다.
  */
 
-import {
-  createCipheriv,
-  createDecipheriv,
-  hkdfSync,
-  randomBytes,
-  randomInt,
-  timingSafeEqual,
-} from 'node:crypto';
+import { createCipheriv, createDecipheriv, hkdfSync, randomBytes, timingSafeEqual } from 'node:crypto';
 
-export const PASSCODE_MIN = 4;
-export const PASSCODE_MAX = 8;
+// 모양은 브라우저와 함께 쓰는 모듈이 갖는다. 여기서는 그대로 다시 내보내
+// 서버 쪽 호출부가 두 곳을 import 하지 않게 한다.
+export { PASSCODE_MAX, PASSCODE_MIN, generatePasscode, isValidPasscode } from './passcodeFormat.ts';
 
-const PASSCODE_RE = new RegExp(`^\\d{${PASSCODE_MIN},${PASSCODE_MAX}}$`);
 const VERSION = 'v1';
 const IV_BYTES = 12;
-
-/** 숫자 네 자리에서 여덟 자리. 앞자리 0을 허용한다 — 주소가 아니라 입력이다. */
-export function isValidPasscode(value: string): boolean {
-  return typeof value === 'string' && PASSCODE_RE.test(value);
-}
-
-/** 무작위 비밀번호. 화면의 '생성' 버튼이 쓴다. */
-export function generatePasscode(
-  length = 6,
-  pick: (maxExclusive: number) => number = (max) => randomInt(0, max)
-): string {
-  let out = '';
-  for (let i = 0; i < length; i++) out += String(pick(10));
-  return out;
-}
 
 /**
  * AUTH_SECRET에서 이 용도만의 열쇠를 뽑는다.
