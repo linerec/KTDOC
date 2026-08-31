@@ -40,6 +40,19 @@ export default function OptionTable({
 }: OptionTableProps) {
   const [newLabel, setNewLabel] = useState('');
 
+  /**
+   * 짝 이름 → 그 이름을 쓰는 살아 있는 항목 수.
+   * 1이면 짝이 없다는 뜻이고, 그러면 **아무것도 막지 못한 채 막고 있다고 믿게 된다**
+   * — 그 자리에 바로 경고를 띄운다(저장 뒤 경고보다 여기가 낫다).
+   */
+  const groupCount = new Map<string, number>();
+  for (const o of options) {
+    if (o.retired) continue;
+    const g = o.exclusiveGroup?.trim();
+    if (!g) continue;
+    groupCount.set(g, (groupCount.get(g) ?? 0) + 1);
+  }
+
   function handleAdd() {
     const label = newLabel.trim();
     if (!label) return;
@@ -159,9 +172,37 @@ export default function OptionTable({
                 </div>
               </>
             )}
+
+            {/* 함께 고를 수 없는 짝 — 같은 이름을 적은 항목끼리만 서로 배타가 된다.
+                코드가 과목 이름을 모르게 하려고 자유 입력으로 둔다(관계는 데이터가 말한다). */}
+            <div className="admin-field opt-field-narrow">
+              <label htmlFor={`opt-excl-${o.key}`}>함께 못 고름</label>
+              <input
+                id={`opt-excl-${o.key}`}
+                type="text"
+                list="opt-excl-groups"
+                value={o.exclusiveGroup ?? ''}
+                placeholder="없음"
+                onChange={(e) =>
+                  onPatch(o.key, { exclusiveGroup: e.target.value.trim() || undefined })
+                }
+              />
+              {o.exclusiveGroup?.trim() && groupCount.get(o.exclusiveGroup.trim()) === 1 && (
+                <p className="admin-field-help opt-warn">
+                  같은 이름을 적은 항목이 없습니다 — 짝이 없으면 아무것도 막지 못합니다.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       ))}
+
+      {/* 이미 쓰이고 있는 짝 이름 — 새 항목에 같은 이름을 적기 쉽게 제안한다. */}
+      <datalist id="opt-excl-groups">
+        {[...groupCount.keys()].map((g) => (
+          <option key={g} value={g} />
+        ))}
+      </datalist>
 
       <div className="opt-add">
         <div className="admin-field">

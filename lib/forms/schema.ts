@@ -22,6 +22,7 @@ import {
   type FormQuestion,
   type FormSchema,
 } from '../../types/forms.ts';
+import { exclusiveConflicts } from './optionGroups.ts';
 
 /** 문항·선택지 키에 허용하는 문자. 키는 URL·CSV 헤더·SQL 파라미터를 오간다. */
 const KEY_RE = /^[a-z0-9_]+$/;
@@ -150,6 +151,29 @@ export function warnSchema(schema: FormSchema): string[] {
     if (noCourse.length > 0) {
       warnings.push(`학비표 코스가 연결되지 않은 과목 ${noCourse.length}개 — 학비 조회 보조가 동작하지 않습니다`);
     }
+
+  }
+
+  // 배타 그룹("함께 고를 수 없는 짝")은 둘 이상이어야 뜻이 있다. 하나뿐이면 대개
+  // 이름 오타로 짝이 끊긴 것이고, 그러면 **아무것도 막지 못한 채 막고 있다고 믿게 된다**
+  // — 이 도메인에서 가장 조용한 실패다. 과목 문항만의 것이 아니므로 위 게이트 밖에서 본다.
+  for (const q of allQuestions(schema)) {
+    if (q.retired) continue;
+    const byGroup = new Map<string, string[]>();
+    for (const o of q.options ?? []) {
+      if (o.retired) continue;
+      const g = o.exclusiveGroup?.trim();
+      if (!g) continue;
+      byGroup.set(g, [...(byGroup.get(g) ?? []), o.label.ko]);
+    }
+    for (const [group, labels] of byGroup) {
+      if (labels.length < 2) {
+        warnings.push(
+          `함께 고를 수 없는 짝 "${group}"에 선택지가 ${labels.length}개뿐입니다(${labels.join(', ')}) — ` +
+            '짝의 이름이 서로 다르면 아무것도 막지 못합니다'
+        );
+      }
+    }
   }
 
   return warnings;
@@ -168,12 +192,15 @@ export type AnswerErrorCode =
   | 'badOption'         // 선택할 수 없는 항목입니다
   | 'badOptions'        // 선택할 수 없는 항목이 포함되어 있습니다
   | 'badEmail'          // 이메일 형식이 올바르지 않습니다
-  | 'badTel';           // 전화번호를 확인해 주세요
+  | 'badTel'            // 전화번호를 확인해 주세요
+  | 'exclusiveConflict';// 함께 고를 수 없는 항목이 섞여 있습니다
 
 export interface AnswerError {
   code: AnswerErrorCode;
   /** pickAtLeast 전용 */
   min?: number;
+  /** exclusiveConflict 전용 — 서로 부딪힌 선택지 키들. 화면이 그 자리를 짚는다. */
+  keys?: string[];
 }
 
 export type AnswerErrors = Record<string, AnswerError>;
@@ -225,7 +252,13 @@ export function validateAnswers(schema: FormSchema, answers: Answers): AnswerErr
         continue;
       }
       const valid = new Set((q.options ?? []).map((o) => o.key));
-      if (arr.some((k) => !valid.has(k))) errors[q.key] = { code: 'badOptions' };
+      if (arr.some((k) => !valid.has(k))) {
+        errors[q.key] = { code: 'badOptions' };
+        continue;
+      }
+      // 함께 고를 수 없는 짝 — 화면(FormField)이 눌리지 않게 막지만 화면은 우회된다.
+      const clash = exclusiveConflicts(q.options ?? [], arr)[0];
+      if (clash) errors[q.key] = { code: 'exclusiveConflict', keys: clash };
       continue;
     }
 

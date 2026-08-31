@@ -13,6 +13,7 @@
 
 import { useT } from '@/lib/i18n/useT';
 import { pickText } from '@/lib/forms/schema';
+import { blockedByExclusive } from '@/lib/forms/optionGroups';
 import type { AnswerError } from '@/lib/forms/schema';
 import type { AnswerValue, FormQuestion } from '@/types/forms';
 
@@ -44,6 +45,8 @@ export function useAnswerErrorText(): (err?: AnswerError) => string | undefined 
         return t('forms.err.badEmail', '이메일 형식이 올바르지 않습니다.');
       case 'badTel':
         return t('forms.err.badTel', '전화번호를 확인해 주세요.');
+      case 'exclusiveConflict':
+        return t('forms.err.exclusiveConflict', '함께 고를 수 없는 항목이 섞여 있습니다.');
       default:
         return t('forms.err.generic', '다시 확인해 주세요.');
     }
@@ -73,6 +76,7 @@ export default function FormField({
   onChange,
   onBlur,
 }: FormFieldProps) {
+  const t = useT();
   const errorText = useAnswerErrorText()(error);
   const id = `f-${q.key}`;
   const errId = `err-${q.key}`;
@@ -210,6 +214,17 @@ export default function FormField({
   const live = (q.options ?? []).filter((o) => !o.retired);
   const picked = Array.isArray(value) ? value : [];
 
+  // 함께 고를 수 없는 짝(삼고무 ↔ 오고무). 관계는 선택지의 exclusiveGroup 이 말하고
+  // 여기서는 "무엇이 무엇 때문에 막혔는가"만 받는다 — 코드가 과목 이름을 알지 않는다.
+  //
+  // **해제가 아니라 비활성이다.** 골라 둔 것을 조용히 걷어내면 신청자는 자기가 고른 것이
+  // 사라진 줄도 모른다. 막힌 이유를 그 자리에 적어 두는 편이 낫다.
+  const blocked = blockedByExclusive(live, picked);
+  const labelOfKey = (key: string) => {
+    const o = live.find((x) => x.key === key);
+    return o ? pick(o.label, locale) : key;
+  };
+
   return (
     <fieldset className="form-q form-choice" aria-invalid={!!error} aria-describedby={describedBy}>
       <legend>{labelNode}</legend>
@@ -217,8 +232,18 @@ export default function FormField({
       <div className="form-options">
         {live.map((o) => {
           const on = picked.includes(o.key);
+          const blockedBy = blocked.get(o.key);
+          const reason = blockedBy
+            ? t('forms.option.blockedBy', '{name}과(와) 함께 고를 수 없습니다', {
+                name: labelOfKey(blockedBy),
+              })
+            : undefined;
           return (
-            <label key={o.key} className={`form-option${on ? ' is-picked' : ''}`}>
+            <label
+              key={o.key}
+              className={`form-option${on ? ' is-picked' : ''}${blockedBy ? ' is-blocked' : ''}`}
+              title={reason}
+            >
               <input
                 type="checkbox"
                 // name 이 있어야 제출 오류 때 이 문항으로 포커스가 옮겨간다
@@ -226,6 +251,7 @@ export default function FormField({
                 name={q.key}
                 value={o.key}
                 checked={on}
+                disabled={!!blockedBy}
                 onChange={() => {
                   // exclusive 선택지("해당 없음")를 고르면 나머지를 해제하고,
                   // 다른 것을 고르면 exclusive 를 해제한다 — 둘이 동시에 켜지면 뜻이 모순된다.
@@ -244,6 +270,7 @@ export default function FormField({
                 onBlur={() => onBlur(q.key)}
               />
               <span>{pick(o.label, locale)}</span>
+              {reason && <span className="form-option-blocked">{reason}</span>}
             </label>
           );
         })}

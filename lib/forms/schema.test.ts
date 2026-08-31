@@ -218,6 +218,85 @@ test('선택지에 없는 값을 보내면 오류다 — 조작된 제출을 막
   assert.ok('q7_classes' in errs2);
 });
 
+/* ── 함께 고를 수 없는 짝(exclusiveGroup) ────────────────────────────
+   화면(FormField)이 막아 주지만 화면은 우회된다. 서버가 같은 판정을 다시 한다. */
+
+/** 배타 그룹 하나(북) + 자유 선택지 하나를 가진 다중선택 문항. */
+const EXCLUSIVE: FormSchema = baseSchema([
+  {
+    key: 'q7_classes',
+    type: 'multi',
+    required: true,
+    label: { ko: '수강 과목' },
+    options: [
+      { key: 'drums_3standing', label: { ko: '삼고무' }, exclusiveGroup: 'standing_drums' },
+      { key: 'drums_5standing', label: { ko: '오고무' }, exclusiveGroup: 'standing_drums' },
+      { key: 'kids_dance', label: { ko: '유년부 무용' } },
+    ],
+  },
+]);
+
+test('같은 배타 그룹을 둘 고르면 서버가 거부한다 — 화면은 우회된다', () => {
+  const errs = validateAnswers(EXCLUSIVE, {
+    q7_classes: ['drums_3standing', 'drums_5standing'],
+  });
+  assert.equal(errs.q7_classes?.code, 'exclusiveConflict');
+});
+
+test('배타 그룹 하나 + 자유 선택지는 정상이다', () => {
+  const errs = validateAnswers(EXCLUSIVE, { q7_classes: ['drums_3standing', 'kids_dance'] });
+  assert.equal('q7_classes' in errs, false);
+});
+
+test('배타 충돌은 어느 선택지들이 부딪혔는지 함께 알려 준다 — 화면이 그 자리를 짚는다', () => {
+  const errs = validateAnswers(EXCLUSIVE, {
+    q7_classes: ['drums_3standing', 'drums_5standing'],
+  });
+  assert.deepEqual(errs.q7_classes?.keys, ['drums_3standing', 'drums_5standing']);
+});
+
+test('숨겨진 문항의 배타 충돌은 검증하지 않는다 — 안 보이는 것으로 막지 않는다', () => {
+  const hidden: FormSchema = baseSchema([
+    { key: 'gate', type: 'single', required: false, label: { ko: '게이트' },
+      options: [{ key: 'yes', label: { ko: '예' } }, { key: 'no', label: { ko: '아니오' } }] },
+    {
+      key: 'q7_classes',
+      type: 'multi',
+      required: true,
+      label: { ko: '수강 과목' },
+      showIf: { question: 'gate', equals: ['yes'] },
+      options: [
+        { key: 'a', label: { ko: 'A' }, exclusiveGroup: 'g' },
+        { key: 'b', label: { ko: 'B' }, exclusiveGroup: 'g' },
+      ],
+    },
+  ]);
+  const errs = validateAnswers(hidden, { gate: 'no', q7_classes: ['a', 'b'] });
+  assert.equal('q7_classes' in errs, false);
+});
+
+test('배타 그룹에 선택지가 하나뿐이면 경고한다 — 이름 오타로 짝이 끊긴 자리다', () => {
+  const typo: FormSchema = baseSchema([
+    {
+      key: 'q7_classes',
+      type: 'multi',
+      required: true,
+      label: { ko: '수강 과목' },
+      options: [
+        { key: 'a', label: { ko: 'A' }, exclusiveGroup: 'standing_drums' },
+        { key: 'b', label: { ko: 'B' }, exclusiveGroup: 'standing_drum' }, // 오타 — s 가 빠졌다
+      ],
+    },
+  ]);
+  const warnings = warnSchema(typo);
+  assert.ok(warnings.some((w) => w.includes('standing_drums')));
+  assert.ok(warnings.some((w) => w.includes('standing_drum')));
+});
+
+test('짝이 맞는 배타 그룹은 경고하지 않는다', () => {
+  assert.equal(warnSchema(EXCLUSIVE).some((w) => w.includes('함께')), false);
+});
+
 test('visibleQuestions 는 지금 화면에 떠야 할 문항만 준다', () => {
   const keys = visibleQuestions(CONDITIONAL, { q8_perform: 'yes', q7_classes: ['kids_dance'] }).map((q) => q.key);
   assert.deepEqual(keys, ['q8_perform', 'q7_classes']);
