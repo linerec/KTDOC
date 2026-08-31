@@ -1897,5 +1897,15 @@
   "admin.resources.logDetail": "Detail",
   "admin.resources.copyUrl": "Copy link",
   "admin.resources.showQr": "Show QR",
-  "admin.resources.copiedNumber": "Number copied"
+  "admin.resources.copiedNumber": "Number copied",
+  "admin.members.createStudent": "Create student account",
+  "admin.members.createStudentHelp": "Creates an account for {guardian}'s child. A temporary password is issued and emailed to the address below. Signing in with it opens the change-password screen right away.",
+  "admin.members.createStudentFailed": "Could not create the student account.",
+  "admin.members.studentName": "Student name",
+  "admin.members.studentEmail": "Email (sign-in ID)",
+  "admin.members.studentEmailPh": "e.g. parent+child@gmail.com",
+  "admin.members.studentEmailHelp": "An alias of the guardian's address with +name. Mail still lands in the guardian's inbox. When the child gets their own address, just change this field.",
+  "admin.members.enrollmentYear": "Enrollment year",
+  "admin.members.createAndSend": "Create and send email",
+  "admin.members.mailFailed": "Email failed — please pass it on directly"
 }

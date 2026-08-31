@@ -1897,5 +1897,15 @@
   "admin.resources.logDetail": "내용",
   "admin.resources.copyUrl": "주소 복사",
   "admin.resources.showQr": "QR 보기",
-  "admin.resources.copiedNumber": "번호를 복사했습니다"
+  "admin.resources.copiedNumber": "번호를 복사했습니다",
+  "admin.members.createStudent": "새 원생 계정 만들기",
+  "admin.members.createStudentHelp": "{guardian} 님의 자녀 계정을 만듭니다. 임시 비밀번호를 발급해 아래 주소로 안내 메일이 갑니다. 그 비밀번호로 처음 로그인하면 새 비밀번호를 정하는 화면이 바로 뜹니다.",
+  "admin.members.createStudentFailed": "원생 계정을 만들지 못했습니다.",
+  "admin.members.studentName": "원생 이름",
+  "admin.members.studentEmail": "이메일 (로그인 아이디)",
+  "admin.members.studentEmailPh": "예) parent+child@gmail.com",
+  "admin.members.studentEmailHelp": "보호자 주소에 +이름을 붙인 별칭입니다. 메일은 보호자 받은편지함으로 그대로 도착합니다. 아이가 자기 주소를 갖게 되면 이 값만 바꾸면 됩니다.",
+  "admin.members.enrollmentYear": "입학년도",
+  "admin.members.createAndSend": "만들고 안내 메일 보내기",
+  "admin.members.mailFailed": "메일 발송 실패, 직접 전달해 주세요"
 }

@@ -14,6 +14,7 @@ import { useT, type TFunction } from '@/lib/i18n/useT';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatTimestampDate } from '@/lib/i18n/formatDate';
 import { roleLabel, statusLabel } from '@/lib/i18n/memberLabels';
+import { childAliasEmail } from '@/lib/members/childAlias';
 
 interface StudentOption {
   id: string;
@@ -42,6 +43,15 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
   suspended: 'admin-badge-muted',
 };
 
+/** '미연결: 자녀이름' 자리에서 새 계정을 만들 때 채워 둘 값 */
+interface NewStudentDraft {
+  linkId: string;
+  guardianName: string;
+  name: string;
+  email: string;
+  enrollmentYear: string;
+}
+
 export default function MemberTable({
   members,
   students,
@@ -56,6 +66,8 @@ export default function MemberTable({
   // 임시 비밀번호 발급 결과 — 평문은 이 모달에서 한 번만 표시된다
   const [tempResult, setTempResult] = useState<{ name: string; password: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  // 원생 계정 새로 만들기 — '미연결' 자리에서 연다
+  const [draft, setDraft] = useState<NewStudentDraft | null>(null);
 
   async function runAction(memberId: string, body: Record<string, unknown>) {
     setBusyId(memberId);
@@ -71,6 +83,49 @@ export default function MemberTable({
         setError(data.error || t('admin.common.actionFailed', '작업에 실패했습니다.'));
         return;
       }
+      router.refresh();
+    } catch {
+      setError(t('admin.common.actionError', '작업 중 오류가 발생했습니다.'));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  /**
+   * 원생 계정을 대신 만든다 — 아이가 스스로 가입할 수 없는 경우.
+   *
+   * 계정 생성·임시 비밀번호·안내 메일·보호자 연결이 한 번에 끝난다(서버가 묶어
+   * 처리한다). 나눠 부르면 중간에서 멈춘 계정이 남는다.
+   */
+  async function createStudent() {
+    if (!draft) return;
+    setBusyId(draft.linkId);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: draft.name.trim(),
+          email: draft.email.trim(),
+          enrollmentYear: draft.enrollmentYear ? Number(draft.enrollmentYear) : null,
+          guardianLinkId: draft.linkId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.error || t('admin.members.createStudentFailed', '원생 계정을 만들지 못했습니다.'));
+        return;
+      }
+      setCopied(false);
+      // 메일이 안 갔으면 그 사실을 이름 옆에 붙여 둔다 — 평문은 여기서만 보인다.
+      setTempResult({
+        name: data.data.mailSent
+          ? draft.name
+          : `${draft.name} — ${t('admin.members.mailFailed', '메일 발송 실패, 직접 전달해 주세요')}`,
+        password: data.data.tempPassword,
+      });
+      setDraft(null);
       router.refresh();
     } catch {
       setError(t('admin.common.actionError', '작업 중 오류가 발생했습니다.'));
@@ -315,6 +370,26 @@ export default function MemberTable({
                                     })
                                   }
                                 />
+                                {/* 이을 원생이 아예 없을 때 — 아이가 스스로 가입할 수
+                                    없어서 계정이 없는 경우다(유치원생 등). 여기서 만든다. */}
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn-outline admin-btn-sm"
+                                  disabled={busy}
+                                  onClick={() =>
+                                    setDraft({
+                                      linkId: c.linkId,
+                                      guardianName: member.name || member.email,
+                                      name: c.claimedName,
+                                      email: childAliasEmail(member.email, c.claimedName) ?? '',
+                                      enrollmentYear: c.claimedEnrollmentYear
+                                        ? String(c.claimedEnrollmentYear)
+                                        : String(new Date().getFullYear()),
+                                    })
+                                  }
+                                >
+                                  {t('admin.members.createStudent', '새 원생 계정 만들기')}
+                                </button>
                               </div>
                             )}
                           </div>
@@ -461,6 +536,82 @@ export default function MemberTable({
           </tbody>
         </table>
       </div>
+
+      {/* 원생 계정 만들기 — 보호자가 이름만 적어 둔 자녀에게 계정을 준다.
+          이메일은 보호자 주소의 별칭(+)이 기본값이다: 메일이 보호자에게
+          그대로 가고, 아이가 자기 주소를 갖게 되면 이메일만 바꿔 물려줄 수 있다. */}
+      {draft && (
+        <div className="admin-temp-pw-overlay" role="dialog" aria-modal="true" aria-labelledby="new-student-title">
+          <div className="admin-temp-pw-modal">
+            <h3 id="new-student-title">{t('admin.members.createStudent', '새 원생 계정 만들기')}</h3>
+            <p className="admin-field-help">
+              {t(
+                'admin.members.createStudentHelp',
+                '{guardian} 님의 자녀 계정을 만듭니다. 임시 비밀번호를 발급해 아래 주소로 안내 메일이 갑니다. 그 비밀번호로 처음 로그인하면 새 비밀번호를 정하는 화면이 바로 뜹니다.',
+                { guardian: draft.guardianName }
+              )}
+            </p>
+
+            <label className="admin-field">
+              <span className="admin-field-label">{t('admin.members.studentName', '원생 이름')}</span>
+              <input
+                className="admin-input"
+                value={draft.name}
+                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                autoFocus
+              />
+            </label>
+
+            <label className="admin-field">
+              <span className="admin-field-label">{t('admin.members.studentEmail', '이메일 (로그인 아이디)')}</span>
+              <input
+                className="admin-input"
+                type="email"
+                value={draft.email}
+                placeholder={t('admin.members.studentEmailPh', '예) parent+child@gmail.com')}
+                onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+              />
+              <span className="admin-field-help">
+                {t(
+                  'admin.members.studentEmailHelp',
+                  '보호자 주소에 +이름을 붙인 별칭입니다. 메일은 보호자 받은편지함으로 그대로 도착합니다. 아이가 자기 주소를 갖게 되면 이 값만 바꾸면 됩니다.'
+                )}
+              </span>
+            </label>
+
+            <label className="admin-field">
+              <span className="admin-field-label">{t('admin.members.enrollmentYear', '입학년도')}</span>
+              <input
+                className="admin-input"
+                inputMode="numeric"
+                value={draft.enrollmentYear}
+                onChange={(e) => setDraft({ ...draft, enrollmentYear: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+              />
+            </label>
+
+            <div className="admin-temp-pw-actions">
+              <button
+                type="button"
+                className="admin-btn admin-btn-outline"
+                onClick={() => setDraft(null)}
+                disabled={busyId === draft.linkId}
+              >
+                {t('admin.common.cancel', '취소')}
+              </button>
+              <button
+                type="button"
+                className="admin-btn admin-btn-primary"
+                onClick={createStudent}
+                disabled={busyId === draft.linkId || !draft.name.trim() || !draft.email.trim()}
+              >
+                {busyId === draft.linkId
+                  ? t('admin.common.saving', '저장 중…')
+                  : t('admin.members.createAndSend', '만들고 안내 메일 보내기')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {tempResult && (
         <div
