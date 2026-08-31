@@ -33,6 +33,7 @@ export type MenuKey =
   | 'archive'
   | 'members'
   | 'participation'
+  | 'resources'
   | 'notify'
   | 'profile'
   | 'settings.seo'

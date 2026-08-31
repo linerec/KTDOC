@@ -114,6 +114,10 @@ export const MENU_REGISTRY: MenuNode[] = [
   // 공연 카테고리는 별도 메뉴/페이지 없이 '공연 관리' 페이지의 모달(버튼)에서 관리한다.
   // 참여 현황: 공연별 참가자 수·명단(체크인 집계). 운영진·관계자 검증용.
   { key: 'participation', href: '/admin/participation', label: '참여 현황', iconKey: 'calendar', group: 'show', defaultRoles: ['teacher', 'admin'] },
+  // 공연 자료함: 음원을 미리 올려 두고 현장에서 번호 하나(ktdoc.org/473128)로 연다.
+  // 자료실 그룹이 아니라 여기 두는 이유는 콘텐츠 관리가 아니라 **공연 운영 도구**이기 때문이다.
+  // 저작권 자료를 담으므로 admin 전용으로 fail-closed.
+  { key: 'resources', href: '/admin/resources', label: '공연 자료함', iconKey: 'vault', group: 'show', defaultRoles: ['admin'] },
 
   // ── 자료실: Q&A 열람(회원)과 편집(운영진), 용어집·미디어·준비물 카탈로그.
   // Q&A(읽기 전용): 선생님이 미리 등록한 공통·공연별 질문/답변을 열람 — 질문하지 않아도 중요한 정보를 확인.

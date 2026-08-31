@@ -153,6 +153,16 @@ function IconMore() {
   );
 }
 
+function IconVault() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="M12 8.5v-1M12 16.5v1M8.5 12h-1M16.5 12h1" />
+    </svg>
+  );
+}
+
 const ICONS: Record<string, () => ReactNode> = {
   home: IconHome,
   calendar: IconCalendar,
@@ -169,6 +179,7 @@ const ICONS: Record<string, () => ReactNode> = {
   globe: IconGlobe,
   question: IconQuestion,
   spark: IconSpark,
+  vault: IconVault,
   more: IconMore,
 };
 
