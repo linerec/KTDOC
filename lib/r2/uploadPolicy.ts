@@ -41,6 +41,13 @@ export interface UploadPolicy {
   maxBytes: number;
   /** 이미지만 받는 자리인가 */
   imagesOnly: boolean;
+  /**
+   * 받아 줄 Content-Type 접두사. 비우면 제한 없음(기존 규칙의 동작 유지).
+   *
+   * imagesOnly가 "이미지만/아무거나" 두 갈래뿐이라 생겼다. 메일 첨부는 아무거나
+   * 받아도 되지만 자료함은 음원·PDF·이미지만 받아야 한다 — 그 사이가 없었다.
+   */
+  allowedTypePrefixes?: string[];
 }
 
 interface PolicyRule {
@@ -51,6 +58,7 @@ interface PolicyRule {
   processImage?: boolean;
   maxBytes?: number;
   imagesOnly?: boolean;
+  allowedTypePrefixes?: string[];
 }
 
 const RULES: PolicyRule[] = [
@@ -115,6 +123,25 @@ const RULES: PolicyRule[] = [
     imagesOnly: false,
     maxBytes: MAX_ATTACHMENT_BYTES,
   },
+  {
+    /**
+     * 공연 자료함의 파일 — 음원이 주인이다.
+     *
+     * processImage를 끄는 이유는 자명하지만(mp3를 WebP로 바꿀 수 없다) 이미지도
+     * 손대지 않는다: 자료함의 이미지는 화면에 걸 썸네일이 아니라 **현장에서 보는
+     * 큐시트·동선도**라, 장변 2000으로 줄이면 글씨가 뭉갠다.
+     *
+     * keepOriginal이 false인 것은 원본을 버린다는 뜻이 아니다 — processImage가
+     * 꺼져 있으면 올라온 객체 자체가 결과이고, 사본을 하나 더 만들지 않는다.
+     */
+    key: 'resource-items',
+    match: /^\/api\/admin\/resources\/(\d+)\/items$/,
+    folder: (m) => `resources/${m[1]}`,
+    processImage: false,
+    imagesOnly: false,
+    maxBytes: 100 * 1024 * 1024,
+    allowedTypePrefixes: ['audio/', 'image/', 'application/pdf'],
+  },
 ];
 
 function toPolicy(rule: PolicyRule, folder: string): UploadPolicy {
@@ -125,6 +152,7 @@ function toPolicy(rule: PolicyRule, folder: string): UploadPolicy {
     processImage: rule.processImage ?? true,
     maxBytes: rule.maxBytes ?? MAX_UPLOAD_FILE_BYTES,
     imagesOnly: rule.imagesOnly ?? true,
+    allowedTypePrefixes: rule.allowedTypePrefixes,
   };
 }
 

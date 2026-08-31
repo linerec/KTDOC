@@ -80,6 +80,12 @@ export function createTickets(
     if (target.imagesOnly && !file.type.startsWith('image/')) {
       return { ok: false, error: `이미지 파일만 올릴 수 있습니다: ${file.name}` };
     }
+    if (
+      target.allowedTypePrefixes &&
+      !target.allowedTypePrefixes.some((p) => (file.type || '').startsWith(p))
+    ) {
+      return { ok: false, error: `이 자리에 올릴 수 없는 형식입니다: ${file.name}` };
+    }
     if (!Number.isFinite(file.size) || file.size <= 0) {
       return { ok: false, error: `빈 파일입니다: ${file.name}` };
     }
@@ -193,6 +199,14 @@ export async function finalizeTicket(
   if (target.imagesOnly && !contentType.startsWith('image/')) {
     await discard(key);
     return { ok: false, error: '이미지 파일만 올릴 수 있습니다.' };
+  }
+  // 서명 때 신고한 형식을 믿지 않는다 — 실제로 올라온 것의 Content-Type을 다시 본다
+  if (
+    target.allowedTypePrefixes &&
+    !target.allowedTypePrefixes.some((p) => contentType.startsWith(p))
+  ) {
+    await discard(key);
+    return { ok: false, error: '이 자리에 올릴 수 없는 형식입니다.' };
   }
 
   const displayKey = key.replace(/^originals\//, '');

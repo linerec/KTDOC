@@ -41,6 +41,8 @@ const AUTHORIZE: Record<string, UploadTarget['authorize']> = {
   profile: (s) => isApproved(s),
   general: (s) => isAdmin(s),
   'mail-attachment': (s) => hasMenuAccess(s, 'forms'),
+  // 자료함 파일 — 라우트(app/api/admin/resources/[id]/items)의 첫 줄과 같은 판정
+  'resource-items': (s) => isAdmin(s),
 };
 
 function withAuthorize(policy: UploadPolicy | null): UploadTarget | null {

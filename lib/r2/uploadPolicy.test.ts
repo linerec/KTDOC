@@ -60,3 +60,32 @@ test('메일 첨부만 이미지가 아니어도 되고, 손대지 않는다', (
   assert.equal(photos?.imagesOnly, true);
   assert.equal(photos?.processImage, true);
 });
+
+test('자료함 파일 — 폴더는 자료함 id로 갈리고, 이미지 정규화를 하지 않는다', () => {
+  const p = findUploadPolicy('/api/admin/resources/42/items');
+  assert.ok(p);
+  assert.equal(p.key, 'resource-items');
+  assert.equal(p.folder, 'resources/42');
+  assert.equal(p.imagesOnly, false);
+  assert.equal(p.processImage, false, '음원을 WebP로 바꾸면 안 된다');
+  assert.equal(p.keepOriginal, false, '올라온 것 자체가 원본이다 — 사본을 하나 더 두지 않는다');
+  assert.equal(p.maxBytes, 100 * 1024 * 1024);
+});
+
+test('자료함은 음원·이미지·PDF만 받는다', () => {
+  const p = findUploadPolicy('/api/admin/resources/1/items');
+  assert.deepEqual(p?.allowedTypePrefixes, ['audio/', 'image/', 'application/pdf']);
+});
+
+test('형식 제한이 없는 정책은 undefined — 기존 규칙의 동작이 변하지 않는다', () => {
+  assert.equal(findUploadPolicy('/api/upload')?.allowedTypePrefixes, undefined);
+  assert.equal(
+    findUploadPolicy('/api/admin/forms/1/responses/2/messages')?.allowedTypePrefixes,
+    undefined
+  );
+});
+
+test('자료함 id가 숫자가 아니면 등록된 주소가 아니다', () => {
+  assert.equal(findUploadPolicy('/api/admin/resources/abc/items'), null);
+  assert.equal(findUploadPolicy('/api/admin/resources//items'), null);
+});

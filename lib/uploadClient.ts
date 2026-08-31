@@ -202,7 +202,12 @@ export interface UploadedRef {
 export async function uploadFilesDirect(
   target: string,
   files: File[],
-  onProgress?: (done: number, total: number) => void
+  onProgress?: (done: number, total: number) => void,
+  /**
+   * 지금 올라가는 파일 한 건의 바이트 진행. 100MB짜리 음원 하나를 올릴 때
+   * "1/1"만 보이면 화면이 멈춘 것처럼 보이고, 사람은 새로고침을 누른다.
+   */
+  onBytes?: (index: number, sent: number, total: number) => void
 ): Promise<UploadedRef[]> {
   if (!files.length) return [];
 
@@ -216,7 +221,11 @@ export async function uploadFilesDirect(
 
   const refs: UploadedRef[] = [];
   for (let i = 0; i < files.length; i++) {
-    await putToR2(files[i], tickets[i]);
+    await putToR2(
+      files[i],
+      tickets[i],
+      onBytes ? (sent, total) => onBytes(i, sent, total) : undefined
+    );
     refs.push({ ticket: tickets[i].ticket, name: files[i].name });
     onProgress?.(i + 1, files.length);
   }
