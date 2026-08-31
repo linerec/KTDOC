@@ -19,7 +19,10 @@ export interface MailBody {
   text: string;
 }
 
-const SITE_NAME = 'KTDOC 춤누리';
+// 메일에 쓰는 학원 이름. 제목 접두사와 서명이 모두 여기서 나온다.
+// '춤누리'를 뺀 이유: 받는 분들이 부르는 이름이 KTDOC 쪽이고, 제목 앞에
+// 붙는 대괄호가 길수록 메일함 목록에서 정작 용건이 잘린다.
+const SITE_NAME = 'KTDOC';
 
 /** 한국어 본문과 영어 본문을 구분선으로 잇는다. */
 function bilingual(ko: string, en: string): string {
