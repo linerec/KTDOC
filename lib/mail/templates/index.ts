@@ -221,6 +221,17 @@ export function renderMailBody(
         ),
       };
 
+    // 자료함 받기 링크. 파일은 붙이지 않는다 — 링크는 용량 제한이 없고,
+    // 나간 뒤에도 관리 화면에서 무효화할 수 있다.
+    case 'resource.link:user':
+      return {
+        subject: `[${SITE_NAME}] 공연 자료 — ${title}`,
+        text: bilingual(
+          `요청하신 공연 자료입니다.\n\n${title}\n\n아래 주소를 열면 비밀번호 없이 바로 재생하거나 저장하실 수 있습니다.\n${s(data, 'link')}\n\n이 링크는 24시간 뒤 만료됩니다. 자료의 저작권은 학원과 원저작자에게 있으니 공연 목적 외로 쓰거나 다시 공유하지 말아 주세요.`,
+          `Here are the show files you requested.\n\n${title}\n\nOpen the link below to play or save them — no passcode needed.\n${s(data, 'link')}\n\nThe link expires in 24 hours. These files are copyrighted; please use them for this performance only and do not share them further.`
+        ),
+      };
+
     default:
       // 레지스트리에만 있고 본문이 없는 이벤트 — 발송이 깨지지 않게 일반 문구로.
       return {

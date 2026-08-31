@@ -170,6 +170,20 @@ export const MAIL_EVENTS: readonly MailEventDef[] = [
     essential: ['staff'],
     defaultOn: { staff: true },
   },
+  {
+    key: 'resource.link',
+    label: '공연 자료 받기 링크',
+    description:
+      '자료함 화면에서 현장 담당자가 자기 주소를 넣고 요청했을 때. 파일을 붙이지 않고 하루짜리 받기 링크만 보냅니다. 요청한 본인에게만 가고, 링크는 언제든 관리 화면에서 무효화할 수 있습니다.',
+    group: 'show',
+    audiences: ['user'],
+    // 요청한 그 자리에서 "보냈습니다"를 보는 메일이다. 스위치로 끄면
+    // 보내신 분은 갔다고 믿은 채 기다린다 — 그래서 끌 수 없다.
+    essential: ['user'],
+    // 현장 담당자는 우리 회원이 아니다
+    allowNonMember: true,
+    defaultOn: { user: true },
+  },
 ] as const;
 
 const BY_KEY = new Map(MAIL_EVENTS.map((e) => [e.key, e]));

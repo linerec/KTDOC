@@ -22421,5 +22421,387 @@ button.admin-page-tab {
   grid-column: 2;
   margin-top: 2px;
   font-size: 0.82rem;
+/* ═══════════════════════════════════════════════════════════════════
+   공연 자료함 (공개) — ktdoc.org/473128
+   ───────────────────────────────────────────────────────────────────
+   무대 뒤 어두운 곳에서 태블릿을 쥔 사람이 한 손으로 누르는 화면이다.
+   터치 타깃을 크게(64px 이상) 잡고, 색은 전부 역할 토큰으로 부른다.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.rv-page {
+  min-height: 70vh;
+  padding: var(--page-offset-tight) 20px 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--ground);
+  color: var(--text-color);
+}
+
+/* ── 잠긴 화면 ─────────────────────────────────────────────────── */
+
+.rv-lock {
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+}
+
+/* 번호는 크게. 자료함 제목은 여기 없다 — 열쇠 없는 사람에게
+   "여기 뭐가 있다"를 알리지 않는다. */
+.rv-lock__code {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  letter-spacing: 0.34em;
+  font-variant-numeric: tabular-nums;
+  color: var(--soft-gold-text);
+}
+
+.rv-lock__title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.rv-lock__hint {
+  margin: 0 0 24px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.rv-dots {
+  min-height: 26px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.rv-dots__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-color);
+}
+
+.rv-dots__empty {
+  display: block;
+  height: 12px;
+}
+
+@keyframes rv-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-7px);
+  }
+  75% {
+    transform: translateX(7px);
+  }
+}
+
+.rv-dots.is-wrong {
+  animation: rv-shake 0.32s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-dots.is-wrong {
+    animation: none;
+  }
+}
+
+/* 남은 시도 횟수는 여기 오지 않는다 — 공격자에게 주는 힌트다 */
+.rv-lock__message {
+  min-height: 1.4em;
+  margin: 0 0 18px;
+  font-size: 0.88rem;
+  color: var(--accent-text);
+}
+
+.rv-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.rv-key {
+  min-height: 64px;
+  font-size: 1.45rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-color);
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.rv-key:active:not(:disabled) {
+  background: rgba(var(--fg-rgb), 0.1);
+}
+
+.rv-key:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.rv-key--soft {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+}
+
+.rv-key--go {
+  color: var(--on-accent);
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+/* ── 닫힌 자료함(꺼짐·만료) ────────────────────────────────────── */
+
+.rv-closed {
+  max-width: 380px;
+  text-align: center;
+  padding-top: 32px;
+}
+
+.rv-closed__mark {
+  margin: 0 0 12px;
+  font-size: 2.2rem;
+  color: var(--text-muted);
+}
+
+.rv-closed__title {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.rv-closed__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ── 열린 자료함 ───────────────────────────────────────────────── */
+
+.rv-vault {
+  width: 100%;
+  max-width: 560px;
+}
+
+.rv-vault__head {
+  margin-bottom: 20px;
+}
+
+.rv-vault__code {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  font-variant-numeric: tabular-nums;
+  color: var(--soft-gold-text);
+}
+
+.rv-vault__title {
+  margin: 0 0 8px;
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.rv-vault__note {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+
+.rv-vault__empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.rv-list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rv-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 12px;
+}
+
+.rv-item.is-playing {
+  border-color: var(--accent-color);
+}
+
+.rv-item__no {
+  min-width: 1.4em;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.rv-item__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rv-item__title {
+  font-size: 0.98rem;
+  overflow-wrap: anywhere;
+}
+
+.rv-item__meta {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.rv-item__acts {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.rv-play,
+.rv-get {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+  line-height: 1;
+  text-decoration: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.rv-play {
+  color: var(--on-accent);
+  background: var(--accent-color);
+  border: 1px solid var(--accent-color);
+}
+
+.rv-get {
+  color: var(--text-color);
+  background: transparent;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+}
+
+/* 플레이어는 하나뿐이다 — 두 곡이 겹쳐 나올 수 없는 이유 */
+.rv-player {
+  position: sticky;
+  bottom: 0;
+  padding: 10px 0 14px;
+  background: var(--ground);
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+  display: none;
+}
+
+.rv-player.is-on {
+  display: block;
+}
+
+.rv-player__now {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  color: var(--soft-gold-text);
+}
+
+.rv-audio {
+  width: 100%;
+}
+
+/* ── 이메일로 받기 ─────────────────────────────────────────────── */
+
+.rv-mail {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 12px;
+}
+
+.rv-mail__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.rv-mail__hint {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.rv-mail__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rv-mail__input {
+  flex: 1;
+  min-width: 180px;
+  min-height: 48px;
+  padding: 0 12px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background: var(--ground);
+  border: 1px solid rgba(var(--fg-rgb), 0.18);
+  border-radius: 10px;
+}
+
+.rv-mail__send {
+  min-height: 48px;
+  padding: 0 18px;
+  font-size: 0.95rem;
+  color: var(--on-accent);
+  background: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.rv-mail__send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.rv-mail__note {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+}
+
+.rv-mail__note.is-ok {
+  color: var(--soft-gold-text);
+}
+
+.rv-mail__note.is-bad {
+  color: var(--accent-text);
+}
+
+.rv-vault__legal {
+  margin: 24px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
   color: var(--text-muted);
 }
