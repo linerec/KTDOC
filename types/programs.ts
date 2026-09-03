@@ -51,6 +51,12 @@ export interface Program {
   end_date: string | null;
   // 정규 수업(class/program) 반복 일정 — 캘린더 표시용. camp는 start_date/end_date 사용.
   weekdays: string | null; // 쉼표구분 요일(0=일 ~ 6=토). 예: "6"=토, "1,3"=월·수
+  /** 쉼표구분 주차(1~5). 예 "2,4"=매월 둘째·넷째 주. 비우면 매주. */
+  week_ordinals: string | null;
+  /** 쉼표구분 'YYYY-MM-DD' — 이 날은 쉰다(휴강·주차 이동) */
+  skip_dates: string | null;
+  /** 쉼표구분 'YYYY-MM-DD' — 규칙과 무관하게 이 날은 한다(보강·주차 이동) */
+  extra_dates: string | null;
   class_start_time: string | null; // "HH:MM"
   class_end_time: string | null; // "HH:MM"
   term_start_date: string | null; // 학기 시작 "YYYY-MM-DD"(비우면 상시)
@@ -228,6 +234,9 @@ export interface CreateProgramInput {
   start_date?: string;
   end_date?: string;
   weekdays?: string;
+  week_ordinals?: string;
+  skip_dates?: string;
+  extra_dates?: string;
   class_start_time?: string;
   class_end_time?: string;
   term_start_date?: string;

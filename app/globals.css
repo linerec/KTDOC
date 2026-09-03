@@ -15956,7 +15956,106 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .admin-weekday-chip.is-on {
   background: rgba(212, 160, 23, 0.18);
   border-color: var(--soft-gold);
-  color: var(--warm-ivory);
+  color: var(--accent-text);
+}
+/* '첫째·다섯째' 같은 두세 글자 라벨(반복 주기)은 42px 정사각에 들어가지 않는다. */
+.admin-weekday-chip--wide {
+  width: auto;
+  min-width: 42px;
+  padding: 0 12px;
+}
+
+/* 예외 날짜(휴강·보강) 편집 — ProgramForm 정규수업 일정 */
+.admin-exception-add {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 6px;
+}
+.admin-exception-add .admin-form-input {
+  width: auto;
+  flex: 0 0 auto;
+}
+.admin-exception-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.admin-exception-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.admin-exception-title {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  flex: 0 0 auto;
+}
+.admin-exception-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-exception-chip {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 3px 10px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.admin-exception-chip:hover {
+  opacity: 0.75;
+}
+.admin-exception-chip.is-skip {
+  background: rgba(143, 33, 29, 0.18);
+  border-color: rgba(143, 33, 29, 0.45);
+  color: var(--text-color);
+}
+.admin-exception-chip.is-extra {
+  background: rgba(212, 160, 23, 0.18);
+  border-color: var(--soft-gold);
+  color: var(--text-color);
+}
+
+/* 규칙을 글로 설명하는 대신 실제 날짜를 보여 준다 — 캘린더와 같은 함수로 뽑는다. */
+.admin-schedule-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(224, 184, 79, 0.2);
+  background: rgba(var(--bg-rgb), 0.35);
+}
+.admin-schedule-preview-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--soft-gold-text);
+}
+.admin-schedule-preview-month {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: 0.88rem;
+}
+.admin-schedule-preview-month-label {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  min-width: 82px;
+}
+.admin-schedule-preview-dates {
+  color: var(--text-color);
+}
+.admin-schedule-preview-empty {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* ============================================================
@@ -23380,4 +23479,19 @@ button.admin-page-tab {
   .rvd-head__qr {
     align-self: center;
   }
+}
+
+/* 수업 일정 칩·예외·미리보기 — 라이트 보정
+   기본값이 어두운 지면을 전제한 rgba(0,0,0,…)이라 라이트에서 회색 판이 된다. */
+html[data-admin-theme='light'] .admin-weekday-chip {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+html[data-admin-theme='light'] .admin-weekday-chip.is-on {
+  background: rgba(212, 160, 23, 0.22);
+  border-color: var(--soft-gold);
+}
+html[data-admin-theme='light'] .admin-schedule-preview {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
 }

@@ -8,7 +8,12 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { expandClassesForMonth } from './programSchedule.ts';
+import {
+  expandClassesForMonth,
+  classMeetsOn,
+  classDatesInMonth,
+  weekOrdinalOfMonth,
+} from './programSchedule.ts';
 import type { MyEnrollment } from '../types/programs.ts';
 
 /** 테스트용 최소 배정 — 전개에 쓰이는 필드만 채운다. */
@@ -96,4 +101,121 @@ test('취소된 배정은 owners에도 들어가지 않는다', () => {
     7
   );
   assert.deepEqual(byDate.get('2026-07-01')![0].owners, ['child-a']);
+});
+
+// ============================================================
+// 주차(week_ordinals) — "매월 둘째·넷째 주"
+//   성인반·청소년 고급반이 격주인데 캘린더가 매주로 보여 주던 자리다.
+//   2026년 9월 토요일: 5(1주) 12(2주) 19(3주) 26(4주)
+//   2026년 9월 일요일: 6(1주) 13(2주) 20(3주) 27(4주)
+// ============================================================
+
+test('주차 계산은 그 달 며칠인가로 정한다 (1~7일=1주, 8~14일=2주 …)', () => {
+  assert.equal(weekOrdinalOfMonth(1), 1);
+  assert.equal(weekOrdinalOfMonth(7), 1);
+  assert.equal(weekOrdinalOfMonth(8), 2);
+  assert.equal(weekOrdinalOfMonth(14), 2);
+  assert.equal(weekOrdinalOfMonth(15), 3);
+  assert.equal(weekOrdinalOfMonth(29), 5);
+});
+
+test('week_ordinals가 비면 종전처럼 매주다', () => {
+  const dates = classDatesInMonth({ weekdays: '6' }, 2026, 9);
+  assert.deepEqual(dates, ['2026-09-05', '2026-09-12', '2026-09-19', '2026-09-26']);
+});
+
+test('week_ordinals "2,4"면 둘째·넷째 주에만 열린다', () => {
+  const dates = classDatesInMonth({ weekdays: '6', week_ordinals: '2,4' }, 2026, 9);
+  assert.deepEqual(dates, ['2026-09-12', '2026-09-26']);
+});
+
+test('성인반(일요일 둘째·넷째)도 학기 시작일과 어긋나지 않는다', () => {
+  const dates = classDatesInMonth(
+    { weekdays: '0', week_ordinals: '2,4', term_start_date: '2026-09-13' },
+    2026,
+    9
+  );
+  assert.deepEqual(dates, ['2026-09-13', '2026-09-27']);
+});
+
+test('일요일이 다섯 번인 달에도 넷째 주는 넷째 주다 (14일 간격이 아니다)', () => {
+  // 2026-11 일요일: 1, 8, 15, 22, 29
+  const dates = classDatesInMonth({ weekdays: '0', week_ordinals: '2,4' }, 2026, 11);
+  assert.deepEqual(dates, ['2026-11-08', '2026-11-22']);
+});
+
+test('캘린더 전개도 주차를 지킨다 — 없는 수업이 뜨지 않는다', () => {
+  const byDate = expandClassesForMonth(
+    [enrollment('child-a', { weekdays: '6', week_ordinals: '2,4' })],
+    2026,
+    9
+  );
+  assert.ok(byDate.get('2026-09-12'), '둘째 토요일에는 있어야 한다');
+  assert.equal(byDate.get('2026-09-19'), undefined, '셋째 토요일에는 없어야 한다');
+  assert.ok(byDate.get('2026-09-26'), '넷째 토요일에는 있어야 한다');
+});
+
+// ============================================================
+// 날짜 예외(skip_dates / extra_dates) — "이번 달만 3·4주로"
+// ============================================================
+
+test('skip_dates에 적힌 날은 규칙에 맞아도 쉰다', () => {
+  const dates = classDatesInMonth(
+    { weekdays: '6', week_ordinals: '2,4', skip_dates: '2026-09-12' },
+    2026,
+    9
+  );
+  assert.deepEqual(dates, ['2026-09-26']);
+});
+
+test('extra_dates에 적힌 날은 규칙에 없어도 한다', () => {
+  const dates = classDatesInMonth(
+    { weekdays: '6', week_ordinals: '2,4', extra_dates: '2026-09-19' },
+    2026,
+    9
+  );
+  assert.deepEqual(dates, ['2026-09-12', '2026-09-19', '2026-09-26']);
+});
+
+test('원장님 사례: 둘째를 빼고 셋째를 넣으면 그 달만 3·4주가 된다', () => {
+  const dates = classDatesInMonth(
+    {
+      weekdays: '0',
+      week_ordinals: '2,4',
+      skip_dates: '2026-09-13',
+      extra_dates: '2026-09-20',
+    },
+    2026,
+    9
+  );
+  assert.deepEqual(dates, ['2026-09-20', '2026-09-27']);
+});
+
+test('같은 날이 양쪽에 있으면 쉰다 — 취소가 더 강한 의사표시다', () => {
+  assert.equal(
+    classMeetsOn(
+      { weekdays: '6', skip_dates: '2026-09-12', extra_dates: '2026-09-12' },
+      '2026-09-12'
+    ),
+    false
+  );
+});
+
+test('extra_dates는 학기 기간 밖이어도 살아 있다 — 사람이 직접 적은 날짜다', () => {
+  assert.equal(
+    classMeetsOn(
+      { weekdays: '6', term_start_date: '2026-10-01', extra_dates: '2026-09-19' },
+      '2026-09-19'
+    ),
+    true
+  );
+});
+
+test('요일이 없어도 extra_dates만으로 전개된다', () => {
+  const byDate = expandClassesForMonth(
+    [enrollment('child-a', { weekdays: null, extra_dates: '2026-09-19' })],
+    2026,
+    9
+  );
+  assert.ok(byDate.get('2026-09-19'));
 });

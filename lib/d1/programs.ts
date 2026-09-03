@@ -119,10 +119,11 @@ export async function createProgram(input: CreateProgramInput): Promise<number> 
       slug, program_type, title_ko, title_en, summary_ko, summary_en,
       description_ko, description_en, age_range, schedule_ko, schedule_en,
       start_date, end_date,
-      weekdays, class_start_time, class_end_time, term_start_date, term_end_date,
+      weekdays, week_ordinals, skip_dates, extra_dates,
+      class_start_time, class_end_time, term_start_date, term_end_date,
       price_ko, price_en, location_ko, location_en,
       is_featured, is_published, sort_order
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       input.program_type,
@@ -138,6 +139,9 @@ export async function createProgram(input: CreateProgramInput): Promise<number> 
       input.start_date || null,
       input.end_date || null,
       input.weekdays || null,
+      input.week_ordinals || null,
+      input.skip_dates || null,
+      input.extra_dates || null,
       input.class_start_time || null,
       input.class_end_time || null,
       input.term_start_date || null,
@@ -185,6 +189,9 @@ export async function updateProgram(id: number, input: UpdateProgramInput): Prom
   setText('start_date');
   setText('end_date');
   setText('weekdays');
+  setText('week_ordinals');
+  setText('skip_dates');
+  setText('extra_dates');
   setText('class_start_time');
   setText('class_end_time');
   setText('term_start_date');

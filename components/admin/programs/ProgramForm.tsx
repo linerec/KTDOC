@@ -6,12 +6,13 @@
  * 종류(program_type)에 따라 일정 입력이 달라집니다: 수업/프로그램은 요일·시간 텍스트, 캠프는 기간(시작~종료).
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ProgramDetail, CreateProgramInput, UpdateProgramInput, ProgramType } from '@/types/programs';
 import { PROGRAM_TYPES } from '@/types/programs';
-import { useT } from '@/lib/i18n/useT';
+import { useT, type TFunction } from '@/lib/i18n/useT';
 import { programTypeLabel } from '@/lib/i18n/programLabels';
+import { classDatesInMonth } from '@/lib/programSchedule';
 import type { SupplyItem, SupplySetWithItems } from '@/types/supplies';
 import ProgramImageUploader from './ProgramImageUploader';
 import ProgramImageSortable from './ProgramImageSortable';
@@ -47,6 +48,30 @@ const WEEKDAY_CHIPS: { v: string; ko: string }[] = [
   { v: '6', ko: '토' },
 ];
 
+// 반복 주기 칩(1~5주). week_ordinals 컬럼은 선택된 값들의 쉼표 문자열로 저장된다.
+// 아무것도 고르지 않으면 '매주'다 — 기존 수업의 동작이 그대로 유지되는 쪽이 기본값이다.
+const ORDINAL_CHIPS: { v: string; ko: string }[] = [
+  { v: '1', ko: '첫째' },
+  { v: '2', ko: '둘째' },
+  { v: '3', ko: '셋째' },
+  { v: '4', ko: '넷째' },
+  { v: '5', ko: '다섯째' },
+];
+
+/**
+ * 'YYYY-MM-DD' → '9월 12일 (토)' / 'Sep 12 (Sat)' — 미리보기·예외 칩의 짧은 표기.
+ * 요일 이름은 이미 있는 admin.weekday.short.* 를 그대로 쓴다(두 벌로 갈라지지 않게).
+ */
+function shortDate(t: TFunction, date: string): string {
+  const [, m, d] = date.split('-');
+  const dow = new Date(`${date}T00:00:00Z`).getUTCDay();
+  return t('admin.programs.dateShort', '{m}월 {d}일 ({w})', {
+    m: Number(m),
+    d: Number(d),
+    w: t(`admin.weekday.short.${dow}`, ['일', '월', '화', '수', '목', '금', '토'][dow]),
+  });
+}
+
 export default function ProgramForm({
   program,
   forms = [],
@@ -81,6 +106,9 @@ export default function ProgramForm({
     location_ko: program?.location_ko || '',
     location_en: program?.location_en || '',
     weekdays: program?.weekdays || '',
+    week_ordinals: program?.week_ordinals || '',
+    skip_dates: program?.skip_dates || '',
+    extra_dates: program?.extra_dates || '',
     class_start_time: program?.class_start_time || '',
     class_end_time: program?.class_end_time || '',
     term_start_date: program?.term_start_date?.split('T')[0] || '',
@@ -105,6 +133,81 @@ export default function ProgramForm({
       return { ...prev, weekdays: ordered.join(',') };
     });
   };
+
+  const selectedOrdinals = new Set(formData.week_ordinals.split(',').filter(Boolean));
+  const toggleOrdinal = (o: string) => {
+    setFormData((prev) => {
+      const set = new Set(prev.week_ordinals.split(',').filter(Boolean));
+      if (set.has(o)) set.delete(o);
+      else set.add(o);
+      const ordered = ['1', '2', '3', '4', '5'].filter((x) => set.has(x));
+      return { ...prev, week_ordinals: ordered.join(',') };
+    });
+  };
+
+  // 예외 날짜(휴강·보강)는 쉼표구분 문자열 하나에 정렬해 담는다.
+  const [exceptionDraft, setExceptionDraft] = useState('');
+  const skipDates = formData.skip_dates.split(',').filter(Boolean);
+  const extraDates = formData.extra_dates.split(',').filter(Boolean);
+  const addException = (field: 'skip_dates' | 'extra_dates') => {
+    const date = exceptionDraft;
+    if (!date) return;
+    setFormData((prev) => {
+      // 같은 날짜가 양쪽에 남으면 판정이 헷갈린다 — 반대쪽에서 빼고 넣는다.
+      const other = field === 'skip_dates' ? 'extra_dates' : 'skip_dates';
+      const mine = new Set(prev[field].split(',').filter(Boolean));
+      mine.add(date);
+      const theirs = prev[other].split(',').filter(Boolean).filter((d) => d !== date);
+      return {
+        ...prev,
+        [field]: [...mine].sort().join(','),
+        [other]: theirs.join(','),
+      };
+    });
+    setExceptionDraft('');
+  };
+  const removeException = (field: 'skip_dates' | 'extra_dates', date: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field]
+        .split(',')
+        .filter(Boolean)
+        .filter((d) => d !== date)
+        .join(','),
+    }));
+  };
+
+  // 미리보기 — 캘린더와 **같은 함수**로 이번 달·다음 달 수업일을 뽑는다.
+  // 규칙을 글로 설명하는 대신 날짜를 보여 주는 편이 확인이 빠르고, 두 화면이
+  // 어긋날 수 없다는 보장도 된다.
+  const schedulePreview = useMemo(() => {
+    if (isCamp || (!formData.weekdays && !formData.extra_dates)) return null;
+    const rule = {
+      weekdays: formData.weekdays,
+      week_ordinals: formData.week_ordinals,
+      skip_dates: formData.skip_dates,
+      extra_dates: formData.extra_dates,
+      term_start_date: formData.term_start_date,
+      term_end_date: formData.term_end_date,
+    };
+    const now = new Date();
+    const months: { label: string; dates: string[] }[] = [];
+    for (let i = 0; i < 2; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      months.push({ label: `${y}년 ${m}월`, dates: classDatesInMonth(rule, y, m) });
+    }
+    return months;
+  }, [
+    isCamp,
+    formData.weekdays,
+    formData.week_ordinals,
+    formData.skip_dates,
+    formData.extra_dates,
+    formData.term_start_date,
+    formData.term_end_date,
+  ]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -146,6 +249,10 @@ export default function ProgramForm({
         start_date: isCamp ? formData.start_date || undefined : undefined,
         end_date: isCamp ? formData.end_date || undefined : undefined,
         weekdays: isCamp ? undefined : formData.weekdays || undefined,
+        // 빈 문자열을 보내야 '비움'이 저장된다(undefined는 '건드리지 않음').
+        week_ordinals: isCamp ? undefined : formData.week_ordinals,
+        skip_dates: isCamp ? undefined : formData.skip_dates,
+        extra_dates: isCamp ? undefined : formData.extra_dates,
         class_start_time: isCamp ? undefined : formData.class_start_time || undefined,
         class_end_time: isCamp ? undefined : formData.class_end_time || undefined,
         term_start_date: isCamp ? undefined : formData.term_start_date || undefined,
@@ -356,7 +463,7 @@ export default function ProgramForm({
               <p className="admin-form-help">
                 {t(
                   'admin.programs.classScheduleHelp',
-                  '요일·시간·학기 기간을 입력하면 원생·학부모 캘린더에 매주 자동으로 표시됩니다. 아래 ‘수업 일정 안내’는 공개 페이지에 보이는 보조 설명입니다.'
+                  '요일·주차·시간·학기 기간을 입력하면 원생·학부모 캘린더에 자동으로 표시됩니다. 아래 ‘수업 일정 안내’는 공개 페이지에 보이는 보조 설명입니다.'
                 )}
               </p>
               <div className="admin-form-group">
@@ -376,6 +483,42 @@ export default function ProgramForm({
                     </button>
                   ))}
                 </div>
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">
+                  {t('admin.programs.fieldWeekOrdinals', '반복 주기')}
+                </label>
+                <div className="admin-weekday-row">
+                  <button
+                    type="button"
+                    className={`admin-weekday-chip admin-weekday-chip--wide${
+                      selectedOrdinals.size === 0 ? ' is-on' : ''
+                    }`}
+                    onClick={() => setFormData((prev) => ({ ...prev, week_ordinals: '' }))}
+                    aria-pressed={selectedOrdinals.size === 0}
+                  >
+                    {t('admin.programs.ordinalEveryWeek', '매주')}
+                  </button>
+                  {ORDINAL_CHIPS.map((o) => (
+                    <button
+                      type="button"
+                      key={o.v}
+                      className={`admin-weekday-chip admin-weekday-chip--wide${
+                        selectedOrdinals.has(o.v) ? ' is-on' : ''
+                      }`}
+                      onClick={() => toggleOrdinal(o.v)}
+                      aria-pressed={selectedOrdinals.has(o.v)}
+                    >
+                      {t(`admin.ordinal.${o.v}`, o.ko)}
+                    </button>
+                  ))}
+                </div>
+                <p className="admin-form-help">
+                  {t(
+                    'admin.programs.weekOrdinalHelp',
+                    '격주·월 2회 수업은 여기서 주차를 고릅니다. 예: 둘째·넷째를 고르면 매월 둘째 주와 넷째 주에만 표시됩니다. ‘매주’면 종전대로 매주 표시합니다.'
+                  )}
+                </p>
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
@@ -439,6 +582,107 @@ export default function ProgramForm({
                   '학기 기간을 비우면 상시 수업으로 보고 매월 해당 요일에 계속 표시합니다.'
                 )}
               </p>
+              <div className="admin-form-group">
+                <label className="admin-form-label">
+                  {t('admin.programs.fieldExceptions', '예외 날짜 (휴강·보강)')}
+                </label>
+                <p className="admin-form-help">
+                  {t(
+                    'admin.programs.exceptionHelp',
+                    '규칙이 흔들리는 달에 씁니다. 예를 들어 둘째·넷째 주 수업이 이번 달만 셋째·넷째 주가 되면, 둘째 주 날짜를 ‘쉼’으로, 셋째 주 날짜를 ‘추가’로 넣으면 됩니다. 휴강·보강도 같습니다.'
+                  )}
+                </p>
+                <div className="admin-exception-add">
+                  <input
+                    type="date"
+                    value={exceptionDraft}
+                    onChange={(e) => setExceptionDraft(e.target.value)}
+                    className="admin-form-input"
+                    aria-label={t('admin.programs.exceptionDate', '예외 날짜')}
+                  />
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-outline admin-btn-sm"
+                    onClick={() => addException('skip_dates')}
+                    disabled={!exceptionDraft}
+                  >
+                    {t('admin.programs.exceptionAddSkip', '이 날 쉼')}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-outline admin-btn-sm"
+                    onClick={() => addException('extra_dates')}
+                    disabled={!exceptionDraft}
+                  >
+                    {t('admin.programs.exceptionAddExtra', '이 날 추가')}
+                  </button>
+                </div>
+                {(skipDates.length > 0 || extraDates.length > 0) && (
+                  <div className="admin-exception-lists">
+                    {skipDates.length > 0 && (
+                      <div className="admin-exception-group">
+                        <span className="admin-exception-title">
+                          {t('admin.programs.exceptionSkipTitle', '쉬는 날')}
+                        </span>
+                        <div className="admin-exception-chips">
+                          {skipDates.map((d) => (
+                            <button
+                              type="button"
+                              key={d}
+                              className="admin-exception-chip is-skip"
+                              onClick={() => removeException('skip_dates', d)}
+                              title={t('admin.programs.exceptionRemove', '클릭하면 지웁니다')}
+                            >
+                              {shortDate(t, d)} <span aria-hidden="true">×</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {extraDates.length > 0 && (
+                      <div className="admin-exception-group">
+                        <span className="admin-exception-title">
+                          {t('admin.programs.exceptionExtraTitle', '추가하는 날')}
+                        </span>
+                        <div className="admin-exception-chips">
+                          {extraDates.map((d) => (
+                            <button
+                              type="button"
+                              key={d}
+                              className="admin-exception-chip is-extra"
+                              onClick={() => removeException('extra_dates', d)}
+                              title={t('admin.programs.exceptionRemove', '클릭하면 지웁니다')}
+                            >
+                              {shortDate(t, d)} <span aria-hidden="true">×</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {schedulePreview && (
+                <div className="admin-schedule-preview">
+                  <span className="admin-schedule-preview-title">
+                    {t('admin.programs.previewTitle', '캘린더에 표시될 날짜')}
+                  </span>
+                  {schedulePreview.map((m) => (
+                    <div key={m.label} className="admin-schedule-preview-month">
+                      <span className="admin-schedule-preview-month-label">{m.label}</span>
+                      {m.dates.length > 0 ? (
+                        <span className="admin-schedule-preview-dates">
+                          {m.dates.map((d) => shortDate(t, d)).join(', ')}
+                        </span>
+                      ) : (
+                        <span className="admin-schedule-preview-empty">
+                          {t('admin.programs.previewNone', '표시되는 수업이 없습니다')}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="admin-form-group">
                 <label htmlFor="schedule_ko" className="admin-form-label">
                   {t('admin.programs.fieldScheduleKo', '수업 일정 안내 (한글)')}

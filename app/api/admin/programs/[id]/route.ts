@@ -96,7 +96,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const textFields: (keyof UpdateProgramInput)[] = [
       'title_ko', 'title_en', 'summary_ko', 'summary_en', 'description_ko', 'description_en',
       'age_range', 'schedule_ko', 'schedule_en', 'start_date', 'end_date',
-      'weekdays', 'class_start_time', 'class_end_time', 'term_start_date', 'term_end_date',
+      'weekdays', 'week_ordinals', 'skip_dates', 'extra_dates',
+      'class_start_time', 'class_end_time', 'term_start_date', 'term_end_date',
       'price_ko', 'price_en', 'location_ko', 'location_en', 'slug',
       'poster_url', 'poster_r2_key', 'thumbnail_url', 'thumbnail_r2_key',
     ];
