@@ -133,6 +133,8 @@ export {
   createEnrollment,
   updateEnrollment,
   deleteEnrollment,
+  getEnrollmentsBySourceResponses,
+  getEnrollmentRowsForUser,
 } from './enrollments';
 
 export {
@@ -291,8 +293,21 @@ export {
   getSelectionCounts,
   getResponsesForExport,
   attachSubmitter,
+  updateNotePayload,
+  getResponseNoteById,
+  getCorrectionNotes,
+  getCorrectionNotesForResponses,
+  updateResponseAnswers,
+  getResponseChainIds,
+  getSupersedingResponse,
+  getOtherLatestResponsesForStudent,
 } from './formResponses';
-export type { InsertResponseInput, RosterRow, MyResponseRow } from './formResponses';
+export type {
+  InsertResponseInput,
+  InsertResponseResult,
+  RosterRow,
+  MyResponseRow,
+} from './formResponses';
 
 export {
   insertMailLogs,

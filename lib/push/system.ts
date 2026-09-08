@@ -7,7 +7,7 @@
  * 인앱 알림함 행은 만들어 로그인 시 확인할 수 있게 한다.
  */
 
-import { getMemberIdsByRoles } from '@/lib/members';
+import { getGuardianUserIdsForStudents, getMemberIdsByRoles } from '@/lib/members';
 import { MEMBER_ROLE_LABELS, type MemberRole } from '@/types/members';
 import { addRecipients, logNotification } from './notifications';
 import { sendToUsers } from './webpush';
@@ -144,5 +144,44 @@ export async function notifyStaffOfFormResponse(input: {
       url: `/admin/forms/${input.formId}/responses`,
     },
     'staff:formResponse'
+  );
+}
+
+/**
+ * 수업 변경 → 원생 + 보호자의 앱 알림함(푸시를 켠 기기에는 푸시도).
+ *
+ * 메일이 기본 채널이고 이것은 **두 번째 길**이다 — 푸시를 켠 회원이 절반뿐이라
+ * 이것만으로는 닿지 않지만, 로그인하면 알림함에 남아 있어 "메일을 못 봤다"가
+ * 되지 않는다. 학비·운영 사정은 싣지 않는다(메일 문안과 같은 선).
+ *
+ * 보낸이는 처리한 운영진이다 — 알림함에 누가 바꿨는지가 보인다.
+ */
+export async function notifyFamilyOfClassChange(input: {
+  senderId: string;
+  studentUserId: string;
+  studentName: string;
+  left: string[];
+  joined: string[];
+  /** 'planned' 면 예고 문구 */
+  stage: 'planned' | 'applied';
+  effective?: string | null;
+}): Promise<void> {
+  const guardians = await getGuardianUserIdsForStudents([input.studentUserId]);
+  const parts: string[] = [];
+  if (input.left.length) parts.push(`빠지는 수업: ${input.left.join(', ')}`);
+  if (input.joined.length) parts.push(`새 수업: ${input.joined.join(', ')}`);
+  if (input.effective) parts.push(`적용 시점: ${input.effective}`);
+  await notifyUsers(
+    input.senderId,
+    [input.studentUserId, ...guardians],
+    {
+      title:
+        input.stage === 'planned'
+          ? `${input.studentName} 수업 변경 예정`
+          : `${input.studentName} 수업 변경 안내`,
+      body: parts.join(' · ') || '수업 배정이 변경되었습니다.',
+      url: '/admin/my-classes',
+    },
+    `user:${input.studentUserId}`
   );
 }

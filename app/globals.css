@@ -23495,3 +23495,272 @@ html[data-admin-theme='light'] .admin-schedule-preview {
   background: rgba(0, 0, 0, 0.03);
   border-color: rgba(0, 0, 0, 0.1);
 }
+
+/* ============================================================
+   신청 과목 정정 — 응답 상세의 띠·정정 표시·모달 (components/admin/forms/CorrectionModal.tsx)
+   색은 역할 토큰으로만. 금색 텍스트는 --accent-text(라이트에서 어두운 금).
+============================================================ */
+.admin-alert-warning {
+  background: rgba(212, 160, 23, 0.1);
+  border: 1px solid rgba(212, 160, 23, 0.45);
+  color: var(--accent-text);
+}
+.admin-alert-info {
+  background: rgba(var(--fg-rgb), 0.05);
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  color: var(--text-color);
+}
+.resp-banner {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.resp-banner a {
+  color: inherit;
+  text-decoration: underline;
+}
+.resp-corrections {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+.resp-corrections li + li {
+  margin-top: 4px;
+}
+.resp-answer-badge {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.resp-answer-original {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: rgba(var(--fg-rgb), 0.4);
+}
+.resp-correct {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.08);
+}
+.resp-correct .admin-field-help {
+  margin-top: 8px;
+}
+.resp-correct a {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
+.resp-drift {
+  border-color: rgba(212, 160, 23, 0.5);
+}
+.resp-drift .corr-plan {
+  margin-bottom: 12px;
+}
+.resp-planned-item + .resp-planned-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.08);
+}
+.resp-planned-change {
+  margin: 0 0 2px;
+  font-size: 0.94rem;
+  color: var(--text-color);
+}
+.resp-planned-acts {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* 모달 */
+.corr-panel {
+  max-width: 560px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+.corr-who {
+  margin: -8px 0 16px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+.corr-fieldset {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 10px;
+}
+.corr-fieldset legend {
+  padding: 0 6px;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+.corr-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.corr-options label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  color: var(--text-color);
+}
+.corr-options label:hover {
+  background: rgba(var(--fg-rgb), 0.05);
+}
+.corr-options label.is-retired {
+  color: var(--text-muted);
+}
+.corr-options input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+}
+.corr-preview {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(var(--fg-rgb), 0.05);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.corr-preview-line {
+  margin: 0;
+}
+.corr-preview-line + .corr-preview-line {
+  margin-top: 6px;
+}
+.corr-k {
+  display: inline-block;
+  min-width: 2.6em;
+  margin-right: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.corr-plan {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+.corr-mode {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+.corr-mode > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--fg-rgb), 0.14);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.corr-mode > label:has(input:checked) {
+  border-color: rgba(212, 160, 23, 0.6);
+  background: rgba(212, 160, 23, 0.06);
+}
+.corr-mode input[type='radio'] {
+  margin-top: 4px;
+  accent-color: var(--accent-color);
+}
+.corr-mode strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--text-color);
+}
+.corr-mode small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.corr-notify {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+.corr-notify input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+}
+.corr-recipients .admin-field-help {
+  margin: 0 0 4px;
+}
+.roster-fix {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+.myapp-correction {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  color: var(--accent-text);
+}
+
+/* 신청 내용 고치기 안내(/admin/forms/guide) — 읽는 페이지 */
+.guide {
+  display: grid;
+  gap: 16px;
+  max-width: 860px;
+}
+.guide-section h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  color: var(--text-color);
+}
+.guide-section p {
+  margin: 0 0 10px;
+  font-size: 0.93rem;
+  line-height: 1.7;
+  color: var(--text-color);
+}
+.guide-table td {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  vertical-align: top;
+}
+.guide-dl {
+  margin: 0;
+}
+.guide-dl dt {
+  margin: 12px 0 4px;
+  font-weight: 600;
+  font-size: 0.94rem;
+  color: var(--text-color);
+}
+.guide-dl dt:first-child {
+  margin-top: 0;
+}
+.guide-dl dd {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.guide-ol {
+  margin: 0;
+  padding-left: 1.3em;
+}
+.guide-ol li {
+  margin-bottom: 10px;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-color);
+}

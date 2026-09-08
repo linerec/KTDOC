@@ -23,7 +23,17 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RESPONSE_STATUS_LABEL } from '@/lib/forms/responseLabels';
 import ResponseMessage from './ResponseMessage';
+import CorrectionModal, { type CorrectionOption } from './CorrectionModal';
 import type { ResponseStatus } from '@/types/forms';
+
+/** 예고된 정정 — 상세 페이지가 이력에서 stage='planned' 만 골라 넘긴다. */
+export interface PlannedCorrection {
+  noteId: number;
+  change: string;
+  effective: string | null;
+  createdAt: string;
+  author: string | null;
+}
 
 /**
  * '다르게 처리하기'에 담는 예외 상태.
@@ -51,8 +61,16 @@ interface ResponseActionsProps {
   linkedUserId: string | null;
   linkedUserName: string | null;
   studentName: string;
+  submitterName: string | null;
   email: string | null;
   phone: string | null;
+  /** 과목 문항이 있는 신청서면 정정 모달에 줄 선택지. 없으면 null(정정 버튼 없음). */
+  correction: { questionLabel: string; options: CorrectionOption[]; currentKeys: string[] } | null;
+  planned: PlannedCorrection[];
+  /** 신청 과목과 배정이 어긋나 있으면 그 내용. 맞으면 null. */
+  drift: string[] | null;
+  /** 명단 화면에서 '정정'으로 들어오면 모달을 연 채로 시작한다(?correct=1). */
+  autoOpenCorrection: boolean;
 }
 
 export default function ResponseActions({
@@ -63,12 +81,22 @@ export default function ResponseActions({
   linkedUserId,
   linkedUserName,
   studentName,
+  submitterName,
   email,
   phone,
+  correction,
+  planned,
+  drift,
+  autoOpenCorrection,
 }: ResponseActionsProps) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+  const [correcting, setCorrecting] = useState(
+    autoOpenCorrection && !!correction && status !== 'cancelled' && status !== 'declined'
+  );
+  /** 취소로 내릴 때 배정도 함께 거둘지 — 배정이 있을 때만 의미가 있다. 기본 켜짐. */
+  const [withdraw, setWithdraw] = useState(true);
 
   const [nextStatus, setNextStatus] = useState<ResponseStatus>(status);
   const [note, setNote] = useState('');
@@ -118,14 +146,70 @@ export default function ResponseActions({
       setMsg({ kind: 'err', text: '바뀐 것이 없습니다.' });
       return;
     }
-    const ok = await send(base, {
+    const cancelling = nextStatus === 'cancelled' && status !== 'cancelled';
+    if (
+      cancelling &&
+      withdraw &&
+      status === 'enrolled' &&
+      !window.confirm(
+        `${linkedUserName ?? studentName} 님의 접수를 취소하고, 이 신청으로 들어간 수업 명단에서도 뺍니다.\n` +
+          '학생과 보호자에게 수업 변경 안내가 나갑니다.\n\n계속할까요?'
+      )
+    )
+      return;
+    const data = await send(base, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: nextStatus, note }),
+      body: JSON.stringify({
+        status: nextStatus,
+        note,
+        withdrawEnrollments: cancelling && withdraw,
+      }),
     });
-    if (ok) {
+    if (data) {
       setNote('');
-      setMsg({ kind: 'ok', text: '저장했습니다.' });
+      setMsg({
+        kind: 'ok',
+        text: data.withdrawSummary ? `저장했습니다. ${data.withdrawSummary}` : '저장했습니다.',
+      });
+      router.refresh();
+    }
+  }
+
+  async function reconcile() {
+    const data = await send(`${base}/reconcile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notify: true }),
+    });
+    if (data) {
+      setMsg({ kind: 'ok', text: data.summary });
+      router.refresh();
+    }
+  }
+
+  async function applyPlanned(noteId: number) {
+    if (!window.confirm('예고한 대로 지금 적용합니다. 학생과 보호자에게 변경 안내가 나갑니다. 계속할까요?')) return;
+    const data = await send(`${base}/correct`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'applyPlanned', noteId, notify: true }),
+    });
+    if (data) {
+      setMsg({ kind: 'ok', text: data.summary });
+      router.refresh();
+    }
+  }
+
+  async function withdrawPlanned(noteId: number) {
+    if (!window.confirm('이 예고를 철회합니다. 이미 예고 안내를 받으신 분께는 ‘메일 보내기’로 따로 알려 주세요.')) return;
+    const data = await send(`${base}/correct`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'withdraw', noteId }),
+    });
+    if (data) {
+      setMsg({ kind: 'ok', text: data.summary });
       router.refresh();
     }
   }
@@ -191,7 +275,8 @@ export default function ResponseActions({
       setMsg({
         kind: 'ok',
         text:
-          `수업 ${data.enrolled}개에 배정했습니다.` +
+          (data.enrolled > 0 ? `수업 ${data.enrolled}개에 배정했습니다.` : '명단은 이미 신청 과목과 같습니다.') +
+          (data.removed > 0 ? ` 신청에서 빠진 수업 ${data.removed}개는 명단에서 뺐습니다.` : '') +
           (data.skipped > 0 ? ` (수업이 연결되지 않은 과목 ${data.skipped}개는 건너뛰었습니다.)` : ''),
       });
       router.refresh();
@@ -320,7 +405,70 @@ export default function ResponseActions({
             </button>
           </div>
         </div>
+
+        {/* 과목이 틀렸을 때 — 수업 화면에 가지 않는다. 여기서 한 번에.
+             취소·거절된 접수는 고칠 것이 없다 — 되살리려면 상태부터 돌린다. */}
+        {correction && status !== 'cancelled' && status !== 'declined' && (
+          <div className="resp-correct">
+            <button
+              type="button"
+              className="admin-btn admin-btn-outline"
+              onClick={() => setCorrecting(true)}
+              disabled={busy}
+            >
+              신청 과목 정정
+            </button>
+            <p className="admin-field-help">
+              과목을 잘못 넣었을 때. 답·수업 명단·안내·기록이 함께 처리됩니다.{' '}
+              <a href="/admin/forms/guide" target="_blank" rel="noreferrer">
+                고치는 방법 안내
+              </a>
+            </p>
+          </div>
+        )}
       </section>
+
+      {/* ── 신청 과목과 배정이 다르다 ──
+             누군가 수업 화면에서 손으로 뺐거나, 정정이 배정 단계에서 멈췄을 때.
+             계획이 멱등이라 '배정 맞추기'는 몇 번 눌러도 안전하다. */}
+      {drift && drift.length > 0 && (
+        <section className="admin-card resp-panel resp-drift">
+          <h2 className="resp-panel-title">신청 과목과 수업 명단이 다릅니다</h2>
+          <ul className="corr-plan">
+            {drift.map((l, i) => (
+              <li key={i}>{l}</li>
+            ))}
+          </ul>
+          <button type="button" className="admin-btn admin-btn-gold" onClick={reconcile} disabled={busy}>
+            배정 맞추기
+          </button>
+          <p className="admin-field-help">신청 과목 기준으로 명단을 맞추고 학생·보호자에게 안내합니다.</p>
+        </section>
+      )}
+
+      {/* ── 예고된 정정 ── 사람이 마지막으로 확인하고 누른다. 자동 예약은 없다. */}
+      {planned.length > 0 && (
+        <section className="admin-card resp-panel resp-planned">
+          <h2 className="resp-panel-title">예고된 정정</h2>
+          {planned.map((p) => (
+            <div key={p.noteId} className="resp-planned-item">
+              <p className="resp-planned-change">{p.change}</p>
+              <p className="admin-cell-sub">
+                {p.effective ? `${p.effective}부터 · ` : ''}
+                {p.createdAt.slice(0, 10)} {p.author ?? ''} 예고
+              </p>
+              <div className="resp-planned-acts">
+                <button type="button" className="admin-btn admin-btn-sm admin-btn-gold" onClick={() => applyPlanned(p.noteId)} disabled={busy}>
+                  지금 적용
+                </button>
+                <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => withdrawPlanned(p.noteId)} disabled={busy}>
+                  철회
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* ── 메모 ──
              통화 결과·유의사항. 상태를 바꾸지 않고도 남길 수 있어야 한다 —
@@ -396,16 +544,42 @@ export default function ResponseActions({
                 )}
               </select>
             </div>
+            {nextStatus === 'cancelled' && status === 'enrolled' && (
+              <label className="corr-notify">
+                <input type="checkbox" checked={withdraw} onChange={(e) => setWithdraw(e.target.checked)} disabled={busy} />
+                <span>이 신청으로 들어간 수업 명단에서도 빼고, 학생·보호자에게 안내</span>
+              </label>
+            )}
             <button type="button" className="admin-btn admin-btn-outline" onClick={saveStatus} disabled={busy}>
               상태 바꾸기
             </button>
             <p className="admin-field-help">
-              상태를 바꿔도 이미 들어간 수업 명단은 그대로입니다. 명단에서 빼려면
-              수업 화면에서 수강생을 취소해 주세요.
+              {nextStatus === 'cancelled'
+                ? '취소하면서 위 상자를 켜 두면 명단 정리와 안내까지 한 번에 됩니다. 과목만 바꾸는 것이면 ‘신청 과목 정정’을 쓰세요.'
+                : '상태만 바뀝니다. 수업 명단은 그대로입니다 — 과목이 바뀌었으면 ‘신청 과목 정정’을 쓰세요.'}
             </p>
           </>
         )}
       </section>
+
+      {correcting && correction && (
+        <CorrectionModal
+          formId={formId}
+          responseId={responseId}
+          studentName={studentName}
+          linkedUserName={linkedUserName}
+          submitterName={submitterName}
+          questionLabel={correction.questionLabel}
+          options={correction.options}
+          currentKeys={correction.currentKeys}
+          isEnrolled={status === 'enrolled'}
+          onClose={() => setCorrecting(false)}
+          onDone={(summary) => {
+            setCorrecting(false);
+            setMsg({ kind: 'ok', text: summary });
+          }}
+        />
+      )}
 
       {/* ── 건강 특이사항 ── */}
       {hasMedical && (

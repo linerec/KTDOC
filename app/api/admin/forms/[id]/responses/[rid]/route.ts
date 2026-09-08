@@ -5,12 +5,17 @@
  * 상태 전이에 규칙을 두지 않는다. 기존 applications 의 진짜 문제는 자유 전이가
  * 아니라 **무기록**이었다 — 누가 언제 무엇에서 무엇으로 옮겼는지 남지 않았다.
  * 전이는 자유롭게 두고 전부 form_response_notes 에 남긴다.
+ *
+ * '취소'로 내릴 때 `withdrawEnrollments: true` 면 이 응답 줄기가 만든 배정도 함께
+ * 거두고 수업 변경 안내를 보낸다(lib/forms/correctionRun.ts). 예전에는 취소해도
+ * 명단에 남아 있었고, 빼려면 수업 화면에 따로 가야 했다.
  */
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
 import { addResponseNote, getResponseById, updateResponseStatus } from '@/lib/d1';
+import { reconcileEnrollments } from '@/lib/forms/correctionRun';
 import type { ResponseStatus } from '@/types/forms';
 
 const STATUSES: ResponseStatus[] = [
@@ -59,6 +64,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const authorId = session?.user?.id ?? null;
     const authorName = session?.user?.name ?? null;
 
+    let withdrawSummary: string | null = null;
     if (status && status !== existing.status) {
       await updateResponseStatus(responseId, status, authorId);
       await addResponseNote({
@@ -70,11 +76,21 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         authorId,
         authorName,
       });
+      if (status === 'cancelled' && body.withdrawEnrollments === true) {
+        const r = await reconcileEnrollments({
+          response: existing,
+          actor: { id: authorId, name: authorName },
+          selectionsOverride: [],
+          notify: body.notify !== false,
+          noteBody: '접수 취소로 배정을 거둠',
+        });
+        withdrawSummary = r.noop ? '거둘 배정이 없었습니다.' : r.summary;
+      }
     } else if (note) {
       await addResponseNote({ responseId, kind: 'note', body: note, authorId, authorName });
     }
 
-    return NextResponse.json({ success: true, data: { id: responseId } });
+    return NextResponse.json({ success: true, data: { id: responseId, withdrawSummary } });
   } catch (error) {
     console.error('Admin form response update error:', error);
     return NextResponse.json({ success: false, error: '저장하지 못했습니다.' }, { status: 500 });

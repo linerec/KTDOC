@@ -243,11 +243,51 @@ export interface FormResponseConsent {
 export interface FormResponseNote {
   id: number;
   response_id: number;
-  kind: 'note' | 'status' | 'link' | 'enroll' | 'rebuild' | 'mail';
+  kind: 'note' | 'status' | 'link' | 'enroll' | 'rebuild' | 'mail' | 'correction';
   from_status: string | null;
   to_status: string | null;
   body: string | null;
   author_id: string | null;
   author_name: string | null;
+  /** kind='correction' 의 구조 기록(CorrectionPayload). 다른 kind 는 NULL. */
+  payload_json: string | null;
   created_at: string;
+}
+
+/** 정정 이력에서 과목 하나를 가리키는 최소 정보 — 라벨은 그때 라벨을 스냅샷한다. */
+export interface CorrectionOptionRef {
+  key: string;
+  label: string;
+}
+
+/** 정정이 배정에 미친 영향 한 줄. */
+export interface CorrectionEnrollmentEffect {
+  programId: number;
+  title: string;
+  action: 'added' | 'revived' | 'deleted' | 'cancelled';
+}
+
+/**
+ * 정정 사건의 구조 기록 — form_response_notes.payload_json (kind='correction').
+ *
+ * stage:
+ *   planned   — 예고만 나갔고 답·배정은 아직 그대로다. 상세 화면이 [적용]/[철회]를 준다.
+ *   applied   — 답과 배정이 실제로 바뀌었다.
+ *   withdrawn — 예고를 철회했다.
+ *   reconcile — 답은 그대로 두고 배정만 신청 과목에 맞췄다(어긋남 복구).
+ */
+export interface CorrectionPayload {
+  stage: 'planned' | 'applied' | 'withdrawn' | 'reconcile';
+  questionKey: string | null;
+  from: CorrectionOptionRef[];
+  to: CorrectionOptionRef[];
+  schemaVersion?: { from: number; to: number };
+  enrollments: CorrectionEnrollmentEffect[];
+  /** 안내를 보냈는가(끄고 저장했으면 false). 결과는 mail 이력에 따로 남는다. */
+  notified: boolean;
+  /** 예고 단계에서 적어 둔 적용 예정일(YYYY-MM-DD) — 문안에 실린다. */
+  effectiveDate?: string | null;
+  /** 이 적용이 어느 예고에서 왔는가(note id). */
+  plannedNoteId?: number | null;
+  reason?: string | null;
 }

@@ -123,6 +123,81 @@ export function renderMailBody(
         ),
       };
 
+    // ── 수업 변경 ──
+    // data: name · left(빠진 수업, 줄바꿈 구분) · joined(새 수업) · effective(언제부터, 선택)
+    //       · stage('planned' 이면 예고, 아니면 적용 안내) · url
+    // 학비는 싣지 않는다 — 신청자에게 학비표를 보이지 않는 규칙.
+    case 'enrollment.changed:user': {
+      const planned = s(data, 'stage') === 'planned';
+      const left = s(data, 'left');
+      const joined = s(data, 'joined');
+      const eff = s(data, 'effective');
+      const ko =
+        (planned
+          ? `${name} 님의 수업이 다음과 같이 변경될 예정입니다.`
+          : `${name} 님의 수업이 다음과 같이 변경되었습니다.`) +
+        (left ? `\n\n빠지는 수업:\n${left}` : '') +
+        (joined ? `\n\n새 수업:\n${joined}` : '') +
+        (eff ? `\n\n적용 시점: ${eff}` : '') +
+        `\n\n달라진 점이 있거나 뜻하신 바와 다르면 학원으로 알려 주세요.${linkKo}`;
+      const en =
+        (planned
+          ? `The following change is planned for ${name}'s classes.`
+          : `${name}'s classes have been changed as follows.`) +
+        (left ? `\n\nLeaving:\n${left}` : '') +
+        (joined ? `\n\nJoining:\n${joined}` : '') +
+        (eff ? `\n\nEffective: ${eff}` : '') +
+        `\n\nIf this is not what you intended, please let us know.${linkEn}`;
+      return {
+        subject: planned
+          ? `수업 변경 예정 안내 — ${name} / Planned class change`
+          : `수업 변경 안내 — ${name} / Class change`,
+        text: bilingual(ko, en),
+      };
+    }
+
+    case 'enrollment.changed:staff': {
+      const planned = s(data, 'stage') === 'planned';
+      const left = s(data, 'left');
+      const joined = s(data, 'joined');
+      const eff = s(data, 'effective');
+      return {
+        subject: `[${SITE_NAME}] 수업 변경${planned ? ' 예고' : ''} — ${name}`,
+        text: bilingual(
+          `${planned ? '수업 변경이 예고되었습니다' : '수업이 변경되었습니다'}.\n\n원생: ${name}\n처리: ${s(data, 'by', '운영진')}` +
+            (left ? `\n빠지는 수업: ${left.replace(/\n/g, ', ')}` : '') +
+            (joined ? `\n새 수업: ${joined.replace(/\n/g, ', ')}` : '') +
+            (eff ? `\n적용 시점: ${eff}` : '') +
+            linkKo,
+          `${planned ? 'A class change was announced' : 'Classes were changed'}.\n\nStudent: ${name}\nBy: ${s(data, 'by', 'staff')}` +
+            (left ? `\nLeaving: ${left.replace(/\n/g, ', ')}` : '') +
+            (joined ? `\nJoining: ${joined.replace(/\n/g, ', ')}` : '') +
+            (eff ? `\nEffective: ${eff}` : '') +
+            linkEn
+        ),
+      };
+    }
+
+    // ── 신청 내용 변경(배정 전) ──
+    // data: name · title(신청서) · change("A → B") · url
+    case 'form.corrected:user':
+      return {
+        subject: `신청 내용이 변경되었습니다 — ${title} / Application updated`,
+        text: bilingual(
+          `${name} 님의 신청 내용이 변경되었습니다.\n\n신청서: ${title}\n신청 과목: ${s(data, 'change')}\n\n뜻하신 바와 다르면 학원으로 알려 주세요.${linkKo}`,
+          `${name}'s application has been updated.\n\nForm: ${title}\nClasses: ${s(data, 'change')}\n\nIf this is not what you intended, please let us know.${linkEn}`
+        ),
+      };
+
+    case 'form.corrected:staff':
+      return {
+        subject: `[${SITE_NAME}] 신청 내용 변경 — ${title} / ${name}`,
+        text: bilingual(
+          `신청 내용이 변경되었습니다.\n\n신청서: ${title}\n학생: ${name}\n처리: ${s(data, 'by', '운영진')}\n신청 과목: ${s(data, 'change')}${linkKo}`,
+          `An application was updated.\n\nForm: ${title}\nStudent: ${name}\nBy: ${s(data, 'by', 'staff')}\nClasses: ${s(data, 'change')}${linkEn}`
+        ),
+      };
+
     case 'application.created:user':
       return {
         subject: `참가 신청이 접수되었습니다 — ${title}`,
@@ -159,23 +234,41 @@ export function renderMailBody(
         ),
       };
 
-    case 'form.submitted:user':
+    // data.resubmit: 이전 신청을 대체했을 때 "바뀐 것" 한 줄("A → B"). 없으면 첫 제출.
+    // 재제출임을 접수 메일이 말하지 않으면, 학원은 새 학생인 줄 알고 학부모는
+    // 옛 신청이 살아 있는 줄 안다.
+    case 'form.submitted:user': {
+      const re = s(data, 'resubmit');
       return {
-        subject: `신청서가 접수되었습니다 — ${title}`,
+        subject: re ? `신청서를 다시 접수했습니다 — ${title}` : `신청서가 접수되었습니다 — ${title}`,
         text: bilingual(
-          `${name} 님, 신청서가 접수되었습니다.\n\n신청서: ${title}\n\n확인 후 안내드리겠습니다.${linkKo}`,
-          `Hello ${name}, your form was submitted.\n\nForm: ${title}\n\nWe'll be in touch after review.${linkEn}`
+          `${name} 님, 신청서가 접수되었습니다.\n\n신청서: ${title}` +
+            (re ? `\n\n이전에 내신 신청을 이번 것으로 대체했습니다.\n신청 과목: ${re}` : '') +
+            `\n\n확인 후 안내드리겠습니다.${linkKo}`,
+          `Hello ${name}, your form was submitted.\n\nForm: ${title}` +
+            (re ? `\n\nThis replaces your earlier submission.\nClasses: ${re}` : '') +
+            `\n\nWe'll be in touch after review.${linkEn}`
         ),
       };
+    }
 
-    case 'form.submitted:staff':
+    case 'form.submitted:staff': {
+      const re = s(data, 'resubmit');
+      const prev = s(data, 'previous');
       return {
-        subject: `[${SITE_NAME}] 신청서 응답 — ${title} / ${name}`,
+        subject: re
+          ? `[${SITE_NAME}] 신청서 재제출 — ${title} / ${name}`
+          : `[${SITE_NAME}] 신청서 응답 — ${title} / ${name}`,
         text: bilingual(
-          `신청서 응답이 들어왔습니다.\n\n신청서: ${title}\n제출자: ${name}${linkKo}`,
-          `A new form response.\n\nForm: ${title}\nSubmitted by: ${name}${linkEn}`
+          `${re ? '신청서가 다시 제출되었습니다' : '신청서 응답이 들어왔습니다'}.\n\n신청서: ${title}\n제출자: ${name}` +
+            (re ? `\n이전 응답: ${prev}\n신청 과목: ${re}\n\n배정이 끝난 신청이면 새 응답에서 '수업에 넣기'를 눌러 명단을 맞춰 주세요.` : '') +
+            linkKo,
+          `${re ? 'A form was resubmitted' : 'A new form response'}.\n\nForm: ${title}\nSubmitted by: ${name}` +
+            (re ? `\nPrevious: ${prev}\nClasses: ${re}` : '') +
+            linkEn
         ),
       };
+    }
 
     case 'feedback.created:user':
       return {

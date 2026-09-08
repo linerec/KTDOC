@@ -196,19 +196,47 @@ export async function createEnrollment(
   input: CreateEnrollmentInput
 ): Promise<void> {
   await executeD1(
-    `INSERT INTO program_enrollments (program_id, user_id, status, note, enrolled_by)
-     VALUES (?, ?, ?, ?, ?)
+    `INSERT INTO program_enrollments (program_id, user_id, status, note, enrolled_by, source_response_id)
+     VALUES (?, ?, ?, ?, ?, ?)
      ON CONFLICT(program_id, user_id)
        DO UPDATE SET status = excluded.status,
                      note = excluded.note,
-                     enrolled_by = excluded.enrolled_by`,
+                     enrolled_by = excluded.enrolled_by,
+                     source_response_id = COALESCE(excluded.source_response_id, program_enrollments.source_response_id)`,
     [
       programId,
       input.user_id,
       input.status ?? 'active',
       input.note ?? null,
       input.enrolled_by ?? null,
+      input.source_response_id ?? null,
     ]
+  );
+}
+
+/**
+ * 신청 응답 줄기(같은 응답 + 그 응답이 대체한 옛 응답들)가 만든 배정 전부.
+ * 정정·재제출·취소는 **이 목록 안의 배정만** 거둔다 — 수업 화면에서 직접 넣은
+ * 배정(source_response_id NULL)은 신청서 쪽 사건이 손대지 않는다.
+ */
+export async function getEnrollmentsBySourceResponses(
+  responseIds: number[]
+): Promise<ProgramEnrollment[]> {
+  if (responseIds.length === 0) return [];
+  const placeholders = responseIds.map(() => '?').join(', ');
+  return queryD1<ProgramEnrollment>(
+    `SELECT * FROM program_enrollments
+      WHERE source_response_id IN (${placeholders})
+      ORDER BY id`,
+    responseIds
+  );
+}
+
+/** 한 회원의 배정 행 전부(상태 무관, 메타 없음). 정정 계획이 "이미 있는 배정"을 알아야 중복을 피한다. */
+export async function getEnrollmentRowsForUser(userId: string): Promise<ProgramEnrollment[]> {
+  return queryD1<ProgramEnrollment>(
+    'SELECT * FROM program_enrollments WHERE user_id = ? ORDER BY id',
+    [userId]
   );
 }
 

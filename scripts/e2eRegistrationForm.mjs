@@ -451,13 +451,28 @@ async function main() {
       baseAnswers({ q4_email: email, q2_student_name: '재제출학생', q7_classes: ['drums_5standing'] })
     );
     const rows = await d1(
-      'SELECT id, is_latest FROM form_responses WHERE form_id = ? AND email_norm = ? ORDER BY id',
+      'SELECT id, is_latest, supersedes_response_id FROM form_responses WHERE form_id = ? AND email_norm = ? ORDER BY id',
       [formId, email]
     );
     check('두 건 모두 남는다(덮어쓰지 않는다)', rows.results.length === 2, `${rows.results.length}건`);
     check('옛 응답은 최신본에서 내려간다', rows.results[0]?.is_latest === 0);
     check('새 응답이 최신본이다', rows.results[1]?.is_latest === 1);
     check('접수번호는 서로 다르다', a.body.data.responseId !== b.body.data.responseId);
+    // 정정 작업(2026-09-07)부터: 무엇을 대체했는지 잇고, 바뀐 과목을 이력에 남긴다.
+    check(
+      '새 응답이 옛 응답을 가리킨다(supersedes_response_id)',
+      rows.results[1]?.supersedes_response_id === rows.results[0]?.id,
+      String(rows.results[1]?.supersedes_response_id)
+    );
+    const note = await d1(
+      "SELECT body FROM form_response_notes WHERE response_id = ? AND kind = 'note' ORDER BY id DESC LIMIT 1",
+      [b.body.data.responseId]
+    );
+    check(
+      '재제출 이력에 대체 사실과 바뀐 과목이 남는다',
+      /대체했습니다/.test(note.results[0]?.body ?? '') && /→/.test(note.results[0]?.body ?? ''),
+      note.results[0]?.body
+    );
   }
 
   // ── 8. 명단·집계 ────────────────────────────────────────────────

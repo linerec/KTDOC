@@ -33,7 +33,15 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { attachSubmitter, getSubmittableFormBySlug, insertResponse } from '@/lib/d1';
+import {
+  addResponseNote,
+  attachSubmitter,
+  getResponseById,
+  getSubmittableFormBySlug,
+  insertResponse,
+} from '@/lib/d1';
+import { describeResubmission } from '@/lib/forms/correctionRun';
+import { responseStatusLabel } from '@/lib/forms/responseLabels';
 import { notifyEventAfterResponse } from '@/lib/mail/notify';
 import { createMember, emailExists } from '@/lib/members/createMember';
 import { isGuardianOf } from '@/lib/members';
@@ -152,7 +160,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       // 관계가 아니면 조용히 무시하고 미연결로 접수한다 — 신청 자체를 막을 이유는 없다.
     }
 
-    const responseId = await insertResponse({
+    const { id: responseId, supersededId } = await insertResponse({
       formId: form.id,
       formTitleKo: form.title_ko,
       schemaVersion: form.schema_version,
@@ -242,12 +250,34 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     // 접수 확인 메일 — 제출자에게, 그리고 운영진 주소로.
     // 비회원도 낼 수 있는 신청서라 답변에 적힌 이메일을 직접 쓴다.
+    // 재제출이면 "이전 신청을 대체했습니다 · 바뀐 것"을 같이 싣는다 — 학원은 새 학생인
+    // 줄 알고, 학부모는 옛 신청이 살아 있는 줄 아는 일을 막는다.
     const { core: bound } = applyBindings(schema, answers, form.schema_version);
+    let resubmit = '';
+    let previous = '';
+    if (supersededId) {
+      const [change, prev] = await Promise.all([
+        describeResubmission(supersededId, responseId).catch(() => null),
+        getResponseById(supersededId).catch(() => null),
+      ]);
+      resubmit = change ?? '(과목 변동 없음)';
+      previous = prev
+        ? `#${supersededId} (${responseStatusLabel(prev.status)}, ${prev.submitted_at.slice(0, 10)})`
+        : `#${supersededId}`;
+      await addResponseNote({
+        responseId,
+        kind: 'note',
+        body: `이전 응답 #${supersededId}을(를) 대체했습니다.` + (change ? `\n신청 과목: ${change}` : ''),
+        authorId: null,
+        authorName: null,
+        system: true,
+      }).catch((e) => console.error('재제출 이력 기록 실패:', e));
+    }
     notifyEventAfterResponse('form.submitted', {
       userIds: userId ? [userId] : [],
       directEmails: !userId && bound.email ? [bound.email] : [],
       replyTo: bound.email || undefined,
-      data: { name: studentName, title: form.title_ko },
+      data: { name: studentName, title: form.title_ko, resubmit, previous },
     });
 
     return NextResponse.json({ success: true, data: { responseId, account: accountResult } });

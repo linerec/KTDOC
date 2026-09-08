@@ -87,6 +87,25 @@ export const MAIL_EVENTS: readonly MailEventDef[] = [
     defaultOn: { user: true, staff: true },
   },
   {
+    key: 'enrollment.changed',
+    label: '수업 변경 안내',
+    description:
+      '신청 과목 정정·재제출·취소로 배정된 수업이 바뀌었을 때(빠진 수업·새 수업을 한 통에). 예고와 적용 안내 둘 다 이 이벤트다.',
+    group: 'lesson',
+    audiences: ['user', 'staff'],
+    // 정정은 드물고 누군가는 봐야 한다 — 학원 대표 메일 사본을 기본으로 켠다.
+    defaultOn: { user: true, staff: true },
+  },
+  {
+    key: 'form.corrected',
+    label: '신청 내용 변경 안내',
+    description: '배정 전에 운영진이 신청 과목을 정정했을 때 신청하신 분께 보내는 확인.',
+    group: 'show',
+    audiences: ['user', 'staff'],
+    defaultOn: { user: true, staff: true },
+    allowNonMember: true,
+  },
+  {
     key: 'application.created',
     label: '공연 참가 신청',
     description: '공연 참가 신청서가 접수되었을 때.',

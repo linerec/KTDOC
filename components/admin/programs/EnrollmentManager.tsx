@@ -108,15 +108,19 @@ export default function EnrollmentManager({
     );
   }
 
-  function handleRemove(enrollmentId: number, name: string | null) {
-    if (
-      !confirm(
-        t('admin.enroll.removeConfirm', '{name}의 배정을 해제할까요?', {
-          name: name || t('admin.enroll.thisStudent', '이 원생'),
-        })
-      )
-    )
-      return;
+  function handleRemove(enrollmentId: number, name: string | null, sourceResponseId: number | null) {
+    // 신청서에서 온 배정을 여기서 빼면 신청 화면과 어긋난다(상세가 경고를 띄운다).
+    // 막지는 않는다 — 다만 기록이 남는 길이 따로 있다는 것을 한 번 말한다.
+    const who = name || t('admin.enroll.thisStudent', '이 원생');
+    const msg =
+      sourceResponseId != null
+        ? t(
+            'admin.enroll.removeConfirmFromForm',
+            '{name}의 배정을 해제할까요?\n\n이 배정은 신청서(접수 #{rid})에서 왔습니다. 과목이 바뀐 것이면 신청 화면의 ‘신청 과목 정정’이 기록과 안내까지 함께 남깁니다.',
+            { name: who, rid: String(sourceResponseId) }
+          )
+        : t('admin.enroll.removeConfirm', '{name}의 배정을 해제할까요?', { name: who });
+    if (!confirm(msg)) return;
     void call(
       `/api/admin/programs/${programId}/enrollments/${enrollmentId}`,
       { method: 'DELETE' },
@@ -246,7 +250,7 @@ export default function EnrollmentManager({
               <button
                 type="button"
                 className="admin-btn admin-btn-outline"
-                onClick={() => handleRemove(e.id, e.member_name)}
+                onClick={() => handleRemove(e.id, e.member_name, e.source_response_id ?? null)}
                 disabled={busy}
               >
                 {t('admin.enroll.remove', '해제')}

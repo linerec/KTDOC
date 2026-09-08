@@ -1,9 +1,14 @@
 /**
  * POST /api/admin/forms/[id]/responses/[rid]/promote — 수강 배정 승격
  *
- * 응답 1건 → 선택한 과목 수만큼의 배정. createEnrollment 가 멱등(UPSERT)이라
- * 여러 번 눌러도 안전하다 — D1에 트랜잭션이 없으니 부분 실패했을 때 다시 누르는
- * 것이 유일한 복구 수단이고, 그래서 멱등이어야만 한다.
+ * 응답 1건 → 신청 과목에 맞춘 배정. 판단은 lib/forms/correctionRun.ts 의
+ * reconcileEnrollments 다 — 정정·재제출·취소·어긋남 복구와 **같은 함수**라
+ * "신청 과목 = 배정"이 한 자리에서 지켜진다. 계획이 멱등이라 여러 번 눌러도 안전하다.
+ * D1에 트랜잭션이 없으니 부분 실패했을 때 다시 누르는 것이 유일한 복구 수단이고,
+ * 그래서 멱등이어야만 한다.
+ *
+ * 재제출로 온 응답이면 옛 응답(대체한 줄기)이 만든 배정 중 신청에서 빠진 것을 함께
+ * 거둔다 — 예전에는 새 응답의 배정만 더해져 옛 수업이 명단에 그대로 남았다.
  *
  * 배정 대상은 **student_user_id** 다. submitted_by_user_id 가 아니다 —
  * 학부모가 대리 제출했을 때 학부모를 수업에 배정하면 안 된다.
@@ -16,18 +21,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
-import {
-  addResponseNote,
-  createEnrollment,
-  getConsents,
-  getEnrollmentStatusesForUser,
-  getProgramById,
-  getResponseById,
-  getSelections,
-  markPromoted,
-} from '@/lib/d1';
+import { addResponseNote, getConsents, getResponseById, getSelections, markPromoted } from '@/lib/d1';
 import { getMemberById, setPublicArchiveConsent } from '@/lib/members';
-import { notifyEventAfterResponse } from '@/lib/mail/notify';
+import { reconcileEnrollments } from '@/lib/forms/correctionRun';
+import { describePlan } from '@/lib/forms/correction';
 
 interface RouteParams {
   params: Promise<{ id: string; rid: string }>;
@@ -66,10 +63,7 @@ export async function POST(_request: Request, { params }: RouteParams) {
     }
 
     const selections = await getSelections(responseId);
-    const linked = selections.filter((s) => s.program_id != null);
-    const unlinked = selections.filter((s) => s.program_id == null);
-
-    if (linked.length === 0) {
+    if (!selections.some((s) => s.program_id != null)) {
       return NextResponse.json(
         {
           success: false,
@@ -80,24 +74,11 @@ export async function POST(_request: Request, { params }: RouteParams) {
       );
     }
 
-    const staffId = session?.user?.id ?? null;
+    const actor = { id: session?.user?.id ?? null, name: session?.user?.name ?? null };
 
-    // 운영진이 수업 화면에서 '취소'로 내려 둔 배정은 여기서 되살리지 않는다.
-    // createEnrollment 는 무조건 덮어쓰는 UPSERT라, 이 검사가 없으면 신청 화면의
-    // 배정 버튼이 수업 화면의 결정을 조용히 지운다(양쪽 다 옳아 보이는 화면이라
-    // 누가 지웠는지 알 길도 없다).
-    const existing = await getEnrollmentStatusesForUser(response.student_user_id);
-    const toEnroll = linked.filter((s) => existing.get(s.program_id!) !== 'cancelled');
-    const skippedCancelled = linked.filter((s) => existing.get(s.program_id!) === 'cancelled');
-
-    for (const s of toEnroll) {
-      await createEnrollment(s.program_id!, {
-        user_id: response.student_user_id,
-        status: 'active',
-        note: `신청서 접수 #${responseId}`,
-        enrolled_by: staffId,
-      });
-    }
+    // 배정 — 안내(등록 또는 변경)까지 여기서 나간다. 이력은 아래 'enroll' 한 줄로 합친다.
+    const result = await reconcileEnrollments({ response, actor, notify: true, silentNote: true });
+    const plan = result.plan;
 
     // 미디어 동의를 프로필로 옮긴다. 거부는 즉시, 동의는 이 시점에만.
     let consentNote = '';
@@ -112,52 +93,34 @@ export async function POST(_request: Request, { params }: RouteParams) {
     }
 
     await markPromoted(responseId);
+    const added = plan.add.length + plan.revive.length;
     await addResponseNote({
       responseId,
       kind: 'enroll',
       fromStatus: response.status,
       toStatus: 'enrolled',
       body:
-        `${member.name ?? '회원'}님을 수업 ${toEnroll.length}개에 배정했습니다.` +
-        (unlinked.length > 0 ? ` (수업이 연결되지 않은 과목 ${unlinked.length}개는 건너뛰었습니다.)` : '') +
-        (skippedCancelled.length > 0
-          ? ` (이미 취소로 내려 둔 수업 ${skippedCancelled.length}개는 그대로 두었습니다 — 되살리려면 수업 화면에서 상태를 바꿔 주세요.)`
+        (result.noop
+          ? `${member.name ?? '회원'}님의 명단은 이미 신청 과목과 같습니다.`
+          : `${member.name ?? '회원'}님을 수업 ${added}개에 배정했습니다.`) +
+        (plan.remove.length > 0 || plan.unlinked.length > 0 || plan.skippedCancelled.length > 0
+          ? '\n' + describePlan(plan).join('\n')
           : '') +
         consentNote,
-      authorId: staffId,
-      authorName: session?.user?.name ?? null,
+      authorId: actor.id,
+      authorName: actor.name,
       // 자동으로 쓴 문장이라 사람이 남긴 운영 메모를 덮지 않는다.
       system: true,
     });
 
-    // 배정 안내 — 원생과 보호자에게 간다(notifyEvent가 보호자를 붙인다).
-    // 예전에는 이 호출이 없어서, 수업 화면에서 배정한 사람만 안내를 받고
-    // 신청서에서 배정된 사람은 자기가 어느 수업에 들어갔는지 듣지 못했다.
-    if (toEnroll.length > 0) {
-      const titles = (
-        await Promise.all(
-          toEnroll.map((s) => getProgramById(s.program_id!).catch(() => null))
-        )
-      )
-        .filter((p): p is NonNullable<typeof p> => p != null)
-        .map((p) => p.title_ko);
-
-      notifyEventAfterResponse('enrollment.created', {
-        userIds: [response.student_user_id],
-        data: {
-          name: member.name ?? '',
-          title: titles.join(', '),
-          schedule: '',
-        },
-      });
-    }
-
     return NextResponse.json({
       success: true,
       data: {
-        enrolled: toEnroll.length,
-        skipped: unlinked.length,
-        skippedCancelled: skippedCancelled.length,
+        enrolled: added,
+        removed: plan.remove.length,
+        skipped: plan.unlinked.length,
+        skippedCancelled: plan.skippedCancelled.length,
+        summary: result.summary,
       },
     });
   } catch (error) {

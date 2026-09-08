@@ -45,6 +45,9 @@ export default async function AdminFormsPage() {
           </p>
         </div>
         <div className="admin-header-actions">
+          <Link href="/admin/forms/guide" className="admin-btn admin-btn-outline">
+            <T k="admin.forms.guide">신청 내용 고치기 안내</T>
+          </Link>
           <Link href="/admin/forms/new" className="admin-btn admin-btn-primary">
             <T k="admin.forms.new">+ 새 신청서</T>
           </Link>

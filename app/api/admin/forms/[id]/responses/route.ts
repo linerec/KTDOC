@@ -35,6 +35,7 @@ import {
   staffEntryNote,
 } from '@/lib/forms/staffEntry';
 import { getMemberById } from '@/lib/members';
+import { describeResubmission } from '@/lib/forms/correctionRun';
 import type { Answers, FormSchema, LinkSource } from '@/types/forms';
 
 /** 답변 JSON 상한 — 공개 제출과 같은 값. 장문 문항이 있어도 이보다 클 이유가 없다. */
@@ -113,7 +114,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     const staffName = session?.user?.name ?? '운영진';
 
-    const responseId = await insertResponse({
+    const { id: responseId, supersededId } = await insertResponse({
       formId: form.id,
       formTitleKo: form.title_ko,
       schemaVersion: form.schema_version,
@@ -147,6 +148,22 @@ export async function POST(request: Request, { params }: RouteParams) {
       // 자동으로 쓴 문장이라 사람이 남긴 운영 메모를 덮지 않는다.
       system: true,
     });
+
+    // 같은 원생의 옛 응답을 대체했으면 그 사실을 남긴다. 옛 응답이 만든 배정은 이 응답에서
+    // '수업에 넣기'를 누를 때 함께 정리된다(reconcileEnrollments 가 줄기를 본다).
+    if (supersededId) {
+      const change = await describeResubmission(supersededId, responseId).catch(() => null);
+      await addResponseNote({
+        responseId,
+        kind: 'note',
+        body:
+          `이전 응답 #${supersededId}을(를) 대체했습니다.` +
+          (change ? `\n신청 과목: ${change}` : ''),
+        authorId: session?.user?.id ?? null,
+        authorName: session?.user?.name ?? null,
+        system: true,
+      });
+    }
 
     // 연결까지 했으면 이력에 따로 한 줄 — 상세에서 연결했을 때와 같은 모양으로 남는다.
     if (linkedMember) {

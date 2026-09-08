@@ -127,6 +127,7 @@ export default async function AdminFormRosterPage({ params }: PageProps) {
                           <th>학년</th>
                           <th>등록 기간</th>
                           <th>연락처</th>
+                          <th className="roster-fix" aria-label="정정"></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -151,6 +152,16 @@ export default async function AdminFormRosterPage({ params }: PageProps) {
                             </td>
                             <td className="admin-cell-sub">
                               {r.phone ? <a href={`tel:${r.phone}`}>{r.phone}</a> : '—'}
+                            </td>
+                            <td className="roster-fix">
+                              {/* 잘못 들어간 학생을 발견하는 자리가 명단이다 — 여기서 바로 정정으로.
+                                  상세 화면이 모달을 연 채로 열린다. */}
+                              <Link
+                                href={`/admin/forms/${formId}/responses/${r.response_id}?correct=1`}
+                                className="admin-btn admin-btn-sm admin-btn-outline"
+                              >
+                                정정
+                              </Link>
                             </td>
                           </tr>
                         ))}

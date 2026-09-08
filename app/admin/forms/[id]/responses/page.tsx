@@ -17,6 +17,7 @@ import { requireMenuAccess } from '@/lib/admin/permissions';
 import {
   adminResponseList,
   getFormById,
+  getCorrectionNotesForResponses,
   getResponses,
   getSelections,
   rebuildDirtyForForm,
@@ -66,6 +67,8 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
 
   const view = adminResponseList({ formId, status, search: sp.q });
   const { rows, total } = await getResponses(view);
+  // 정정·예고가 있는 응답에 작은 배지 — 명단을 보다 "왜 과목이 달라졌지"를 여기서 알 수 있게.
+  const correctionsByResponse = await getCorrectionNotesForResponses(rows.map((r) => r.id));
 
   // 선택 과목은 파생 테이블에서 — 라벨은 스냅샷이라 여기서 스키마를 읽지 않아도 된다.
   // 키는 학비표 조회에 쓴다(라벨은 매년 바뀌지만 키는 그대로다).
@@ -184,6 +187,24 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
                         {r.source === 'staff' && (
                           <span className="admin-badge admin-badge-muted">대리 입력</span>
                         )}
+                        {r.supersedes_response_id != null && (
+                          <span className="admin-badge admin-badge-muted">재제출</span>
+                        )}
+                        {(() => {
+                          const cs = correctionsByResponse.get(r.id) ?? [];
+                          const stages = cs.map((n) => {
+                            try {
+                              return (JSON.parse(n.payload_json ?? 'null') as { stage?: string } | null)?.stage;
+                            } catch {
+                              return undefined;
+                            }
+                          });
+                          if (stages.includes('planned'))
+                            return <span className="admin-badge admin-badge-warning">정정 예고</span>;
+                          if (stages.includes('applied'))
+                            return <span className="admin-badge admin-badge-muted">정정됨</span>;
+                          return null;
+                        })()}
                       </div>
                     </td>
                     <td>

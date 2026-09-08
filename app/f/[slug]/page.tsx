@@ -16,7 +16,12 @@ import Link from 'next/link';
 import { auth } from '@/auth';
 import { hasMenuAccess } from '@/lib/admin/permissions';
 import { getGuardianChildren, getMemberById } from '@/lib/members';
-import { getFormBySlugAnyStatus } from '@/lib/d1';
+import {
+  getFormBySlugAnyStatus,
+  getMyResponses,
+  getSelectionsForResponses,
+  myApplications,
+} from '@/lib/d1';
 import { allQuestions } from '@/lib/forms/schema';
 import FormHead from '@/components/forms/FormHead';
 import FormRenderer, { type FormPrefill } from '@/components/forms/FormRenderer';
@@ -180,9 +185,46 @@ export default async function PublicFormPage({ params }: PageProps) {
   ]);
   const prefill = buildPrefill(schema, session?.user, children, member?.phone ?? null);
 
+  // 이미 접수된 신청이 있으면 미리 말한다 — 다시 내면 그것을 대체한다는 사실을
+  // 제출 뒤가 아니라 **제출 전에** 알아야 한다(사전 공지). 본인 + (학부모면) 자녀.
+  let existing: Array<{ id: number; student_name: string; submitted_at: string; labels: string[] }> = [];
+  if (session?.user?.id && isOpen) {
+    const ids = [session.user.id, ...children.map((c) => c.studentId)];
+    const mine = (await getMyResponses(myApplications(ids)).catch(() => [])).filter(
+      (r) => r.form_id === form.id && r.status !== 'cancelled'
+    );
+    const sels = await getSelectionsForResponses(mine.map((r) => r.id)).catch(() => new Map());
+    existing = mine.map((r) => ({
+      id: r.id,
+      student_name: r.student_name,
+      submitted_at: r.submitted_at,
+      labels: (sels.get(r.id) ?? []).map((p: { labelKo: string | null; optionKey: string }) => p.labelKo ?? p.optionKey),
+    }));
+  }
+
   return (
     <main className="form-page">
       <div className="form-shell">
+        {existing.length > 0 && (
+          <div className="form-preview-banner form-existing-banner" role="status">
+            <p>
+              <strong>이미 접수된 신청이 있습니다.</strong>{' '}
+              {existing.map((e, i) => (
+                <span key={e.id}>
+                  {i > 0 && ' · '}
+                  {e.student_name} ({e.submitted_at.slice(0, 10)}
+                  {e.labels.length ? `, ${e.labels.map((l) => l.trim()).join(' · ')}` : ''})
+                </span>
+              ))}
+              . 같은 학생 이름으로 다시 내시면 <strong>이전 신청을 대체</strong>합니다. 과목만
+              바꾸고 싶으시면 학원으로 알려 주셔도 됩니다.
+            </p>
+            <p className="form-notice-alt">
+              You already have a submission on file. Submitting again for the same student replaces
+              the earlier one. To change classes only, you can also just let us know.
+            </p>
+          </div>
+        )}
         {isTrial && (
           <div className="form-trial-banner" role="status">
             <p className="form-trial-title">임시 게시 · Preview only</p>

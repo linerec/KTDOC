@@ -156,6 +156,8 @@ export interface ProgramEnrollment {
   status: EnrollmentStatus;
   note: string | null;
   enrolled_by: string | null;
+  /** 이 배정을 만든 신청 응답. 수업 화면에서 직접 넣었으면 NULL — 신청서 쪽 정정이 건드리지 않는다. */
+  source_response_id: number | null;
   enrolled_at: string;
   created_at: string;
 }
@@ -181,6 +183,8 @@ export interface CreateEnrollmentInput {
   status?: EnrollmentStatus;
   note?: string | null;
   enrolled_by?: string | null;
+  /** 신청서에서 만든 배정이면 그 응답 id. 비우면 NULL(운영진 직접 배정). */
+  source_response_id?: number | null;
 }
 
 export interface UpdateEnrollmentInput {

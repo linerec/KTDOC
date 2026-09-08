@@ -15,18 +15,30 @@ import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import {
   getConsents,
+  getCorrectionNotes,
   getFormById,
+  getOtherLatestResponsesForStudent,
   getResponseById,
   getResponseNotes,
   getSchemaVersion,
   getSelections,
+  getSupersedingResponse,
 } from '@/lib/d1';
 import { getUserNamesByIds } from '@/lib/members';
 import { allQuestions } from '@/lib/forms/schema';
 import { responseStatusLabel } from '@/lib/forms/responseLabels';
 import { PERIOD_LABEL_KO, tuitionForResponse } from '@/lib/forms/tuition';
-import ResponseActions from '@/components/admin/forms/ResponseActions';
-import type { Answers, FormSchema } from '@/types/forms';
+import {
+  describeDiff,
+  describePlan,
+  findSubjectQuestion,
+  isPlanNoop,
+  pickedKeys,
+  selectableOptions,
+} from '@/lib/forms/correction';
+import { loadPlan } from '@/lib/forms/correctionRun';
+import ResponseActions, { type PlannedCorrection } from '@/components/admin/forms/ResponseActions';
+import type { Answers, CorrectionPayload, FormSchema } from '@/types/forms';
 
 export const metadata: Metadata = {
   title: '신청 상세 | KTDOC Admin',
@@ -44,13 +56,24 @@ const CONSENT_LABEL: Record<string, string> = {
 
 interface PageProps {
   params: Promise<{ id: string; rid: string }>;
+  searchParams: Promise<{ correct?: string }>;
 }
 
-export default async function AdminFormResponseDetailPage({ params }: PageProps) {
+function parsePayload(raw: string | null): CorrectionPayload | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as CorrectionPayload;
+  } catch {
+    return null;
+  }
+}
+
+export default async function AdminFormResponseDetailPage({ params, searchParams }: PageProps) {
   const session = await auth();
   await requireMenuAccess(session, 'forms');
 
   const { id, rid } = await params;
+  const { correct } = await searchParams;
   const formId = Number(id);
   const responseId = Number(rid);
   if (!Number.isInteger(formId) || !Number.isInteger(responseId)) notFound();
@@ -58,20 +81,75 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
   const [form, response] = await Promise.all([getFormById(formId), getResponseById(responseId)]);
   if (!form || !response || response.form_id !== formId) notFound();
 
-  const [selections, consents, notes, snapshot] = await Promise.all([
+  const [selections, consents, notes, snapshot, corrections, superseding, loaded] = await Promise.all([
     getSelections(responseId),
     getConsents(responseId),
     getResponseNotes(responseId),
     getSchemaVersion(formId, response.form_schema_version),
+    getCorrectionNotes(responseId),
+    getSupersedingResponse(responseId),
+    loadPlan(response).catch(() => null),
   ]);
 
   const schema = snapshot ?? (JSON.parse(form.schema_json) as FormSchema);
   const answers = JSON.parse(response.answers_json) as Answers;
   const questions = allQuestions(schema);
 
-  const linkedName = response.student_user_id
-    ? ((await getUserNamesByIds([response.student_user_id])).get(response.student_user_id) ?? null)
+  const nameIds = [response.student_user_id, response.submitted_by_user_id].filter(
+    (x): x is string => Boolean(x)
+  );
+  const names = nameIds.length ? await getUserNamesByIds(nameIds) : new Map<string, string>();
+  const linkedName = response.student_user_id ? (names.get(response.student_user_id) ?? null) : null;
+  const submitterName = response.submitted_by_user_id
+    ? (names.get(response.submitted_by_user_id) ?? null)
     : null;
+
+  // ── 정정 재료: 현재 문안의 과목 문항(정정은 현재 선택지로 고른다)
+  const currentSchema = JSON.parse(form.schema_json) as FormSchema;
+  const subjectQ = findSubjectQuestion(currentSchema);
+  const currentKeys = subjectQ ? pickedKeys(subjectQ, answers) : [];
+  const correction = subjectQ
+    ? {
+        questionLabel: subjectQ.label.ko,
+        options: selectableOptions(subjectQ, currentKeys).map((o) => ({
+          key: o.key,
+          label: o.label.ko,
+          programId: o.programId ?? null,
+          retired: o.retired,
+        })),
+        currentKeys,
+      }
+    : null;
+
+  // 적용된 정정(답변 카드의 '정정됨' 표시)과 예고된 정정(대기 카드)을 가른다
+  const applied = corrections
+    .map((n) => ({ note: n, payload: parsePayload(n.payload_json) }))
+    .filter((x) => x.payload?.stage === 'applied');
+  const planned: PlannedCorrection[] = corrections
+    .map((n) => ({ note: n, payload: parsePayload(n.payload_json) }))
+    .filter((x) => x.payload?.stage === 'planned')
+    .map((x) => ({
+      noteId: x.note.id,
+      change: describeDiff(x.payload!.from, x.payload!.to),
+      effective: x.payload!.effectiveDate ?? null,
+      createdAt: x.note.created_at,
+      author: x.note.author_name,
+    }));
+  const firstApplied = applied[0]?.payload ?? null;
+
+  // 어긋남 — 배정 완료 상태인데 신청 과목과 명단이 다르면 경고
+  const drift =
+    loaded && loaded.hasStudent && response.status === 'enrolled' && !isPlanNoop(loaded.plan)
+      ? describePlan(loaded.plan)
+      : null;
+
+  const others = response.student_user_id
+    ? await getOtherLatestResponsesForStudent({
+        formId,
+        studentUserId: response.student_user_id,
+        excludeResponseId: responseId,
+      })
+    : [];
 
   // 학비표 조회 보조 — 운영자 화면 전용. 신청자에게는 절대 보이지 않는다.
   // 조립은 lib/forms/tuition.ts 한 곳에서만 한다(목록과 같은 답을 내야 한다).
@@ -125,11 +203,52 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
         </div>
       </div>
 
+      {superseding && (
+        <div className="admin-alert admin-alert-warning resp-banner">
+          이 응답은 <Link href={`/admin/forms/${formId}/responses/${superseding.id}`}>#{superseding.id}</Link>
+          ({superseding.submitted_at.slice(0, 10)}, {responseStatusLabel(superseding.status)})로 대체되었습니다.
+          목록·명단에는 새 응답만 보입니다.
+        </div>
+      )}
+      {response.supersedes_response_id && (
+        <div className="admin-alert admin-alert-info resp-banner">
+          재제출 — 이전 응답{' '}
+          <Link href={`/admin/forms/${formId}/responses/${response.supersedes_response_id}`}>
+            #{response.supersedes_response_id}
+          </Link>
+          을(를) 대체했습니다. 이전 응답이 만든 배정은 ‘수업에 넣기’를 누를 때 함께 정리됩니다.
+        </div>
+      )}
+      {others.length > 0 && (
+        <div className="admin-alert admin-alert-warning resp-banner">
+          같은 원생의 다른 응답이 이 신청서에 따로 있습니다:{' '}
+          {others.map((o, i) => (
+            <span key={o.id}>
+              {i > 0 && ', '}
+              <Link href={`/admin/forms/${formId}/responses/${o.id}`}>#{o.id}</Link> (
+              {responseStatusLabel(o.status)})
+            </span>
+          ))}
+          . 어느 쪽이 맞는지 확인하고 한쪽을 취소해 주세요.
+        </div>
+      )}
+
       <div className="resp-detail">
         <div className="resp-detail-main">
           {/* ── 신청 과목 ── */}
           <section className="admin-card resp-panel">
             <h2 className="resp-panel-title">신청 과목</h2>
+            {applied.length > 0 && (
+              <ul className="resp-corrections">
+                {applied.map(({ note, payload }) => (
+                  <li key={note.id}>
+                    <span className="admin-badge admin-badge-warning">정정</span>{' '}
+                    {note.created_at.slice(0, 10)} {note.author_name ?? '운영진'} ·{' '}
+                    {describeDiff(payload!.from, payload!.to)}
+                  </li>
+                ))}
+              </ul>
+            )}
             {selections.length === 0 ? (
               <p className="admin-field-help">선택한 과목이 없습니다.</p>
             ) : (
@@ -167,15 +286,29 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
           <section className="admin-card resp-panel">
             <h2 className="resp-panel-title">답변</h2>
             <p className="admin-field-help">
-              신청하신 분이 실제로 본 문안(버전 {response.form_schema_version}) 그대로입니다.
+              {applied.length > 0
+                ? `신청하신 분이 본 문안(버전 ${response.form_schema_version}) 기준이며, 정정된 문항은 원래 값을 함께 보여 줍니다.`
+                : `신청하신 분이 실제로 본 문안(버전 ${response.form_schema_version}) 그대로입니다.`}
             </p>
             <dl className="resp-answers">
               {questions
                 .filter((q) => q.type !== 'info' && !q.sensitive && answers[q.key] !== undefined)
                 .map((q) => (
                   <div key={q.key}>
-                    <dt className="resp-answer-label">{q.label.ko}</dt>
-                    <dd className="resp-answer-value">{render(q.key)}</dd>
+                    <dt className="resp-answer-label">
+                      {q.label.ko}
+                      {firstApplied?.questionKey === q.key && (
+                        <span className="admin-badge admin-badge-warning resp-answer-badge">정정됨</span>
+                      )}
+                    </dt>
+                    <dd className="resp-answer-value">
+                      {render(q.key)}
+                      {firstApplied?.questionKey === q.key && (
+                        <span className="resp-answer-original">
+                          원래 답: {firstApplied.from.map((o) => o.label.trim()).join(' · ') || '(없음)'}
+                        </span>
+                      )}
+                    </dd>
                   </div>
                 ))}
               {response.has_medical === 1 && (
@@ -260,8 +393,13 @@ export default async function AdminFormResponseDetailPage({ params }: PageProps)
             linkedUserId={response.student_user_id}
             linkedUserName={linkedName}
             studentName={response.student_name}
+            submitterName={submitterName}
             email={response.email}
             phone={response.phone}
+            correction={correction}
+            planned={planned}
+            drift={drift}
+            autoOpenCorrection={correct === '1'}
           />
         </aside>
       </div>

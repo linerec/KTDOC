@@ -17,14 +17,30 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
-import { getMyResponses, getSelectionsForResponses, myApplications } from '@/lib/d1';
+import {
+  getCorrectionNotesForResponses,
+  getMyResponses,
+  getSelectionsForResponses,
+  myApplications,
+} from '@/lib/d1';
 import { getGuardianView } from '@/lib/members';
+import { describeDiff } from '@/lib/forms/correction';
 import { APPLICANT_STATUS } from '@/lib/forms/responseLabels';
+import type { CorrectionPayload } from '@/types/forms';
 import type { MemberRole } from '@/types/members';
 
 export const metadata: Metadata = {
   title: '내 신청 내역 | KTDOC',
 };
+
+function parsePayload(raw: string | null): CorrectionPayload | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as CorrectionPayload;
+  } catch {
+    return null;
+  }
+}
 
 function formatDate(value: string): string {
   const d = new Date(value.replace(' ', 'T') + 'Z');
@@ -44,6 +60,8 @@ export default async function MyApplicationsPage() {
   const view = myApplications([userId, ...childIds]);
   const rows = await getMyResponses(view);
   const selections = await getSelectionsForResponses(rows.map((r) => r.id));
+  // 운영진이 정정한 기록 — 학원과 가정이 같은 기록을 본다. 사유(내부)는 보이지 않는다.
+  const corrections = await getCorrectionNotesForResponses(rows.map((r) => r.id));
 
   return (
     <div className="admin-page">
@@ -94,6 +112,18 @@ export default async function MyApplicationsPage() {
                     </ul>
                   </div>
                 )}
+                {(corrections.get(r.id) ?? []).map((n) => {
+                  const payload = parsePayload(n.payload_json);
+                  if (!payload || (payload.stage !== 'applied' && payload.stage !== 'planned')) return null;
+                  return (
+                    <p key={n.id} className="myapp-correction">
+                      {payload.stage === 'planned'
+                        ? `${payload.effectiveDate ? payload.effectiveDate + '부터 ' : ''}변경 예정: `
+                        : `${formatDate(n.created_at)} 학원에서 변경: `}
+                      {describeDiff(payload.from, payload.to)}
+                    </p>
+                  );
+                })}
 
                 <div className="myapp-foot">
                   <span>접수번호 #{r.id}</span>

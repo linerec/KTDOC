@@ -19,6 +19,7 @@ import { lockFormOnFirstResponse } from './forms';
 import { applyBindings, type DerivedConsent, type DerivedSelection } from '@/lib/forms/schema';
 import type {
   Answers,
+  CorrectionPayload,
   FormResponseConsent,
   FormResponseNote,
   FormResponseRow,
@@ -64,11 +65,20 @@ export interface InsertResponseInput {
   submitIpHash: string | null;
 }
 
+export interface InsertResponseResult {
+  id: number;
+  /**
+   * 이 제출이 대체한 옛 응답(재제출). 없으면 null.
+   * 호출부는 이것으로 접수 메일에 "이전 신청을 대체했습니다 · 바뀐 것"을 싣는다.
+   */
+  supersededId: number | null;
+}
+
 /**
- * 응답을 저장하고 파생을 만든다. 반환은 응답 id.
+ * 응답을 저장하고 파생을 만든다.
  * 파생이 실패해도 응답은 남는다(derived_dirty=1).
  */
-export async function insertResponse(input: InsertResponseInput): Promise<number> {
+export async function insertResponse(input: InsertResponseInput): Promise<InsertResponseResult> {
   const { core, selections, consents, hasMedical } = applyBindings(
     input.schema,
     input.answers,
@@ -123,21 +133,45 @@ export async function insertResponse(input: InsertResponseInput): Promise<number
     console.error('form lock failed:', error);
   }
 
-  // ── 4) 재제출 정리: 같은 (폼, 이메일, 학생이름) 그룹의 옛 응답을 내린다.
-  //     두 문장이라 원자적이지 않다 — 조회 경로에서 그룹당 최신 1건으로 한 번 더 접는다.
-  if (core.email_norm && core.student_name_norm) {
-    try {
-      await executeD1(
-        `UPDATE form_responses SET is_latest = 0
-          WHERE form_id = ? AND email_norm = ? AND student_name_norm = ? AND id != ?`,
-        [input.formId, core.email_norm, core.student_name_norm, lastRowId]
+  // ── 4) 재제출 정리: 같은 원생의 옛 응답을 내리고, 무엇을 대체했는지 잇는다.
+  //
+  //     묶는 기준은 두 겹이다. **연결된 원생(student_user_id)이 있으면 그것으로**,
+  //     없을 때만 (이메일, 학생 이름). 같은 보호자 주소로 두 자녀를 내는 집에서
+  //     이름 표기가 조금 달라도("Aiden" / "Aiden Jee") 회원으로 묶이면 엉키지 않고,
+  //     반대로 형제는 회원이 달라 서로를 대체하지 않는다.
+  //
+  //     supersedes_response_id 는 예전엔 아무도 채우지 않았다 — 옛 응답이 만든 배정을
+  //     거둘 때 "이 줄기가 만든 것"의 범위가 이 연결이다.
+  //     여러 문장이라 원자적이지 않다 — 조회 경로에서 그룹당 최신 1건으로 한 번 더 접는다.
+  let supersededId: number | null = null;
+  try {
+    const where = input.studentUserId
+      ? { sql: 'form_id = ? AND student_user_id = ? AND id != ?', params: [input.formId, input.studentUserId, lastRowId] }
+      : core.email_norm && core.student_name_norm
+        ? {
+            sql: 'form_id = ? AND email_norm = ? AND student_name_norm = ? AND id != ?',
+            params: [input.formId, core.email_norm, core.student_name_norm, lastRowId],
+          }
+        : null;
+    if (where) {
+      const prev = await queryD1<{ id: number }>(
+        `SELECT id FROM form_responses WHERE ${where.sql} AND is_latest = 1 ORDER BY id DESC LIMIT 1`,
+        where.params
       );
-    } catch (error) {
-      console.error('form is_latest cleanup failed:', error);
+      supersededId = prev[0]?.id ?? null;
+      await executeD1(`UPDATE form_responses SET is_latest = 0 WHERE ${where.sql}`, where.params);
+      if (supersededId) {
+        await executeD1('UPDATE form_responses SET supersedes_response_id = ? WHERE id = ?', [
+          supersededId,
+          lastRowId,
+        ]);
+      }
     }
+  } catch (error) {
+    console.error('form is_latest cleanup failed:', error);
   }
 
-  return lastRowId;
+  return { id: lastRowId, supersededId };
 }
 
 async function writeDerived(
@@ -420,11 +454,13 @@ export async function addResponseNote(input: {
   authorName: string | null;
   /** 시스템이 자동으로 쓴 문장인가. true면 요약 칸(internal_note)을 덮지 않는다. */
   system?: boolean;
-}): Promise<void> {
-  await executeD1(
+  /** kind='correction' 의 구조 기록. 화면이 읽는 쪽이다(body 는 사람이 읽는 쪽). */
+  payload?: CorrectionPayload | null;
+}): Promise<number> {
+  const { lastRowId } = await executeD1(
     `INSERT INTO form_response_notes
-       (response_id, kind, from_status, to_status, body, author_id, author_name)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (response_id, kind, from_status, to_status, body, author_id, author_name, payload_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.responseId,
       input.kind,
@@ -433,6 +469,7 @@ export async function addResponseNote(input: {
       input.body ?? null,
       input.authorId,
       input.authorName,
+      input.payload ? JSON.stringify(input.payload) : null,
     ]
   );
   if (input.body?.trim() && !input.system) {
@@ -441,6 +478,121 @@ export async function addResponseNote(input: {
       [input.body.trim(), input.responseId]
     );
   }
+  return lastRowId;
+}
+
+/** 정정 이력의 payload 만 바꾼다(예고 → 적용/철회 표시). body 는 그대로 둔다. */
+export async function updateNotePayload(noteId: number, payload: CorrectionPayload): Promise<void> {
+  await executeD1('UPDATE form_response_notes SET payload_json = ? WHERE id = ?', [
+    JSON.stringify(payload),
+    noteId,
+  ]);
+}
+
+export async function getResponseNoteById(noteId: number): Promise<FormResponseNote | null> {
+  const rows = await queryD1<FormResponseNote>('SELECT * FROM form_response_notes WHERE id = ?', [noteId]);
+  return rows[0] ?? null;
+}
+
+/** 정정 이력(kind='correction')만, 오래된 순. 상세·내 신청 내역이 변경 줄을 그리는 원천. */
+export async function getCorrectionNotes(responseId: number): Promise<FormResponseNote[]> {
+  return queryD1<FormResponseNote>(
+    `SELECT * FROM form_response_notes
+      WHERE response_id = ? AND kind = 'correction'
+      ORDER BY created_at ASC, id ASC`,
+    [responseId]
+  );
+}
+
+/** 여러 응답의 정정 이력 — 내 신청 내역(목록)용. */
+export async function getCorrectionNotesForResponses(
+  responseIds: number[]
+): Promise<Map<number, FormResponseNote[]>> {
+  const out = new Map<number, FormResponseNote[]>();
+  if (responseIds.length === 0) return out;
+  const placeholders = responseIds.map(() => '?').join(', ');
+  const rows = await queryD1<FormResponseNote>(
+    `SELECT * FROM form_response_notes
+      WHERE kind = 'correction' AND response_id IN (${placeholders})
+      ORDER BY created_at ASC, id ASC`,
+    responseIds
+  );
+  for (const r of rows) {
+    const list = out.get(r.response_id) ?? [];
+    list.push(r);
+    out.set(r.response_id, list);
+  }
+  return out;
+}
+
+/**
+ * 답을 바꾸고 파생을 다시 만든다 — 정정의 데이터 쪽 절반.
+ *
+ * 문안 버전을 함께 올린다: 정정은 **현재 신청서 문안**의 선택지로 고르므로(옛 문안에
+ * 없던 과목으로 옮기는 일이 실제로 있다) 응답이 가리키는 버전도 현재로 맞춰야
+ * 파생 재구축이 새 선택지를 해석한다.
+ */
+export async function updateResponseAnswers(input: {
+  responseId: number;
+  answers: Answers;
+  schemaVersion: number;
+}): Promise<void> {
+  await executeD1(
+    `UPDATE form_responses
+        SET answers_json = ?, form_schema_version = ?, derived_dirty = 1, updated_at = datetime('now')
+      WHERE id = ?`,
+    [JSON.stringify(input.answers), input.schemaVersion, input.responseId]
+  );
+  await rebuildDerived(input.responseId);
+}
+
+/**
+ * 응답 줄기 — 이 응답이 대체한 옛 응답들의 id 를 거슬러 모은다(자기 자신 포함).
+ * 배정을 거둘 때 "이 줄기가 만든 것"의 범위다. 순환 방어로 20단계에서 멈춘다.
+ */
+export async function getResponseChainIds(responseId: number): Promise<number[]> {
+  const ids = [responseId];
+  let cur = responseId;
+  for (let i = 0; i < 20; i++) {
+    const rows = await queryD1<{ supersedes_response_id: number | null }>(
+      'SELECT supersedes_response_id FROM form_responses WHERE id = ?',
+      [cur]
+    );
+    const prev = rows[0]?.supersedes_response_id;
+    if (!prev || ids.includes(prev)) break;
+    ids.push(prev);
+    cur = prev;
+  }
+  return ids;
+}
+
+/** 이 응답을 대체한(더 나중의) 응답 — 옛 응답 상세의 "#N으로 대체됨" 띠. */
+export async function getSupersedingResponse(
+  responseId: number
+): Promise<{ id: number; submitted_at: string; status: ResponseStatus } | null> {
+  const rows = await queryD1<{ id: number; submitted_at: string; status: ResponseStatus }>(
+    `SELECT id, submitted_at, status FROM form_responses
+      WHERE supersedes_response_id = ? ORDER BY id DESC LIMIT 1`,
+    [responseId]
+  );
+  return rows[0] ?? null;
+}
+
+/**
+ * 같은 신청서에서 같은 원생의 **다른** 최신 응답 — 상세 상단 경고용.
+ * 재제출 묶기가 놓친 경우(이름 표기가 다르고 로그인도 안 한 제출)를 사람이 보게 한다.
+ */
+export async function getOtherLatestResponsesForStudent(input: {
+  formId: number;
+  studentUserId: string;
+  excludeResponseId: number;
+}): Promise<Array<{ id: number; status: ResponseStatus; submitted_at: string }>> {
+  return queryD1(
+    `SELECT id, status, submitted_at FROM form_responses
+      WHERE form_id = ? AND student_user_id = ? AND is_latest = 1 AND id != ?
+      ORDER BY id`,
+    [input.formId, input.studentUserId, input.excludeResponseId]
+  );
 }
 
 export async function getResponseNotes(responseId: number): Promise<FormResponseNote[]> {
