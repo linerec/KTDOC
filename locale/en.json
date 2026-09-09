@@ -783,7 +783,7 @@
   "admin.events.signatureLabel": "Show in the /performances showcase",
   "admin.events.signatureOrder": "Showcase order (lower comes first)",
   "admin.events.notifySection": "Notify members",
-  "admin.events.notifyHelp": "You can push a notification to students, parents and teachers when you save. Tapping it opens this performance so they can add it to their own calendar.",
+  "admin.events.notifyHelp": "When you save, you can notify students, parents and teachers by phone push and the in-app inbox. No email is sent. Leave this off when adding past performances as records — turn it on only to announce an upcoming one.",
   "admin.events.notifyToggle": "Send a notification when saving",
   "admin.events.notifyPublicOnly": "Notifications go out only for public performances — saving as private sends nothing; 'Save and publish' does send.",
   "admin.events.notifyTarget": "Send to",

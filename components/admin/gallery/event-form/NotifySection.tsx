@@ -53,7 +53,7 @@ export default function NotifySection({
       <p className="admin-form-help">
         {t(
           'admin.events.notifyHelp',
-          '저장할 때 원생·학부모·선생님에게 푸시 알림을 보낼 수 있습니다. 알림을 탭하면 이 공연으로 이동해 각자 캘린더에 추가할 수 있습니다.'
+          '저장할 때 원생·학부모·선생님에게 휴대폰 알림과 앱 알림함으로 알릴 수 있습니다. 이메일은 가지 않습니다. 지난 공연을 기록으로 올릴 때는 꺼 두세요 — 다가오는 공연을 알릴 때만 켭니다.'
         )}
       </p>
 

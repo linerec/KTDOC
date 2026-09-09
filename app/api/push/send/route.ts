@@ -10,6 +10,7 @@ import {
 import { getActiveMemberIds, getMemberIdsByRoles } from '@/lib/members';
 import { getActiveEnrollmentUserIds, getProgramById } from '@/lib/d1';
 import { notifyEvent } from '@/lib/mail/notify';
+import { wantsEmail } from '@/lib/push/emailOptIn';
 import { MEMBER_ROLES, type MemberRole } from '@/types/members';
 
 interface SendBody {
@@ -17,8 +18,10 @@ interface SendBody {
   body?: string;
   url?: string;
   /**
-   * 휴대폰 알림과 함께 이메일로도 보낼지. **기본은 보낸다.**
-   * 푸시를 켜신 분이 회원의 절반뿐이라, 푸시만으로는 절반에게 닿지 않는다.
+   * 휴대폰 알림과 함께 이메일로도 보낼지. **말하지 않으면 보내지 않는다.**
+   * 알림 보내기 화면은 체크박스(기본 켬)를 그대로 넘기고, 공연 폼은 명시적으로
+   * 끈다. 기본이 '켬'이던 때 공연 폼이 이 값을 빼고 불러 회원 전원에게 메일이
+   * 나갔다(lib/push/emailOptIn.ts 머리말).
    */
   alsoEmail?: boolean;
   target?: {
@@ -57,8 +60,8 @@ export async function POST(request: Request) {
     if (!targetType || !['all', 'role', 'user', 'class'].includes(targetType)) {
       return NextResponse.json({ error: '발송 대상을 선택해 주세요.' }, { status: 400 });
     }
-    // 값이 없으면 켠 것으로 본다 — 옛 호출부(체크박스가 없던 시절)도 이메일이 나가야 한다.
-    const alsoEmail = data?.alsoEmail !== false;
+    // 이메일은 호출부가 `alsoEmail: true`라고 말할 때만 — 판정은 wantsEmail 하나뿐이다.
+    const alsoEmail = wantsEmail(data);
 
     // 대상 회원(user.id) 해석
     let userIds: string[] = [];

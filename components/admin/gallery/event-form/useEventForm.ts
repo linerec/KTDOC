@@ -104,8 +104,11 @@ export function useEventForm({
     attach: false,
   });
 
-  // 저장 시 회원에게 푸시 알림(신규는 기본 ON, 공개 상태일 때만 발송)
-  const [notify, setNotify] = useState(isNew);
+  // 저장 시 회원에게 푸시 알림 — **기본 OFF**, 공개 상태일 때만 발송.
+  // 예전에는 신규 공연이면 기본 ON이었다. 그런데 이 폼으로 올리는 공연의 대부분은
+  // 지난 공연의 기록(2021~2024년 자료)이라, 저장할 때마다 "[새 일정] 2021 …"이
+  // 회원 전원에게 나갔다. 다가오는 공연을 알릴 때만 사람이 켠다.
+  const [notify, setNotify] = useState(false);
   const [notifyTarget, setNotifyTarget] = useState<'all' | 'role'>('role');
   const [notifyRoles, setNotifyRoles] = useState<MemberRole[]>(['student', 'parent']);
   const toggleNotifyRole = (r: MemberRole) =>
@@ -177,10 +180,19 @@ export function useEventForm({
           ? { type: 'all' as const }
           : { type: 'role' as const, roles: notifyRoles };
 
+      // 이메일은 보내지 않는다 — 푸시와 알림함까지만. 공연 등록은 공지가 아니라
+      // 기록이고, 메일은 한 번 나가면 거둘 수 없다(2026-09 회원 47명에게 나간 뒤
+      // 원장님이 정지를 요청했다). 메일로 알릴 일이면 '알림 보내기' 화면에서 쓴다.
       const res = await fetch('/api/push/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, body: pushBody, url: `/gallery/event/${eventId}`, target }),
+        body: JSON.stringify({
+          title,
+          body: pushBody,
+          url: `/gallery/event/${eventId}`,
+          target,
+          alsoEmail: false,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.error) {
