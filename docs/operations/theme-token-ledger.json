@@ -1640,6 +1640,15 @@
    "confidence": "high"
   },
   {
+   "line": 17809,
+   "selector": ".list-sort-btn:hover",
+   "token": "warm-ivory",
+   "verdict": "flip",
+   "replacement": "변경 없음",
+   "reason": ".timeline-sort-btn:hover와 같은 규칙(셀렉터 목록으로 한 벌). /classes·/performances 목록 정렬 세그먼트 — 배경 없는 버튼이 지면 위에 놓이므로 지면과 함께 뒤집혀야 한다.",
+   "confidence": "high"
+  },
+  {
    "line": 15113,
    "selector": ".comment-section-title",
    "token": "warm-ivory",

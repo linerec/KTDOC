@@ -12,7 +12,7 @@ import ArchiveBridge from '@/components/performances/ArchiveBridge';
 import { Suspense } from 'react';
 import { getEvents, publicPerformances } from '@/lib/d1';
 import { parseListSort } from '@/lib/listSort';
-import ListSortSelect from '@/components/common/ListSortSelect';
+import ListSortToggle from '@/components/common/ListSortToggle';
 import type { EventWithCategory } from '@/types/gallery';
 
 export const dynamic = 'force-dynamic';
@@ -89,7 +89,7 @@ export default async function PerformancesPage({ searchParams }: PageProps) {
         <section className="performances-main">
           <div className="container">
             <Suspense fallback={null}>
-              <ListSortSelect />
+              <ListSortToggle />
             </Suspense>
             {restGroups.map((group) => (
               <RepertoireSection

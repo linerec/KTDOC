@@ -12,7 +12,7 @@ import ProgramGrid from '@/components/classes/ProgramGrid';
 import { Suspense } from 'react';
 import { getPrograms } from '@/lib/d1';
 import { parseListSort } from '@/lib/listSort';
-import ListSortSelect from '@/components/common/ListSortSelect';
+import ListSortToggle from '@/components/common/ListSortToggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +73,7 @@ export default async function ClassesPage({ searchParams }: PageProps) {
             {hasContent ? (
               <>
                 <Suspense fallback={null}>
-                  <ListSortSelect />
+                  <ListSortToggle />
                 </Suspense>
                 <ProgramGrid programs={gridPrograms} />
               </>

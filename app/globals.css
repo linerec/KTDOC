@@ -4585,17 +4585,6 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: var(--on-media);
 }
 
-/* 목록 정렬(개최일순/등록순) — /classes·/performances 공용. 모양은 위 필터를 빌린다 */
-.list-sort {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 32px;
-}
-.list-sort-pending {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
 /* Year Quick Links */
 .gallery-year-links {
   display: flex;
@@ -17779,22 +17768,32 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.78rem;
 }
 
-/* ── 타임라인 정렬 순서 · 종류 필터 전환 ── */
-.timeline-controls {
+/* ── 타임라인 정렬 순서 · 종류 필터 전환 ──
+   .list-sort-*는 같은 컨트롤을 /classes·/performances 목록 정렬(개최일순/등록순)에
+   쓰는 이름이다(ListSortToggle). 공개 사이트의 "고르는 자리"는 한 얼굴이어야 하므로
+   규칙을 한 벌로 둔다 — 여기를 고치면 세 페이지가 함께 바뀐다. */
+.timeline-controls,
+.list-sort-controls {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 28px;
 }
-.timeline-sort {
+.list-sort-controls.is-pending {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.timeline-sort,
+.list-sort {
   display: inline-flex;
   gap: 2px;
   padding: 3px;
   border: 1px solid rgba(224, 184, 79, 0.3);
   border-radius: 999px;
 }
-.timeline-sort-btn {
+.timeline-sort-btn,
+.list-sort-btn {
   padding: 7px 16px;
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -17805,10 +17804,12 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   white-space: nowrap;
   transition: color 0.2s ease, background 0.2s ease;
 }
-.timeline-sort-btn:hover {
+.timeline-sort-btn:hover,
+.list-sort-btn:hover {
   color: var(--warm-ivory);
 }
-.timeline-sort-btn.is-active {
+.timeline-sort-btn.is-active,
+.list-sort-btn.is-active {
   color: #1a1206;
   background: var(--soft-gold);
   font-weight: 600;
