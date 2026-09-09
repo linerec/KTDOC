@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import T from '@/components/common/T';
 import NewsFilters from '@/components/admin/news/NewsFilters';
+import QuickVideoPaste from '@/components/admin/news/QuickVideoPaste';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
 import { getNewsPosts } from '@/lib/d1';
@@ -89,6 +90,9 @@ export default async function AdminNewsPage({ searchParams }: PageProps) {
           </Link>
         </div>
       </div>
+
+      {/* 유튜브 링크 하나로 영상 게시물 바로 게시 — 폼을 거치지 않는 길 */}
+      <QuickVideoPaste />
 
       <NewsFilters
         category={params.category || ''}

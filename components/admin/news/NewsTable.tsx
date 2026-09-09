@@ -11,11 +11,18 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { NewsPost } from '@/types/news';
 import { NEWS_CATEGORY_LABELS } from '@/types/news';
+import { extractYouTubeId } from '@/types/gallery';
 import { useT } from '@/lib/i18n/useT';
 import { useLocaleText } from '@/components/common/LocaleText';
 
 interface NewsTableProps {
   posts: NewsPost[];
+}
+
+function thumbnailFor(post: NewsPost): string | null {
+  if (post.thumbnail_url) return post.thumbnail_url;
+  const id = post.youtube_url ? extractYouTubeId(post.youtube_url) : null;
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
 }
 
 export default function NewsTable({ posts }: NewsTableProps) {
@@ -113,9 +120,10 @@ export default function NewsTable({ posts }: NewsTableProps) {
               <tr key={post.id}>
                 <td>
                   <div className="admin-table-thumbnail">
-                    {post.thumbnail_url ? (
+                    {/* 영상은 대표 이미지가 없으면 공개 카드처럼 유튜브 썸네일로 — 링크만 붙여넣은 게시물이 빈칸으로 보이지 않게 */}
+                    {thumbnailFor(post) ? (
                       <Image
-                        src={post.thumbnail_url}
+                        src={thumbnailFor(post)!}
                         alt={post.title_ko}
                         width={60}
                         height={40}

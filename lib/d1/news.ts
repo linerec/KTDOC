@@ -65,6 +65,20 @@ export async function getNewsPostById(id: number): Promise<NewsPost | null> {
   return results[0] || null;
 }
 
+/**
+ * 같은 유튜브 영상으로 이미 만든 게시물. 링크 붙여넣기(quick-video)가 두 번 눌려도
+ * 게시물이 둘이 되지 않게 한다. 주소 모양이 제각각일 수 있어 ID로 찾는다.
+ */
+export async function getNewsPostByYouTubeId(videoId: string): Promise<NewsPost | null> {
+  const results = await queryD1<NewsPost>(
+    `SELECT * FROM news_posts
+     WHERE youtube_url LIKE ? OR youtube_url LIKE ? OR youtube_url LIKE ?
+     ORDER BY id DESC LIMIT 1`,
+    [`%v=${videoId}%`, `%youtu.be/${videoId}%`, `%/embed/${videoId}%`]
+  );
+  return results[0] || null;
+}
+
 export async function createNewsPost(input: CreateNewsPostInput): Promise<number> {
   const { lastRowId } = await executeD1(
     `INSERT INTO news_posts (

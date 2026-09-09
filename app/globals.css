@@ -9338,6 +9338,50 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   color: #7ed99f;
 }
 
+/* 뉴스 관리 — 유튜브 링크 붙여넣기(QuickVideoPaste) */
+.quick-video {
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: rgba(var(--fg-rgb), 0.03);
+  border: 1px dashed rgba(224, 184, 79, 0.45);
+  border-radius: 8px;
+}
+.quick-video-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--soft-gold-text);
+}
+.quick-video-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.quick-video-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.95rem;
+  padding: 10px 14px;
+}
+.quick-video-help {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.quick-video .admin-alert {
+  margin: 12px 0 0;
+}
+.quick-video .admin-alert a {
+  color: inherit;
+  text-decoration: underline;
+}
+@media (max-width: 640px) {
+  .quick-video-row {
+    flex-direction: column;
+  }
+}
+
 /* ============================================================
    ADMIN INLINE PANEL — 목록 상단 접이식 관리 패널(분류 관리 등)
 ============================================================ */

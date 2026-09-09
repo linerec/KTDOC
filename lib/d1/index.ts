@@ -202,6 +202,7 @@ export {
   // News (뉴스·미디어 게시물)
   getNewsPosts,
   getNewsPostById,
+  getNewsPostByYouTubeId,
   createNewsPost,
   updateNewsPost,
   deleteNewsPost,
