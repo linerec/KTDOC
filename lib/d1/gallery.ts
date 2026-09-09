@@ -114,6 +114,7 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
     published = true,
     showcase,
     kind,
+    sort = 'date',
   } = filters;
 
   // Build WHERE clause
@@ -157,9 +158,15 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  // 쇼케이스는 손으로 정한 signature_order를 어느 기준에서든 먼저 본다(지금은 전부 0).
+  // date=개최일 최근순(기본), created=등록 최근순("새로 올라온 것" 보기). lib/listSort.ts
   const orderBy = showcase
-    ? 'ORDER BY e.signature_order ASC, e.event_date DESC, e.id DESC'
-    : 'ORDER BY e.year DESC, e.event_date DESC, e.id DESC';
+    ? sort === 'created'
+      ? 'ORDER BY e.signature_order ASC, e.created_at DESC, e.id DESC'
+      : 'ORDER BY e.signature_order ASC, e.event_date DESC, e.id DESC'
+    : sort === 'created'
+      ? 'ORDER BY e.created_at DESC, e.id DESC'
+      : 'ORDER BY e.year DESC, e.event_date DESC, e.id DESC';
 
   // Get total count
   const countResult = await queryD1<{ count: number }>(

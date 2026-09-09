@@ -1,6 +1,7 @@
 // types/gallery.ts
 // Gallery 아카이브 시스템 타입 정의
 
+import type { ListSort } from '@/lib/listSort';
 /**
  * 이벤트 종류 — category_id('어떤 공연인가')와 직교하는 축.
  * 'performance' = 대외 공연, 'school' = 수료식·발표회 등 학내 행사.
@@ -190,6 +191,8 @@ export interface EventFilters {
   showcase?: boolean;
   /** 종류 필터 — 미지정이거나 'all'이면 전체 */
   kind?: EventKind | 'all';
+  /** 목록 정렬 — 'date'(개최일, 기본) | 'created'(등록순). lib/listSort.ts 참고 */
+  sort?: ListSort;
 }
 
 export interface GalleryPhotoFilters {

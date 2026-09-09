@@ -14,16 +14,28 @@ import type {
   CreateProgramImageInput,
 } from '@/types/programs';
 import { generateSlug } from '@/types/programs';
+import type { ListSort } from '@/lib/listSort';
 
 // ============================================
 // Programs
 // ============================================
 
+/**
+ * 목록 정렬. sort_order는 손으로 정한 순서라 어느 기준에서든 먼저 본다(지금은 전부 0).
+ * - date: 개최일(start_date) 최근순. 날짜가 없는 정규 수업은 뒤로 보내고 등록순으로.
+ *   /classes는 종류별 섹션이라 실제로는 캠프 섹션 안에서만 날짜가 순서를 정한다.
+ * - created: 등록(created_at) 최근순 — "새로 올라온 것" 보기.
+ */
+const PROGRAM_ORDER_BY: Record<ListSort, string> = {
+  date: 'ORDER BY p.sort_order ASC, (p.start_date IS NULL) ASC, p.start_date DESC, p.is_featured DESC, p.id DESC',
+  created: 'ORDER BY p.sort_order ASC, p.created_at DESC, p.id DESC',
+};
+
 export async function getPrograms(filters: ProgramFilters = {}): Promise<{
   programs: ProgramWithMeta[];
   total: number;
 }> {
-  const { type, search, page = 1, limit = 100, featured, published = true } = filters;
+  const { type, search, page = 1, limit = 100, featured, published = true, sort = 'date' } = filters;
 
   const conditions: string[] = [];
   const params: unknown[] = [];
@@ -66,7 +78,7 @@ export async function getPrograms(filters: ProgramFilters = {}): Promise<{
             (SELECT image_url FROM program_images WHERE program_id = p.id ORDER BY sort_order ASC LIMIT 1) as first_image_url
      FROM programs p
      ${whereClause}
-     ORDER BY p.sort_order ASC, p.is_featured DESC, p.id DESC
+     ${PROGRAM_ORDER_BY[sort]}
      LIMIT ? OFFSET ?`,
     [...params, limit, offset]
   );

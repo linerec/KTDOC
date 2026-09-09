@@ -1,6 +1,7 @@
 // types/programs.ts
 // 수업·프로그램·캠프 + 신청 시스템 타입 정의 (types/gallery.ts 규약을 따름)
 
+import type { ListSort } from '@/lib/listSort';
 import { generateSlug } from '@/types/gallery';
 
 export { generateSlug };
@@ -203,6 +204,8 @@ export interface ProgramFilters {
   limit?: number;
   featured?: boolean;
   published?: boolean | 'all';
+  /** 목록 정렬 — 'date'(개최일, 기본) | 'created'(등록순). lib/listSort.ts 참고 */
+  sort?: ListSort;
 }
 
 export interface ApplicationFilters {

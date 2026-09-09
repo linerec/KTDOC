@@ -28,6 +28,12 @@ test('공개 공연 목록은 예정 공연도 포함한다 — 날짜로 자르
   assert.ok(!('before' in f) && !('after' in f) && !('pastOnly' in f));
 });
 
+test('정렬은 방문자가 고른 값만 싣는다 — 비우면 쿼리 기본(개최일)에 맡긴다', () => {
+  assert.equal(publicPerformances({ sort: 'created' }).sort, 'created');
+  assert.equal(publicPerformances({ sort: 'date' }).sort, 'date');
+  assert.equal(publicPerformances().sort, undefined);
+});
+
 test('쇼케이스를 요청할 때만 큐레이션 조건이 붙는다', () => {
   assert.equal(publicPerformances({ showcase: true }).showcase, true);
   assert.equal(publicPerformances().showcase, undefined);

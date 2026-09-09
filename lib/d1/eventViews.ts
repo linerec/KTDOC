@@ -16,6 +16,7 @@
  */
 
 import type { EventFilters } from '@/types/gallery';
+import type { ListSort } from '@/lib/listSort';
 
 /** 목록 화면에서 흔히 넘기는 사용자 입력(연도·카테고리·검색·페이지) */
 export interface BrowseParams {
@@ -34,11 +35,15 @@ export interface BrowseParams {
  *   보여주는 자리다(2026-08-08 확인). 지난 것만 보여주는 자리는 홈의 '최근의 기록'.
  * - showcase=true면 큐레이션된 대표 공연(is_signature)만. 없으면 호출부가 폴백한다.
  */
-export function publicPerformances(opts: { showcase?: boolean; limit?: number } = {}): EventFilters {
+export function publicPerformances(
+  opts: { showcase?: boolean; limit?: number; sort?: ListSort } = {}
+): EventFilters {
   return {
     published: true,
     kind: 'performance',
     ...(opts.showcase ? { showcase: true } : {}),
+    // 방문자가 고르는 정렬(개최일/등록순). 비우면 쿼리가 개최일로 본다.
+    ...(opts.sort ? { sort: opts.sort } : {}),
     limit: opts.limit ?? 50,
   };
 }

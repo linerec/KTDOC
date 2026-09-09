@@ -9,7 +9,10 @@ import Footer from '@/components/Footer';
 import IntlObject from '@/components/common/IntlObject';
 import CampSpotlight from '@/components/classes/CampSpotlight';
 import ProgramGrid from '@/components/classes/ProgramGrid';
+import { Suspense } from 'react';
 import { getPrograms } from '@/lib/d1';
+import { parseListSort } from '@/lib/listSort';
+import ListSortSelect from '@/components/common/ListSortSelect';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,8 +28,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ClassesPage() {
-  const { programs } = await getPrograms({ published: true, limit: 100 });
+interface PageProps {
+  searchParams: Promise<{ sort?: string | string[] }>;
+}
+
+export default async function ClassesPage({ searchParams }: PageProps) {
+  // 정렬은 방문자가 고른다(개최일순 기본 / 등록순). /performances와 같은 장치.
+  const sort = parseListSort((await searchParams).sort);
+  const { programs } = await getPrograms({ published: true, limit: 100, sort });
 
   const spotlightCamp =
     programs.find((p) => p.program_type === 'camp' && p.is_featured === 1) || null;
@@ -62,7 +71,12 @@ export default async function ClassesPage() {
         <section className="classes-main">
           <div className="container">
             {hasContent ? (
-              <ProgramGrid programs={gridPrograms} />
+              <>
+                <Suspense fallback={null}>
+                  <ListSortSelect />
+                </Suspense>
+                <ProgramGrid programs={gridPrograms} />
+              </>
             ) : (
               <div className="classes-empty">
                 <IntlObject keycode="pages.classes.status" returnType="p" />

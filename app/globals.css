@@ -4585,6 +4585,17 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: var(--on-media);
 }
 
+/* 목록 정렬(개최일순/등록순) — /classes·/performances 공용. 모양은 위 필터를 빌린다 */
+.list-sort {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 32px;
+}
+.list-sort-pending {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /* Year Quick Links */
 .gallery-year-links {
   display: flex;
