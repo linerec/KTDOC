@@ -21,13 +21,34 @@ import type { ListSort } from '@/lib/listSort';
 // ============================================
 
 /**
+ * 시간표 순서 키 — 정규 수업은 "주중 시간표를 읽는 순서"로 늘어선다(2026-09-10, 원장님 확인).
+ *
+ * 원장님이 주신 순서(유년부 드럼 → 유년부 무용 → … → 성인 고급반)는 토요일 반을 시작
+ * 시각 순으로, 그다음 일요일 반을 시작 시각 순으로 읽은 것과 정확히 같다. 손으로 정하는
+ * 순서가 아니라 규칙이므로 구조 데이터(weekdays·class_start_time)에서 계산한다 —
+ * 시간표를 고치면 순서가 따라온다.
+ *
+ * - 주는 월요일에 시작한다(월1 … 토6, 일0→7). 학원 시간표가 그렇게 읽힌다.
+ * - 요일이 여럿(예: "1,3")이면 첫 요일을 쓴다.
+ * - 요일·시각이 없는 수업은 시간표가 없으므로 뒤로 보내고 등록순.
+ */
+const FIRST_WEEKDAY_SQL =
+  "CAST(substr(p.weekdays, 1, instr(p.weekdays || ',', ',') - 1) AS INTEGER)";
+const WEEKDAY_RANK_SQL = `CASE WHEN ${FIRST_WEEKDAY_SQL} = 0 THEN 7 ELSE ${FIRST_WEEKDAY_SQL} END`;
+
+/**
  * 목록 정렬. sort_order는 손으로 정한 순서라 어느 기준에서든 먼저 본다(지금은 전부 0).
- * - date: 개최일(start_date) 최근순. 날짜가 없는 정규 수업은 뒤로 보내고 등록순으로.
- *   /classes는 종류별 섹션이라 실제로는 캠프 섹션 안에서만 날짜가 순서를 정한다.
+ * - date: 캠프·프로그램은 개최일(start_date) 최근순, 정규 수업은 시간표 순
+ *   (위 WEEKDAY_RANK_SQL). 두 조건이 한 ORDER BY에 있지만 서로 간섭하지 않는다 —
+ *   캠프는 weekdays가 없고 수업은 start_date가 없다. /classes는 종류별 섹션이다.
  * - created: 등록(created_at) 최근순 — "새로 올라온 것" 보기.
  */
 const PROGRAM_ORDER_BY: Record<ListSort, string> = {
-  date: 'ORDER BY p.sort_order ASC, (p.start_date IS NULL) ASC, p.start_date DESC, p.is_featured DESC, p.id DESC',
+  date: `ORDER BY p.sort_order ASC,
+    (p.start_date IS NULL) ASC, p.start_date DESC,
+    (p.weekdays IS NULL OR p.weekdays = '') ASC, ${WEEKDAY_RANK_SQL} ASC,
+    (p.class_start_time IS NULL) ASC, p.class_start_time ASC,
+    p.is_featured DESC, p.id DESC`,
   created: 'ORDER BY p.sort_order ASC, p.created_at DESC, p.id DESC',
 };
 
