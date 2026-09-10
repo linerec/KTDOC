@@ -58,7 +58,7 @@ export default function FlagFields({ formData, onChange }: FieldGroupProps) {
 
           <div className="admin-form-group">
             <label htmlFor="signature_order" className="admin-form-label">
-              {t('admin.events.signatureOrder', '쇼케이스 순서 (작을수록 먼저)')}
+              {t('admin.events.signatureOrder', '쇼케이스 순서 (1이 맨 앞 · 0은 자동, 최근 공연순)')}
             </label>
             <input
               type="number"

@@ -158,12 +158,17 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-  // 쇼케이스는 손으로 정한 signature_order를 어느 기준에서든 먼저 본다(지금은 전부 0).
+  // 쇼케이스는 손으로 정한 signature_order를 어느 기준에서든 먼저 본다.
+  // **0은 "자동"이다** — 정한 적 없는 것. 1 이상만 손으로 정한 순서로 읽어 앞에 세운다.
+  // 전부 0인 상태에서 하나에 1을 주면 "작을수록 먼저"라 맨 뒤로 가는 일이 실제로
+  // 있었다(2026-09-10, 평창 공연을 맨 위에 올리려다). 0을 앞세우면 나머지 41건을
+  // 전부 고쳐야 하나를 올릴 수 있다.
   // date=개최일 최근순(기본), created=등록 최근순("새로 올라온 것" 보기). lib/listSort.ts
+  const manualFirst = '(e.signature_order IS NULL OR e.signature_order <= 0) ASC, e.signature_order ASC';
   const orderBy = showcase
     ? sort === 'created'
-      ? 'ORDER BY e.signature_order ASC, e.created_at DESC, e.id DESC'
-      : 'ORDER BY e.signature_order ASC, e.event_date DESC, e.id DESC'
+      ? `ORDER BY ${manualFirst}, e.created_at DESC, e.id DESC`
+      : `ORDER BY ${manualFirst}, e.event_date DESC, e.id DESC`
     : sort === 'created'
       ? 'ORDER BY e.created_at DESC, e.id DESC'
       : 'ORDER BY e.year DESC, e.event_date DESC, e.id DESC';

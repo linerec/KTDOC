@@ -784,7 +784,7 @@
   "admin.events.publishLabel": "Show in the public gallery",
   "admin.events.featuredLabel": "Featured",
   "admin.events.signatureLabel": "Show in the /performances showcase",
-  "admin.events.signatureOrder": "Showcase order (lower comes first)",
+  "admin.events.signatureOrder": "Showcase order (1 comes first · 0 = automatic, newest first)",
   "admin.events.notifySection": "Notify members",
   "admin.events.notifyHelp": "When you save, you can notify students, parents and teachers by phone push and the in-app inbox. No email is sent. Leave this off when adding past performances as records — turn it on only to announce an upcoming one.",
   "admin.events.notifyToggle": "Send a notification when saving",
