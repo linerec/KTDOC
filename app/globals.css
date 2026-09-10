@@ -6656,6 +6656,13 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: var(--text-muted);
 }
 
+/* 대표 공연(Signature Works) 배지 — 공연 목록에서 배너에 선 공연을 한눈에 */
+.admin-badge-hero {
+  margin-left: 6px;
+  background: rgba(212, 160, 23, 0.16);
+  color: var(--accent-text);
+}
+
 /* 회원 권한 배지 (관리자 강조) */
 .admin-badge-role {
   background: rgba(212, 160, 23, 0.16);
@@ -9336,6 +9343,79 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   background: rgba(46, 160, 87, 0.12);
   border: 1px solid rgba(46, 160, 87, 0.5);
   color: #7ed99f;
+}
+
+/* 공연 편집 — 공연 페이지 노출 카드(FlagFields). 대표 공연·목록 표시를 선택지처럼 */
+.stage-card {
+  margin: 4px 0 0;
+  padding: 16px 18px 6px;
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
+  border-radius: 8px;
+  background: rgba(var(--fg-rgb), 0.02);
+}
+.stage-card-legend {
+  padding: 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--soft-gold-text);
+}
+.stage-option {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--fg-rgb), 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.stage-option:hover {
+  border-color: rgba(212, 160, 23, 0.4);
+}
+.stage-option.is-on {
+  border-color: rgba(212, 160, 23, 0.55);
+  background: rgba(212, 160, 23, 0.07);
+}
+.stage-option input[type='checkbox'] {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent-text);
+}
+.stage-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.stage-option-title {
+  font-weight: 600;
+  color: var(--text-color);
+}
+.stage-option-help {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.stage-option-order {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(var(--fg-rgb), 0.12);
+}
+.stage-option-order label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.stage-option-order .admin-form-input {
+  width: 90px;
 }
 
 /* 뉴스 관리 — 유튜브 링크 붙여넣기(QuickVideoPaste) */
@@ -13799,10 +13879,28 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   position: absolute;
   inset: 0;
   z-index: 0;
+  /* 슬라이드쇼: 배경 층을 겹쳐 두고 교차 페이드. 하나뿐이면 늘 is-active */
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.performance-hero-bg.is-active {
+  opacity: 1;
 }
 .performance-hero-img {
   object-fit: cover;
   filter: saturate(0.92) contrast(1.05) brightness(0.86);
+  transform-origin: 55% 40%;
+}
+/* 켄 번스 — 활성 배경만 아주 천천히 다가온다. 간격보다 길게 두어 끝에서 멈추지 않게 */
+.performance-hero--carousel .performance-hero-bg.is-active .performance-hero-img {
+  animation: hero-kenburns calc(var(--hero-interval, 7000ms) + 3000ms) ease-out forwards;
+}
+.performance-hero--carousel.is-paused .performance-hero-bg.is-active .performance-hero-img {
+  animation-play-state: paused;
+}
+@keyframes hero-kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.07); }
 }
 .performance-hero-overlay {
   position: absolute;
@@ -13844,6 +13942,141 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 }
 .performance-hero-cta {
   margin-top: 30px;
+}
+
+/* --- 슬라이드쇼 --- */
+/* 글은 같은 칸에 겹친다 — 가장 긴 슬라이드가 높이를 정해 넘어갈 때 출렁이지 않는다 */
+.performance-hero-track {
+  display: grid;
+}
+.performance-hero-slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px);
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s ease,
+    visibility 0s linear 0.9s;
+}
+.performance-hero-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 0.9s ease 0.15s,
+    transform 0.9s ease 0.15s,
+    visibility 0s;
+}
+.performance-hero-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 34px;
+}
+.performance-hero-arrow {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  color: rgba(246, 239, 226, 0.85);
+  background: rgba(9, 7, 5, 0.35);
+  border: 1px solid rgba(246, 239, 226, 0.28);
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.performance-hero-arrow:hover,
+.performance-hero-arrow:focus-visible {
+  color: #1a1206;
+  background: var(--soft-gold);
+  border-color: var(--soft-gold);
+  outline: none;
+}
+.performance-hero-dots {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px;
+  list-style: none;
+}
+/* 점이 아니라 짧은 선 — 활성 선은 금색으로 차오르며 남은 시간을 말한다 */
+.performance-hero-dot {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 14px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.performance-hero-dot::before,
+.performance-hero-dot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 2px;
+  border-radius: 2px;
+}
+.performance-hero-dot::before {
+  background: rgba(246, 239, 226, 0.3);
+}
+.performance-hero-dot::after {
+  background: var(--soft-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.performance-hero-dot:hover::before,
+.performance-hero-dot:focus-visible::before {
+  background: rgba(246, 239, 226, 0.6);
+}
+.performance-hero-dot:focus-visible {
+  outline: none;
+}
+.performance-hero-dot.is-active::after {
+  animation: hero-dot-fill var(--hero-interval, 7000ms) linear forwards;
+}
+.performance-hero.is-paused .performance-hero-dot.is-active::after {
+  animation-play-state: paused;
+}
+@keyframes hero-dot-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.performance-hero-counter {
+  margin-left: 6px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  color: rgba(246, 239, 226, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+.performance-hero-counter em {
+  font-style: normal;
+  color: var(--soft-gold);
+  margin: 0 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .performance-hero-bg,
+  .performance-hero-slide,
+  .performance-hero-slide.is-active {
+    transition-duration: 0.3s;
+    transform: none;
+  }
+  .performance-hero--carousel .performance-hero-bg.is-active .performance-hero-img,
+  .performance-hero-dot.is-active::after {
+    animation: none;
+  }
+  /* 자동 넘김이 없으니 활성 선은 그냥 가득 찬 채로 */
+  .performance-hero-dot.is-active::after {
+    transform: scaleX(1);
+  }
 }
 
 /* --- Repertoire sections --- */
@@ -13957,6 +14190,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
     min-height: auto;
     /* 상단 오프셋은 표준 토큰(모바일 실측 폴백 포함)이 담당 — 하단만 조정 */
     padding-bottom: 52px;
+  }
+  .performance-hero-controls {
+    margin-top: 26px;
+    gap: 10px;
+  }
+  .performance-hero-counter {
+    margin-left: auto;
   }
   .repertoire-title {
     white-space: normal;

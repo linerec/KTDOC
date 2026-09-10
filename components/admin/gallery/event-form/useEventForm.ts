@@ -63,6 +63,7 @@ function initialFormData(event: EventDetail | null | undefined): EventFormData {
     is_featured: event?.is_featured === 1,
     is_signature: event?.is_signature === 1,
     signature_order: event?.signature_order ?? 0,
+    is_hero: event?.is_hero === 1,
     location: event?.location || '',
     location_url: event?.location_url || '',
     location_address: event?.location_address || '',
@@ -248,6 +249,7 @@ export function useEventForm({
         // 학내 행사는 공연 쇼케이스 대상이 아니다 — 폼에서 숨긴 값이 남아 있어도 강제로 끈다
         is_signature: formData.kind === 'school' ? false : formData.is_signature,
         signature_order: formData.kind === 'school' ? 0 : Number(formData.signature_order) || 0,
+        is_hero: formData.kind === 'school' ? false : formData.is_hero,
         // 빈 문자열을 보내면 서버가 null로 저장(값 지우기 지원)
         location: formData.location,
         location_url: formData.location_url,

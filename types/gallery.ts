@@ -46,6 +46,8 @@ export interface Event {
   is_published: number;
   is_signature: number;
   signature_order: number;
+  /** 대표 공연(Signature Works) — /performances 맨 위 배너. 여럿이면 슬라이드쇼 */
+  is_hero: number;
   view_count: number;
   // 실행 정보(멤버가 "어디서·언제·무엇을 준비"를 바로 파악). 모두 nullable.
   location: string | null;
@@ -189,6 +191,8 @@ export interface EventFilters {
   featured?: boolean;
   published?: boolean | 'all';
   showcase?: boolean;
+  /** 대표 공연(is_hero)만 — /performances 배너 */
+  hero?: boolean;
   /** 종류 필터 — 미지정이거나 'all'이면 전체 */
   kind?: EventKind | 'all';
   /** 목록 정렬 — 'date'(개최일, 기본) | 'created'(등록순). lib/listSort.ts 참고 */
@@ -238,6 +242,7 @@ export interface CreateEventInput {
   is_featured?: boolean;
   is_signature?: boolean;
   signature_order?: number;
+  is_hero?: boolean;
   slug?: string;
   // 실행 정보
   location?: string;

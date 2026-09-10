@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title_ko, event_date, title_en, category_id, kind, description_ko, description_en, is_published, is_featured, is_signature, signature_order, slug, location, location_url, location_address, location_lat, location_lng, call_time, start_time, end_time, prep_notes } = body;
+    const { title_ko, event_date, title_en, category_id, kind, description_ko, description_en, is_published, is_featured, is_signature, signature_order, is_hero, slug, location, location_url, location_address, location_lat, location_lng, call_time, start_time, end_time, prep_notes } = body;
 
     if (!title_ko || !event_date) {
       return NextResponse.json(
@@ -105,6 +105,7 @@ export async function POST(request: Request) {
       is_featured: is_featured ?? false,
       is_signature: is_signature ?? false,
       signature_order,
+      is_hero: is_hero ?? false,
       slug,
       location,
       location_url,

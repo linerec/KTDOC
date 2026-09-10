@@ -14,6 +14,7 @@ import {
   memberLibrary,
   publicArchive,
   publicPerformances,
+  signatureWorks,
 } from './eventViews.ts';
 
 test('공개 공연 목록은 학내 행사를 섞지 않는다', () => {
@@ -37,6 +38,15 @@ test('정렬은 방문자가 고른 값만 싣는다 — 비우면 쿼리 기본
 test('쇼케이스를 요청할 때만 큐레이션 조건이 붙는다', () => {
   assert.equal(publicPerformances({ showcase: true }).showcase, true);
   assert.equal(publicPerformances().showcase, undefined);
+});
+
+test('대표 공연 배너는 is_hero만 본다 — 목록 표시(is_signature)·순서와 별개', () => {
+  const f = signatureWorks();
+  assert.equal(f.hero, true);
+  assert.equal(f.showcase, undefined);
+  assert.equal(f.kind, 'performance');
+  assert.equal(f.published, true);
+  assert.ok(!('sort' in f), '슬라이드 순서는 기본(개최일 최근순)');
 });
 
 test('공개 아카이브는 방문자가 고른 종류만 반영하고, 이상한 값은 무시한다', () => {

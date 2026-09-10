@@ -49,6 +49,24 @@ export function publicPerformances(
 }
 
 /**
+ * 대표 공연 · Signature Works (/performances 맨 위 배너)
+ *
+ * - 운영진이 "대표 공연"으로 켠 것만(is_hero). 켜는 것과 목록 순서(signature_order)는
+ *   별개다 — 배너는 플래그, 목록 순서는 숫자(2026-09-10 결정).
+ * - 여럿이면 배너가 슬라이드쇼가 된다. 순서는 기본 정렬(개최일 최근순).
+ * - 학내 행사는 배너에 세우지 않는다. 비공개도 안 된다.
+ * - 없으면 호출부가 폴백한다(쇼케이스 첫 공연) — 페이지가 갑자기 배너를 잃지 않게.
+ */
+export function signatureWorks(opts: { limit?: number } = {}): EventFilters {
+  return {
+    published: true,
+    kind: 'performance',
+    hero: true,
+    limit: opts.limit ?? 8,
+  };
+}
+
+/**
  * 공개 아카이브 (/gallery)
  *
  * 종류는 방문자가 필터로 고른다. 알 수 없는 값이 오면 거르지 않고 전체를 보여준다 —

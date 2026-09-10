@@ -231,6 +231,7 @@ export {
 // 이벤트 목록의 '관점' — 화면마다 필터를 조립하지 말고 여기서 고를 것
 export {
   publicPerformances,
+  signatureWorks,
   publicArchive,
   allKindsChronological,
   memberLibrary,

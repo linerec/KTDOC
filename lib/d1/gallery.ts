@@ -114,6 +114,7 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
     published = true,
     showcase,
     kind,
+    hero,
     sort = 'date',
   } = filters;
 
@@ -150,6 +151,9 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
 
   if (showcase) {
     conditions.push('e.is_signature = 1');
+  }
+  if (hero) {
+    conditions.push('e.is_hero = 1');
   }
 
   if (kind && kind !== 'all') {
@@ -378,10 +382,10 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
     `INSERT INTO events (
       slug, year, event_date, title_ko, title_en,
       description_ko, description_en, category_id, kind,
-      is_published, is_featured, is_signature, signature_order,
+      is_published, is_featured, is_signature, signature_order, is_hero,
       location, location_url, location_address, location_lat, location_lng,
       call_time, start_time, end_time, prep_notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       year,
@@ -396,6 +400,7 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       input.is_featured ? 1 : 0,
       input.is_signature ? 1 : 0,
       input.signature_order ?? 0,
+      input.is_hero ? 1 : 0,
       input.location || null,
       input.location_url || null,
       input.location_address || null,
@@ -483,6 +488,10 @@ export async function updateEvent(
   if (input.signature_order !== undefined) {
     updates.push('signature_order = ?');
     params.push(input.signature_order);
+  }
+  if (input.is_hero !== undefined) {
+    updates.push('is_hero = ?');
+    params.push(input.is_hero ? 1 : 0);
   }
   // 실행 정보(빈 문자열은 null로 저장)
   if (input.location !== undefined) {

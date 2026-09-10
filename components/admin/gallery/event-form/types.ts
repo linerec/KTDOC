@@ -22,6 +22,8 @@ export interface EventFormData {
   is_featured: boolean;
   is_signature: boolean;
   signature_order: number | string;
+  /** 대표 공연(Signature Works) — /performances 배너 */
+  is_hero: boolean;
   location: string;
   location_url: string;
   location_address: string;

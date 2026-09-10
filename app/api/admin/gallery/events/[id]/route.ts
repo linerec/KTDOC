@@ -117,6 +117,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (body.is_published !== undefined) input.is_published = body.is_published;
     if (body.is_featured !== undefined) input.is_featured = body.is_featured;
     if (body.is_signature !== undefined) input.is_signature = body.is_signature;
+    if (body.is_hero !== undefined) input.is_hero = body.is_hero;
 
     if (input.event_date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(input.event_date)) {
       return NextResponse.json(

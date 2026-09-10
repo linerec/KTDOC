@@ -185,6 +185,14 @@ export default function EventTable({
                       ? t('admin.common.published', '공개')
                       : t('admin.common.unpublished', '비공개')}
                 </button>
+                {event.is_hero === 1 && (
+                  <span
+                    className="admin-badge admin-badge-hero"
+                    title={t('admin.events.heroLabel', '대표 공연 · Signature Works')}
+                  >
+                    {t('admin.events.heroBadge', '대표')}
+                  </span>
+                )}
               </td>
               <td>{event.view_count}</td>
               <td>
