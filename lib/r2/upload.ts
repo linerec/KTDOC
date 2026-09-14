@@ -1,6 +1,6 @@
 import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { r2Client, R2_BUCKET, R2_PUBLIC_URL } from './client';
-import { processForUpload } from '@/lib/images/processForUpload';
+import { processForUpload, UndecodableImageError } from '@/lib/images/processForUpload';
 
 export interface UploadResult {
   key: string;
@@ -23,6 +23,8 @@ export async function uploadToR2(
   folder: string = 'images'
 ): Promise<UploadResult> {
   const processed = await processForUpload(buffer, filename);
+  // 못 읽는 파일은 올리지 않는다 — 새 경로(finalizeTicket)와 같은 판단
+  if (!processed.decodable) throw new UndecodableImageError(filename);
 
   const timestamp = Date.now();
   const sanitizedFilename = processed.filename.replace(/[^a-zA-Z0-9.-]/g, '_');

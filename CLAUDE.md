@@ -206,6 +206,10 @@ ResizeObserver로 실높이를 재서 문서 루트에 발행한다:
    `deletePhotoFully`). 뉴스 썸네일·프로필처럼 화면용 이미지는 표시본만 남긴다.
 5. **표시용 정규화 규칙은 여전히 `processForUpload` 한 곳**이다(장변 2000·WebP·EXIF 제거).
    업로드 경로가 바뀌었을 뿐 "무엇을 서빙하는가"는 그대로다.
+   **폰이 주는 HEIC는 여기서 푼다**(`lib/images/decodeHeic.ts`, 순수 JS) — sharp의 prebuilt에는
+   HEVC 코덱이 없고 Vercel도 같다. 형식은 이름이 아니라 머리표로 본다(HEIC·WebP가 .jpg
+   이름으로 온다). **못 읽는 파일은 `decodable=false`로 거절한다.** "원본 통과"로 두면
+   올라갔는데 안 보이는 사진이 되고, 올리는 분에게는 실패와 구분되지 않는다(2026-09 HEIC 27장).
 6. **버킷 CORS가 없으면 브라우저 업로드가 통째로 막힌다.** 도메인이 바뀌면
    `npm run r2:cors -- --apply`로 허용 출처를 갱신할 것.
 

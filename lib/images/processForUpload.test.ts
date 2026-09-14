@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import { processForUpload } from './processForUpload.ts';
+import { looksLikeHeic } from './decodeHeic.ts';
 
 async function makeJpeg(w: number, h: number, withExif = false): Promise<Buffer> {
   let img = sharp({ create: { width: w, height: h, channels: 3, background: { r: 120, g: 80, b: 40 } } }).jpeg({ quality: 90 });
@@ -88,14 +89,48 @@ test('무거운 PNG(>500KB)는 사진으로 보고 WebP로 재인코딩된다', 
   assert.equal(meta.width, 900);
 });
 
-test('SVG·GIF·디코드 불가 파일은 그대로 통과한다', async () => {
+test('SVG·GIF는 그대로 통과한다 — 브라우저가 그릴 수 있는 형식이다', async () => {
   const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>');
   const outSvg = await processForUpload(svg, 'icon.svg');
   assert.equal(outSvg.processed, false);
+  assert.equal(outSvg.decodable, true);
   assert.equal(outSvg.contentType, 'image/svg+xml');
+});
 
+test('아무것도 못 읽는 파일은 표시용으로 등록하면 안 된다 — decodable=false', async () => {
+  // 예전에는 "원본 통과"였다. 그 결과가 "올라갔는데 안 보이는 사진"이라 올리는 분에게는
+  // 실패와 구분되지 않았다(2026-09 HEIC 27장). 못 읽으면 못 읽는다고 말해야 한다.
   const junk = Buffer.from('not-an-image');
-  const outHeic = await processForUpload(junk, 'IMG_0001.heic');
-  assert.equal(outHeic.processed, false);
-  assert.equal(outHeic.buffer, junk);
+  const out = await processForUpload(junk, 'IMG_0001.heic');
+  assert.equal(out.processed, false);
+  assert.equal(out.decodable, false);
+});
+
+test('이름은 .jpg인데 내용이 WebP면 이름과 Content-Type을 내용에 맞춘다', async () => {
+  // 폰·메신저가 WebP를 .jpg로 건네는 일이 실제로 있다(2026-09 22장). 확장자만 보고
+  // image/jpeg로 올리면 헤더가 거짓말을 한다. 픽셀은 손대지 않는다.
+  const input = await sharp({ create: { width: 800, height: 600, channels: 3, background: '#446688' } })
+    .webp()
+    .toBuffer();
+  const out = await processForUpload(input, '1000008142.jpg');
+  assert.equal(out.decodable, true);
+  assert.equal(out.processed, true);
+  assert.equal(out.filename, '1000008142.webp');
+  assert.equal(out.contentType, 'image/webp');
+  assert.equal(out.buffer, input);
+  assert.equal(out.width, 800);
+  assert.equal(out.height, 600);
+});
+
+test('HEIC 머리표는 브랜드로 알아본다 — 이름이 .jpg여도', () => {
+  const heic = Buffer.concat([
+    Buffer.from([0, 0, 0, 0x18]),
+    Buffer.from('ftypheic'),
+    Buffer.alloc(4),
+    Buffer.from('mif1heic'),
+  ]);
+  assert.equal(looksLikeHeic(heic), true);
+  assert.equal(looksLikeHeic(Buffer.from('RIFF....WEBPVP8X')), false);
+  assert.equal(looksLikeHeic(Buffer.from([0xff, 0xd8, 0xff])), false);
+  assert.equal(looksLikeHeic(Buffer.alloc(0)), false);
 });

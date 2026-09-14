@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // nodemailer는 Node 전용 소켓을 쓴다 — 번들러가 건드리지 못하게 외부로 뺀다.
-  serverExternalPackages: ['nodemailer'],
+  // heic-decode/libheif-js는 8MB짜리 WASM 번들이라 서버 번들에 넣지 않고 런타임에 require한다.
+  serverExternalPackages: ['nodemailer', 'heic-decode', 'libheif-js'],
   // sharp의 네이티브 libvips(@img/*)는 RPATH로 로드돼 트레이서가 놓친다 —
   // 배포에서 ERR_DLOPEN_FAILED(libvips-cpp.so 없음)로 확인된 실사례. 강제 포함.
   outputFileTracingIncludes: {

@@ -31,7 +31,7 @@ import {
   type UploadTicketClaims,
 } from './uploadTicket';
 import type { UploadTarget } from './uploadTargets';
-import { processForUpload } from '@/lib/images/processForUpload';
+import { processForUpload, UNDECODABLE_IMAGE_MESSAGE } from '@/lib/images/processForUpload';
 
 /** 서명 유효 시간. 사진 한 장을 올리기엔 넉넉하고, 흘러도 곧 죽을 만큼 짧게. */
 const TICKET_TTL_MS = 30 * 60 * 1000;
@@ -235,6 +235,13 @@ export async function finalizeTicket(
   }
 
   const processed = await processForUpload(buffer, originalName || displayKey.split('/').pop()!);
+
+  // 못 읽는 파일은 표시용으로 등록하지 않는다 — 올라간 원본도 지운다. "올라갔는데
+  // 안 보이는 사진"은 올리는 분에게 실패와 구분되지 않는다(2026-09 HEIC 27장).
+  if (!processed.decodable) {
+    await discard(key);
+    return { ok: false, error: UNDECODABLE_IMAGE_MESSAGE };
+  }
 
   // 정규화가 손대지 않은 파일(GIF·SVG·작은 PNG 등)은 사본을 하나 더 만들지 않는다.
   // 올라온 객체를 그대로 표시본으로 쓴다 — 같은 파일을 두 번 저장할 이유가 없다.

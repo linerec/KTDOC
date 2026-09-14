@@ -20,6 +20,7 @@
 
 import 'server-only';
 import { uploadToR2 } from './upload';
+import { UndecodableImageError } from '@/lib/images/processForUpload';
 import { finalizeTicket, type FinalizedUpload } from './directUpload';
 import type { UploadTarget } from './uploadTargets';
 
@@ -132,7 +133,16 @@ async function readFromMultipart(
       };
     }
     const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await uploadToR2(buffer, file.name, options.target.folder);
+    let result;
+    try {
+      result = await uploadToR2(buffer, file.name, options.target.folder);
+    } catch (err) {
+      // 못 읽는 파일 — 새 경로와 같은 문장으로 화면에 말한다(500으로 뭉개지 않는다)
+      if (err instanceof UndecodableImageError) {
+        return { uploads: [], field, error: err.message };
+      }
+      throw err;
+    }
     uploads.push({
       key: result.key,
       url: result.url,
