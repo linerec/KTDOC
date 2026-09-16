@@ -131,26 +131,81 @@ export function periodOf(questions: FormQuestion[], answers: Answers): TuitionPe
   return value === 'm3' || value === 'm6' || value === 'y1' ? value : null;
 }
 
+/* ── 토요일 표와 일요 성인 표는 따로 본다 ──────────────────────────────
+   학원 답(2026-09-16): "그냥 토요일반, 일요반 따로 배정하고 등록금은 따로 나오게".
+   토요일(어린이·청소년) 학비표와 일요 성인 학비표는 별개 체계이고 둘을 묶는 패키지는
+   없다. 그래서 한 신청에 양쪽 과목이 섞이면 **표를 나눠 각각 찾고 두 줄로 보여 준다.**
+   합계는 둘 다 찾았을 때만 붙인다 — 한쪽이 "표에 없는 조합"이면 합계도 모른다. */
+
+export type TuitionTable = 'sat' | 'sun';
+
+export const TUITION_TABLE_LABEL_KO: Record<TuitionTable, string> = {
+  sat: '토요일',
+  sun: '일요 성인반',
+};
+
+/** 코스 코드가 어느 표에 속하나 — 성인 표는 `adult_` 접두사로 구분한다. */
+export function tableOf(courseCode: string): TuitionTable {
+  return courseCode.startsWith('adult_') ? 'sun' : 'sat';
+}
+
+export interface TuitionPart {
+  table: TuitionTable;
+  /** 표에서 찾았으면 행, 없는 조합이면 null(개별 확인) */
+  found: TuitionLookup | null;
+}
+
+export interface TuitionQuote {
+  period: TuitionPeriod;
+  /** 표별 한 줄씩. 한 표만 걸리면 한 줄이다. */
+  parts: TuitionPart[];
+  /** 모든 줄을 찾았을 때만 합계. 하나라도 못 찾으면 null. */
+  total: number | null;
+}
+
 /**
- * 응답 한 건(답 + 고른 과목 키)에서 학비표 행을 찾는다.
+ * 응답 한 건(답 + 고른 과목 키)에서 학비표를 찾는다.
  *
  * 못 찾는 경우가 여럿이고 전부 정상이다 — 기간을 아직 안 골랐다, 기간 문항이
  * 없는 신청서다(특강·설문), 지금 문안에 없는 옛 선택지다, 학비표에 자리가 없는
- * 과목이 섞였다. 어느 쪽이든 null 이고, 화면은 "개별 확인"으로 정직하게 빠진다.
+ * 과목이 섞였다. 기간이 없으면 null, 나머지는 해당 줄의 found 가 null 이고 화면은
+ * "개별 확인"으로 정직하게 빠진다.
  */
 export function tuitionForResponse(
   questions: FormQuestion[],
   answers: Answers,
   optionKeys: string[]
-): TuitionLookup | null {
+): TuitionQuote | null {
   const period = periodOf(questions, answers);
-  if (!period) return null;
+  if (!period || optionKeys.length === 0) return null;
 
-  // 지금 문안에서 못 찾은 선택지는 undefined 가 되고, lookupTuition 이 null 로 받는다.
+  // 지금 문안에서 못 찾은 선택지는 undefined 가 되고, 그 표의 줄은 개별 확인이 된다.
   const options = questions.flatMap((q) => q.options ?? []);
-  const courseCodes = optionKeys.map((k) => options.find((o) => o.key === k)?.courseCode);
+  const codes = optionKeys.map((k) => options.find((o) => o.key === k)?.courseCode);
 
-  return lookupTuition(courseCodes, period);
+  const groups = new Map<TuitionTable, Array<string | undefined>>();
+  for (const c of codes) {
+    const table = c ? tableOf(c) : 'sat';
+    groups.set(table, [...(groups.get(table) ?? []), c]);
+  }
+
+  const parts: TuitionPart[] = (['sat', 'sun'] as TuitionTable[])
+    .filter((t) => groups.has(t))
+    .map((t) => ({ table: t, found: lookupTuition(groups.get(t)!, period) }));
+
+  const total = parts.every((p) => p.found) ? parts.reduce((a, p) => a + p.found!.amount, 0) : null;
+  return { period, parts, total };
+}
+
+/** 목록·상세가 같은 문장을 쓴다: "1 Dance Course $400" / "토요일 1 Dance Course $400 + 일요 성인반 성인 고급반 $220". */
+export function describeQuote(q: TuitionQuote): string {
+  const one = q.parts.length === 1;
+  return q.parts
+    .map((p) => {
+      const head = one ? '' : `${TUITION_TABLE_LABEL_KO[p.table]} `;
+      return p.found ? `${head}${p.found.label} $${p.found.amount.toLocaleString()}` : `${head}표에 없는 조합(개별 확인)`;
+    })
+    .join(' + ');
 }
 
 /** '*2 Dance Courses (Sat + Sun Combination Package)' — 조건이 미확정이라 표에 넣지 않았다. */

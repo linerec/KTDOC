@@ -32,7 +32,7 @@ import {
   RESPONSE_STATUS_LABEL,
   regTypeOf,
 } from '@/lib/forms/responseLabels';
-import { PERIOD_LABEL_KO, periodOf, tuitionForResponse } from '@/lib/forms/tuition';
+import { PERIOD_LABEL_KO, describeQuote, periodOf, tuitionForResponse } from '@/lib/forms/tuition';
 import type { Answers, FormSchema, ResponseStatus } from '@/types/forms';
 
 export const metadata: Metadata = {
@@ -214,11 +214,17 @@ export default async function AdminFormResponsesPage({ params, searchParams }: P
                           <div className="resp-pick-summary">
                             <strong>{picks.labels.length}과목</strong>
                             {period && <span> · {PERIOD_LABEL_KO[period]}</span>}
-                            {tuition ? (
+                            {/* 토요일 표 + 일요 성인 표가 섞이면 합계, 한쪽이라도 없으면 줄별로 말한다 */}
+                            {tuition?.total != null ? (
                               <span className="resp-pick-amount">
                                 {' '}
-                                · ${tuition.amount.toLocaleString()}
+                                · ${tuition.total.toLocaleString()}
+                                {tuition.parts.length > 1 && (
+                                  <span className="admin-cell-sub"> ({describeQuote(tuition)})</span>
+                                )}
                               </span>
+                            ) : tuition && tuition.parts.length > 1 ? (
+                              <span className="resp-pick-unknown"> · {describeQuote(tuition)}</span>
                             ) : (
                               <span className="resp-pick-unknown"> · 개별 확인</span>
                             )}

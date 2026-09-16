@@ -27,7 +27,7 @@ import {
 import { getUserNamesByIds } from '@/lib/members';
 import { allQuestions } from '@/lib/forms/schema';
 import { responseStatusLabel } from '@/lib/forms/responseLabels';
-import { PERIOD_LABEL_KO, tuitionForResponse } from '@/lib/forms/tuition';
+import { PERIOD_LABEL_KO, TUITION_TABLE_LABEL_KO, tuitionForResponse } from '@/lib/forms/tuition';
 import {
   describeDiff,
   describePlan,
@@ -267,19 +267,39 @@ export default async function AdminFormResponseDetailPage({ params, searchParams
               </ul>
             )}
 
+            {/* 토요일 표와 일요 성인 표는 따로 본다(학원 답 2026-09-16). 섞이면 줄마다 보여 주고
+                둘 다 찾았을 때만 합계를 붙인다. */}
             {tuition ? (
-              <p className="resp-tuition">
-                학비표 참고 — <strong>{tuition.label}</strong> ·{' '}
-                {PERIOD_LABEL_KO[tuition.period]}{' '}
-                <strong>${tuition.amount.toLocaleString()}</strong>
+              <div className={`resp-tuition${tuition.total == null ? ' resp-tuition-none' : ''}`}>
+                <span>학비표 참고 · {PERIOD_LABEL_KO[tuition.period]}</span>
+                <ul className="resp-tuition-parts">
+                  {tuition.parts.map((p) => (
+                    <li key={p.table}>
+                      {tuition.parts.length > 1 && <span className="resp-tuition-table">{TUITION_TABLE_LABEL_KO[p.table]}</span>}
+                      {p.found ? (
+                        <>
+                          <strong>{p.found.label}</strong> <strong>${p.found.amount.toLocaleString()}</strong>
+                        </>
+                      ) : (
+                        <span>학비표에 없는 조합 — 개별 확인이 필요합니다.</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                {tuition.parts.length > 1 && tuition.total != null && (
+                  <p className="resp-tuition-total">
+                    합계 <strong>${tuition.total.toLocaleString()}</strong>
+                    <span className="admin-cell-sub"> (토요일 표 + 일요 성인반 표를 각각 계산한 단순 합)</span>
+                  </p>
+                )}
                 <span className="admin-cell-sub">
                   신청하신 분께는 보이지 않습니다. 최종 금액은 확인 후 개별 안내합니다.
                 </span>
-              </p>
+              </div>
             ) : (
               selections.length > 0 && (
                 <p className="resp-tuition resp-tuition-none">
-                  학비표에 없는 조합입니다 — 개별 확인이 필요합니다.
+                  등록 기간을 알 수 없어 학비표를 찾지 못했습니다 — 개별 확인이 필요합니다.
                 </p>
               )
             )}

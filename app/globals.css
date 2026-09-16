@@ -24060,3 +24060,26 @@ html[data-admin-theme='light'] .admin-schedule-preview {
   line-height: 1.7;
   color: var(--text-color);
 }
+
+/* 학비표 참고 — 토요일 표 + 일요 성인 표를 줄로 나눠 보여 주는 자리 */
+.resp-tuition-parts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.resp-tuition-parts li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+.resp-tuition-table {
+  min-width: 5.5em;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.resp-tuition-total {
+  margin: 2px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+}

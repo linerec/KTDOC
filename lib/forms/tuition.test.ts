@@ -7,7 +7,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lookupTuition, periodOf, tuitionForResponse } from './tuition.ts';
+import { describeQuote, lookupTuition, periodOf, tuitionForResponse } from './tuition.ts';
 import { seasonPreset2026 } from './presets.ts';
 import { allQuestions } from './schema.ts';
 import type { FormQuestion } from '../../types/forms.ts';
@@ -94,8 +94,10 @@ test('행 이름을 함께 돌려준다 — 운영자가 표 어디를 본 것�
 
 test('고른 과목과 기간에서 표의 행을 찾는다', () => {
   const t = tuitionForResponse(questions(), { q6_period: 'm3' }, ['kids_dance', 'nanta_1drum']);
-  assert.equal(t?.amount, 650);
-  assert.equal(t?.label, '1 Dance + Kids Drum 1');
+  assert.equal(t?.total, 650);
+  assert.equal(t?.parts.length, 1);
+  assert.equal(t?.parts[0].found?.label, '1 Dance + Kids Drum 1');
+  assert.equal(describeQuote(t!), '1 Dance + Kids Drum 1 $650');
 });
 
 test('기간을 아직 모르면 조회하지 않는다', () => {
@@ -112,12 +114,57 @@ test('고른 과목이 없으면 null', () => {
   assert.equal(tuitionForResponse(questions(), { q6_period: 'm3' }, []), null);
 });
 
-test('학비표에 자리가 없는 과목이 섞이면 null — 목록에서도 틀린 금액을 띄우지 않는다', () => {
-  assert.equal(tuitionForResponse(questions(), { q6_period: 'm3' }, ['kids_dance', 'sun_dance']), null);
+test('학비표에 자리가 없는 과목이 섞이면 합계가 없다 — 목록에서도 틀린 금액을 띄우지 않는다', () => {
+  const t = tuitionForResponse(questions(), { q6_period: 'm3' }, ['kids_dance', 'sun_dance']);
+  assert.equal(t?.total, null);
+  assert.equal(t?.parts[0].found, null);
 });
 
 test('지금 문안에 없는 옛 선택지는 모르는 과목으로 친다 — 옛 응답이 엉뚱한 금액을 갖지 않는다', () => {
-  assert.equal(tuitionForResponse(questions(), { q6_period: 'm3' }, ['retired_class']), null);
+  const t = tuitionForResponse(questions(), { q6_period: 'm3' }, ['retired_class']);
+  assert.equal(t?.total, null);
+});
+
+// ── 토요일 표 + 일요 성인 표는 따로 — 학원 답(2026-09-16) ─────────────────
+
+function questionsWithAdult(): FormQuestion[] {
+  return questions().map((q) =>
+    q.key === 'q7_classes'
+      ? {
+          ...q,
+          options: [
+            ...(q.options ?? []),
+            { key: 'sun_advanced_dance', label: { ko: '성인 고급반', en: 'Adult Adv' }, courseCode: 'adult_dance_adv' },
+            { key: 'sun_adult_nanta', label: { ko: '성인 북', en: 'Adult Drum' }, courseCode: 'adult_drum' },
+          ],
+        }
+      : q
+  );
+}
+
+test('토요일 과목과 일요 성인 과목이 섞이면 표를 나눠 두 줄로, 합계는 단순 합', () => {
+  const t = tuitionForResponse(questionsWithAdult(), { q6_period: 'm3' }, ['kids_dance', 'sun_advanced_dance']);
+  assert.equal(t?.parts.length, 2);
+  assert.equal(t?.parts[0].table, 'sat');
+  assert.equal(t?.parts[0].found?.amount, 400);
+  assert.equal(t?.parts[1].table, 'sun');
+  assert.equal(t?.parts[1].found?.amount, 220);
+  assert.equal(t?.total, 620);
+  assert.equal(describeQuote(t!), '토요일 1 Dance Course $400 + 일요 성인반 성인 고급반(진도북) $220');
+});
+
+test('한쪽 표에 없는 조합이면 그 줄만 개별 확인이고 합계는 없다', () => {
+  const t = tuitionForResponse(questionsWithAdult(), { q6_period: 'm3' }, ['kids_dance', 'sun_advanced_dance', 'sun_adult_nanta']);
+  assert.equal(t?.parts[0].found?.amount, 400);
+  assert.equal(t?.parts[1].found, null);
+  assert.equal(t?.total, null);
+  assert.match(describeQuote(t!), /일요 성인반 표에 없는 조합/);
+});
+
+test('성인 과목만 있으면 한 줄이고 표 이름을 붙이지 않는다', () => {
+  const t = tuitionForResponse(questionsWithAdult(), { q6_period: 'y1' }, ['sun_adult_nanta']);
+  assert.equal(t?.parts.length, 1);
+  assert.equal(describeQuote(t!), '성인 K Drum Ensemble 북의 합주반 $1,120');
 });
 
 test('기간 값이 표에 없는 것이면 조회하지 않는다', () => {
