@@ -66,6 +66,17 @@ const ROWS: TuitionRow[] = [
   // ── TAKE 4 COURSES
   { courses: ['dance_1', 'dance_1', 'drums_3', 'mega_drum'], label: '2 Dance Courses + Mega Drum + 3 Standing Drums', m3: 1400, m6: 2520, y1: 3920 },
   { courses: ['dance_1', 'dance_1', 'drums_5', 'mega_drum'], label: '2 Dance Courses + Mega Drum + 5 Standing Drums', m3: 1500, m6: 2700, y1: 4200 },
+
+  // ── 성인반 (일요 격주) — 학원이 2026-09-16 보내온 '성인반 수업료 안내' 표 그대로.
+  //    기초무용과 고급반은 단품가가 같고(한 줄 "기초무용반 또는 고급반"), 조합은 표에 있는
+  //    다섯 줄뿐이다. 표에 없는 조합(고급반+북, 토요일 수업과의 조합)은 여기 넣지 않는다 —
+  //    없는 조합은 화면이 "학비표에 없는 조합"으로 말하고 개별 확인으로 넘긴다.
+  { courses: ['adult_dance_basic'], label: '성인 기초무용반', m3: 220, m6: 396, y1: 750 },
+  { courses: ['adult_dance_adv'], label: '성인 고급반(진도북)', m3: 220, m6: 396, y1: 750 },
+  { courses: ['adult_drum'], label: '성인 K Drum Ensemble 북의 합주반', m3: 325, m6: 585, y1: 1120 },
+  { courses: ['adult_dance_basic', 'adult_drum'], label: '성인 기초무용반 + K Drum Ensemble', m3: 420, m6: 756, y1: 1350 },
+  { courses: ['adult_dance_basic', 'adult_drum', 'adult_dance_adv'], label: '성인 기초무용반 + K Drum Ensemble + 고급반', m3: 600, m6: 1080, y1: 1920 },
+  { courses: ['adult_dance_basic', 'adult_dance_adv'], label: '성인 기초무용반 + 고급반', m3: 400, m6: 720, y1: 1280 },
 ];
 
 const BY_KEY = new Map(ROWS.map((r) => [key(r.courses), r]));

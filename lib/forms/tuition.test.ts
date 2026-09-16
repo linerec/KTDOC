@@ -8,6 +8,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lookupTuition, periodOf, tuitionForResponse } from './tuition.ts';
+import { seasonPreset2026 } from './presets.ts';
+import { allQuestions } from './schema.ts';
 import type { FormQuestion } from '../../types/forms.ts';
 
 /** 시험용 최소 문항 — 기간 하나와 과목 하나(선택지 셋). */
@@ -126,4 +128,37 @@ test('기간은 따로도 읽는다 — 금액을 못 찾는 응답에도 기간
   assert.equal(periodOf(questions(), { q6_period: 'y1' }), 'y1');
   assert.equal(periodOf(questions(), { q6_period: 'm9' }), null);
   assert.equal(periodOf([], { q6_period: 'y1' }), null);
+});
+
+// ── 성인반 — 2026-09-16 학원 '성인반 수업료 안내' 표 ────────────────────
+
+test('성인 기초무용과 고급반은 단품가가 같다 — 3개월 $220', () => {
+  assert.equal(lookupTuition(['adult_dance_basic'], 'm3')?.amount, 220);
+  assert.equal(lookupTuition(['adult_dance_adv'], 'm3')?.amount, 220);
+  assert.equal(lookupTuition(['adult_dance_basic'], 'y1')?.amount, 750);
+});
+
+test('성인 북의 합주는 무용보다 비싸다 — $325 / $585 / $1,120', () => {
+  const r = lookupTuition(['adult_drum'], 'm6');
+  assert.equal(r?.amount, 585);
+  assert.equal(lookupTuition(['adult_drum'], 'y1')?.amount, 1120);
+});
+
+test('성인 조합도 룩업이다 — 기초+북 $420, 기초+북+고급 $600, 기초+고급 $400', () => {
+  assert.equal(lookupTuition(['adult_drum', 'adult_dance_basic'], 'm3')?.amount, 420);
+  assert.equal(lookupTuition(['adult_dance_adv', 'adult_drum', 'adult_dance_basic'], 'm3')?.amount, 600);
+  assert.equal(lookupTuition(['adult_dance_adv', 'adult_dance_basic'], 'y1')?.amount, 1280);
+});
+
+test('표에 없는 성인 조합(고급+북, 토·일 조합)은 null — 개별 확인으로 넘긴다', () => {
+  assert.equal(lookupTuition(['adult_dance_adv', 'adult_drum'], 'm3'), null);
+  assert.equal(lookupTuition(['dance_1', 'adult_dance_adv'], 'm3'), null);
+});
+
+test('프리셋의 성인 선택지 3개는 성인 학비 코드를 가리킨다', () => {
+  const q = allQuestions(seasonPreset2026()).find((x) => x.key === 'q7_classes')!;
+  const code = (k: string) => q.options?.find((o) => o.key === k)?.courseCode;
+  assert.equal(code('sun_beginner_dance'), 'adult_dance_basic');
+  assert.equal(code('sun_adult_nanta'), 'adult_drum');
+  assert.equal(code('sun_advanced_dance'), 'adult_dance_adv');
 });

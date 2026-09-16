@@ -33,6 +33,10 @@ export const COURSE = {
   DRUMS_3: 'drums_3', // 3 Standing Drums (Samgomu/Dong go) 삼고무/동고
   DRUMS_5: 'drums_5', // 5 Standing Drums (Ogomu) 오고무
   MEGA_DRUM: 'mega_drum', // Mega Drum 모듬북
+  // 성인반(일요 격주) — 2026-09-16 학원 '성인반 수업료 안내' 표. 어린이 표와 별도 체계다.
+  ADULT_DANCE_BASIC: 'adult_dance_basic', // 성인 기초무용반
+  ADULT_DANCE_ADV: 'adult_dance_adv', // 성인 고급반(진도북)
+  ADULT_DRUM: 'adult_drum', // 성인 K Drum Ensemble 북의 합주반
 } as const;
 
 export function seasonPreset2026(): FormSchema {
@@ -255,10 +259,8 @@ export function seasonPreset2026(): FormSchema {
                 programId: 17,
                 courseCode: COURSE.DANCE_1,
               },
-              // 일요 성인반 3종 — 학비표에 성인반 전용 행이 없어 단품 행에 이어 둔다(무용은
-              // 1 Dance Course, 북은 Kids Drum 1. 셋 다 3개월 $400이라 실무상 차이가 없다).
-              // ⚠️ 성인반 전용가가 따로 있는지는 미확인 —
-              // docs/operations/registration-form-open-questions.md 질문 2.
+              // 일요 성인반 3종 — 성인 전용 학비표(2026-09-16 학원 안내)에 연결한다.
+              // 그 전까지는 어린이 단품 행에 임시로 붙어 있어 운영 화면이 어린이 가격을 보여 줬다.
               {
                 key: 'sun_beginner_dance',
                 label: {
@@ -266,7 +268,7 @@ export function seasonPreset2026(): FormSchema {
                   en: 'Sunday Adult Beginner Korean Dance (2nd & 4th Sunday, 3:45–4:30 P.M.)',
                 },
                 programId: 19,
-                courseCode: COURSE.DANCE_1,
+                courseCode: COURSE.ADULT_DANCE_BASIC,
               },
               {
                 key: 'sun_adult_nanta',
@@ -275,7 +277,7 @@ export function seasonPreset2026(): FormSchema {
                   en: 'Sunday Adult Nanta Class (2nd & 4th Sunday, 4:45–5:30 P.M.)',
                 },
                 programId: 20,
-                courseCode: COURSE.KIDS_DRUM_1,
+                courseCode: COURSE.ADULT_DRUM,
               },
               {
                 key: 'sun_advanced_dance',
@@ -284,7 +286,7 @@ export function seasonPreset2026(): FormSchema {
                   en: 'Sunday Adult Advanced Korean Dance (2nd & 4th Sunday, 5:45–6:30 P.M.)',
                 },
                 programId: 21,
-                courseCode: COURSE.DANCE_1,
+                courseCode: COURSE.ADULT_DANCE_ADV,
               },
             ],
           },

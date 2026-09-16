@@ -92,6 +92,8 @@ export default async function AdminFormResponseDetailPage({ params, searchParams
   ]);
 
   const schema = snapshot ?? (JSON.parse(form.schema_json) as FormSchema);
+  /** 현재 문안 — 학비 코드와 정정 선택지는 여기서 읽는다. */
+  const currentSchema = JSON.parse(form.schema_json) as FormSchema;
   const answers = JSON.parse(response.answers_json) as Answers;
   const questions = allQuestions(schema);
 
@@ -105,7 +107,6 @@ export default async function AdminFormResponseDetailPage({ params, searchParams
     : null;
 
   // ── 정정 재료: 현재 문안의 과목 문항(정정은 현재 선택지로 고른다)
-  const currentSchema = JSON.parse(form.schema_json) as FormSchema;
   const subjectQ = findSubjectQuestion(currentSchema);
   const currentKeys = subjectQ ? pickedKeys(subjectQ, answers) : [];
   const correction = subjectQ
@@ -153,9 +154,11 @@ export default async function AdminFormResponseDetailPage({ params, searchParams
 
   // 학비표 조회 보조 — 운영자 화면 전용. 신청자에게는 절대 보이지 않는다.
   // 조립은 lib/forms/tuition.ts 한 곳에서만 한다(목록과 같은 답을 내야 한다).
-  // 기간은 아래 '답변' 섹션이 그대로 보여 주므로 여기서 따로 읽지 않는다.
+  // **학비 코드는 현재 문안에서 읽는다** — 답변·동의는 그 응답이 본 옛 문안으로 재현하지만,
+  // 학비 연결은 "지금 학원이 받는 값"이라 옛 스냅샷을 쓰면 안 된다. 실제로 성인반 학비표가
+  // 뒤늦게 연결됐을 때 스냅샷을 읽던 이 줄만 계속 어린이 가격을 보여 줬다.
   const tuition = tuitionForResponse(
-    questions,
+    allQuestions(currentSchema),
     answers,
     selections.map((s) => s.option_key)
   );
