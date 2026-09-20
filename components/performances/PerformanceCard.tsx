@@ -9,6 +9,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { EventWithCategory } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
+import VideoBadge from '@/components/common/VideoBadge';
 
 interface PerformanceCardProps {
   event: EventWithCategory;
@@ -40,6 +41,7 @@ export default function PerformanceCard({ event }: PerformanceCardProps) {
           </div>
         )}
         <div className="performance-card-scrim" aria-hidden="true" />
+        <VideoBadge count={event.video_count} />
         <div className="performance-card-caption">
           <span className="performance-card-meta">
             {event.year}

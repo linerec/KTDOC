@@ -194,7 +194,8 @@ export async function getEvents(filters: EventFilters = {}): Promise<{
             c.name_ko as category_name_ko,
             c.name_en as category_name_en,
             c.slug as category_slug,
-            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) as first_image_url
+            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) as first_image_url,
+            (SELECT COUNT(*) FROM event_videos WHERE event_id = e.id) as video_count
      FROM events e
      LEFT JOIN event_categories c ON e.category_id = c.id
      ${whereClause}
@@ -232,7 +233,8 @@ export async function getRecentPastEvents(
             c.name_ko AS category_name_ko,
             c.name_en AS category_name_en,
             c.slug AS category_slug,
-            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS first_image_url
+            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS first_image_url,
+            (SELECT COUNT(*) FROM event_videos WHERE event_id = e.id) AS video_count
      FROM events e
      LEFT JOIN event_categories c ON e.category_id = c.id
      WHERE e.is_published = 1 AND e.event_date < ?
@@ -254,7 +256,8 @@ export async function getPublishedEventsOnDay(day: string): Promise<EventWithCat
             c.name_ko AS category_name_ko,
             c.name_en AS category_name_en,
             c.slug AS category_slug,
-            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS first_image_url
+            (SELECT image_url FROM event_images WHERE event_id = e.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS first_image_url,
+            (SELECT COUNT(*) FROM event_videos WHERE event_id = e.id) AS video_count
      FROM events e
      LEFT JOIN event_categories c ON e.category_id = c.id
      WHERE e.is_published = 1 AND e.event_date = ?

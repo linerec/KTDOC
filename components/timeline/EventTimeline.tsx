@@ -18,6 +18,7 @@ import type { EventWithCategory, EventKind } from '@/types/gallery';
 import { formatEventDateIntl, formatEventDateMonthDay } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
+import VideoBadge from '@/components/common/VideoBadge';
 
 interface EventTimelineProps {
   events: EventWithCategory[];
@@ -69,6 +70,7 @@ function TimelineEventCard({ event, index }: { event: EventWithCategory; index: 
             <span>춤누리</span>
           </div>
         )}
+        <VideoBadge count={event.video_count} compact />
       </div>
       <div className="timeline-event-card-body">
         <div className="timeline-event-card-meta">

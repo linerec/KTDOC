@@ -24708,3 +24708,46 @@ html[data-admin-theme='light'] .va-fix {
     width: 100%;
   }
 }
+
+/* ============================================================
+   영상 있음 배지 — 목록 카드에서 "아, 이건 영상이 있구나"
+   (components/common/VideoBadge.tsx)
+============================================================ */
+.video-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px 4px 7px;
+  border-radius: 999px;
+  /* 사진 위에 얹히므로 테마를 따르지 않는다 — 공개 테마 규칙 2(var(--on-media)).
+     스크림은 어떤 사진 위에서도 글자가 읽히게 하는 최소한이다. */
+  color: var(--on-media);
+  /* 0.65 — 순백 사진 위에서도 아이보리 글자가 6.1:1을 유지하는 하한.
+     0.58이면 4.66까지 떨어진다(lib/contrast.test.ts가 잠근다). */
+  background: rgba(0, 0, 0, 0.65); /* theme-exempt: 사진 위 스크림 */
+  backdrop-filter: blur(3px);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  pointer-events: none;
+}
+.video-badge svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  flex: 0 0 auto;
+}
+.video-badge.is-compact {
+  padding: 5px;
+  gap: 0;
+}
+.video-badge-text {
+  white-space: nowrap;
+}
+
+/* 'Featured' 배지는 우상단이라 자리가 겹치지 않는다(gallery-event-card-featured). */

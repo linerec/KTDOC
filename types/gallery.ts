@@ -69,6 +69,11 @@ export interface EventWithCategory extends Event {
   category_name_en: string | null;
   category_slug: string | null;
   first_image_url?: string | null;
+  /**
+   * 이 공연에 붙은 유튜브 영상 수 — 목록 카드의 '영상 있음' 표시용.
+   * 목록 쿼리가 함께 세어 온다(카드마다 따로 묻지 않는다).
+   */
+  video_count?: number;
 }
 
 export interface EventImage {

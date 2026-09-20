@@ -13,6 +13,7 @@ import Image from 'next/image';
 import type { EventWithCategory } from '@/types/gallery';
 import { formatEventDateIntl } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
+import VideoBadge from '@/components/common/VideoBadge';
 
 export default function RecentJourneyCard({
   event,
@@ -49,6 +50,7 @@ export default function RecentJourneyCard({
             <span>춤누리</span>
           </div>
         )}
+        <VideoBadge count={event.video_count} />
       </div>
       <div className="journey-card-body">
         <div className="journey-card-meta">

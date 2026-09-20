@@ -11,6 +11,7 @@ import Image from 'next/image';
 import type { EventWithCategory } from '@/types/gallery';
 import { formatEventDateIntl, formatEventTimeRange } from '@/types/gallery';
 import { useLanguage } from '@/contexts/LanguageContext';
+import VideoBadge from '@/components/common/VideoBadge';
 
 interface EventCardProps {
   event: EventWithCategory;
@@ -65,6 +66,7 @@ export default function EventCard({
             {messages['common.featured'] || 'Featured'}
           </span>
         )}
+        <VideoBadge count={event.video_count} />
       </div>
       <div className="gallery-event-card-content">
         <span className="gallery-event-card-date">

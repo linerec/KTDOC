@@ -174,3 +174,18 @@ test('--danger-text는 두 테마의 카드 표면 위에서 4.5:1을 넘는다'
     '라이트 지면(#f6f1e6) 위'
   );
 });
+
+/**
+ * 목록 카드의 '영상 있음' 배지 — 아이보리 글자 + 검정 스크림.
+ *
+ * 사진 위에 얹히므로 배경을 고를 수 없다. **순백 사진이 최악**이고, 그때도 읽혀야 한다.
+ * 스크림 불투명도를 낮추면 여기서 먼저 깨진다(globals.css .video-badge와 짝).
+ */
+test('영상 배지는 순백 사진 위에서도 4.5:1을 넘는다', () => {
+  const SCRIM = 0.65; // globals.css .video-badge background
+  const onWhite = composite('#000000', SCRIM, '#ffffff');
+  assert.ok(
+    contrastRatio(DARK.ivory, onWhite) >= AA_TEXT,
+    `순백 사진 위 대비 ${contrastRatio(DARK.ivory, onWhite).toFixed(2)}`
+  );
+});
