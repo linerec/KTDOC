@@ -130,6 +130,7 @@ export default function VideoManager({ eventId, videos, onAdd, onDelete }: Video
       <div className="admin-video-form">
         <YouTubeInput
           id="event-video-url"
+          guideDefaultOpen={videos.length === 0}
           onResolved={(v) => {
             setFound(v);
             setCustomTitle('');

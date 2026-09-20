@@ -43,6 +43,8 @@ interface YouTubeInputProps {
   disabled?: boolean;
   /** 확인 후 비우기 — 여러 건을 연달아 넣는 화면(공연 영상)에서 쓴다 */
   clearOnResolve?: boolean;
+  /** 처음 쓰는 자리면 안내를 펼쳐 둔다 — 접혀 있으면 있는 줄도 모른다 */
+  guideDefaultOpen?: boolean;
   id?: string;
 }
 
@@ -54,6 +56,7 @@ export default function YouTubeInput({
   help,
   disabled = false,
   clearOnResolve = false,
+  guideDefaultOpen = false,
   id = 'youtube-input',
 }: YouTubeInputProps) {
   const t = useT();
@@ -61,7 +64,7 @@ export default function YouTubeInput({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [video, setVideo] = useState<ResolvedYouTubeVideo | null>(null);
-  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(guideDefaultOpen);
   const inputRef = useRef<HTMLInputElement>(null);
   // 같은 입력을 두 번 조회하지 않는다(붙여넣기 + change 가 겹친다)
   const lastQueried = useRef<string | null>(null);
