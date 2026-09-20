@@ -24,6 +24,7 @@ import {
   copyQrImage,
   qrDownloadFileName,
   shareLink,
+  toDisplayUrl,
   toShareUrl,
   type ShareOutcome,
 } from '@/lib/share/qrShare';
@@ -37,6 +38,11 @@ interface ShareQrCardProps {
   hint?: string;
   /** QR 한 변(css px). 사이드바 기본은 190. */
   size?: number;
+  /**
+   * 주소를 글자로도 보여줄지. 기본은 **path를 준 경우에만**(=QR이 지금 페이지가 아닌
+   * 다른 곳을 가리킬 때). 지금 페이지라면 주소창이 이미 같은 것을 보여 준다.
+   */
+  showUrl?: boolean;
   className?: string;
 }
 
@@ -55,6 +61,7 @@ export default function ShareQrCard({
   path,
   hint,
   size = 190,
+  showUrl = path != null,
   className,
 }: ShareQrCardProps) {
   const t = useT();
@@ -171,12 +178,14 @@ export default function ShareQrCard({
         {status || scanHint}
       </p>
 
-      {/* 주소를 글자로도 보여준다. 안내는 "주소를 복사해 카톡으로 보내세요"라고
-          하는데 정작 주소가 화면에 없었다 — 그리고 QR이 어디로 가는지 눈으로
-          확인할 방법도 이것뿐이다(스캔하기 전에는 알 수 없다). */}
-      {url && (
+      {/* 주소를 글자로 보여 주는 것은 **다른 곳을 가리키는 QR일 때만**이다.
+          지금 보고 있는 페이지의 QR이라면 주소창이 이미 같은 것을 보여 주고 있어
+          한 줄을 더 쓸 이유가 없다(한글 slug는 특히 길다). 반대로 신청서 편집이나
+          자료함처럼 **QR이 다른 데를 가리키면** 스캔하기 전에는 확인할 길이 없고,
+          "주소를 복사해 카톡으로 보내세요"라는 안내도 주소가 보여야 성립한다. */}
+      {showUrl && url && (
         <p className="share-qr-url" title={url}>
-          {url.replace(/^https?:\/\//, '')}
+          {toDisplayUrl(url)}
         </p>
       )}
 

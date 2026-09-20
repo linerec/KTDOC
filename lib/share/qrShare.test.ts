@@ -13,6 +13,7 @@ import assert from 'node:assert/strict';
 
 import {
   toShareUrl,
+  toDisplayUrl,
   qrDownloadFileName,
   shareLink,
   copyQrImage,
@@ -60,6 +61,37 @@ test('경로를 안 주면 사이트 첫 화면', () => {
 
 test('망가진 주소는 예외 대신 사이트 첫 화면으로 — QR 자리가 비지 않게', () => {
   assert.equal(toShareUrl('http://[::bad', 'https://ktdoc.org'), 'https://ktdoc.org/');
+});
+
+/* ── 화면에 보여 줄 주소 ──────────────────────────────────────────────── */
+
+/**
+ * QR에 담는 주소와 사람에게 보여 주는 주소는 다르다. 실제로 공연 상세의 QR 카드
+ * 아래에 퍼센트 인코딩된 주소가 그대로 찍혀, 무엇을 공유하는지 알아볼 수 없었다
+ * (2026-09-20). 그 자리는 카톡으로 옮기기 전에 눈으로 확인하는 자리다.
+ */
+test('보여 줄 때는 한글을 되돌린다 — QR에 담는 주소는 그대로 둔 채', () => {
+  const url = toShareUrl('/gallery/2024/2024-뉴저지-추석대잔치', 'https://ktdoc.org');
+  assert.ok(url.includes('%EB%89%B4'), 'QR용 주소는 인코딩된 채여야 한다');
+  assert.equal(toDisplayUrl(url), 'ktdoc.org/gallery/2024/2024-뉴저지-추석대잔치');
+});
+
+test('보여 줄 주소에서는 https:// 를 뗀다 — 공유 주소는 늘 https다', () => {
+  assert.equal(toDisplayUrl('https://ktdoc.org/classes'), 'ktdoc.org/classes');
+  assert.equal(toDisplayUrl('http://ktdoc.org/classes'), 'ktdoc.org/classes');
+});
+
+test('주소 구조를 이루는 글자는 되돌리지 않는다 — 경로가 갈라지면 안 된다', () => {
+  // %2F(/)·%3F(?)·%23(#)까지 풀면 "한 조각이던 것"이 경로·쿼리로 갈라져 보인다.
+  const url = 'https://ktdoc.org/a%2Fb?q=%3F#%23';
+  const shown = toDisplayUrl(url);
+  assert.ok(shown.includes('%2F'), shown);
+  assert.ok(shown.includes('%3F'), shown);
+  assert.ok(shown.includes('%23'), shown);
+});
+
+test('망가진 인코딩이면 원문을 그대로 보여 준다 — 틀린 주소를 보여 주지 않는다', () => {
+  assert.equal(toDisplayUrl('https://ktdoc.org/%E0%A4%A'), 'ktdoc.org/%E0%A4%A');
 });
 
 /* ── 내려받을 파일 이름 ────────────────────────────────────────────────── */
