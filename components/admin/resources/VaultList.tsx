@@ -120,16 +120,13 @@ export default function VaultList({ initialVaults }: { initialVaults: ResourceVa
       </div>
 
       {initialVaults.length === 0 ? (
-        /* 자료함이 하나도 없다 = 이 기능을 처음 보는 사람이다. 사용법을 여기서
-           한 번 더 내민다 — 머리의 버튼 하나로는 무엇을 하는 자리인지 모른다. */
+        /* 사용법 링크를 여기 또 두지 않는다 — 바로 위 소개 띠(VaultIntro)가
+           같은 링크를 들고 있어, 손가락 하나 거리에 같은 말이 두 번 놓인다. */
         <p className="rva__empty">
           {t(
             'admin.resources.empty',
             '아직 자료함이 없습니다. 공연에 쓸 음원을 담을 자료함을 하나 만들어 보세요.'
-          )}{' '}
-          <Link href="/admin/resources/guide">
-            {t('admin.resources.emptyGuide', '사용법 보기')}
-          </Link>
+          )}
         </p>
       ) : (
         <ul className="rva__list">

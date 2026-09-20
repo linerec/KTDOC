@@ -7,6 +7,7 @@
 
 import Link from 'next/link';
 import T from '@/components/common/T';
+import VaultIntro from '@/components/admin/resources/VaultIntro';
 import VaultList from '@/components/admin/resources/VaultList';
 import { auth } from '@/auth';
 import { requireMenuAccess } from '@/lib/admin/permissions';
@@ -40,8 +41,7 @@ export default async function AdminResourcesPage() {
           </h1>
           <p className="admin-subtitle">
             <T k="admin.resources.subtitle">
-              공연에서 쓸 음원과 자료를 미리 올려 둡니다. 현장에서는 번호 하나와 비밀번호로 열어
-              바로 재생하거나 내려받을 수 있습니다.
+              공연장에 USB를 들고 가는 대신, 번호 하나로 엽니다.
             </T>
           </p>
         </div>
@@ -52,6 +52,8 @@ export default async function AdminResourcesPage() {
           </Link>
         </div>
       </div>
+
+      <VaultIntro />
 
       <VaultList initialVaults={vaults} />
     </div>
