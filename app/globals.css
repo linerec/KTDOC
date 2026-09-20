@@ -5154,6 +5154,19 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
 }
 
 
+/* 대표 영상 — 사진 앞에 서는 자리라 넓게 둔다. 나머지는 아래 격자로. */
+.gallery-video-lead {
+  margin-bottom: 22px;
+}
+.gallery-video-lead .gallery-video-item {
+  max-width: 100%;
+}
+.gallery-video-lead .gallery-video-title {
+  font-size: 1rem;
+  color: var(--text-color);
+  text-align: left;
+}
+
 .gallery-videos-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr));

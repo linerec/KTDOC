@@ -137,10 +137,20 @@ test('extractYouTubeId는 예전과 같은 계약이다', () => {
   assert.equal(extractYouTubeId(''), null);
 });
 
-test('퍼가기 주소는 추적 쿠키 없는 도메인을 쓴다', () => {
+/**
+ * youtube-nocookie.com은 **재생을 누르는 순간** "로그인하여 봇이 아님을 확인하세요"로
+ * 막힌다(2026-09-20 실측, 자동재생 여부 무관). 썸네일까지는 멀쩡해서 올린 사람 눈에는
+ * 아무 문제가 없어 보이고 방문자만 막힌다 — 그래서 도메인을 시험으로 잠근다.
+ * 프라이버시는 facade가 지킨다: 누르기 전에는 유튜브를 전혀 부르지 않는다.
+ */
+test('퍼가기는 youtube.com을 쓴다 — nocookie는 재생이 막힌다', () => {
   const url = youtubeEmbedUrl(ID);
-  assert.ok(url.startsWith('https://www.youtube-nocookie.com/embed/' + ID));
+  assert.ok(url.startsWith('https://www.youtube.com/embed/' + ID), url);
+  assert.ok(!url.includes('nocookie'), 'nocookie 도메인을 쓰면 안 된다');
   assert.ok(url.includes('rel=0'));
-  assert.ok(youtubeEmbedUrl(ID, { autoplay: true }).includes('autoplay=1'));
+
+  const auto = youtubeEmbedUrl(ID, { autoplay: true });
+  assert.ok(!auto.includes('nocookie'));
+  assert.ok(auto.includes('autoplay=1'));
   assert.ok(youtubeEmbedUrl(ID, { start: 30 }).includes('start=30'));
 });

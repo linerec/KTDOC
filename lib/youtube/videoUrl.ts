@@ -193,8 +193,20 @@ export function canonicalYouTubeUrl(videoId: string, isShort = false): string {
 }
 
 /**
- * 퍼가기 주소. **youtube-nocookie.com**을 쓴다 — 방문자가 재생을 누르기 전에는
- * 추적 쿠키를 심지 않는다(기능은 같다).
+ * 퍼가기 주소.
+ *
+ * **youtube.com을 쓴다. youtube-nocookie.com은 쓰지 않는다.**
+ *
+ * nocookie는 추적 쿠키를 심지 않아 먼저 골랐던 도메인인데, **재생을 누르는 순간**
+ * 유튜브가 "로그인하여 봇이 아님을 확인하세요"로 막는다. 쿠키가 없어 세션을 알 수
+ * 없으니 기계로 보는 것이다. 썸네일까지는 멀쩡히 나오기 때문에 **관리자 눈에는
+ * 아무 문제가 없어 보인다** — 방문자만 막힌 화면을 본다(2026-09-20 실측:
+ * 같은 페이지·같은 영상·같은 브라우저·같은 순간에 도메인만 바꿔 재현. 자동재생
+ * 여부와 무관했다).
+ *
+ * 프라이버시의 실익은 이미 다른 데서 얻는다: 재생기는 **썸네일을 눌러야** 끼워지므로
+ * (VideoEmbed의 facade) 누르기 전에는 유튜브를 전혀 부르지 않는다. 쿠키가 생기는
+ * 시점은 방문자가 보겠다고 결정한 뒤다.
  */
 export function youtubeEmbedUrl(
   videoId: string,
@@ -205,7 +217,7 @@ export function youtubeEmbedUrl(
   if (opts.start) params.set('start', String(opts.start));
   // 재생이 끝난 뒤 남의 채널 영상을 들이밀지 않는다(rel=0은 '같은 채널 우선'이다).
   params.set('rel', '0');
-  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 }
 
 /** 썸네일. hqdefault는 어떤 영상에도 있다(maxres는 없는 영상이 많아 깨진 이미지가 된다). */

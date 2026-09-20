@@ -189,6 +189,17 @@ export default async function EventDetailPage({ params }: PageProps) {
               </div>
             )}
 
+            {/* 영상이 사진보다 먼저다. 사진은 서른 장이 넘는 공연이 흔해서, 영상을
+                뒤에 두면 '사진 더 보기'를 여러 번 누른 사람만 닿는 자리가 된다.
+                영상이 없으면 이 블록은 아예 나오지 않는다 — 빈 자리를 만들지 않는다. */}
+            {event.videos && event.videos.length > 0 && (
+              <div className="event-detail-section event-detail-section--video">
+                <span className="dancheong-divider" aria-hidden="true" />
+                <GallerySectionTitle keycode="gallery.detail.videos" />
+                <VideoList videos={event.videos} locale="ko" />
+              </div>
+            )}
+
             {event.images && event.images.length > 0 && (
               <div className="event-detail-section">
                 <span className="dancheong-divider" aria-hidden="true" />
@@ -200,13 +211,6 @@ export default async function EventDetailPage({ params }: PageProps) {
                   pageSize={GALLERY_IMAGE_PAGE_SIZE}
                   locale="ko"
                 />
-              </div>
-            )}
-
-            {event.videos && event.videos.length > 0 && (
-              <div className="event-detail-section">
-                <GallerySectionTitle keycode="gallery.detail.videos" />
-                <VideoList videos={event.videos} locale="ko" />
               </div>
             )}
           </div>

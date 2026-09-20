@@ -16,7 +16,9 @@
  * 끼운다. 한 페이지에 영상이 여럿인 공연 상세에서 체감이 크다.
  * (facade 패턴 — paulirish/lite-youtube-embed가 같은 방식이다)
  *
- * 재생기는 youtube-nocookie.com을 쓴다. 재생을 누르기 전에는 추적 쿠키가 없다.
+ * 누르기 전에는 유튜브를 아예 부르지 않으므로 쿠키도 없다 — 프라이버시는 이 facade가
+ * 지킨다. (재생기 도메인은 youtube.com이다. youtube-nocookie.com은 재생을 누르는
+ * 순간 "봇이 아님을 확인하세요"로 막힌다 — lib/youtube/videoUrl.ts의 youtubeEmbedUrl 주석)
  */
 
 import { useState } from 'react';
@@ -99,18 +101,33 @@ export function VideoList({ videos, locale = 'ko' }: VideoListProps) {
     );
   }
 
+  // 첫 영상은 전폭으로 세운다 — 여러 편이어도 '대표 한 편'이 먼저 눈에 들어와야 한다.
+  // (영상이 일곱 편인 공연도 있다. 전부 같은 크기로 늘어놓으면 어느 것부터 볼지 알 수 없다)
+  const [lead, ...rest] = videos;
+
   return (
-    <div className="gallery-videos-list">
-      {videos.map((video) => (
-        <div
-          key={video.id}
-          className={`gallery-video-item${isShortUrl(video.youtube_url) ? ' is-short' : ''}`}
-        >
-          <VideoEmbed video={video} />
-          {video.title && <p className="gallery-video-title">{video.title}</p>}
+    <>
+      <div className="gallery-video-lead">
+        <div className={`gallery-video-item${isShortUrl(lead.youtube_url) ? ' is-short' : ''}`}>
+          <VideoEmbed video={lead} />
+          {lead.title && <p className="gallery-video-title">{lead.title}</p>}
         </div>
-      ))}
-    </div>
+      </div>
+
+      {rest.length > 0 && (
+        <div className="gallery-videos-list">
+          {rest.map((video) => (
+            <div
+              key={video.id}
+              className={`gallery-video-item${isShortUrl(video.youtube_url) ? ' is-short' : ''}`}
+            >
+              <VideoEmbed video={video} />
+              {video.title && <p className="gallery-video-title">{video.title}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
