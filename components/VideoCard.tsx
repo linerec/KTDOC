@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { YouTubeVideo } from '@/lib/youtube';
+import { canonicalYouTubeUrl } from '@/lib/youtube/videoUrl';
 
 interface VideoCardProps {
   video: YouTubeVideo;
@@ -12,7 +13,7 @@ interface VideoCardProps {
 export default function VideoCard({ video, isMain = false, children }: VideoCardProps) {
   return (
     <Link
-      href={`https://www.youtube.com/watch?v=${video.videoId}`}
+      href={canonicalYouTubeUrl(video.videoId)}
       target="_blank"
       rel="noopener noreferrer"
       className={`video-card ${isMain ? 'video-card-main' : ''}`}

@@ -11,7 +11,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { NewsPost } from '@/types/news';
-import { extractYouTubeId, formatEventDateIntl } from '@/types/gallery';
+import { formatEventDateIntl } from '@/types/gallery';
+import { extractYouTubeId, youtubeThumbnail } from '@/lib/youtube/videoUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NewsCardProps {
@@ -35,7 +36,7 @@ export default function NewsCard({ post, revealDelay = 0, reveal = true }: NewsC
   const youtubeId = post.youtube_url ? extractYouTubeId(post.youtube_url) : null;
   const imageUrl =
     post.thumbnail_url ||
-    (youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : null);
+    (youtubeId ? youtubeThumbnail(youtubeId) : null);
 
   // 언론 보도는 원문 링크로 바로 이동, 그 외(및 원문 링크 없는 보도)는 상세 페이지
   const isExternal = post.category === 'press' && !!post.external_url;

@@ -13,7 +13,8 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n/useT';
-import { parseYouTubeInput } from '@/lib/news/quickVideo';
+import { parseYouTube, YOUTUBE_PARSE_MESSAGES } from '@/lib/youtube/videoUrl';
+import YouTubeLinkGuide from '@/components/admin/YouTubeLinkGuide';
 
 interface Result {
   id: number;
@@ -28,6 +29,7 @@ export default function QuickVideoPaste() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const submit = async (raw: string) => {
@@ -36,8 +38,12 @@ export default function QuickVideoPaste() {
     setError(null);
     setResult(null);
 
-    if (!parseYouTubeInput(text)) {
-      setError(t('admin.news.quick.notYoutube', '유튜브 링크가 아닙니다. youtube.com 또는 youtu.be 주소를 붙여넣어 주세요.'));
+    const parsed = parseYouTube(text);
+    if (!parsed.ok) {
+      // 무엇을 붙여넣었는지에 맞춰 말한다 — "유튜브 링크가 아닙니다" 한 줄로는
+      // 재생목록을 넣었는지 채널을 넣었는지 본인도 알 수 없다.
+      setError(t(`admin.youtube.parse.${parsed.reason}`, YOUTUBE_PARSE_MESSAGES[parsed.reason]));
+      setGuideOpen(true);
       return;
     }
 
@@ -79,10 +85,10 @@ export default function QuickVideoPaste() {
           <input
             ref={inputRef}
             id="quick-video-url"
-            type="url"
+            type="text"
             inputMode="url"
             className="admin-filter-input quick-video-input"
-            placeholder="https://www.youtube.com/watch?v=…"
+            placeholder="여기에 붙여넣기"
             value={value}
             disabled={busy}
             onChange={(e) => {
@@ -92,9 +98,9 @@ export default function QuickVideoPaste() {
             onPaste={(e) => {
               // 붙여넣는 순간 보낸다 — 이 칸의 존재 이유. 입력값 반영보다 먼저 오므로 클립보드에서 읽는다.
               const pasted = e.clipboardData.getData('text');
-              if (parseYouTubeInput(pasted)) {
+              if (pasted.trim()) {
                 e.preventDefault();
-                setValue(pasted);
+                setValue(pasted.trim());
                 void submit(pasted);
               }
             }}
@@ -105,6 +111,7 @@ export default function QuickVideoPaste() {
               : t('admin.news.quick.submit', '바로 게시')}
           </button>
         </div>
+        <YouTubeLinkGuide open={guideOpen} onToggle={setGuideOpen} />
         <p className="quick-video-help">
           {t(
             'admin.news.quick.help',

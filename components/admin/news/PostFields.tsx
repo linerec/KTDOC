@@ -11,6 +11,7 @@ import type { ChangeEvent } from 'react';
 import type { NewsCategory } from '@/types/news';
 import { NEWS_CATEGORIES, NEWS_CATEGORY_LABELS } from '@/types/news';
 import { useT } from '@/lib/i18n/useT';
+import YouTubeInput from '@/components/admin/YouTubeInput';
 
 export interface NewsFormData {
   category: NewsCategory;
@@ -148,24 +149,22 @@ export default function PostFields({ formData, onChange }: PostFieldsProps) {
 
       {formData.category === 'video' && (
         <div className="admin-form-group">
-          <label htmlFor="youtube_url" className="admin-form-label">
-            {t('admin.news.fieldYoutube', 'YouTube 링크')} <span className="required">*</span>
-          </label>
-          <input
-            type="url"
-            id="youtube_url"
-            name="youtube_url"
-            value={formData.youtube_url}
-            onChange={onChange}
-            placeholder="https://www.youtube.com/watch?v=..."
-            className="admin-form-input"
-          />
-          <p className="admin-form-help">
-            {t(
+          {/* 확인·안내·미리보기는 공용 칸이 맡는다(네 화면이 같은 칸을 쓴다).
+              값은 정규 주소로 넘긴다 — 쇼츠는 쇼츠 주소로 남아야 세로로 보인다. */}
+          <YouTubeInput
+            id="news-youtube-url"
+            initialUrl={formData.youtube_url || null}
+            label={`${t('admin.news.fieldYoutube', 'YouTube 링크')} *`}
+            help={t(
               'admin.news.youtubeHelp',
               '상세 화면에 영상이 임베드됩니다. 대표 이미지가 없으면 YouTube 썸네일이 사용됩니다.'
             )}
-          </p>
+            onResolved={(v) =>
+              onChange({
+                target: { name: 'youtube_url', value: v?.canonicalUrl ?? '', type: 'url' },
+              } as ChangeEvent<HTMLInputElement>)
+            }
+          />
         </div>
       )}
 

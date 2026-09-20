@@ -14,7 +14,8 @@ import { hasMenuAccess } from '@/lib/admin/permissions';
 import { createNewsPost, getNewsPostByYouTubeId } from '@/lib/d1';
 import { getCalendarConfig } from '@/lib/calendar';
 import { getVideoMeta } from '@/lib/youtube';
-import { buildQuickVideoPost, parseYouTubeInput } from '@/lib/news/quickVideo';
+import { buildQuickVideoPost } from '@/lib/news/quickVideo';
+import { parseYouTube, YOUTUBE_PARSE_MESSAGES } from '@/lib/youtube/videoUrl';
 
 export async function POST(request: Request) {
   try {
@@ -28,13 +29,14 @@ export async function POST(request: Request) {
 
     const body = await request.json().catch(() => ({}));
     const raw = typeof body?.youtube_url === 'string' ? body.youtube_url : '';
-    const videoId = parseYouTubeInput(raw);
-    if (!videoId) {
+    const parsed = parseYouTube(raw);
+    if (!parsed.ok) {
       return NextResponse.json(
-        { success: false, error: '유튜브 링크가 아닙니다. youtube.com 또는 youtu.be 주소를 붙여넣어 주세요.' },
+        { success: false, error: YOUTUBE_PARSE_MESSAGES[parsed.reason] },
         { status: 400 }
       );
     }
+    const videoId = parsed.ref.videoId;
 
     const existing = await getNewsPostByYouTubeId(videoId);
     if (existing) {
@@ -53,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     const cfg = await getCalendarConfig();
-    const input = buildQuickVideoPost(meta, {
+    const input = buildQuickVideoPost({ ...meta, isShort: parsed.ref.isShort }, {
       timeZone: cfg.timezone,
       createdBy: session?.user?.name || null,
     });

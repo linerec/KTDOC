@@ -1,14 +1,22 @@
 'use client';
 
 /**
- * VideoManager Component
- * YouTube 영상 관리
+ * VideoManager — 공연에 유튜브 영상을 붙인다
+ *
+ * 링크를 받고 확인하는 일은 전부 YouTubeInput이 한다(네 화면이 같은 칸을 쓴다).
+ * 여기가 하는 일은 확인된 영상을 이 공연에 붙이고, 붙은 것들을 보여 주는 것뿐이다.
+ *
+ * 제목 칸은 없앴다. 유튜브가 이미 붙여 둔 제목을 사람이 다시 옮겨 적을 이유가 없고,
+ * 비워 두면 ID가 그대로 노출되던 자리다. 다르게 부르고 싶을 때만 고쳐 쓰게 한다.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useT } from '@/lib/i18n/useT';
 import Image from 'next/image';
 import type { EventVideo } from '@/types/gallery';
+import type { ResolvedYouTubeVideo } from '@/lib/youtube/videoUrl';
+import { isShortUrl, youtubeThumbnail } from '@/lib/youtube/videoUrl';
+import YouTubeInput from '@/components/admin/YouTubeInput';
 
 interface VideoManagerProps {
   eventId: number;
@@ -17,62 +25,82 @@ interface VideoManagerProps {
   onDelete: (videoId: number) => void;
 }
 
-export default function VideoManager({
-  eventId,
-  videos,
-  onAdd,
-  onDelete,
-}: VideoManagerProps) {
+export default function VideoManager({ eventId, videos, onAdd, onDelete }: VideoManagerProps) {
   const t = useT();
-  const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [title, setTitle] = useState('');
+  const [found, setFound] = useState<ResolvedYouTubeVideo | null>(null);
+  const [customTitle, setCustomTitle] = useState('');
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** 이미 등록된 영상 중 유튜브에서 '퍼가기 허용'이 꺼진 것 — 방문자에게만 보이는 고장이다 */
+  const [blocked, setBlocked] = useState<Set<string>>(new Set());
 
-  const handleAdd = async () => {
-    if (!youtubeUrl.trim()) return;
-
-    setError(null);
-    setAdding(true);
-
-    try {
-      const res = await fetch(
-        `/api/admin/gallery/events/${eventId}/videos`,
-        {
+  // 목록이 바뀔 때마다 한 번 묻는다(Data API 한 번에 최대 50건).
+  const idKey = videos.map((v) => v.youtube_id).join(',');
+  useEffect(() => {
+    const ids = idKey.split(',').filter(Boolean);
+    if (ids.length === 0) {
+      setBlocked(new Set());
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/youtube/resolve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            youtube_url: youtubeUrl.trim(),
-            title: title.trim() || undefined,
-          }),
+          body: JSON.stringify({ ids }),
+        });
+        const data = await res.json();
+        if (cancelled || !data.success) return;
+        const bad = new Set<string>();
+        for (const [id, info] of Object.entries(
+          data.data as Record<string, { found: boolean; embeddable: boolean | null }>
+        )) {
+          if (info.embeddable === false || info.found === false) bad.add(id);
         }
-      );
+        setBlocked(bad);
+      } catch {
+        /* 점검은 있으면 좋은 것이다 — 실패해도 화면은 그대로 쓴다 */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [idKey]);
 
+  const alreadyAdded = found ? videos.some((v) => v.youtube_id === found.videoId) : false;
+
+  const handleAdd = async () => {
+    if (!found || alreadyAdded) return;
+    setError(null);
+    setAdding(true);
+    try {
+      const title = customTitle.trim() || found.title.trim() || null;
+      const res = await fetch(`/api/admin/gallery/events/${eventId}/videos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ youtube_url: found.canonicalUrl, title: title || undefined }),
+      });
       const data = await res.json();
-
       if (!data.success) {
         throw new Error(data.error || t('admin.videos.addFailed', '영상 추가에 실패했습니다.'));
       }
 
-      // Create video object for local state
-      const youtubeId = extractYouTubeId(youtubeUrl);
       onAdd({
         id: data.data.id,
         event_id: eventId,
-        youtube_url: youtubeUrl,
-        youtube_id: youtubeId || '',
-        title: title || null,
+        youtube_url: found.canonicalUrl,
+        youtube_id: found.videoId,
+        title,
         sort_order: videos.length,
         created_at: new Date().toISOString(),
       });
 
-      setYoutubeUrl('');
-      setTitle('');
+      setFound(null);
+      setCustomTitle('');
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t('admin.videos.addFailed', '영상 추가에 실패했습니다.')
-      );
+      setError(err instanceof Error ? err.message : t('admin.videos.addFailed', '영상 추가에 실패했습니다.'));
     } finally {
       setAdding(false);
     }
@@ -80,25 +108,18 @@ export default function VideoManager({
 
   const handleDelete = async (videoId: number) => {
     if (!confirm(t('admin.videos.deleteConfirm', '이 영상을 삭제하시겠습니까?'))) return;
-
     setDeleting(videoId);
     try {
-      const res = await fetch(
-        `/api/admin/gallery/events/${eventId}/videos?videoId=${videoId}`,
-        { method: 'DELETE' }
-      );
-
+      const res = await fetch(`/api/admin/gallery/events/${eventId}/videos?videoId=${videoId}`, {
+        method: 'DELETE',
+      });
       const data = await res.json();
-
       if (!data.success) {
         throw new Error(data.error || t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
       }
-
       onDelete(videoId);
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.')
-      );
+      alert(err instanceof Error ? err.message : t('admin.common.deleteFailed', '삭제에 실패했습니다.'));
     } finally {
       setDeleting(null);
     }
@@ -106,98 +127,114 @@ export default function VideoManager({
 
   return (
     <div className="admin-video-manager">
-      {/* Add Video */}
       <div className="admin-video-form">
-        <div className="admin-form-group">
-          <label htmlFor="youtube_url" className="admin-form-label">
-            YouTube URL
-          </label>
-          <input
-            type="text"
-            id="youtube_url"
-            value={youtubeUrl}
-            onChange={(e) => setYoutubeUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
-            className="admin-form-input"
-          />
-        </div>
+        <YouTubeInput
+          id="event-video-url"
+          onResolved={(v) => {
+            setFound(v);
+            setCustomTitle('');
+            setError(null);
+          }}
+        />
 
-        <div className="admin-form-group">
-          <label htmlFor="video_title" className="admin-form-label">
-            {t('admin.videos.titleOptional', '제목 (선택)')}
-          </label>
-          <input
-            type="text"
-            id="video_title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={t('admin.videos.titlePlaceholder', '영상 제목')}
-            className="admin-form-input"
-          />
-        </div>
+        {found && (
+          <>
+            <div className="admin-form-group">
+              <label htmlFor="video_title" className="admin-form-label">
+                {t('admin.videos.titleOptional', '제목 (비워 두면 유튜브 제목을 씁니다)')}
+              </label>
+              <input
+                type="text"
+                id="video_title"
+                value={customTitle}
+                onChange={(e) => setCustomTitle(e.target.value)}
+                placeholder={found.title}
+                className="admin-form-input"
+              />
+            </div>
 
-        <button
-          type="button"
-          className="admin-btn admin-btn-primary"
-          disabled={adding || !youtubeUrl.trim()}
-          onClick={handleAdd}
-        >
-          {adding ? t('admin.videos.adding', '추가 중...') : t('admin.videos.add', '영상 추가')}
-        </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn-primary"
+              disabled={adding || alreadyAdded}
+              onClick={handleAdd}
+            >
+              {alreadyAdded
+                ? t('admin.videos.already', '이미 추가된 영상입니다')
+                : adding
+                  ? t('admin.videos.adding', '추가 중...')
+                  : t('admin.videos.add', '이 영상 추가')}
+            </button>
+          </>
+        )}
       </div>
 
-      {error && (
-        <div className="admin-alert admin-alert-error admin-alert-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="admin-alert admin-alert-error admin-alert-sm">{error}</div>}
 
-      {/* Video List */}
       {videos.length > 0 && (
         <div className="admin-video-list">
-          {videos.map((video) => (
-            <div key={video.id} className="admin-video-item">
-              <div className="admin-video-thumb">
-                <Image
-                  src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
-                  alt={video.title || 'YouTube Video'}
-                  width={160}
-                  height={90}
-                />
-                <a
-                  href={video.youtube_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="admin-video-play"
+          {videos.map((video) => {
+            const vertical = isShortUrl(video.youtube_url);
+            const isBlocked = blocked.has(video.youtube_id);
+            return (
+              <div key={video.id} className={`admin-video-item${isBlocked ? ' is-blocked' : ''}`}>
+                <div className={`admin-video-thumb${vertical ? ' is-short' : ''}`}>
+                  <Image
+                    src={youtubeThumbnail(video.youtube_id, 'mq')}
+                    alt={video.title || 'YouTube'}
+                    width={160}
+                    height={90}
+                    unoptimized
+                  />
+                  <a
+                    href={video.youtube_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="admin-video-play"
+                    aria-label={t('admin.videos.openOnYoutube', '유튜브에서 열기')}
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </a>
+                </div>
+                <div className="admin-video-info">
+                  <p className="admin-video-title">{video.title || video.youtube_id}</p>
+                  <p className="admin-video-meta">
+                    <span className={`yt-badge${vertical ? ' is-short' : ''}`}>
+                      {vertical
+                        ? t('admin.youtube.vertical', '세로 영상')
+                        : t('admin.youtube.horizontal', '가로 영상')}
+                    </span>
+                    <a
+                      href={video.youtube_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="admin-video-url"
+                    >
+                      {t('admin.videos.openOnYoutube', '유튜브에서 열기')}
+                    </a>
+                  </p>
+                  {isBlocked && (
+                    <p className="admin-video-warn">
+                      {t(
+                        'admin.videos.blocked',
+                        '이 영상은 공개 페이지에서 재생되지 않습니다. 유튜브에서 지워졌거나 ‘퍼가기 허용’이 꺼져 있습니다 — YouTube 스튜디오 → 해당 영상 → 수정 → 모든 설정 표시 → ‘퍼가기 허용’을 켜 주세요.'
+                      )}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-sm admin-btn-danger"
+                  onClick={() => handleDelete(video.id)}
+                  disabled={deleting === video.id}
                 >
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </a>
+                  {deleting === video.id ? '...' : t('admin.common.delete', '삭제')}
+                </button>
               </div>
-              <div className="admin-video-info">
-                <p className="admin-video-title">
-                  {video.title || video.youtube_id}
-                </p>
-                <a
-                  href={video.youtube_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="admin-video-url"
-                >
-                  {video.youtube_url}
-                </a>
-              </div>
-              <button
-                type="button"
-                className="admin-btn admin-btn-sm admin-btn-danger"
-                onClick={() => handleDelete(video.id)}
-                disabled={deleting === video.id}
-              >
-                {deleting === video.id ? '...' : t('admin.common.delete', '삭제')}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -206,19 +243,4 @@ export default function VideoManager({
       )}
     </div>
   );
-}
-
-// Helper function to extract YouTube ID
-function extractYouTubeId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
-    /youtube\.com\/v\/([^&\s?]+)/,
-  ];
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) return match[1];
-  }
-
-  return null;
 }

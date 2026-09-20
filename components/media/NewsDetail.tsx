@@ -8,7 +8,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { NewsPost } from '@/types/news';
-import { extractYouTubeId, formatEventDateIntl } from '@/types/gallery';
+import { formatEventDateIntl } from '@/types/gallery';
+import { parseYouTubeRef, youtubeEmbedUrl } from '@/lib/youtube/videoUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NewsDetailProps {
@@ -25,7 +26,8 @@ export default function NewsDetail({ post }: NewsDetailProps) {
     ? formatEventDateIntl(post.published_at, locale)
     : '';
 
-  const youtubeId = post.youtube_url ? extractYouTubeId(post.youtube_url) : null;
+  const yt = post.youtube_url ? parseYouTubeRef(post.youtube_url) : null;
+  const youtubeId = yt?.videoId ?? null;
 
   return (
     <article className="news-detail">
@@ -49,13 +51,15 @@ export default function NewsDetail({ post }: NewsDetailProps) {
 
         <h1 className="news-detail-title">{title}</h1>
 
+        {/* 세로 영상(쇼츠)은 9:16으로 세운다 — 16:9 상자에 넣으면 검은 띠에 파묻힌다 */}
         {youtubeId ? (
-          <div className="news-detail-video">
+          <div className={`news-detail-video${yt?.isShort ? ' is-short' : ''}`}>
             <iframe
-              src={`https://www.youtube.com/embed/${youtubeId}`}
+              src={youtubeEmbedUrl(youtubeId)}
               title={title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              loading="lazy"
             />
           </div>
         ) : post.thumbnail_url ? (

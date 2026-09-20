@@ -16,7 +16,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { extractYouTubeId } from '@/types/gallery';
+import { parseYouTubeRef, youtubeEmbedUrl } from '@/lib/youtube/videoUrl';
 import type {
   GlossaryTermWithCategory,
   GlossaryCategory,
@@ -164,7 +164,8 @@ export default function GlossaryBrowser({ terms, categories, songs }: Props) {
 
   const renderSongCard = (song: GlossarySongWithLines) => {
     const open = openSongId === song.id;
-    const ytId = song.youtube_url ? extractYouTubeId(song.youtube_url) : null;
+    const yt = song.youtube_url ? parseYouTubeRef(song.youtube_url) : null;
+    const ytId = yt?.videoId ?? null;
     const description = isKorean
       ? song.description_ko || song.description_en
       : song.description_en || song.description_ko;
@@ -193,9 +194,9 @@ export default function GlossaryBrowser({ terms, categories, songs }: Props) {
             {description && <p className="song-desc">{description}</p>}
 
             {ytId && (
-              <div className="song-video">
+              <div className={`song-video${yt?.isShort ? ' is-short' : ''}`}>
                 <iframe
-                  src={`https://www.youtube.com/embed/${ytId}`}
+                  src={youtubeEmbedUrl(ytId)}
                   title={song.title_ko}
                   loading="lazy"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

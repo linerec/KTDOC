@@ -32,6 +32,10 @@
   --surface-2: #1a1a1a;
   --soft-gold-text: var(--soft-gold);
   --accent-text: var(--accent-color);
+  /* '텍스트로 쓰인' 경고색. --secondary-color(#c4302b)는 배경·보더용이라
+     어두운 지면 위 글자로 쓰면 3.1:1까지 떨어진다. 금색과 같은 방식으로 가른다.
+     값은 lib/contrast.test.ts가 단언한다 — 함께 바꿀 것. */
+  --danger-text: #e8736d;
 
   /* ── 역할 토큰 — '테마를 따라가면 안 되는' 전경색 ─────────────────────
      테마 토큰(--text-color·--warm-ivory 등)은 페이지 지면 위에서만 뒤집혀야
@@ -5152,8 +5156,10 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
 
 .gallery-videos-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr));
   gap: 30px;
+  /* 항목을 늘리지 않는다 — 가로 영상이 세로 영상 줄에 끌려 늘어나지 않게 */
+  align-items: start;
 }
 
 .gallery-videos-empty {
@@ -5167,23 +5173,96 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   flex-direction: column;
   gap: 10px;
 }
+/* 세로 영상 칸은 스스로 좁아진다 — 가로 영상과 나란히 놓여도 줄이 어긋나지 않는다 */
+.gallery-video-item.is-short {
+  justify-self: center;
+}
 
 .gallery-video-embed {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%;
+  aspect-ratio: 16 / 9;
   border-radius: 8px;
   overflow: hidden;
   background: var(--surface-2);
 }
 
-.gallery-video-embed iframe {
+/* 쇼츠는 세로다. 16:9 상자에 넣으면 양옆 검은 띠에 파묻힌다.
+   **폭이 아니라 높이로 묶는다** — 폭만 제한하면 9:16이 줄 높이를 밀어 올려
+   옆의 가로 영상 아래에 빈 공간이 생긴다(격자 줄 높이는 가장 큰 항목이 정한다). */
+.gallery-video-embed.is-short {
+  aspect-ratio: 9 / 16;
+  width: auto;
+  height: min(62vh, 400px);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.gallery-video-embed iframe,
+.gallery-video-facade {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   border: none;
+}
+
+/* 누르기 전의 가짜 재생기 — 썸네일 한 장뿐이다(유튜브 스크립트를 부르지 않는다) */
+.gallery-video-facade {
+  display: block;
+  padding: 0;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+.gallery-video-facade-img {
+  object-fit: cover;
+}
+.gallery-video-facade-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 68px;
+  height: 48px;
+  opacity: 0.82;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+.gallery-video-facade-play svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+.gallery-video-facade:hover .gallery-video-facade-play,
+.gallery-video-facade:focus-visible .gallery-video-facade-play {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.gallery-video-facade:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -2px;
+}
+
+/* 퍼가기가 막힌 영상은 재생기가 오류만 띄운다 — 유튜브로 갈 길을 늘 남긴다.
+   사진·영상 위 전경이므로 테마와 무관한 리터럴을 쓴다(공개 테마 규칙 2). */
+.gallery-video-fallback {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: #fff; /* theme-exempt: 영상 썸네일 위 전경 */
+  background: rgba(0, 0, 0, 0.62); /* theme-exempt: 영상 썸네일 위 스크림 */
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  text-decoration: none;
+}
+.gallery-video-embed:hover .gallery-video-fallback,
+.gallery-video-fallback:focus-visible {
+  opacity: 1;
 }
 
 .gallery-video-title {
@@ -10756,17 +10835,22 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   gap: 20px;
 }
 
+/* 링크 칸 → (확인되면) 제목 → 추가 버튼. 세로로 쌓는다 —
+   미리보기가 생기면서 옆으로 늘어놓을 수 없게 됐고, 순서대로 읽히는 편이 낫다. */
 .admin-video-form {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+  max-width: 680px;
 }
 
 .admin-video-form .admin-form-group {
   margin-bottom: 0;
-  flex: 1;
-  min-width: 200px;
+}
+
+.admin-video-form > .admin-btn {
+  align-self: flex-start;
 }
 
 .admin-video-list {
@@ -17662,6 +17746,12 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   overflow: hidden;
   background: #000;
 }
+/* 쇼츠는 세로다 — 폭을 묶어 가운데 세운다 */
+.song-video.is-short {
+  aspect-ratio: 9 / 16;
+  max-width: 300px;
+  margin-inline: auto;
+}
 .song-video iframe {
   position: absolute;
   inset: 0;
@@ -18610,6 +18700,12 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   margin-bottom: 36px;
 }
 
+.news-detail-video.is-short {
+  aspect-ratio: 9 / 16;
+  max-width: 340px;
+  margin-inline: auto;
+}
+
 .news-detail-video iframe {
   position: absolute;
   inset: 0;
@@ -18969,6 +19065,7 @@ html:not([data-site-theme]):not([data-admin-theme]) {
      (--soft-gold/--accent-color)은 라이트에서도 선명하게 유지된다.
      값은 lib/contrast.test.ts가 한지 지면 위 4.5:1을 단언한다 — 함께 바꿀 것. */
   --soft-gold-text: #77590a;
+  --danger-text: #8f211d;
   --accent-text: #74550b;
   --soft-gold-rgb: 119, 89, 10;
   --accent-gold-rgb: 116, 85, 11;
@@ -19108,6 +19205,7 @@ html:not([data-site-theme]):not([data-admin-theme]) .gallery-lightbox {
   --fg-rgb: 36, 27, 18;
   --ivory-rgb: 246, 239, 226;
   --soft-gold-text: #77590a;
+  --danger-text: #8f211d;
   --accent-text: #74550b;
   color-scheme: light;
 }
@@ -19136,6 +19234,7 @@ html[data-admin-theme='light'] {
   /* 텍스트로 쓰인 금색만 대비 확보를 위해 어둡게. 배경용 금색(soft-gold/accent)은
      라이트에서도 선명하게 유지된다(금 배경 + 먹 글자 칩·버튼이 그대로 성립). */
   --soft-gold-text: #77590a;
+  --danger-text: #8f211d;
   --accent-text: #74550b;
 
   /* 이메일 설정 화면 상태색 — 밝은 지면 위에서 읽히도록 어둡게 */
@@ -24082,4 +24181,212 @@ html[data-admin-theme='light'] .admin-schedule-preview {
   margin: 2px 0 0;
   padding-top: 6px;
   border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+}
+
+/* ============================================================
+   유튜브 링크 입력 — 관리 콘솔 네 화면이 같은 칸을 쓴다
+   (components/admin/YouTubeInput.tsx)
+============================================================ */
+.yt-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.yt-input-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.yt-input-field {
+  width: 100%;
+  padding-right: 38px;
+}
+.yt-input-clear {
+  position: absolute;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(var(--fg-rgb), 0.12);
+  color: var(--text-color);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.yt-input-clear:hover {
+  background: rgba(var(--fg-rgb), 0.22);
+}
+.yt-input-status {
+  font-size: 0.84rem;
+  color: var(--soft-gold-text);
+}
+
+/* 링크 가져오는 법 — 별도 도움말 페이지는 아무도 열지 않는다. 칸 안에 접어 둔다. */
+.yt-guide {
+  border: 1px dashed rgba(224, 184, 79, 0.32);
+  border-radius: 10px;
+  background: rgba(var(--bg-rgb), 0.3);
+}
+.yt-guide-summary {
+  padding: 9px 12px;
+  font-size: 0.86rem;
+  color: var(--soft-gold-text);
+  cursor: pointer;
+  list-style: none;
+}
+.yt-guide-summary::-webkit-details-marker {
+  display: none;
+}
+.yt-guide-summary::before {
+  content: '▸ ';
+}
+.yt-guide[open] .yt-guide-summary::before {
+  content: '▾ ';
+}
+.yt-guide-body {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.yt-guide-lead {
+  font-size: 0.88rem;
+  color: var(--text-color);
+  margin: 0;
+}
+.yt-guide-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+.yt-guide-head {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--soft-gold-text);
+}
+.yt-guide-steps {
+  margin: 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.yt-guide-note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* 붙여넣은 영상이 맞는지 그림으로 확인한다 */
+.yt-preview {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(224, 184, 79, 0.28);
+  background: rgba(var(--bg-rgb), 0.35);
+}
+.yt-preview.is-blocked {
+  border-color: rgba(143, 33, 29, 0.55);
+}
+.yt-preview-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 132px;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.yt-preview-thumb.is-short {
+  width: 74px;
+  aspect-ratio: 9 / 16;
+}
+.yt-preview-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.yt-preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.yt-preview-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-color);
+  overflow-wrap: anywhere;
+}
+.yt-preview-meta,
+.admin-video-meta {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.yt-preview-ok {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.yt-preview-warn {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--danger-text);
+}
+.yt-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  border: 1px solid rgba(224, 184, 79, 0.4);
+  color: var(--soft-gold-text);
+}
+.yt-badge.is-short {
+  border-color: rgba(143, 33, 29, 0.5);
+  color: var(--danger-text);
+}
+
+/* 등록된 영상 목록의 썸네일도 세로면 세로로 */
+.admin-video-thumb.is-short {
+  width: 56px;
+}
+.admin-video-thumb.is-short img {
+  aspect-ratio: 9 / 16;
+  height: auto;
+  object-fit: cover;
+}
+
+html[data-admin-theme='light'] .yt-guide,
+html[data-admin-theme='light'] .yt-preview {
+  background: rgba(0, 0, 0, 0.03);
+}
+html[data-admin-theme='light'] .yt-input-clear {
+  background: rgba(0, 0, 0, 0.08);
+}
+html[data-admin-theme='light'] .yt-input-clear:hover {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+/* 이미 등록된 영상 중 '퍼가기 허용'이 꺼진 것 — 올린 사람은 모르고 방문자만 깨진 화면을 본다 */
+.admin-video-item.is-blocked {
+  border-color: rgba(143, 33, 29, 0.55);
+}
+.admin-video-warn {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--danger-text);
 }

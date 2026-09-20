@@ -70,11 +70,20 @@ export async function getNewsPostById(id: number): Promise<NewsPost | null> {
  * 게시물이 둘이 되지 않게 한다. 주소 모양이 제각각일 수 있어 ID로 찾는다.
  */
 export async function getNewsPostByYouTubeId(videoId: string): Promise<NewsPost | null> {
+  // 같은 영상이 여러 모양의 주소로 저장될 수 있다(쇼츠·라이브·퍼가기·단축).
+  // 중복은 **영상 ID**로 판정해야 한다 — 주소 문자열로 비교하면 같은 영상이 둘로 들어온다.
   const results = await queryD1<NewsPost>(
     `SELECT * FROM news_posts
      WHERE youtube_url LIKE ? OR youtube_url LIKE ? OR youtube_url LIKE ?
+        OR youtube_url LIKE ? OR youtube_url LIKE ?
      ORDER BY id DESC LIMIT 1`,
-    [`%v=${videoId}%`, `%youtu.be/${videoId}%`, `%/embed/${videoId}%`]
+    [
+      `%v=${videoId}%`,
+      `%youtu.be/${videoId}%`,
+      `%/embed/${videoId}%`,
+      `%/shorts/${videoId}%`,
+      `%/live/${videoId}%`,
+    ]
   );
   return results[0] || null;
 }

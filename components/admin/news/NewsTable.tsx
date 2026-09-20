@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { NewsPost } from '@/types/news';
 import { NEWS_CATEGORY_LABELS } from '@/types/news';
-import { extractYouTubeId } from '@/types/gallery';
+import { extractYouTubeId, youtubeThumbnail } from '@/lib/youtube/videoUrl';
 import { useT } from '@/lib/i18n/useT';
 import { useLocaleText } from '@/components/common/LocaleText';
 
@@ -22,7 +22,7 @@ interface NewsTableProps {
 function thumbnailFor(post: NewsPost): string | null {
   if (post.thumbnail_url) return post.thumbnail_url;
   const id = post.youtube_url ? extractYouTubeId(post.youtube_url) : null;
-  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
+  return id ? youtubeThumbnail(id) : null;
 }
 
 export default function NewsTable({ posts }: NewsTableProps) {

@@ -15,6 +15,7 @@ import type {
   SongLineInput,
 } from '@/types/glossary';
 import { useT } from '@/lib/i18n/useT';
+import YouTubeInput from '@/components/admin/YouTubeInput';
 import LyricsEditor, { type LineRow } from './LyricsEditor';
 
 interface SongFormProps {
@@ -119,7 +120,8 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
         pronunciation: meta.pronunciation || undefined,
         description_ko: meta.description_ko || undefined,
         description_en: meta.description_en || undefined,
-        youtube_url: meta.youtube_url || undefined,
+        // 빈 문자열을 보내야 '링크 지움'이 저장된다(undefined는 '건드리지 않음').
+        youtube_url: meta.youtube_url,
         is_published: meta.is_published,
         lines: cleanLines,
       };
@@ -217,17 +219,13 @@ export default function SongForm({ song, isNew = false }: SongFormProps) {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="youtube_url" className="admin-form-label">
-              {t('admin.songs.youtube', '유튜브/음원 링크')}
-            </label>
-            <input
-              type="url"
-              id="youtube_url"
-              name="youtube_url"
-              value={meta.youtube_url}
-              onChange={handleMeta}
-              className="admin-form-input"
-              placeholder="https://youtu.be/..."
+            <YouTubeInput
+              id="song-youtube-url"
+              initialUrl={meta.youtube_url || null}
+              label={t('admin.songs.youtube', '유튜브 링크')}
+              onResolved={(v) =>
+                setMeta((prev) => ({ ...prev, youtube_url: v?.canonicalUrl ?? '' }))
+              }
             />
           </div>
 

@@ -326,19 +326,13 @@ export function generateSlug(title: string): string {
     .substring(0, 50);
 }
 
-export function extractYouTubeId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
-    /youtube\.com\/v\/([^&\s?]+)/,
-  ];
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) return match[1];
-  }
-
-  return null;
-}
+/**
+ * 유튜브 영상 ID 뽑기 — 구현은 lib/youtube/videoUrl.ts 하나뿐이다.
+ *
+ * 여기 정규식 두 줄이 따로 살던 시절에는 쇼츠·라이브 주소를 거절했고, 같은 정규식이
+ * VideoManager.tsx에도 복사돼 있었다. 이름만 남기고 구현은 한 곳으로 모은다.
+ */
+export { extractYouTubeId } from '@/lib/youtube/videoUrl';
 
 /**
  * 'YYYY-MM-DD'를 로컬 자정 Date로 파싱한다.

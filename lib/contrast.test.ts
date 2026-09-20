@@ -23,6 +23,7 @@ const DARK = {
   surface2: '#1a1a1a',
   goldText: '#e0b84f',
   accentText: '#d4a017',
+  dangerText: '#e8736d',
   ground: '#090705',
 };
 
@@ -36,6 +37,7 @@ const LIGHT = {
   surface2: '#e9e0cc',
   goldText: '#77590a',
   accentText: '#74550b',
+  dangerText: '#8f211d',
   ground: '#f6f1e6',
   /* 지면 스케일의 깊은 쪽 — 카드·패널 표면이 여기 앉는다 */
   ground3: '#eae0cb',
@@ -148,4 +150,27 @@ test('라이트 섬(register-panel)은 두 테마에서 같은 대비를 갖는�
   check('종이 카드 본문', '#241b12', '#f6efe2', AA_TEXT);
   check('종이 카드 보조', '#5a4a3a', '#f6efe2', AA_TEXT);
   check('종이 카드 금색 텍스트', '#7d5f0b', '#f6efe2', AA_TEXT);
+});
+
+/**
+ * 경고 글자색 — 배경용 붉은색(--secondary-color #c4302b)을 글자로 쓰면
+ * 어두운 지면 위에서 3.1:1까지 떨어진다. 금색과 같은 방식으로 역할을 가른 값이다.
+ */
+test('--danger-text는 두 테마의 카드 표면 위에서 4.5:1을 넘는다', () => {
+  assert.ok(
+    contrastRatio(parseHex(DARK.dangerText), parseHex(DARK.surface2)) >= AA_TEXT,
+    '다크 카드(#1a1a1a) 위'
+  );
+  assert.ok(
+    contrastRatio(parseHex(DARK.dangerText), parseHex(DARK.bg)) >= AA_TEXT,
+    '다크 지면(#0a0a0a) 위'
+  );
+  assert.ok(
+    contrastRatio(parseHex(LIGHT.dangerText), parseHex(LIGHT.surface2)) >= AA_TEXT,
+    '라이트 카드(#e9e0cc) 위'
+  );
+  assert.ok(
+    contrastRatio(parseHex(LIGHT.dangerText), parseHex(LIGHT.bg)) >= AA_TEXT,
+    '라이트 지면(#f6f1e6) 위'
+  );
 });

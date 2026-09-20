@@ -12,11 +12,13 @@
 
 import type { CreateNewsPostInput } from '@/types/news';
 // 값 import는 상대 경로 — node --test는 '@/' 별칭을 모른다(lib/forms/correction.ts와 같은 관용구)
-import { extractYouTubeId } from '../../types/gallery.ts';
+import { parseYouTubeRef, canonicalYouTubeUrl as canonicalUrl } from '../youtube/videoUrl.ts';
 import { dayInTimeZone } from '../siteDay.ts';
 
 export interface QuickVideoMeta {
   videoId: string;
+  /** 세로 영상(쇼츠)인가 — 저장 주소의 모양을 가른다 */
+  isShort?: boolean;
   /** 유튜브 제목. 비어 있으면 자리표시 제목으로 게시한다 — 링크는 살아 있어야 한다. */
   title: string;
   /** 유튜브 업로드 시각(ISO). oEmbed 폴백처럼 모를 때는 null. */
@@ -27,14 +29,16 @@ export const QUICK_VIDEO_FALLBACK_TITLE = 'YouTube 영상';
 
 /** 붙여넣은 문자열에서 영상 ID를 뽑는다. 주소가 아니거나 유튜브가 아니면 null. */
 export function parseYouTubeInput(raw: string): string | null {
-  const text = raw.trim();
-  if (!text) return null;
-  return extractYouTubeId(text);
+  return parseYouTubeRef(raw)?.videoId ?? null;
 }
 
-/** 어떤 모양으로 붙여넣었든 저장은 정규 주소 하나로 — 중복 판정과 임베드가 같은 것을 본다. */
-export function canonicalYouTubeUrl(videoId: string): string {
-  return `https://www.youtube.com/watch?v=${videoId}`;
+/**
+ * 저장은 정규 주소 하나로 — 다만 **쇼츠는 쇼츠 주소로 남긴다**.
+ * 세로/가로는 화면 비율을 가르는데, 그걸 아는 근거가 주소뿐이기 때문이다.
+ * 중복 판정은 주소가 아니라 영상 ID로 한다(getNewsPostByYouTubeId).
+ */
+export function canonicalYouTubeUrl(videoId: string, isShort = false): string {
+  return canonicalUrl(videoId, isShort);
 }
 
 /**
@@ -59,7 +63,7 @@ export function buildQuickVideoPost(
     category: 'video',
     title_ko: title,
     title_en: null,
-    youtube_url: canonicalYouTubeUrl(meta.videoId),
+    youtube_url: canonicalYouTubeUrl(meta.videoId, meta.isShort ?? false),
     published_at: dayInTimeZone(when, opts.timeZone),
     is_published: true,
     created_by: opts.createdBy ?? null,
