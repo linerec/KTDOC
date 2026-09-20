@@ -23559,7 +23559,9 @@ button.admin-page-tab {
   padding: 0 12px;
   font-size: 0.95rem;
   color: var(--text-color);
-  background: var(--ground);
+  /* --ground는 공개 사이트(한지) 토큰이라 콘솔 라이트에서 뒤집히지 않는다 —
+     쓰면 검은 칸에 검은 글자가 된다. 콘솔 입력칸의 관용구를 그대로 쓴다. */
+  background: rgba(var(--fg-rgb), 0.05);
   border: 1px solid rgba(var(--fg-rgb), 0.18);
   border-radius: 8px;
 }
@@ -23719,7 +23721,8 @@ button.admin-page-tab {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  background: var(--ground);
+  /* 같은 이유로 --ground를 쓰지 않는다(위 .rva-field__input 주석) */
+  background: rgba(var(--fg-rgb), 0.04);
   border: 1px solid rgba(var(--fg-rgb), 0.08);
   border-radius: 8px;
 }
@@ -24125,6 +24128,9 @@ html[data-admin-theme='light'] .admin-schedule-preview {
 /* 신청 내용 고치기 안내(/admin/forms/guide) — 읽는 페이지 */
 .guide {
   display: grid;
+  /* minmax(0,·)가 없으면 암시 트랙이 max-content로 커져서, 안에 든 표 하나가
+     좁은 화면에서 페이지 전체를 옆으로 늘린다(실측 375px에서 1022px). */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   max-width: 860px;
 }
@@ -24172,6 +24178,241 @@ html[data-admin-theme='light'] .admin-schedule-preview {
   line-height: 1.7;
   color: var(--text-color);
 }
+/* 공연 자료함 사용법(/admin/resources/guide) — 캡처 액자 + 개념 그림
+   캡처는 우리 화면이라 그대로 쓰되, 액자에 넣어 "지금 이 페이지"와 섞이지 않게 한다. */
+.rvg-shot {
+  margin: 14px 0 16px;
+}
+.rvg-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(var(--fg-rgb), 0.16);
+  border-radius: 10px;
+  /* 캡처는 라이트 화면 한 벌만 둔다(콘솔 기본값). 다크에서 눈을 찌르지 않게
+     아주 살짝 낮춘다 — 한 벌 더 찍어 두면 다음 개편 때 한쪽만 낡는다. */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12); /* theme-exempt: 액자 그림자는 두 테마 공통 */
+}
+:root:not([data-admin-theme='light']) .rvg-shot img {
+  filter: brightness(0.9);
+}
+.rvg-shot--narrow img {
+  max-width: 420px;
+}
+.rvg-shot figcaption {
+  margin-top: 7px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* 흐름 세 컷 */
+.rvg-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 30px;
+  margin: 18px 0 14px;
+  padding: 18px 10px;
+  background: rgba(var(--fg-rgb), 0.03);
+  border-radius: 12px;
+}
+.rvg-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+  width: 148px;
+}
+/* 단계 사이 화살표 — 읽는 방향을 손으로 가리킨다 */
+.rvg-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: 62px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid rgba(var(--fg-rgb), 0.38);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+}
+/* 줄이 바뀌면 화살표가 허공을 가리킨다 — 번호가 이미 순서를 말한다 */
+@media (max-width: 620px) {
+  .rvg-step:not(:last-child)::after {
+    display: none;
+  }
+}
+.rvg-step-text {
+  margin: 0;
+  font-size: 0.83rem;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--text-color);
+}
+
+/* 두 짝 나란히 — 번호/비밀번호, 잠긴 화면/열린 화면 */
+.rvg-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin: 16px 0 14px;
+}
+.rvg-pair__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(var(--fg-rgb), 0.03);
+  border-radius: 10px;
+}
+.rvg-pair__item h3 {
+  margin: 0 0 6px;
+  font-size: 0.93rem;
+  color: var(--text-color);
+}
+.rvg-pair__item p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+.rvg-pair--shots .rvg-shot {
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .rvg-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* dl 바로 뒤에 오는 문단이 목록에 달라붙어 보인다 — 숨을 한 번 준다 */
+.guide-section .guide-dl + p {
+  margin-top: 14px;
+}
+/* 한 절 안의 작은 제목 — dt와 같은 굵기라 선을 그어 층을 만든다 */
+.rvg-h3 {
+  margin: 26px 0 10px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
+  font-size: 1rem;
+  color: var(--text-color);
+}
+.rvg-back {
+  margin: 4px 0 0;
+}
+
+/* ── 그림 조각 — 눈이 가야 할 한 곳만 금색, 나머지는 흐리게 ── */
+.rvg-fig {
+  display: block;
+  width: 140px;
+  height: 132px;
+  flex: 0 0 auto;
+  color: var(--text-color);
+}
+.rvg-fig--sm {
+  width: 84px;
+  height: 74px;
+}
+.rvg-frame {
+  fill: rgba(var(--fg-rgb), 0.04);
+  stroke: rgba(var(--fg-rgb), 0.3);
+  stroke-width: 1.5;
+}
+.rvg-bar {
+  fill: rgba(var(--fg-rgb), 0.12);
+}
+.rvg-dot circle {
+  fill: rgba(var(--fg-rgb), 0.3);
+}
+.rvg-row {
+  fill: rgba(var(--fg-rgb), 0.1);
+}
+.rvg-screen {
+  fill: rgba(var(--fg-rgb), 0.08);
+}
+.rvg-note > * {
+  stroke: var(--accent-text);
+  fill: var(--accent-text);
+}
+.rvg-note path {
+  fill: none;
+}
+.rvg-dim {
+  opacity: 0.4;
+}
+.rvg-hit > * {
+  fill: rgba(var(--accent-gold-rgb, 212, 160, 23), 0.24);
+  stroke: var(--accent-color);
+  stroke-width: 1.6;
+}
+.rvg-hit-glyph > * {
+  stroke: var(--accent-text);
+  fill: var(--accent-text);
+}
+.rvg-badge circle {
+  fill: var(--accent-color);
+}
+.rvg-badge text {
+  fill: var(--on-accent);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-body);
+}
+.rvg-card {
+  fill: rgba(var(--fg-rgb), 0.05);
+  stroke: rgba(var(--fg-rgb), 0.3);
+  stroke-width: 1.5;
+}
+.rvg-bignum {
+  fill: var(--accent-text);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  font-family: var(--font-body);
+}
+.rvg-pass circle {
+  fill: var(--accent-color);
+}
+.rvg-split {
+  stroke: rgba(var(--fg-rgb), 0.2);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+.rvg-qr rect {
+  fill: var(--text-color);
+}
+.rvg-qr .rvg-qr-bg {
+  fill: rgba(var(--fg-rgb), 0.08);
+}
+.rvg-keys rect {
+  fill: rgba(var(--fg-rgb), 0.16);
+}
+.rvg-plate {
+  fill: rgba(var(--accent-gold-rgb, 212, 160, 23), 0.2);
+  stroke: var(--accent-color);
+  stroke-width: 1.2;
+}
+.rvg-plate-num {
+  fill: var(--accent-text);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  font-family: var(--font-body);
+}
+.rvg-knob {
+  fill: rgba(var(--fg-rgb), 0.45);
+}
+.rvg-ground {
+  stroke: rgba(var(--fg-rgb), 0.3);
+  fill: none;
+}
+.rvg-key > * {
+  stroke: var(--accent-color);
+}
+
 
 /* 학비표 참고 — 토요일 표 + 일요 성인 표를 줄로 나눠 보여 주는 자리 */
 .resp-tuition-parts {

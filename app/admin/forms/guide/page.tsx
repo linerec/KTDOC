@@ -38,7 +38,7 @@ export default async function FormsGuidePage() {
       <div className="guide">
         <section className="admin-card guide-section">
           <h2>어느 버튼을 누르나</h2>
-          <div className="admin-table-wrap">
+          <div className="admin-table-wrapper">
             <table className="admin-table guide-table">
               <thead>
                 <tr>

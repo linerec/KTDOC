@@ -45,6 +45,12 @@ export default async function AdminResourcesPage() {
             </T>
           </p>
         </div>
+        {/* 처음 여는 사람에게 이 화면에서 가장 쓸모 있는 버튼이다 */}
+        <div className="admin-header-actions">
+          <Link href="/admin/resources/guide" className="admin-btn admin-btn-outline">
+            <T k="admin.resources.guideLink">사용법</T>
+          </Link>
+        </div>
       </div>
 
       <VaultList initialVaults={vaults} />
