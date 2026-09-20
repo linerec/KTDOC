@@ -25,6 +25,7 @@ export type MenuKey =
   | 'supplies'
   | 'gallery'
   | 'gallery.photos'
+  | 'gallery.videos'
   | 'news'
   | 'faq'
   | 'qna'

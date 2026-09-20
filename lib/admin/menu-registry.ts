@@ -111,6 +111,8 @@ export const MENU_REGISTRY: MenuNode[] = [
   { key: 'gallery', href: '/admin/gallery', label: '공연 · 행사 관리', iconKey: 'gallery', group: 'show', defaultRoles: ['teacher', 'admin'] },
   // 사진 보관함: 공연에 아직 붙지 않은 사진을 정리하는 작업대. '공연 · 행사 관리'의 버튼으로 연다.
   { key: 'gallery.photos', href: '/admin/gallery/photos', label: '사진 보관함', iconKey: 'photo', parentKey: 'gallery', hidden: true, group: 'show', defaultRoles: ['admin'] },
+  // 영상 점검 — 사이드바에는 없다. 문제가 있을 때 공연·뉴스 목록의 경고 띠가 데려온다.
+  { key: 'gallery.videos', href: '/admin/videos', label: '영상 점검', iconKey: 'gallery', parentKey: 'gallery', hidden: true, group: 'show', defaultRoles: ['teacher', 'admin'] },
   // 공연 카테고리는 별도 메뉴/페이지 없이 '공연 관리' 페이지의 모달(버튼)에서 관리한다.
   // 참여 현황: 공연별 참가자 수·명단(체크인 집계). 운영진·관계자 검증용.
   { key: 'participation', href: '/admin/participation', label: '참여 현황', iconKey: 'calendar', group: 'show', defaultRoles: ['teacher', 'admin'] },

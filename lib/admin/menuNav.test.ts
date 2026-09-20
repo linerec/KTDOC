@@ -76,7 +76,9 @@ test('자식 권한이 없으면 숨은 경로도 딸려가지 않는다 — 부
   // 선생님은 수업을 관리하지만 신청 현황은 admin 전용이다(권한 폭이 다른 짝).
   const teacher = getAllowedMenus(viewer('teacher'), EMPTY);
   assert.deepEqual(teacher.find((m) => m.key === 'programs')?.alsoActiveFor, []);
-  assert.deepEqual(teacher.find((m) => m.key === 'gallery')?.alsoActiveFor, []);
+  // 공연 아래에는 숨은 자식이 둘이다 — 사진 보관함은 admin 전용, 영상 점검은 선생님도 본다.
+  // 권한이 있는 쪽만 딸려와야 한다(거르기가 실제로 작동하는지 보는 자리).
+  assert.deepEqual(teacher.find((m) => m.key === 'gallery')?.alsoActiveFor, ['/admin/videos']);
   // 반면 Q&A 관리는 선생님의 일이다 — 같은 규칙이 여는 쪽으로도 작동해야 한다.
   assert.deepEqual(teacher.find((m) => m.key === 'qna')?.alsoActiveFor, ['/admin/faq']);
 });

@@ -11,6 +11,7 @@ import EventTable from '@/components/admin/gallery/EventTable';
 import CategoryManagerModal from '@/components/admin/gallery/CategoryManagerModal';
 import EventFilters from '@/components/admin/gallery/EventFilters';
 import T from '@/components/common/T';
+import BrokenVideoBanner from '@/components/admin/videos/BrokenVideoBanner';
 
 export const metadata = {
   title: '공연 관리 | KTDOC Admin',
@@ -84,6 +85,9 @@ export default async function AdminGalleryPage({ searchParams }: PageProps) {
           </Link>
         </div>
       </div>
+
+      {/* 재생 안 되는 영상이 있을 때만 뜬다 — 없으면 아무것도 그리지 않는다 */}
+      <BrokenVideoBanner />
 
       <EventFilters
         years={years}
