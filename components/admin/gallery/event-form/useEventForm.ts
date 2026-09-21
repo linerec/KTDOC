@@ -47,7 +47,8 @@ const AI_TEXT_KEYS = [
   'description_en',
   'location',
   'location_address',
-  'prep_notes',
+  'prep_notes_ko',
+  'prep_notes_en',
 ] as const;
 
 function initialFormData(event: EventDetail | null | undefined): EventFormData {
@@ -72,7 +73,8 @@ function initialFormData(event: EventDetail | null | undefined): EventFormData {
     call_time: event?.call_time || '',
     start_time: event?.start_time || '',
     end_time: event?.end_time || '',
-    prep_notes: event?.prep_notes || '',
+    prep_notes_ko: event?.prep_notes_ko || '',
+    prep_notes_en: event?.prep_notes_en || '',
   };
 }
 
@@ -259,7 +261,8 @@ export function useEventForm({
         call_time: formData.call_time,
         start_time: formData.start_time,
         end_time: formData.end_time,
-        prep_notes: formData.prep_notes,
+        prep_notes_ko: formData.prep_notes_ko,
+        prep_notes_en: formData.prep_notes_en,
       };
 
       const res = await fetch(url, {

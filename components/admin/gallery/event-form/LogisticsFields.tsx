@@ -92,22 +92,45 @@ export default function LogisticsFields({
         </div>
       </div>
 
-      <div className="admin-form-group">
-        <label htmlFor="prep_notes" className="admin-form-label">
-          {t('admin.events.fieldPrepNotes', '준비물 · 복장 · 안내')}
-        </label>
-        <textarea
-          id="prep_notes"
-          name="prep_notes"
-          value={formData.prep_notes}
-          onChange={onChange}
-          rows={3}
-          placeholder={t(
-            'admin.events.prepPlaceholder',
-            '예: 검정 치마저고리 지참, 머리끈, 도시락. 주차는 건물 뒤편.'
-          )}
-          className="admin-form-textarea"
-        />
+      {/* 준비물 안내도 한/영 두 벌이다 — 이 글이 공연 전날 안내 메일과 회람(/rsvp)
+          공지에 그대로 실리는데, 한 칸뿐이던 때는 영어가 편한 가족에게 닿지 않았다.
+          영문 초벌은 아래 '한국어에서 영문 채우기' 띠가 채워 준다. */}
+      <div className="admin-form-bilingual">
+        <div className="admin-form-group">
+          <label htmlFor="prep_notes_ko" className="admin-form-label">
+            {t('admin.events.fieldPrepNotesKo', '준비물 · 복장 · 안내 (한글)')}
+          </label>
+          <textarea
+            id="prep_notes_ko"
+            name="prep_notes_ko"
+            value={formData.prep_notes_ko}
+            onChange={onChange}
+            rows={4}
+            placeholder={t(
+              'admin.events.prepPlaceholder',
+              '예: 검정 치마저고리 지참, 머리끈, 도시락. 주차는 건물 뒤편.'
+            )}
+            className="admin-form-textarea"
+          />
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="prep_notes_en" className="admin-form-label">
+            {t('admin.events.fieldPrepNotesEn', '준비물 · 복장 · 안내 (영문)')}
+          </label>
+          <textarea
+            id="prep_notes_en"
+            name="prep_notes_en"
+            value={formData.prep_notes_en}
+            onChange={onChange}
+            rows={4}
+            placeholder={t(
+              'admin.events.prepPlaceholderEn',
+              'e.g. Bring the black hanbok, hair ties, a packed lunch. Parking is behind the building.'
+            )}
+            className="admin-form-textarea"
+          />
+        </div>
       </div>
 
       <div className="admin-form-group">

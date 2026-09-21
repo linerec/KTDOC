@@ -93,6 +93,12 @@ for (const [i, stmt] of statements.entries()) {
     console.log(`SKIP ${label}  (이미 적용됨: ${msg})`);
     continue;
   }
+  // RENAME COLUMN 재실행 시 발생 — 옛 이름이 이미 없으므로 적용된 상태로 간주.
+  // (RENAME 문장에 한해서만 관대하다. 다른 문장의 "no such column"은 진짜 오류다.)
+  if (/rename\s+column/i.test(stmt) && /no such column/i.test(msg)) {
+    console.log(`SKIP ${label}  (이미 적용됨: ${msg})`);
+    continue;
+  }
   console.error(`FAIL ${label}\n     ${msg}`);
   process.exit(1);
 }

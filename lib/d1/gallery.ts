@@ -387,8 +387,8 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       description_ko, description_en, category_id, kind,
       is_published, is_featured, is_signature, signature_order, is_hero,
       location, location_url, location_address, location_lat, location_lng,
-      call_time, start_time, end_time, prep_notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      call_time, start_time, end_time, prep_notes_ko, prep_notes_en
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       slug,
       year,
@@ -412,7 +412,8 @@ export async function createEvent(input: CreateEventInput): Promise<number> {
       input.call_time || null,
       input.start_time || null,
       input.end_time || null,
-      input.prep_notes || null,
+      input.prep_notes_ko || null,
+      input.prep_notes_en || null,
     ]
   );
 
@@ -529,9 +530,13 @@ export async function updateEvent(
     updates.push('end_time = ?');
     params.push(input.end_time || null);
   }
-  if (input.prep_notes !== undefined) {
-    updates.push('prep_notes = ?');
-    params.push(input.prep_notes || null);
+  if (input.prep_notes_ko !== undefined) {
+    updates.push('prep_notes_ko = ?');
+    params.push(input.prep_notes_ko || null);
+  }
+  if (input.prep_notes_en !== undefined) {
+    updates.push('prep_notes_en = ?');
+    params.push(input.prep_notes_en || null);
   }
 
   if (updates.length === 0) return;

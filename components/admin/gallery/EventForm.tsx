@@ -17,6 +17,7 @@ import type { SupplyItem, SupplySetWithItems } from '@/types/supplies';
 import type { PickerRow } from '@/components/admin/supplies/SupplyPicker';
 import type { SetPickerRow } from '@/components/admin/supplies/SetPicker';
 import { useT } from '@/lib/i18n/useT';
+import AiTranslateFields from '@/components/admin/AiTranslateFields';
 import AiEventFill from './AiEventFill';
 import { useEventForm } from './event-form/useEventForm';
 import BasicFields from './event-form/BasicFields';
@@ -95,6 +96,32 @@ export default function EventForm({
           />
 
           <DescriptionFields formData={form.formData} onChange={form.handleChange} />
+
+          {/* 한/영 칸이 모두 나온 뒤에 둔다 — "위에 적은 한국어를 영문으로"가
+              읽는 순서와 맞고, 새 공연에서 아직 아무것도 안 적었을 때는 스스로 숨는다. */}
+          <AiTranslateFields
+            onApply={form.patchForm}
+            fields={[
+              {
+                key: 'title_en',
+                label: t('admin.translate.fieldTitle', '제목'),
+                ko: form.formData.title_ko,
+                en: form.formData.title_en,
+              },
+              {
+                key: 'prep_notes_en',
+                label: t('admin.translate.fieldPrep', '준비물 · 복장 · 안내'),
+                ko: form.formData.prep_notes_ko,
+                en: form.formData.prep_notes_en,
+              },
+              {
+                key: 'description_en',
+                label: t('admin.translate.fieldDesc', '설명'),
+                ko: form.formData.description_ko,
+                en: form.formData.description_en,
+              },
+            ]}
+          />
 
           <FlagFields formData={form.formData} onChange={form.handleChange} />
         </div>

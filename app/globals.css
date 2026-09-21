@@ -7393,6 +7393,85 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   color: #f0c674;
 }
 
+/* ── 한국어 → 영문 번역 띠 (한/영 칸 아래에 붙는다) ──
+   폼 안의 '도구' 자리라 섹션처럼 보이지 않게 낮은 대비의 홈으로 두고,
+   금색은 역할 토큰(--accent-text)으로만 쓴다 — 두 테마에서 모두 읽힌다. */
+.ai-translate {
+  margin: 4px 0 22px;
+  padding: 14px 16px;
+  border: 1px dashed rgba(212, 160, 23, 0.35);
+  border-radius: 8px;
+  background: rgba(212, 160, 23, 0.05);
+}
+
+.ai-translate-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-translate-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+/* 공용 .admin-form-help를 쓰지 않는다 — 그쪽은 섹션 머리말용이라 아래 구분선과
+   큰 여백을 달고 있어, 이 작은 상자 안에서는 까닭 없는 가로줄로 보인다. */
+.ai-translate-help {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.ai-translate-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 12px;
+}
+
+.ai-translate-scope {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.ai-translate-overwrite {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.ai-translate-overwrite input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  accent-color: var(--accent-text);
+  cursor: pointer;
+}
+
+.ai-translate-note {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* 결과 안내는 성공/실패 두 종류뿐 — 실패는 공용 admin-alert-error가 칠한다 */
+.ai-translate-note:not(.admin-alert-error) {
+  background: rgba(212, 160, 23, 0.1);
+  border: 1px solid rgba(212, 160, 23, 0.4);
+  color: var(--accent-text);
+}
+
 /* Q&A 하단 문의 카드 — 정리된 답으로 해결되지 않을 때 사람에게 연결 */
 .qna-contact {
   margin-top: 36px;

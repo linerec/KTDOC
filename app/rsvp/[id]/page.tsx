@@ -116,7 +116,8 @@ export default async function RsvpPage({ params }: PageProps) {
             location_url: event.location_url,
             description_ko: event.description_ko,
             description_en: event.description_en,
-            prep_notes: event.prep_notes,
+            prep_notes_ko: event.prep_notes_ko,
+            prep_notes_en: event.prep_notes_en,
             posterUrl: event.images[0]?.image_url ?? null,
           }}
           viewer={viewer}

@@ -148,7 +148,8 @@ function buildPrompt(text: string | null, categories: { id: number; name: string
     '  "description_en": string|null,  // 위 내용의 자연스러운 영어',
     '  "location": string|null,        // 장소 **이름만** (예: "Bergen PAC", "세종문화회관 대극장"). 주소를 섞지 마세요',
     '  "location_address": string|null,// 자료에 적힌 주소. 번지·도로명·도시·주/도·우편번호 중 **적힌 만큼** 그대로',
-    '  "prep_notes": string|null,      // 준비물·복장·유의사항이 있으면 요약',
+    '  "prep_notes_ko": string|null,   // 준비물·복장·유의사항이 있으면 요약(한국어)',
+    '  "prep_notes_en": string|null,   // 위 내용의 자연스러운 영어',
     `  "category_id": number|null      // 가장 알맞은 카테고리 id 하나. 후보: ${categoryList}`,
     '}',
     '',
@@ -306,7 +307,8 @@ export async function POST(request: Request) {
       description_en: asText(raw.description_en),
       location: venue.location,
       location_address: venue.location_address,
-      prep_notes: asText(raw.prep_notes, 1000),
+      prep_notes_ko: asText(raw.prep_notes_ko, 1000),
+      prep_notes_en: asText(raw.prep_notes_en, 1000),
       category_id: asCategoryId(raw.category_id, allowedCategoryIds),
     };
 

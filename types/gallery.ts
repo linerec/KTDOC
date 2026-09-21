@@ -59,7 +59,12 @@ export interface Event {
   call_time: string | null;
   start_time: string | null;
   end_time: string | null;
-  prep_notes: string | null;
+  /**
+   * 준비물·복장·안내 — 두 벌(한/영). 영문이 비어 있으면 화면·메일이 한국어로 물러선다.
+   * 한 칸이던 시절의 값은 0046 마이그레이션이 prep_notes_ko로 옮겼다.
+   */
+  prep_notes_ko: string | null;
+  prep_notes_en: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -259,7 +264,8 @@ export interface CreateEventInput {
   call_time?: string;
   start_time?: string;
   end_time?: string;
-  prep_notes?: string;
+  prep_notes_ko?: string;
+  prep_notes_en?: string;
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {
@@ -474,6 +480,7 @@ export interface ExtractedEventInfo {
   description_en: string | null;
   location: string | null;
   location_address: string | null;
-  prep_notes: string | null;
+  prep_notes_ko: string | null;
+  prep_notes_en: string | null;
   category_id: number | null;
 }

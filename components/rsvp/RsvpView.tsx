@@ -41,7 +41,8 @@ interface RsvpEventInfo {
   location_url: string | null;
   description_ko: string | null;
   description_en: string | null;
-  prep_notes: string | null;
+  prep_notes_ko: string | null;
+  prep_notes_en: string | null;
   posterUrl: string | null;
 }
 
@@ -74,6 +75,8 @@ export default function RsvpView({ event, viewer, participants, targets }: RsvpV
   const title = locale === 'en' && event.title_en ? event.title_en : event.title_ko;
   const description =
     locale === 'en' && event.description_en ? event.description_en : event.description_ko;
+  const prepNotes =
+    locale === 'en' && event.prep_notes_en ? event.prep_notes_en : event.prep_notes_ko;
   const timeRange = [event.start_time, event.end_time].filter(Boolean).join(' ~ ');
   const loginHref = `/login?callbackUrl=${encodeURIComponent(`/rsvp/${event.id}`)}`;
 
@@ -149,10 +152,10 @@ export default function RsvpView({ event, viewer, participants, targets }: RsvpV
                   </dd>
                 </div>
               )}
-              {event.prep_notes && (
+              {prepNotes && (
                 <div className="rsvp-fact">
                   <dt>{messages['rsvp.prep']}</dt>
-                  <dd>{event.prep_notes}</dd>
+                  <dd>{prepNotes}</dd>
                 </div>
               )}
             </dl>

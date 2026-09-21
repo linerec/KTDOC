@@ -17,21 +17,31 @@ import { formatEventDate, type EventWithCategory } from '@/types/gallery';
 export const dynamic = 'force-dynamic';
 
 /** 시각 정보 한 줄 — 집합·시작·종료 중 있는 것만 */
-function buildWhen(event: EventWithCategory): string {
+function buildWhen(event: EventWithCategory, locale: 'ko' | 'en' = 'ko'): string {
+  const label =
+    locale === 'en'
+      ? { call: 'Call', start: 'Start', end: 'End' }
+      : { call: '집합', start: '시작', end: '종료' };
   const parts = [
-    formatEventDate(event.event_date, 'ko'),
-    event.call_time ? `집합 ${event.call_time}` : null,
-    event.start_time ? `시작 ${event.start_time}` : null,
-    event.end_time ? `종료 ${event.end_time}` : null,
+    formatEventDate(event.event_date, locale),
+    event.call_time ? `${label.call} ${event.call_time}` : null,
+    event.start_time ? `${label.start} ${event.start_time}` : null,
+    event.end_time ? `${label.end} ${event.end_time}` : null,
   ].filter(Boolean);
   return parts.join(' · ');
 }
 
-/** 준비물·지도 등 부가 안내 */
-function buildNote(event: EventWithCategory): string {
+/**
+ * 준비물·지도 등 부가 안내. 메일은 한 통에 한/영을 함께 실으므로 두 벌을 만든다.
+ * 영문 준비물이 비어 있으면 `prep_notes_en`이 null이라 여기서 빈 줄이 되고,
+ * 템플릿이 한국어 원문으로 물러선다(안내가 통째로 사라지는 것보다 낫다).
+ */
+function buildNote(event: EventWithCategory, locale: 'ko' | 'en' = 'ko'): string {
+  const prep = locale === 'en' ? event.prep_notes_en : event.prep_notes_ko;
+  const label = locale === 'en' ? { map: 'Map', prep: 'What to bring' } : { map: '지도', prep: '준비물·안내' };
   const lines = [
-    event.location_url ? `지도: ${event.location_url}` : null,
-    event.prep_notes ? `준비물·안내: ${event.prep_notes}` : null,
+    event.location_url ? `${label.map}: ${event.location_url}` : null,
+    prep ? `${label.prep}: ${prep}` : null,
   ].filter(Boolean);
   return lines.join('\n');
 }
@@ -71,9 +81,11 @@ export async function GET(request: Request) {
         userIds: studentIds,
         data: {
           title: event.title_ko,
-          when: buildWhen(event),
+          when: buildWhen(event, 'ko'),
+          whenEn: buildWhen(event, 'en'),
           where: event.location ?? '',
-          note: buildNote(event),
+          note: buildNote(event, 'ko'),
+          noteEn: buildNote(event, 'en'),
         },
       });
 

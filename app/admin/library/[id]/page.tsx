@@ -89,7 +89,8 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
     !!event.call_time ||
     !!event.start_time ||
     !!event.end_time ||
-    !!event.prep_notes;
+    !!event.prep_notes_ko ||
+    !!event.prep_notes_en;
 
   return (
     <div className="admin-page">
@@ -203,12 +204,14 @@ export default async function AdminLibraryEventPage({ params }: PageProps) {
               </span>
             </div>
           )}
-          {event.prep_notes && (
+          {(event.prep_notes_ko || event.prep_notes_en) && (
             <div className="event-logistics-item">
               <span className="event-logistics-label">
                 <T k="admin.library.prep">준비물 · 안내</T>
               </span>
-              <span className="event-logistics-value event-logistics-prep">{event.prep_notes}</span>
+              <span className="event-logistics-value event-logistics-prep">
+                <LocaleText ko={event.prep_notes_ko} en={event.prep_notes_en} />
+              </span>
             </div>
           )}
         </section>

@@ -32,7 +32,8 @@ export interface EventFormData {
   call_time: string;
   start_time: string;
   end_time: string;
-  prep_notes: string;
+  prep_notes_ko: string;
+  prep_notes_en: string;
 }
 
 /** name 속성을 그대로 쓰는 일반 입력 변경 */

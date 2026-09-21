@@ -288,12 +288,17 @@ export function renderMailBody(
         ),
       };
 
+    // 영문 본문도 준비물(noteEn)을 싣는다. 예전에는 한국어 쪽에만 있었다 —
+    // 무엇을 챙겨 와야 하는지가 이 메일의 용건인데, 영어로 읽는 가족에게는
+    // 일시·장소만 가고 그 문장이 통째로 빠졌다. noteEn이 비면(영문 준비물을
+    // 아직 안 적은 공연) 한국어 원문을 그대로 실어 둔다 — 없는 것보다는 낫고,
+    // 관리 화면의 '영문으로 번역'이 그 칸을 채우는 길이다.
     case 'event.reminder:user':
       return {
         subject: `내일 일정 안내 — ${title}`,
         text: bilingual(
           `내일 일정을 안내드립니다.\n\n${title}${s(data, 'when') ? `\n일시: ${s(data, 'when')}` : ''}${s(data, 'where') ? `\n장소: ${s(data, 'where')}` : ''}${s(data, 'note') ? `\n\n${s(data, 'note')}` : ''}${linkKo}`,
-          `A reminder for tomorrow.\n\n${title}${s(data, 'when') ? `\nWhen: ${s(data, 'when')}` : ''}${s(data, 'where') ? `\nWhere: ${s(data, 'where')}` : ''}${linkEn}`
+          `A reminder for tomorrow.\n\n${title}${s(data, 'whenEn', s(data, 'when')) ? `\nWhen: ${s(data, 'whenEn', s(data, 'when'))}` : ''}${s(data, 'where') ? `\nWhere: ${s(data, 'where')}` : ''}${s(data, 'noteEn', s(data, 'note')) ? `\n\n${s(data, 'noteEn', s(data, 'note'))}` : ''}${linkEn}`
         ),
       };
 
