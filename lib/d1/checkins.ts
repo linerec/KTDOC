@@ -22,6 +22,10 @@ import type {
 /**
  * 체크인(멱등). 이미 체크인돼 있으면 상태·메모만 갱신한다.
  * 어떤 이벤트에 체크인을 허용할지(예: 공개된 이벤트만)는 호출부에서 강제한다.
+ *
+ * 참여와 불참은 서로를 밀어낸다 — 체크인하면 같은 사람의 불참 행을 지운다.
+ * 체크인을 **먼저** 쓴다: 두 번째(불참 삭제)가 실패해 둘 다 남아도 참여가 이기므로
+ * (lib/library/response.ts) 사용자가 본 결과와 같다.
  */
 export async function checkInEvent(
   eventId: number,
@@ -36,6 +40,10 @@ export async function checkInEvent(
        DO UPDATE SET status = excluded.status, note = excluded.note`,
     [eventId, userId, status, note ?? null]
   );
+  await executeD1('DELETE FROM event_declines WHERE event_id = ? AND user_id = ?', [
+    eventId,
+    userId,
+  ]);
 }
 
 /** 체크아웃(행 삭제). 본인 것만 지우도록 호출부에서 userId를 강제한다. 삭제 성공 시 true. */
@@ -45,6 +53,52 @@ export async function checkOutEvent(eventId: number, userId: string): Promise<bo
     [eventId, userId]
   );
   return changes > 0;
+}
+
+/**
+ * 불참(멱등) — 같은 사람의 체크인을 지우고 불참 행을 남긴다.
+ * 체크인을 **먼저** 지운다: 두 번째(불참 기록)가 실패하면 미응답으로 남을 뿐이고,
+ * 다시 누르면 된다. 순서가 반대면 실패 시 둘 다 남아 참여로 읽힌다(참여가 이기므로).
+ */
+export async function declineEvent(eventId: number, userId: string): Promise<void> {
+  await checkOutEvent(eventId, userId);
+  await executeD1(
+    `INSERT INTO event_declines (event_id, user_id) VALUES (?, ?)
+     ON CONFLICT(event_id, user_id) DO NOTHING`,
+    [eventId, userId]
+  );
+}
+
+/** 불참 취소(행 삭제) — 응답을 거둘 때(DELETE) 체크아웃과 함께 부른다. */
+export async function clearDecline(eventId: number, userId: string): Promise<void> {
+  await executeD1('DELETE FROM event_declines WHERE event_id = ? AND user_id = ?', [
+    eventId,
+    userId,
+  ]);
+}
+
+/**
+ * 여러 사용자가 불참한 공연 id 합집합 — 둘러보기의 불참 표시·"응답 안 한 공연" 집계.
+ * 학생은 [본인], 학부모는 자녀 id 집합으로 부른다(getCheckedInEventIdsForUsers와 같은 모양).
+ */
+export async function getDeclinedEventIdsForUsers(userIds: string[]): Promise<Set<number>> {
+  if (userIds.length === 0) return new Set();
+  const placeholders = userIds.map(() => '?').join(', ');
+  const rows = await queryD1<{ event_id: number }>(
+    `SELECT DISTINCT event_id FROM event_declines WHERE user_id IN (${placeholders})`,
+    userIds
+  );
+  return new Set(rows.map((r) => r.event_id));
+}
+
+/** 이 공연에 불참한 사람들 — 운영진 명단·학부모 자녀별 상태. 이름 해석은 호출부(MySQL). */
+export async function getEventDeclines(
+  eventId: number
+): Promise<{ user_id: string; created_at: string }[]> {
+  return queryD1<{ user_id: string; created_at: string }>(
+    'SELECT user_id, created_at FROM event_declines WHERE event_id = ? ORDER BY created_at ASC',
+    [eventId]
+  );
 }
 
 /**

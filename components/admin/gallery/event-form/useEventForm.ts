@@ -26,6 +26,7 @@ import type { PickerRow } from '@/components/admin/supplies/SupplyPicker';
 import type { SetPickerRow } from '@/components/admin/supplies/SetPicker';
 import { uploadImageFiles } from '@/lib/uploadClient';
 import { useT } from '@/lib/i18n/useT';
+import { libraryEventHref } from '@/lib/library/anchor';
 import type { EventFormData, FormChangeHandler, FormPatchHandler } from './types';
 
 interface UseEventFormArgs {
@@ -192,7 +193,9 @@ export function useEventForm({
         body: JSON.stringify({
           title,
           body: pushBody,
-          url: `/gallery/event/${eventId}`,
+          // 둘러보기의 그 공연 카드(포스터 + [참여][불참])로 — 공개 상세에는 응답
+          // 버튼이 없고, 비공개 공연이면 페이지가 없다(lib/library/anchor.ts).
+          url: libraryEventHref(eventId),
           target,
           alsoEmail: false,
         }),

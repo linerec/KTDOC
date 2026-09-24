@@ -3,8 +3,9 @@
  *
  * 카톡 단체방의 수기 명단(공지 복사 → 이름 덧붙여 회신)을 대체한다.
  * 공지 내용(일시·모이는 시간·장소·안내)과 참여 명단을 보여주고,
- * 로그인한 정회원은 본인(원생) 또는 자녀(학부모)의 참여를 버튼으로
- * 추가/취소한다(기존 체크인 시스템 재사용). 링크는 공연 관리 목록에서 공유.
+ * 로그인한 정회원은 본인(원생) 또는 자녀(학부모)의 참여·불참을 버튼으로
+ * 고른다(기존 체크인 시스템 재사용 + 불참). 링크는 공연 관리 목록에서 공유.
+ * 불참 명단은 운영진에게만 보인다 — 누가 안 가는지를 다른 가족에게 보일 이유가 없다.
  *
  * - 비공개 공연도 접근 가능 — 링크를 아는 사람 대상의 회람이며,
  *   참여 명단·응답은 정회원 로그인 뒤에만 보인다(개인정보 보호).
@@ -18,9 +19,10 @@ import { auth } from '@/auth';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import RsvpView, { type RsvpParticipant, type RsvpTarget } from '@/components/rsvp/RsvpView';
-import { getEventById, getEventCheckins } from '@/lib/d1';
+import { getEventById, getEventCheckins, getEventDeclines } from '@/lib/d1';
 import { getGuardianChildren, getUserNamesByIds } from '@/lib/members';
-import { isApproved } from '@/lib/isAdmin';
+import { isApproved, isStaff } from '@/lib/isAdmin';
+import { responseOf } from '@/lib/library/response';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,9 +74,22 @@ export default async function RsvpPage({ params }: PageProps) {
   // 참여 명단·내 응답 대상은 정회원에게만 (개인정보 보호)
   let participants: RsvpParticipant[] = [];
   let targets: RsvpTarget[] = [];
+  let decliners: { userId: string; name: string }[] | null = null;
   if (viewer === 'active' && session?.user) {
-    const checkins = await getEventCheckins(event.id);
-    const names = await getUserNamesByIds(checkins.map((c) => c.user_id));
+    const [checkins, declines] = await Promise.all([
+      getEventCheckins(event.id),
+      getEventDeclines(event.id),
+    ]);
+    const joined = new Set(checkins.map((c) => c.user_id));
+    const declinedIds = new Set(declines.map((d) => d.user_id));
+    // 참여가 이긴다 — 둘 다 남은 순간의 행은 불참 명단에서 뺀다(lib/library/response.ts)
+    const staffDecliners = isStaff(session)
+      ? declines.filter((d) => !joined.has(d.user_id))
+      : null;
+    const names = await getUserNamesByIds([
+      ...checkins.map((c) => c.user_id),
+      ...(staffDecliners ?? []).map((d) => d.user_id),
+    ]);
 
     // 내 응답 대상: 원생·운영진은 본인, 학부모는 연결 확정된 자녀들
     const role = session.user.role;
@@ -89,13 +104,20 @@ export default async function RsvpPage({ params }: PageProps) {
     }
 
     const mine = new Set(targets.map((t) => t.userId));
-    const joined = new Set(checkins.map((c) => c.user_id));
     participants = checkins.map((c) => ({
       userId: c.user_id,
       name: names.get(c.user_id) || '이름 미상',
       isMine: mine.has(c.user_id),
     }));
-    targets = targets.map((t) => ({ ...t, joined: joined.has(t.userId) }));
+    targets = targets.map((t) => ({
+      ...t,
+      response: responseOf(joined.has(t.userId), declinedIds.has(t.userId)),
+    }));
+    decliners =
+      staffDecliners?.map((d) => ({
+        userId: d.user_id,
+        name: names.get(d.user_id) || '이름 미상',
+      })) ?? null;
   }
 
   return (
@@ -123,6 +145,7 @@ export default async function RsvpPage({ params }: PageProps) {
           viewer={viewer}
           participants={participants}
           targets={targets}
+          decliners={decliners}
         />
       </main>
       <Footer />

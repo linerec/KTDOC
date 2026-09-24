@@ -18,8 +18,10 @@ import {
   getCategories,
   getUserCheckedInEventIds,
   getCheckedInEventIdsForUsers,
+  getDeclinedEventIdsForUsers,
   memberLibrary,
 } from '@/lib/d1';
+import { isAwaitingResponse } from '@/lib/library/response';
 import { getGuardianView } from '@/lib/members';
 import type { EventWithCategory } from '@/types/gallery';
 import type { MemberRole } from '@/types/members';
@@ -88,7 +90,9 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   // 참여 표시(✓)를 볼 수 있는가 — 본인 체크인(학생·운영진) 또는 자녀 체크인(학부모)
   const showMarks = canCheckIn || parentMarks;
 
-  const [eventsResult, categories, checkedInIds] = await Promise.all([
+  // 응답 대상 — 본인(원생·운영진) 또는 자녀들(학부모). 불참도 같은 대상으로 묻는다.
+  const responderIds = canCheckIn && userId ? [userId] : parentMarks ? guardian.childIds : [];
+  const [eventsResult, categories, checkedInIds, declinedIds] = await Promise.all([
     eventsPromise,
     categoriesPromise,
     canCheckIn
@@ -96,6 +100,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
       : parentMarks
         ? getCheckedInEventIdsForUsers(guardian.childIds)
         : Promise.resolve(new Set<number>()),
+    getDeclinedEventIdsForUsers(responderIds),
   ]);
 
   const { events, total, years } = eventsResult;
@@ -118,8 +123,10 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
   const listEvents = showUpcomingFirst
     ? displayEvents.filter((e) => e.event_date < today)
     : displayEvents;
-  // 다가오는 공연 중 아직 응답(체크인) 안 한 수 = 할 일
-  const pendingCount = upcomingEvents.filter((e) => !checkedInIds.has(e.id)).length;
+  // 다가오는 공연 중 아직 참여도 불참도 고르지 않은 수 = 할 일
+  const pendingCount = upcomingEvents.filter((e) =>
+    isAwaitingResponse(true, checkedInIds.has(e.id), declinedIds.has(e.id))
+  ).length;
 
   const grouped = groupByYear(listEvents);
   const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
@@ -153,6 +160,7 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
     canCheckIn,
     showMarks,
     checkedInIds: checkedInList,
+    declinedIds: Array.from(declinedIds),
     today,
   };
 
@@ -175,13 +183,13 @@ export default async function AdminLibraryPage({ searchParams }: PageProps) {
           <p className="admin-subtitle">
             {canCheckIn ? (
               <T k="admin.library.subtitleStudent">
-                본인이 참여하는 공연에 체크인하면 내 아카이브에 모입니다. 아직 공개되지 않은(비공개)
-                공연에도 체크인할 수 있습니다.
+                다가오는 공연에는 참여 또는 불참을 눌러 알려 주세요. 참여한 공연은 내 아카이브에
+                모입니다. 아직 공개되지 않은(비공개) 공연에도 응답할 수 있습니다.
               </T>
             ) : role === 'parent' ? (
               <T k="admin.library.subtitleParent">
-                자녀가 참여하는 공연은 ✓로 표시됩니다. 공연 상세에서 자녀별 참여(체크인)를 대신
-                표시할 수 있습니다.
+                자녀가 참여하는 공연은 ✓로 표시됩니다. 공연을 누르면 자녀별로 참여 또는 불참을
+                알릴 수 있습니다.
               </T>
             ) : (
               <T k="admin.library.subtitle">

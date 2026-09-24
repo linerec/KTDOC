@@ -6,14 +6,15 @@
  *
  * - guest: 공지만 보이고 로그인 CTA(callbackUrl로 복귀)
  * - pending: 승인 대기 안내
- * - active: 명단(카톡 명단처럼 번호 목록) + 본인/자녀별 참여·취소 토글
- *   (기존 체크인 API /api/library/checkins 재사용, 학부모는 forUserId 대행)
+ * - active: 명단(카톡 명단처럼 번호 목록) + 본인/자녀별 [참여][불참]
+ *   (둘러보기와 같은 EventResponseButtons, 학부모는 forUserId 대행)
+ * - 운영진에게만 불참 명단(decliners)이 내려온다 — 다른 회원에게는 null
  */
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
+import EventResponseButtons from '@/components/admin/library/EventResponseButtons';
+import type { EventResponse } from '@/lib/library/response';
 
 export interface RsvpParticipant {
   userId: string;
@@ -25,7 +26,7 @@ export interface RsvpParticipant {
 export interface RsvpTarget {
   userId: string;
   name: string;
-  joined?: boolean;
+  response?: EventResponse | null;
 }
 
 interface RsvpEventInfo {
@@ -51,6 +52,8 @@ interface RsvpViewProps {
   viewer: 'guest' | 'pending' | 'active';
   participants: RsvpParticipant[];
   targets: RsvpTarget[];
+  /** 불참 명단 — 운영진에게만 내려온다(그 외 null) */
+  decliners?: { userId: string; name: string }[] | null;
 }
 
 /** 'YYYY-MM-DD' → 로케일 날짜 문구(요일 포함). 파싱 실패 시 원문 그대로. */
@@ -66,11 +69,14 @@ function formatDate(dateStr: string, locale: string): string {
   }).format(date);
 }
 
-export default function RsvpView({ event, viewer, participants, targets }: RsvpViewProps) {
-  const router = useRouter();
+export default function RsvpView({
+  event,
+  viewer,
+  participants,
+  targets,
+  decliners = null,
+}: RsvpViewProps) {
   const { locale, messages } = useLanguage();
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [error, setError] = useState('');
 
   const title = locale === 'en' && event.title_en ? event.title_en : event.title_ko;
   const description =
@@ -79,28 +85,6 @@ export default function RsvpView({ event, viewer, participants, targets }: RsvpV
     locale === 'en' && event.prep_notes_en ? event.prep_notes_en : event.prep_notes_ko;
   const timeRange = [event.start_time, event.end_time].filter(Boolean).join(' ~ ');
   const loginHref = `/login?callbackUrl=${encodeURIComponent(`/rsvp/${event.id}`)}`;
-
-  /** 참여/취소 토글 — 성공 시 서버 재렌더로 명단 갱신 */
-  const toggle = async (target: RsvpTarget) => {
-    setBusyId(target.userId);
-    setError('');
-    try {
-      const res = await fetch('/api/library/checkins', {
-        method: target.joined ? 'DELETE' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: event.id, forUserId: target.userId }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || messages['rsvp.error']);
-      }
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : messages['rsvp.error']);
-    } finally {
-      setBusyId(null);
-    }
-  };
 
   return (
     <>
@@ -188,31 +172,21 @@ export default function RsvpView({ event, viewer, participants, targets }: RsvpV
               {/* 내 응답 */}
               <div className="rsvp-respond">
                 <h2 className="rsvp-section-title">{messages['rsvp.myResponse']}</h2>
-                {error && <p className="rsvp-error" role="alert">{error}</p>}
                 {targets.length === 0 ? (
                   <p className="rsvp-gate-note">{messages['rsvp.noTargets']}</p>
                 ) : (
                   <ul className="rsvp-targets">
                     {targets.map((t) => (
                       <li key={t.userId} className="rsvp-target">
-                        <span className="rsvp-target-name">
-                          {t.name}
-                          {t.joined && (
-                            <span className="rsvp-badge">{messages['rsvp.joined']}</span>
-                          )}
-                        </span>
-                        <button
-                          type="button"
-                          className={`rsvp-toggle ${t.joined ? 'is-leave' : 'is-join'}`}
-                          disabled={busyId !== null}
-                          onClick={() => toggle(t)}
-                        >
-                          {busyId === t.userId
-                            ? '…'
-                            : t.joined
-                              ? messages['rsvp.leave']
-                              : messages['rsvp.join']}
-                        </button>
+                        <span className="rsvp-target-name">{t.name}</span>
+                        {/* 회람은 날짜와 무관하게 '응답'을 받는 자리라 늘 두 칸이다 */}
+                        <EventResponseButtons
+                          eventId={event.id}
+                          forUserId={t.userId}
+                          initialResponse={t.response ?? null}
+                          upcoming
+                          size="lg"
+                        />
                       </li>
                     ))}
                   </ul>
@@ -237,6 +211,24 @@ export default function RsvpView({ event, viewer, participants, targets }: RsvpV
                   </ol>
                 )}
               </div>
+
+              {/* 불참 명단 — 운영진에게만 */}
+              {decliners && decliners.length > 0 && (
+                <div className="rsvp-roster rsvp-roster--declined">
+                  <h2 className="rsvp-section-title">
+                    {messages['rsvp.decliners'] ?? '불참'}
+                    <span className="rsvp-roster-count">({decliners.length})</span>
+                    <span className="rsvp-staff-note">
+                      {messages['rsvp.staffOnly'] ?? '운영진에게만 보입니다'}
+                    </span>
+                  </h2>
+                  <ul className="rsvp-declined-list">
+                    {decliners.map((d) => (
+                      <li key={d.userId}>{d.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </>
           )}
         </div>

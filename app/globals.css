@@ -7971,17 +7971,61 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
   padding: 3px 9px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
+/* 사진 위 배지 — 테마와 무관하게 리터럴(콘솔 규칙 3). --warm-ivory는 라이트에서
+   먹색으로 뒤집혀 어두운 스크림 위에서 읽히지 않았다. */
 .library-card-upcoming-flag {
   position: absolute;
   top: 8px;
   right: 8px;
   font-size: 0.66rem;
   font-weight: 600;
-  color: var(--warm-ivory, #f6efe2);
+  color: #f6efe2;
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(212, 160, 23, 0.6);
   border-radius: 999px;
   padding: 2px 8px;
+}
+/* 불참 — 사진 위라 테마와 무관하게 어두운 스크림 + 밝은 글자(콘솔 규칙 3) */
+.library-card-declined-flag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: #f6efe2;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.library-card.is-declined .library-card-thumb img {
+  opacity: 0.55;
+}
+/* 공연 알림을 누르고 도착한 카드(/admin/library#event-<id>) — 상단바에 가리지 않게
+   띄우고, 어디에 도착했는지 잠깐 비춘다. 알림 주소는 lib/library/anchor.ts. */
+.library-card,
+.library-row {
+  scroll-margin-top: calc(var(--admin-topbar-h, 56px) + env(safe-area-inset-top) + 16px);
+}
+.library-card:target,
+.library-row:target {
+  animation: library-arrive 2.4s ease-out 1;
+}
+@keyframes library-arrive {
+  0%,
+  35% {
+    box-shadow: 0 0 0 3px var(--accent-color);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .library-card:target,
+  .library-row:target {
+    animation: none;
+    box-shadow: 0 0 0 3px var(--accent-color);
+  }
 }
 /* 콘솔 이벤트 상세 (읽기 전용) */
 .library-detail-sub {
@@ -8066,6 +8110,18 @@ html:not([data-site-theme]):not([data-admin-theme]) .sansu-image {
 .event-participants-empty {
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+.event-participants-subtitle {
+  margin: 18px 0 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.event-participants-subtitle .event-participants-count {
+  color: var(--text-muted);
+}
+.participation-people.is-declined .participation-person-name {
+  color: var(--text-muted);
 }
 
 /* ===== 캘린더 (관리 콘솔 /admin/schedule) =====================================
@@ -8652,6 +8708,63 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   font-size: 0.74rem;
   color: var(--secondary-color, #d12f27);
 }
+/* 참여 응답 [참여][불참] — 둘러보기 카드·줄, 상세, 학부모 행, 회람 공용
+   (EventResponseButtons). 고른 칸은 채우고, 고르지 않은 칸은 선만 남긴다. */
+.event-response {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.event-response-btn {
+  padding: 9px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--fg-rgb), 0.2);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.16s, border-color 0.16s, color 0.16s, opacity 0.16s;
+}
+.event-response-btn.is-going {
+  border-color: rgba(var(--soft-gold-rgb), 0.5);
+  color: var(--soft-gold-text);
+}
+.event-response-btn.is-going:hover:not(:disabled):not(.is-selected) {
+  background: rgba(var(--soft-gold-rgb), 0.12);
+}
+.event-response-btn.is-declined:hover:not(:disabled):not(.is-selected) {
+  border-color: rgba(var(--fg-rgb), 0.4);
+  color: var(--text-color);
+}
+.event-response-btn.is-going.is-selected {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--on-accent);
+  cursor: default;
+}
+.event-response-btn.is-declined.is-selected {
+  background: rgba(var(--fg-rgb), 0.14);
+  border-color: rgba(var(--fg-rgb), 0.45);
+  color: var(--text-color);
+  cursor: default;
+}
+.event-response-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.event-response-btn:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+/* 회람(/rsvp) — 손가락으로 누르는 자리라 44px */
+.event-response--lg .event-response-btn {
+  min-height: 44px;
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  border-radius: 8px;
+}
 /* 학부모 대행 체크인 (이벤트 상세) */
 .parent-checkin {
   display: flex;
@@ -8674,9 +8787,15 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   color: var(--warm-ivory, #f6efe2);
   font-weight: 500;
 }
+.parent-checkin-row .library-checkin {
+  padding: 0;
+}
 .parent-checkin-row .library-checkin-btn {
   width: auto;
   min-width: 132px;
+}
+.parent-checkin-row .event-response {
+  min-width: 168px;
 }
 .parent-checkin-empty {
   color: var(--text-muted);
@@ -15465,16 +15584,6 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   padding: 14px 28px;
 }
 
-.rsvp-error {
-  margin: 0 0 12px;
-  padding: 10px 14px;
-  border: 1px solid rgba(209, 47, 39, 0.35);
-  border-radius: 6px;
-  background: rgba(209, 47, 39, 0.1);
-  font-size: 0.88rem;
-  color: var(--secondary-color);
-}
-
 .rsvp-targets {
   display: flex;
   flex-direction: column;
@@ -15500,48 +15609,13 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
   color: var(--text-color);
 }
 
-.rsvp-badge {
-  font-size: 0.72rem;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(46, 160, 67, 0.5);
-  color: #7ee2a8;
+.rsvp-target .library-checkin {
+  padding: 0;
+  flex: 0 0 auto;
 }
 
-.rsvp-toggle {
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: none;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, filter 0.2s;
-}
-
-.rsvp-toggle.is-join {
-  background: var(--accent-color);
-  color: #0a0a0a;
-}
-
-.rsvp-toggle.is-join:hover:not(:disabled) {
-  background: #b88a12;
-}
-
-.rsvp-toggle.is-leave {
-  background: rgba(var(--fg-rgb),  0.08);
-  color: var(--text-muted);
-  border: 1px solid rgba(var(--fg-rgb),  0.2);
-}
-
-.rsvp-toggle.is-leave:hover:not(:disabled) {
-  color: var(--secondary-color);
-  border-color: rgba(209, 47, 39, 0.4);
-}
-
-.rsvp-toggle:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+.rsvp-target .event-response {
+  min-width: 200px;
 }
 
 .rsvp-roster-count {
@@ -15569,6 +15643,27 @@ html[data-admin-theme='light'] .cal-tag.is-draft {
 .rsvp-roster-list li.is-mine {
   color: var(--accent-text);
   font-weight: 600;
+}
+
+.rsvp-staff-note {
+  margin-left: 10px;
+  font-size: 0.74rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.rsvp-declined-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.rsvp-declined-list li {
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
 @media (max-width: 600px) {
@@ -19693,9 +19788,23 @@ html[data-admin-theme='light'] .admin-sheet {
   color: var(--accent-text);
 }
 
+.library-row-declined {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--fg-rgb), 0.25);
+  color: var(--text-muted);
+}
+
+.library-row.is-declined .library-row-title {
+  color: var(--text-muted);
+}
+
 /* 목록 줄 안의 체크인 버튼은 카드용(width:100%)을 압축형으로 */
 .library-row .library-checkin {
   flex: 0 0 auto;
+  padding: 0;
 }
 
 .library-row .library-checkin-btn {
@@ -19703,6 +19812,16 @@ html[data-admin-theme='light'] .admin-sheet {
   padding: 5px 10px;
   font-size: 0.74rem;
   white-space: nowrap;
+}
+
+.library-row .event-response {
+  grid-template-columns: auto auto;
+  gap: 4px;
+}
+
+.library-row .event-response-btn {
+  padding: 5px 10px;
+  font-size: 0.74rem;
 }
 
 @media (max-width: 560px) {

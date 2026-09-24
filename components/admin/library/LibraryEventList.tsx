@@ -8,6 +8,9 @@
  *
  * 링크 대상이 갈리는 이유: 멤버(원생·학부모)는 비공개 공연도 보므로 콘솔 상세로 가고,
  * 그 외 역할은 공개 갤러리 페이지로 나간다.
+ *
+ * 카드·줄마다 `id`(libraryCardId)가 있다 — 공연 알림을 누르면 `/admin/library#event-<id>`로
+ * 와서 그 포스터 앞에 멈춘다(lib/library/anchor.ts). 도착한 카드는 CSS `:target`이 잠깐 비춘다.
  */
 
 import Link from 'next/link';
@@ -15,7 +18,9 @@ import SiteViewLink from '@/components/common/SiteViewLink';
 import type { EventWithCategory } from '@/types/gallery';
 import { useT } from '@/lib/i18n/useT';
 import { useLocaleText } from '@/components/common/LocaleText';
-import CheckinButton from './CheckinButton';
+import { libraryCardId } from '@/lib/library/anchor';
+import { responseOf } from '@/lib/library/response';
+import EventResponseButtons from './EventResponseButtons';
 import type { LibraryView } from './LibraryViewToggle';
 
 interface LibraryEventListProps {
@@ -28,6 +33,8 @@ interface LibraryEventListProps {
   showMarks?: boolean;
   /** 본인(학부모는 자녀)이 체크인한 공연 id (Set은 직렬화가 안 돼 배열로 받는다) */
   checkedInIds: number[];
+  /** 본인(학부모는 자녀)이 불참한 공연 id */
+  declinedIds?: number[];
   /** 'YYYY-MM-DD' — 이 날짜 이후면 다가오는 공연 */
   today: string;
 }
@@ -39,11 +46,13 @@ export default function LibraryEventList({
   canCheckIn,
   showMarks = false,
   checkedInIds,
+  declinedIds = [],
   today,
 }: LibraryEventListProps) {
   const t = useT();
   const pick = useLocaleText();
   const checkedIn = new Set(checkedInIds);
+  const declined = new Set(declinedIds);
 
   /** 공연 하나의 상태 — 카드와 줄이 같은 판단을 쓴다 */
   const stateOf = (event: EventWithCategory) => ({
@@ -53,6 +62,12 @@ export default function LibraryEventList({
       : null,
     isDraft: event.is_published === 0,
     isChecked: (showMarks || canCheckIn) && checkedIn.has(event.id),
+    // 불참 표시는 다가오는 공연에만 — 지난 공연의 '불참'은 할 일도 기록도 아니다.
+    // 참여가 이긴다(둘 다 남은 순간) — responseOf가 그 판단을 한다.
+    isDeclined:
+      (showMarks || canCheckIn) &&
+      event.event_date >= today &&
+      responseOf(checkedIn.has(event.id), declined.has(event.id)) === 'declined',
     isUpcoming: event.event_date >= today,
   });
 
@@ -62,16 +77,21 @@ export default function LibraryEventList({
       ? t('admin.library.joinedUpcoming', '참여 예정')
       : t('admin.library.joinedPast', '참여함');
 
-  /** 카드/줄 공통 — 링크로 감싸고 체크인 버튼을 붙인다 */
+  /** 카드/줄 공통 — 링크로 감싸고 참여 응답 버튼을 붙인다 */
   const wrap = (
     event: EventWithCategory,
     className: string,
     linkClassName: string,
     isChecked: boolean,
+    isDeclined: boolean,
     isUpcoming: boolean,
     inner: React.ReactNode
   ) => (
-    <div key={event.id} className={`${className}${isChecked ? ' is-checked' : ''}`}>
+    <div
+      key={event.id}
+      id={libraryCardId(event.id)}
+      className={`${className}${isChecked ? ' is-checked' : ''}${isDeclined ? ' is-declined' : ''}`}
+    >
       {memberView ? (
         <Link href={`/admin/library/${event.id}`} className={linkClassName}>
           {inner}
@@ -82,9 +102,9 @@ export default function LibraryEventList({
         </SiteViewLink>
       )}
       {canCheckIn && (
-        <CheckinButton
+        <EventResponseButtons
           eventId={event.id}
-          initialCheckedIn={checkedIn.has(event.id)}
+          initialResponse={responseOf(checkedIn.has(event.id), declined.has(event.id))}
           upcoming={isUpcoming}
         />
       )}
@@ -95,12 +115,13 @@ export default function LibraryEventList({
     return (
       <div className="library-rows">
         {events.map((event) => {
-          const { title, category, isDraft, isChecked, isUpcoming } = stateOf(event);
+          const { title, category, isDraft, isChecked, isDeclined, isUpcoming } = stateOf(event);
           return wrap(
             event,
             'library-row',
             'library-row-link',
             isChecked,
+            isDeclined,
             isUpcoming,
             <>
               <span className="library-row-date">{event.event_date}</span>
@@ -115,7 +136,12 @@ export default function LibraryEventList({
                 {isChecked && (
                   <span className="library-row-checked">✓ {joinedLabel(isUpcoming)}</span>
                 )}
-                {!isChecked && isUpcoming && (
+                {isDeclined && (
+                  <span className="library-row-declined">
+                    {t('admin.library.declined', '불참')}
+                  </span>
+                )}
+                {!isChecked && !isDeclined && isUpcoming && (
                   <span className="library-row-upcoming">
                     {t('admin.library.upcoming', '다가오는')}
                   </span>
@@ -131,13 +157,14 @@ export default function LibraryEventList({
   return (
     <div className="library-grid">
       {events.map((event) => {
-        const { title, category, isDraft, isChecked, isUpcoming } = stateOf(event);
+        const { title, category, isDraft, isChecked, isDeclined, isUpcoming } = stateOf(event);
         const thumb = event.thumbnail_url || event.poster_url || event.first_image_url || null;
         return wrap(
           event,
           'library-card',
           'library-card-link',
           isChecked,
+          isDeclined,
           isUpcoming,
           <>
             <div className="library-card-thumb">
@@ -152,7 +179,12 @@ export default function LibraryEventList({
               {isChecked && (
                 <span className="library-card-checked-flag">✓ {joinedLabel(isUpcoming)}</span>
               )}
-              {!isChecked && isUpcoming && (
+              {isDeclined && (
+                <span className="library-card-declined-flag">
+                  {t('admin.library.declined', '불참')}
+                </span>
+              )}
+              {!isChecked && !isDeclined && isUpcoming && (
                 <span className="library-card-upcoming-flag">
                   {t('admin.library.upcoming', '다가오는')}
                 </span>

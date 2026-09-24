@@ -79,6 +79,10 @@ export {
   // Event Check-ins (학생 참여)
   checkInEvent,
   checkOutEvent,
+  declineEvent,
+  clearDecline,
+  getDeclinedEventIdsForUsers,
+  getEventDeclines,
   getCheckinEventState,
   isCheckedIn,
   getUserCheckedInEventIds,
